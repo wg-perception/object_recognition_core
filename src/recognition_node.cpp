@@ -31,11 +31,6 @@
  *  ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  *  POSSIBILITY OF SUCH DAMAGE.
  *
- * $Id$
- * Author: Ethan Rublee
- * run with:
- rosrun tod_stub image_pcl_recorder \
- camera:=/camera/rgb points2:=/camera/depth/points2 time_interval:=0.5
  */
 
 
@@ -51,10 +46,9 @@
 #include <boost/shared_ptr.hpp>
 #include <boost/program_options.hpp>
 
-#include <cv_bridge/cv_bridge.h>
-#include <opencv2/opencv.hpp>
-
-#include <pcl/ros/conversions.h>
+//#include <opencv2/opencv.hpp>
+//#include <cv_bridge/cv_bridge.h>
+//#include <pcl/ros/conversions.h>
 
 using std::string;
 using namespace sensor_msgs;
@@ -64,11 +58,11 @@ namespace
 namespace po = boost::program_options;
 namespace enc = sensor_msgs::image_encodings;
 
-struct options
+struct Options
 {
   int x;
 };
-int options(int ac, char ** av, pe_options& opts)
+int options(int ac, char ** av, Options& opts)
 {
   // Declare the supported options.
   po::options_description desc("Allowed options");
@@ -88,8 +82,8 @@ int options(int ac, char ** av, pe_options& opts)
 
 class RecognitionNode
 {
-  typedef message_filters::Subscriber<sensor_msgs::CameraInfo> CameraInfoSubscriber;
-  typedef message_filters::Subscriber<sensor_msgs::Image> ImageSubscriber;
+  typedef message_filters::Subscriber<CameraInfo> CameraInfoSubscriber;
+  typedef message_filters::Subscriber<Image> ImageSubscriber;
   typedef message_filters::sync_policies::ApproximateTime<Image, CameraInfo, Image, CameraInfo> ApproxSyncPolicy;
   typedef message_filters::Synchronizer<ApproxSyncPolicy> SynchronizerImageDepthCamera;
 
@@ -99,10 +93,9 @@ class RecognitionNode
   ros::NodeHandle nh_;
   string camera_topic_, depth_camera_topic_;
   ros::Time prev_;
-  options opts_;
+  Options opts_;
 public:
-
-  RecognitionNode(options opts) :
+  RecognitionNode(Options opts) :
     sync_sub_(10),opts_(opts)
   {
     onInit();
@@ -135,7 +128,6 @@ public:
   }
   void onInit()
   {
-
     prev_ = ros::Time::now();
 
     setupSubs();
@@ -145,11 +137,12 @@ public:
   }
 
   void dataCallback(const ImageConstPtr& image, const CameraInfoConstPtr& camera_info,
-                   const ImageConstPtr& depth, const CameraInfoConstPtr& depth_camera_info)
+                    const ImageConstPtr& depth, const CameraInfoConstPtr& depth_camera_info)
   {
     ros::Time n = image->header.stamp;
     float dt = (n - prev_).toSec();
     ROS_INFO_STREAM("Processing frame bundle. dt=" << dt);
+    prev_ = n;
   }
 };
 
@@ -159,7 +152,7 @@ int main(int argc, char** argv)
 {
   ros::init(argc, argv, "object_recognition");
 
-  options opts;
+  Options opts;
   if (options(argc, argv, opts))
     return 1;
 
