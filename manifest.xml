@@ -1,0 +1,20 @@
+<package>
+  <description brief="objcog">
+
+     objcog
+
+  </description>
+  <author>Ethan Rublee</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/objcog</url>
+  <depend package="roscpp"/>
+  <depend package="rospy"/>
+  <depend package="opencv_candidate"/>
+  <depend package="opencv2"/>
+  <depend package="sensor_msgs"/>
+  <depend package="geometry_msgs"/>
+
+</package>
+
+
