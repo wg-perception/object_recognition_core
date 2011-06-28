@@ -1,0 +1,17 @@
+%YAML:1.0
+# camera intrinsics
+camera_matrix: !!opencv-matrix
+   rows: 3
+   cols: 3
+   dt: d
+   data: [ 5.1860704525145354e+02, 0., 3.1950000000000000e+02, 0.,
+       5.1860704525145354e+02, 2.3950000000000000e+02, 0., 0., 1. ]
+distortion_coefficients: !!opencv-matrix
+   rows: 1
+   cols: 5
+   dt: d
+   data: [ 1.9860646378125626e-01, -7.5027039483858593e-01,
+       -7.6714337815825540e-03, 5.1766432625519688e-03,
+       9.1511453828290956e-01 ]
+image_width: 640
+image_height: 480
