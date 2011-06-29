@@ -1,0 +1,4 @@
+rosbuild_add_executable(recognition_node recognition_node.cpp)
+rosbuild_link_boost(recognition_node program_options)
+
+add_subdirectory(tod)
