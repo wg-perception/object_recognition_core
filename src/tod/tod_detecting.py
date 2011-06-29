@@ -1,37 +1,38 @@
-#!/bin/python
+#!/usr/bin/env python
+import roslib; roslib.load_manifest('objcog')
 import ecto
 from ecto_opencv import highgui, cv_bp as opencv, calib, imgproc, objcog_db, features2d
-from ecto_tod import tod
+import tod
 import time
 debug = True
 plasm = ecto.Plasm()
 
 class TodDetection(ecto.BlackBox):
-    def __init__(self, plasm, orb_params = None):
+    def __init__(self, plasm, orb_params=None):
         ecto.BlackBox.__init__(self, plasm)
         self._orb_params = orb_params
-        self.bag_reader = tod.BagReader()
-        self.detector = tod.Detector()
-        self.result_writer = tod.ResultWriter()
+        self.orb = features2d.ORB()
+        self.twoDToThreeD = tod.TwoDToThreeD()
+        self.guessGenerator = tod.GuessGenerator()
 
     def expose_inputs(self):
         return {'image':self.orb['image'],
                 'mask':self.orb['mask'],
-                'depth':self.twoDToThreeD['depth'],
-                'K':self.twoDToThreeD['K'],
-                'R':self.cameraToWorld['R'],
-                'T':self.cameraToWorld['T']}
+                'point_cloud':self.guessGenerator['point_cloud'],
+                'K':self.twoDToThreeD['K']}
 
     def expose_outputs(self):
-        return {'points': self.cameraToWorld['points'],
-                'descriptors': self.orb['descriptors']}
+        return {}
+        return {'guesses': self.guessGenerator['guesses']}
 
     def expose_parameters(self):
         return {'descriptor_param': self._orb_params}
 
     def connections(self):
+        return ()
         return (self.orb['kpts'] >> self.twoDToThreeD['keypoints'],
-                self.twoDToThreeD['points'] >> self.cameraToWorld['points'])
+                self.orb['descriptors'] >> self.guessGenerator['descriptors']
+                )
 
 # define the input
 bag_reader = tod.BagReader(path="/some_bag")
@@ -45,8 +46,10 @@ bag_reader = tod.BagReader(path="/some_bag")
 #              db_reader['depth'] >> depth_view['input'])
 
 # connect to the model computation
-tod_detection = TodDetection(plasm)
-plasm.connect(bag_reader['image', 'mask', 'depth', 'K', 'R', 'T'] >> tod_detection['image', 'mask', 'depth', 'K', 'R', 'T'])
+#tod_detection = TodDetection(plasm)
+#plasm.connect(bag_reader['image', 'point_cloud', 'K'] >> tod_detection['image', 'point_cloud', 'K'])
+orb = features2d.ORB()
+plasm.connect(bag_reader['image'] >> orb['image'])
 
 # send data back to the API
 #db_writer = objcog_db.TodModelInserter("db_writer", object_id="object_01")

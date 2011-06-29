@@ -34,8 +34,8 @@ struct BagReader
 
   static void declare_io(const ecto::tendrils& params, ecto::tendrils& inputs, ecto::tendrils& outputs)
   {
-    outputs.declare<cv::Mat>("img", "The image that will be analyzed");
-    outputs.declare<pcl::PointCloud<pcl::PointXYZRGB>::ConstPtr>("pcd", "The point cloud");
+    outputs.declare<cv::Mat>("image", "The image that will be analyzed");
+    outputs.declare<pcl::PointCloud<pcl::PointXYZRGB>::ConstPtr>("point_cloud", "The point cloud");
     outputs.declare<cv::Mat>("K", "K for the camera");
     outputs.declare<cv::Mat>("D", "D for the camera");
   }

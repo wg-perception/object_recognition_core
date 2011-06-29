@@ -160,6 +160,7 @@ namespace tod
 void wrap_CameraToWorld();
 void wrap_TwoDToThreeD();
 void wrap_BagReader();
+void wrap_GuessGenerator();
 
 BOOST_PYTHON_MODULE(tod)
 {
@@ -169,4 +170,5 @@ BOOST_PYTHON_MODULE(tod)
   wrap_CameraToWorld();
   wrap_TwoDToThreeD();
   wrap_BagReader();
+  wrap_GuessGenerator();
 }

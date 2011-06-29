@@ -1,5 +1,3 @@
-project(tod)
-
 find_package(ecto REQUIRED)
 find_package(OpenCV REQUIRED)
 
@@ -11,8 +9,8 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 set_ecto_install_package_name(ecto_tod)
 
 # deal with the tod module
-ectorosmodule(tod tod.cpp twoDToThreeD.cpp cameraToWorld.cpp bag_reader.cpp)
-link_ecto(tod ${OpenCV_LIBS} ros roslib rostime roscpp_serialization rosbag tod_stub_impl willow_tod)
+ectorosmodule(tod tod.cpp twoDToThreeD.cpp cameraToWorld.cpp bag_reader.cpp guess_generator.cpp)
+link_ecto(tod ${OpenCV_LIBS} willow_tod)
 install_ecto_module(tod)
 
 

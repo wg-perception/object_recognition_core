@@ -1,4 +1,4 @@
-#!/bin/python
+#!/usr/bin/env python
 import ecto
 from ecto_opencv import highgui, cv_bp as opencv, calib, imgproc, tod, objcog_db, features2d
 import time
@@ -54,8 +54,8 @@ orb_params = None
 plasm.connect(tod_model['points', 'descriptors'] >> db_writer['points', 'descriptors'])
 
 if debug:
-  print plasm.viz()
-  ecto.view_plasm(plasm)
+    print plasm.viz()
+    ecto.view_plasm(plasm)
 
 while(image_view.outputs.out not in (27, ord('q'))):
     if(plasm.execute(1) != 0): break
