@@ -13,7 +13,7 @@
 
 #include <iostream>
 
-#include "tod/detecting/GuessGenerator.h""
+#include "tod/detecting/GuessGenerator.h"
 
 using ecto::tendrils;
 
@@ -32,7 +32,7 @@ struct GuessGenerator
   static void declare_io(const tendrils& params, tendrils& inputs, tendrils& outputs)
   {
     inputs.declare<pcl::PointCloud<pcl::PointXYZRGB>::ConstPtr>("point_cloud", "The point cloud");
-    inputs.declare<std::vector<cv::KeyPoint> >("keypoints", "The depth image");
+    inputs.declare<std::vector<cv::Point3f> >("points", "The depth image");
     inputs.declare<cv::Mat>("descriptors", "The depth image");
     outputs.declare<tod::Guess>("guesses", "The output 3d points");
   }

@@ -20,9 +20,10 @@
   <depend package="pcl_ros"/>
   <depend package="opencv_candidate"/>  
   <depend package="tod_detecting"/>
-  <depend package="willow_tod"/>
   -->
   <depend package="ecto_ros"/>
+  <depend package="tod_detecting"/>
+  <depend package="willow_tod"/>
   <export>
     <python path="${prefix}/lib/"/>
   </export>

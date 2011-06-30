@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 import ecto
 from ecto_opencv import highgui, cv_bp as opencv, calib, imgproc, features2d
-import objcog_db
+import tod_db
 import tod
 import time
 debug = True
@@ -22,7 +22,6 @@ class TodDetection(ecto.BlackBox):
                 'K':self.twoDToThreeD['K']}
 
     def expose_outputs(self):
-        return {}
         return {'guesses': self.guessGenerator['guesses']}
 
     def expose_parameters(self):
@@ -30,6 +29,7 @@ class TodDetection(ecto.BlackBox):
 
     def connections(self):
         return (self.orb['kpts'] >> self.twoDToThreeD['keypoints'],
+                self.twoDToThreeD['points'] >> self.guessGenerator['points'],
                 self.orb['descriptors'] >> self.guessGenerator['descriptors']
                 )
 
