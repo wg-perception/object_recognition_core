@@ -22,12 +22,14 @@
   <depend package="tod_detecting"/>
   <depend package="willow_tod"/>
   -->
+  <depend package="ecto_ros"/>
   <export>
     <python path="${prefix}/lib/"/>
   </export>
   <rosdep name="opencv2.3"/>
   <rosdep name="CURL"/>
   <rosdep name="eigen3"/>
+  
 </package>
 
 

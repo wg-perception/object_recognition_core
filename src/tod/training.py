@@ -1,10 +1,49 @@
 #!/bin/python
+PKG = 'objcog' # this package name
+import roslib; roslib.load_manifest(PKG)
+
 import ecto
-from ecto_opencv import highgui, cv_bp as opencv, calib, imgproc, tod, objcog_db
+from ecto_opencv import highgui, cv_bp as opencv, calib, imgproc
+import objcog_db
+import tod
 import time
 #import orb as imgproc
 
 debug = True
+
+
+class PoseEstimator(ecto.BlackBox):
+    def __init__(self, plasm):
+        ecto.BlackBox.__init__(self, plasm)
+        self.draw_debug = debug
+        self.circle_drawer = calib.PatternDrawer("Found Pattern Drawer", rows=7, cols=3)
+        self.pattern_show = highgui.imshow("Pattern view", name="pattern", waitKey= -1, autoSize=True)
+        self.pose_drawer = calib.PoseDrawer("pattern pose")            
+        self.rgb2gray = imgproc.cvtColor("rgb -> gray", flag=7)
+        self.circle_detector = calib.PatternDetector("asymmetric dot detector", rows=7, cols=3, pattern_type="acircles", square_size=0.03)
+        self.poser = calib.FiducialPoseFinder("Pose Estimation")
+        self.camera_intrinsics = calib.CameraIntrinsics("camera.yml", camera_file="camera.kinect.vga.yml")
+
+    def expose_inputs(self):
+        return {'image': self.rgb2gray['input'],
+                }
+
+    def expose_outputs(self):
+        return {
+                'R': self.poser['R'],
+                'T': self.poser['T'],
+                'K': self.camera_intrinsics['K'],
+                'found':self.circle_detector['found'], 
+                'points':self.circle_detector['points'],
+                'ideal':self.circle_detector['ideal'],
+                }
+
+    def expose_parameters(self):
+        return {'descriptor_param': self._orb_params}
+
+    def connections(self):
+        return (self.orb['kpts'] >> self.twoDToThreeD['keypoints'],
+                self.twoDToThreeD['points'] >> self.cameraToWorld['points'])
 
 class PoseEstimator:
     
@@ -34,7 +73,8 @@ class PoseEstimator:
         plasm.connect(self.circle_drawer, "out", self.pose_drawer, "image")
         plasm.connect(self.camera_intrinsics, "K", self.pose_drawer, "K")
         plasm.connect(self.pose_drawer, "output", self.pattern_show, "input")
-        
+
+def doit():
 plasm = ecto.Plasm()
 
 pose_est = PoseEstimator()
@@ -85,4 +125,8 @@ if debug:
     
 while(image_view.outputs.out not in (27, ord('q'))):
     plasm.execute(1)
-    
+
+if __name__ == "__main__":
+    ecto_ros.init(sys.argv,"ecto_node")
+
+    do_it()

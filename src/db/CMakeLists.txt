@@ -1,3 +1,12 @@
+find_package(Boost COMPONENTS
+  system
+  serialization
+  thread
+  filesystem
+  regex
+  REQUIRED
+  )
+  
 add_subdirectory(json_spirit)
 
 find_package(CURL REQUIRED)
