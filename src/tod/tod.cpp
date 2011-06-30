@@ -169,6 +169,6 @@ BOOST_PYTHON_MODULE(tod)
     "lies on a plane, segment the object from the plane");
   wrap_CameraToWorld();
   wrap_TwoDToThreeD();
-  wrap_BagReader();
-  wrap_GuessGenerator();
+  //wrap_BagReader();
+  //wrap_GuessGenerator();
 }

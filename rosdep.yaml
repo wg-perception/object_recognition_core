@@ -1,0 +1,9 @@
+CURL:
+  ubuntu: libcurl4-openssl-dev
+  debian: libcurl4-openssl-dev
+eigen3:
+  ubuntu: libeigen3-dev
+opencv2.3:
+  ubuntu: libopencv2.3-dev
+  debian: libopencv2.3-dev
+
