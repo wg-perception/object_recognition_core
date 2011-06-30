@@ -1,7 +1,7 @@
 #!/usr/bin/env python
-import roslib; roslib.load_manifest('objcog')
 import ecto
-from ecto_opencv import highgui, cv_bp as opencv, calib, imgproc, objcog_db, features2d
+from ecto_opencv import highgui, cv_bp as opencv, calib, imgproc, features2d
+import objcog_db
 import tod
 import time
 debug = True
@@ -29,7 +29,6 @@ class TodDetection(ecto.BlackBox):
         return {'descriptor_param': self._orb_params}
 
     def connections(self):
-        return ()
         return (self.orb['kpts'] >> self.twoDToThreeD['keypoints'],
                 self.orb['descriptors'] >> self.guessGenerator['descriptors']
                 )
@@ -46,10 +45,8 @@ bag_reader = tod.BagReader(path="/some_bag")
 #              db_reader['depth'] >> depth_view['input'])
 
 # connect to the model computation
-#tod_detection = TodDetection(plasm)
-#plasm.connect(bag_reader['image', 'point_cloud', 'K'] >> tod_detection['image', 'point_cloud', 'K'])
-orb = features2d.ORB()
-plasm.connect(bag_reader['image'] >> orb['image'])
+tod_detection = TodDetection(plasm)
+plasm.connect(bag_reader['image', 'point_cloud', 'K'] >> tod_detection['image', 'point_cloud', 'K'])
 
 # send data back to the API
 #db_writer = objcog_db.TodModelInserter("db_writer", object_id="object_01")
@@ -61,5 +58,7 @@ if debug:
   print plasm.viz()
   ecto.view_plasm(plasm)
 
-while(image_view.outputs.out not in (27, ord('q'))):
-    if(plasm.execute(1) != 0): break
+plasm.execute(1)
+
+#while(image_view.outputs.out not in (27, ord('q'))):
+#    if(plasm.execute(1) != 0): break

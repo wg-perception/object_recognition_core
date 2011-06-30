@@ -1,7 +1,14 @@
 #!/usr/bin/env python
 import ecto
-from ecto_opencv import highgui, cv_bp as opencv, calib, imgproc, tod, objcog_db, features2d
+from ecto_opencv import highgui, cv_bp as opencv, calib, imgproc, features2d
 import time
+import tod
+import objcog_db
+
+import sys, pprint
+
+pprint.pprint(sys.modules)
+
 debug = True
 plasm = ecto.Plasm()
 
@@ -54,6 +61,7 @@ orb_params = None
 plasm.connect(tod_model['points', 'descriptors'] >> db_writer['points', 'descriptors'])
 
 if debug:
+    #render the DAG with dot
     print plasm.viz()
     ecto.view_plasm(plasm)
 
