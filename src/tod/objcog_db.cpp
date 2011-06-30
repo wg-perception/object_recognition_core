@@ -367,7 +367,7 @@ namespace db
   };
 }
 
-BOOST_PYTHON_MODULE(objcog_db)
+BOOST_PYTHON_MODULE(tod_db)
 {
   ecto::wrap<db::ObservationInserter>("ObservationInserter");
   ecto::wrap<db::ObservationReader>("ObservationReader");
