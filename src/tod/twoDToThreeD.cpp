@@ -31,7 +31,7 @@ struct TwoDToThreeD
   {
     inputs.declare<std::vector<cv::KeyPoint> >("keypoints", "The keypoints");
     inputs.declare<cv::Mat>("K", "The calibration matrix");
-    inputs.declare<cv::Mat>("depth", "The depth image");
+    inputs.declare<cv::Mat>("depth", "The depth image").set_required();
     outputs.declare<std::vector<cv::Point3f> >("points", "The output 3d points");
   }
 

@@ -17,16 +17,18 @@
 #include <sensor_msgs/CameraInfo.h>
 
 #include <opencv2/core/core.hpp>
+#include <opencv2/highgui/highgui.hpp>
 
 #include <ecto/ecto.hpp>
 
 #include "tod_stub/tod_stub.h"
 #include "opencv_candidate/PoseRT.h"
+#include <pcl/io/pcd_io.h>
+#include <pcl/ros/conversions.h>
+#include <pcl_ros/point_cloud.h>
 
 struct BagReader
 {
-  typedef pcl::PointCloud<pcl::PointXYZRGB> Cloud_t;
-
   static void declare_params(ecto::tendrils& params)
   {
     params.declare<std::string>("path", "The path of the bag");
@@ -35,7 +37,7 @@ struct BagReader
   static void declare_io(const ecto::tendrils& params, ecto::tendrils& inputs, ecto::tendrils& outputs)
   {
     outputs.declare<cv::Mat>("image", "The image that will be analyzed");
-    outputs.declare<pcl::PointCloud<pcl::PointXYZRGB>::ConstPtr>("point_cloud", "The point cloud");
+    outputs.declare<pcl::PointCloud<pcl::PointXYZRGB> >("point_cloud", "The point cloud");
     outputs.declare<cv::Mat>("K", "K for the camera");
     outputs.declare<cv::Mat>("D", "D for the camera");
   }
@@ -73,13 +75,11 @@ struct BagReader
         ipc_package.camera_info = camera_info;
       }
 
-      /*
-       Cloud_t::ConstPtr points2 = message_->instantiate<Cloud_t>();
-       if (points2 != NULL)
-       {
-       ipc_package.points2 = points2;
-       }
-       */
+      tod_stub::Cloud_t::ConstPtr points2 = message_->instantiate<tod_stub::Cloud_t>();
+      if (points2 != NULL)
+      {
+        ipc_package.points2 = points2;
+      }
 
       ++message_;
     }
@@ -87,11 +87,12 @@ struct BagReader
     if (ipc_package.full())
     {
       sensor_msgs::CvBridge bridge;
-      outputs.get<cv::Mat>("img") = cv::Mat(bridge.imgMsgToCv(ipc_package.img, "bgr8"));
-      outputs.get<pcl::PointCloud<pcl::PointXYZRGB> >("pcd") = *(ipc_package.points2);
+      outputs.get<cv::Mat>("image") = cv::Mat(bridge.imgMsgToCv(ipc_package.img, "bgr8")).clone();
+      outputs.get<pcl::PointCloud<pcl::PointXYZRGB> >("point_cloud") = *(ipc_package.points2);
       outputs.get<cv::Mat>("K") = cv::Mat(3, 3, CV_64F, (void*)ipc_package.camera_info->K.elems).clone();
       outputs.get<cv::Mat>("D") = cv::Mat(ipc_package.camera_info->D).clone();
       ipc_package.clear();
+      std::cerr << "read 1 package" << std::endl;
     }
     else
     {
