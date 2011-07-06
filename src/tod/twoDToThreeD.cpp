@@ -5,6 +5,8 @@
  *      Author: vrabaud
  */
 
+#include <boost/foreach.hpp>
+
 #include <ecto/ecto.hpp>
 
 #include <opencv2/core/core.hpp>
@@ -31,7 +33,7 @@ struct TwoDToThreeD
   {
     inputs.declare<std::vector<cv::KeyPoint> >("keypoints", "The keypoints");
     inputs.declare<cv::Mat>("K", "The calibration matrix");
-    inputs.declare<cv::Mat>("depth", "The depth image").set_required();
+    inputs.declare<cv::Mat>("depth", "The depth image");
     outputs.declare<std::vector<cv::Point3f> >("points", "The output 3d points");
   }
 
