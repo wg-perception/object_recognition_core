@@ -1,18 +1,32 @@
 #!/usr/bin/env python
 import ecto
 from ecto_opencv import highgui, cv_bp as opencv, calib, imgproc, features2d
-import tod_db
-import tod
+from optparse import OptionParser
 import time
-debug = True
-plasm = ecto.Plasm()
+import tod
+import tod_db
+
+DEBUG = True
+
+def parse_options():
+    parser = OptionParser()
+    parser.add_option("-c", "--config_file", dest="config_file",
+                      help="the file containing the configuration")
+    parser.add_option("-a", "--bag", dest="bag",
+                      help="The bag to analyze")
+
+    (options, args) = parser.parse_args()
+    return options
 
 class TodDetection(ecto.BlackBox):
-    def __init__(self, plasm, orb_params=None):
+    def __init__(self, plasm, config_file=None):
         ecto.BlackBox.__init__(self, plasm)
-        self._orb_params = orb_params
+        self._config_file = config_file
         self.orb = features2d.ORB()
-        self.guessGenerator = tod.GuessGenerator()
+        if config_file:
+            self.guessGenerator = tod.GuessGenerator(config_file=config_file)
+        else:
+            self.guessGenerator = tod.GuessGenerator()
 
     def expose_inputs(self):
         return {'image':self.orb['image'],
@@ -23,40 +37,46 @@ class TodDetection(ecto.BlackBox):
         return {'guesses': self.guessGenerator['guesses']}
 
     def expose_parameters(self):
-        return {'descriptor_param': self._orb_params}
+        return {'config_file': self._config_file}
 
     def connections(self):
         return (self.orb['kpts'] >> self.guessGenerator['keypoints'],
-                self.orb['descriptors'] >> self.guessGenerator['descriptors']
-                )
+                self.orb['descriptors'] >> self.guessGenerator['descriptors'])
 
-# define the input
-bag_reader = tod.BagReader(path="/home/vrabaud/tod_data/test_data/Willow_Final_Test_Set/T_01.bag")
+if __name__ == '__main__':
+    options = parse_options()
 
-# connect the visualization
-#image_view = highgui.imshow(name="RGB", waitKey=1000, autoSize=True)
-#mask_view = highgui.imshow(name="mask", waitKey= -1, autoSize=True)
-#depth_view = highgui.imshow(name="Depth", waitKey= -1, autoSize=True);
-#plasm.connect(db_reader['image'] >> image_view['input'],
-#              db_reader['mask'] >> mask_view['input'],
-#              db_reader['depth'] >> depth_view['input'])
+    # define the input
+    if options.bag:
+        bag_reader = tod.BagReader(path=options.bag)
+    else:
+        bag_reader = tod.BagReader(path="/home/vrabaud/tod_data/test_data/Willow_Final_Test_Set/T_01.bag")
 
-# connect to the model computation
-tod_detection = TodDetection(plasm)
-plasm.connect(bag_reader['image', 'point_cloud'] >> tod_detection['image', 'point_cloud'])
+    # connect the visualization
+    #image_view = highgui.imshow(name="RGB", waitKey=1000, autoSize=True)
+    #mask_view = highgui.imshow(name="mask", waitKey= -1, autoSize=True)
+    #depth_view = highgui.imshow(name="Depth", waitKey= -1, autoSize=True);
+    #plasm.connect(db_reader['image'] >> image_view['input'],
+    #              db_reader['mask'] >> mask_view['input'],
+    #              db_reader['depth'] >> depth_view['input'])
 
-# send data back to the API
-#db_writer = objcog_db.TodModelInserter("db_writer", object_id="object_01")
-#orb_params = None
-#db_writer.add_misc(orb_params)
-#plasm.connect(tod_model['points', 'descriptors'] >> db_writer['points', 'descriptors'])
+    # connect to the model computation
+    plasm = ecto.Plasm()
+    tod_detection = TodDetection(plasm, options.config_file)
+    plasm.connect(bag_reader['image', 'point_cloud'] >> tod_detection['image', 'point_cloud'])
 
-if debug:
-    print plasm.viz()
-    ecto.view_plasm(plasm)
+    # write data back to a file
+    guess_writer = tod.GuessWriter()
+    plasm.connect(tod_detection['guesses'] >> guess_writer['guesses'])
 
-while True:
-    if(plasm.execute(1) != 0): break
+    # send data back to the API
 
-#while(image_view.outputs.out not in (27, ord('q'))):
-#    if(plasm.execute(1) != 0): break
+    # display DEBUG data if needed
+    if DEBUG:
+        print plasm.viz()
+        ecto.view_plasm(plasm)
+
+    # execute the pipeline
+    while True:
+        if(plasm.execute(1) != 0):
+            break

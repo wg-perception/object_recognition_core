@@ -59,7 +59,7 @@ struct GuessGenerator
     inputs.declare<pcl::PointCloud<pcl::PointXYZRGB> >("point_cloud", "The point cloud");
     inputs.declare<std::vector<cv::KeyPoint> >("keypoints", "The depth image");
     inputs.declare<cv::Mat>("descriptors", "The depth image");
-    outputs.declare<tod::Guess>("guesses", "The output 3d points");
+    outputs.declare<std::vector<tod::Guess> >("guesses", "The output 3d points");
   }
 
   void configure(tendrils& params, tendrils& inputs, tendrils& outputs)
@@ -134,44 +134,11 @@ struct GuessGenerator
 
     std::vector<tod_stub::Result> results;
     // match to our objects
-    std::vector<tod::Guess> found_objects;
+    std::vector<tod::Guess> found_objects = outputs.get<std::vector<tod::Guess> >("guesses");
     tod::Features2d test;
     test.keypoints = keypoints;
     test.descriptors = descriptors;
     recognizer_->match(test, point_cloud, found_objects);
-
-    // Go over the found objects
-    tod_stub::RunInfo run_info;
-    tod_stub::Options opts;
-    run_info.ts.set();
-    run_info.runID = opts.run_number;
-    run_info.name = opts.team_name;
-    tod_stub::CSVOutput csv_out = openCSV(run_info);
-    int dID = 0; //detection id
-    for (size_t i = 0; i < found_objects.size(); i++)
-    {
-      tod::Guess& g = found_objects[i];
-      tod::PoseRT pose = g.aligned_pose();
-      pose.rvec.clone().convertTo(pose.rvec, CV_64F);
-      pose.tvec.clone().convertTo(pose.tvec, CV_64F);
-      tod_stub::Result r(cv::Mat(), pose.tvec, g.getObject()->name);
-      cv::Rodrigues(pose.rvec, r.R);
-
-      tod_stub::PoseInfo poseInfo;
-      for (int i = 0; i < 9; i++)
-      {
-        poseInfo.Rot[i] = r.R.at<double>(i % 3, i / 3);
-      }
-
-      poseInfo.Tx = r.T.at<double>(0);
-      poseInfo.Ty = r.T.at<double>(1);
-      poseInfo.Tz = r.T.at<double>(2);
-      poseInfo.ts.set();
-      poseInfo.frame = point_cloud.header.seq;
-      poseInfo.oID = r.object_id;
-      poseInfo.dID = dID++; //training (only one detection per frame)
-      writeCSV(csv_out, poseInfo);
-    }
 
     return 0;
   }
