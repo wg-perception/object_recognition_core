@@ -1,28 +1,27 @@
 #!/usr/bin/env python
 import ecto
 from ecto_opencv import highgui, cv_bp as opencv, calib, imgproc, features2d
+from optparse import OptionParser
+import sys
 import time
 import tod
 import tod_db
 
-import sys, pprint
-
-pprint.pprint(sys.modules)
-
 debug = True
-plasm = ecto.Plasm()
 
 class TodModelComputation(ecto.BlackBox):
-    def __init__(self, plasm, orb_params = None):
+    def __init__(self, plasm, feature_descriptor_params_file):
         ecto.BlackBox.__init__(self, plasm)
-        self._orb_params = orb_params
-        self.orb = features2d.ORB()
+        if not feature_descriptor_params_file:
+            feature_descriptor_params_file = ''
+        self._feature_descriptor_params_file = feature_descriptor_params_file
+        self.feature_descriptor = features2d.FeatureDescriptor(param_file=feature_descriptor_params_file)
         self.twoDToThreeD = tod.TwoDToThreeD()
         self.cameraToWorld = tod.CameraToWorld()
 
     def expose_inputs(self):
-        return {'image':self.orb['image'],
-                'mask':self.orb['mask'],
+        return {'image':self.feature_descriptor['image'],
+                'mask':self.feature_descriptor['mask'],
                 'depth':self.twoDToThreeD['depth'],
                 'K':self.twoDToThreeD['K'],
                 'R':self.cameraToWorld['R'],
@@ -30,40 +29,57 @@ class TodModelComputation(ecto.BlackBox):
 
     def expose_outputs(self):
         return {'points': self.cameraToWorld['points'],
-                'descriptors': self.orb['descriptors']}
+                'descriptors': self.feature_descriptor['descriptors']}
 
     def expose_parameters(self):
-        return {'descriptor_param': self._orb_params}
+        return {'feature_descriptor_param': self._feature_descriptor_params_file}
 
     def connections(self):
-        return (self.orb['kpts'] >> self.twoDToThreeD['keypoints'],
+        return (self.feature_descriptor['keypoints'] >> self.twoDToThreeD['keypoints'],
                 self.twoDToThreeD['points'] >> self.cameraToWorld['points'])
 
-# define the input
-db_reader = tod_db.ObservationReader("db_reader", object_id="object_01")
+########################################################################################################################
 
-# connect the visualization
-image_view = highgui.imshow(name="RGB", waitKey=1000, autoSize=True)
-mask_view = highgui.imshow(name="mask", waitKey= -1, autoSize=True)
-depth_view = highgui.imshow(name="Depth", waitKey= -1, autoSize=True);
-plasm.connect(db_reader['image'] >> image_view['input'],
-              db_reader['mask'] >> mask_view['input'],
-              db_reader['depth'] >> depth_view['input'])
+def parse_options():
+    parser = OptionParser()
+    parser.add_option("-c", "--config_file", dest="config_file",
+                      help="the file containing the configuration")
 
-# connect to the model computation
-tod_model = TodModelComputation(plasm)
-plasm.connect(db_reader['image', 'mask', 'depth', 'K', 'R', 'T'] >> tod_model['image', 'mask', 'depth', 'K', 'R', 'T'])
+    (options, args) = parser.parse_args()
+    return options
 
-# persist to the DB
-db_writer = tod_db.TodModelInserter("db_writer", object_id="object_01")
-orb_params = None
-#db_writer.add_misc(orb_params)
-plasm.connect(tod_model['points', 'descriptors'] >> db_writer['points', 'descriptors'])
+########################################################################################################################
 
-if debug:
-    #render the DAG with dot
-    print plasm.viz()
-    ecto.view_plasm(plasm)
+if __name__ == '__main__':
 
-while(image_view.outputs.out not in (27, ord('q'))):
-    if(plasm.execute(1) != 0): break
+    options = parse_options()
+
+    # define the input
+    db_reader = tod_db.ObservationReader("db_reader", object_id="object_01")
+
+    # connect the visualization
+    image_view = highgui.imshow(name="RGB", waitKey=1000, autoSize=True)
+    mask_view = highgui.imshow(name="mask", waitKey= -1, autoSize=True)
+    depth_view = highgui.imshow(name="Depth", waitKey= -1, autoSize=True);
+    plasm = ecto.Plasm()
+    plasm.connect(db_reader['image'] >> image_view['input'],
+                  db_reader['mask'] >> mask_view['input'],
+                  db_reader['depth'] >> depth_view['input'])
+
+    # connect to the model computation
+    tod_model = TodModelComputation(plasm, options.config_file)
+    plasm.connect(db_reader['image', 'mask', 'depth', 'K', 'R', 'T'] >> tod_model['image', 'mask', 'depth', 'K', 'R', 'T'])
+
+    # persist to the DB
+    db_writer = tod_db.TodModelInserter("db_writer", object_id="object_01")
+    orb_params = None
+    #db_writer.add_misc(orb_params)
+    plasm.connect(tod_model['points', 'descriptors'] >> db_writer['points', 'descriptors'])
+
+    if debug:
+        #render the DAG with dot
+        print plasm.viz()
+        ecto.view_plasm(plasm)
+
+    while(image_view.outputs.out not in (27, ord('q'))):
+        if(plasm.execute(1) != 0): break

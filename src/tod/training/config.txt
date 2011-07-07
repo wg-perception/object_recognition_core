@@ -1,0 +1,15 @@
+{
+	"feature": "ORB",
+	"descriptor": "ORB",
+	"combination": "ORB",
+	"feature_params":
+	{
+		"n_features": 1000
+	},
+	"descriptor_params":
+	{
+	},
+	"combination_params":
+	{
+	}
+}
