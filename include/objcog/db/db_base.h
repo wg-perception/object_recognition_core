@@ -42,22 +42,22 @@ template<class Archive, typename T>
 /** The main class that interact with the db
  * A collection is similar to the term used in CouchDB. It could be a schema/table in SQL
  */
-class Db
+class ObjectDb
 {
 public:
-  virtual ~Db()
+  virtual ~ObjectDb()
   {
   }
-  virtual ObjectId insert_object(const CollectionName &collection, const std::map<FieldName, Field> &fields) const;
+  virtual ObjectId insert_object(const CollectionName &collection, const std::map<FieldName, Field> &fields) const = 0;
 
   virtual void persist_fields(const ObjectId & object_id, const CollectionName &collection,
-                              const std::map<FieldName, Field> &fields) const;
+                              const std::map<FieldName, Field> &fields) const = 0;
 
   virtual void load_fields(const ObjectId & object_id, const CollectionName &collection,
-                           std::map<FieldName, Field> &fields) const;
+                           std::map<FieldName, Field> &fields) const = 0;
 
   virtual void query(const CollectionName &collection, const std::map<FieldName, std::string> &regexps
-                     , std::vector<ObjectId> & object_ids) const;
+                     , std::vector<ObjectId> & object_ids) const = 0;
 };
 
 template<typename DbType, typename Attachment>
@@ -76,16 +76,16 @@ template<typename DbType, typename Attachment>
 class Document
 {
 public:
-  Document(const Db & db) :
-      db_(db)
+  Document(const ObjectDb & db) :
+      db_(&db)
   {
   }
 
-  Document(const Db & db, const CollectionName & collection, const ObjectId &object_id) :
-      object_id_(object_id), collection_(collection), db_(db)
+  Document(const ObjectDb & db, const CollectionName & collection, const ObjectId &object_id) :
+      object_id_(object_id), collection_(collection), db_(&db)
   {
     // Load all fields from the DB (not the attachments)
-    db_.load_fields(object_id_, collection_, fields_);
+    db_->load_fields(object_id_, collection_, fields_);
   }
 
   virtual ~Document();
@@ -94,9 +94,9 @@ public:
   {
     // Persist the object if it does not exist in the DB
     if (object_id_.empty())
-      object_id_ = db_.insert_object(collection_, fields_);
+      object_id_ = db_->insert_object(collection_, fields_);
     else
-      db_.persist_fields(object_id_, collection_, fields_);
+      db_->persist_fields(object_id_, collection_, fields_);
 
     // Persist the attachments
     boost::any nothing_any;
@@ -148,7 +148,7 @@ private:
   mutable ObjectId object_id_;
   mutable CollectionName collection_;
   RevisionId revision_id;
-  const Db db_;
+  boost::shared_ptr<ObjectDb> db_;
   std::map<FieldName, boost::any> attachments_;
   std::map<FieldName, Field> fields_;
 };
@@ -162,13 +162,13 @@ public:
   {
   }
 
-  QueryIterator(const Db& db, const CollectionName &collection, const std::vector<std::string> & object_ids) :
-      db_(db), collection_(collection), object_ids_(object_ids)
+  QueryIterator(const ObjectDb& db, const CollectionName &collection, const std::vector<std::string> & object_ids) :
+      db_(&db), collection_(collection), object_ids_(object_ids)
   {
     // Load the first element in the db
     if (object_ids_.empty())
       return;
-    object_ = boost::shared_ptr<Document>(new Document(db_, collection_, object_ids_.back()));
+    object_ = boost::shared_ptr < Document > (new Document(*db_, collection_, object_ids_.back()));
     object_ids_.pop_back();
   }
 
@@ -184,7 +184,7 @@ public:
     else
     {
       // Fill the current object
-      object_ = boost::shared_ptr<Document>(new Document(db_, collection_, object_ids_.back()));
+      object_ = boost::shared_ptr < Document > (new Document(*db_, collection_, object_ids_.back()));
       object_ids_.pop_back();
     }
     return *this;
@@ -206,7 +206,7 @@ public:
   }
   friend class Query;
 private:
-  Db db_;
+  boost::shared_ptr<ObjectDb> db_;
   CollectionName collection_;
   boost::shared_ptr<Document> object_;
   std::vector<ObjectId> object_ids_;
@@ -229,7 +229,7 @@ class Query
    */
   void set_collection(CollectionName & collection);
 
-  QueryIterator query(const Db &db)
+  QueryIterator query(const ObjectDb &db)
   {
     // Process the query and get the ids of several objects
     std::vector<ObjectId> object_ids;
