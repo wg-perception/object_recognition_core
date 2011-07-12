@@ -1,4 +1,6 @@
 find_package(ecto REQUIRED)
+ecto_python_env_gen(${CMAKE_BINARY_DIR})
+
 find_package(OpenCV REQUIRED)
 find_package(Eigen REQUIRED)
 
@@ -8,7 +10,8 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 set_ecto_install_package_name(ecto_tod)
 
 # deal with the tod module bag_reader.cpp guess_generator.cpp willow_tod
-ectorosmodule(tod tod.cpp bag_reader.cpp twoDToThreeD.cpp cameraToWorld.cpp detecting/guess_generator.cpp detecting/guess_writer.cpp)
+ectorosmodule(tod tod.cpp bag_reader.cpp twoDToThreeD.cpp cameraToWorld.cpp detecting/guess_generator.cpp
+                detecting/guess_writer.cpp detecting/descriptor_matcher.cpp)
 link_ecto(tod ${OpenCV_LIBS} willow_tod)
 install_ecto_module(tod)
 

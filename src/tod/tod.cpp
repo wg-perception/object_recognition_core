@@ -159,6 +159,7 @@ namespace tod
 
 void wrap_BagReader();
 void wrap_CameraToWorld();
+void wrap_DescriptorMatcher();
 void wrap_GuessGenerator();
 void wrap_GuessWriter();
 void wrap_TwoDToThreeD();
@@ -166,10 +167,11 @@ void wrap_TwoDToThreeD();
 BOOST_PYTHON_MODULE(tod)
 {
   ecto::wrap<tod::PlanarSegmentation>("PlanarSegmentation", "Given a pose, "
-    "assuming it describes the center of the object coordinate system and "
-    "lies on a plane, segment the object from the plane");
+                                      "assuming it describes the center of the object coordinate system and "
+                                      "lies on a plane, segment the object from the plane");
   wrap_BagReader();
   wrap_CameraToWorld();
+  wrap_DescriptorMatcher();
   wrap_GuessGenerator();
   wrap_GuessWriter();
   wrap_TwoDToThreeD();

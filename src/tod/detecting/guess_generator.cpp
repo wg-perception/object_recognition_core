@@ -5,6 +5,8 @@
  *      Author: vrabaud
  */
 
+#include <iostream>
+
 #include <boost/filesystem.hpp>
 #include <boost/program_options.hpp>
 
@@ -14,7 +16,8 @@
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/features2d/features2d.hpp>
 
-#include <iostream>
+#include <pcl/sample_consensus/prosac.h>
+#include <pcl/sample_consensus/sac_model_registration.h>
 
 #include "tod/detecting/GuessGenerator.h"
 #include "tod/detecting/Loader.h"
@@ -25,7 +28,7 @@
 
 namespace po = boost::program_options;
 
-using ecto::tendrils;
+typedef unsigned int ObjectId;
 
 struct DetectorOptions
 {
@@ -45,24 +48,23 @@ struct DetectorOptions
  */
 struct GuessGenerator
 {
-  static void declare_params(tendrils& p)
+  static void declare_params(ecto::tendrils& p)
   {
-    p.declare<int>("n_features", "The number of desired features", 1000);
-    p.declare<int>("n_levels", "The number of scales", 3);
-    p.declare<float>("scale_factor", "The factor between scales", 1.2);
     p.declare<std::string>("base_directory", "Base directory");
     p.declare<std::string>("config_file", "Configuration file");
   }
 
-  static void declare_io(const tendrils& params, tendrils& inputs, tendrils& outputs)
+  static void declare_io(const ecto::tendrils& params, ecto::tendrils& inputs, ecto::tendrils& outputs)
   {
     inputs.declare<pcl::PointCloud<pcl::PointXYZRGB> >("point_cloud", "The point cloud");
     inputs.declare<std::vector<cv::KeyPoint> >("keypoints", "The depth image");
-    inputs.declare<cv::Mat>("descriptors", "The depth image");
+    inputs.declare<std::vector<std::vector<cv::DMatch> > >("matches", "The list of OpenCV DMatch");
+    inputs.declare<std::vector<std::vector<cv::Point3f> > >("matches_3d",
+                                                            "The corresponding 3d position of those matches");
     outputs.declare<std::vector<tod::Guess> >("guesses", "The output 3d points");
   }
 
-  void configure(tendrils& params, tendrils& inputs, tendrils& outputs)
+  void configure(ecto::tendrils& params, ecto::tendrils& inputs, ecto::tendrils& outputs)
   {
     std::string config_file = params.get<std::string>("config_file");
     DetectorOptions opts;
@@ -98,6 +100,7 @@ struct GuessGenerator
 
     // Create the base of training data
     tod::Loader loader(opts.baseDirectory);
+    std::cout << config_file << std::endl;
     std::vector<cv::Ptr<tod::TexturedObject> > objects;
     loader.readTexturedObjects(objects);
 
@@ -125,26 +128,114 @@ struct GuessGenerator
    * @param outputs
    * @return
    */
-  int process(const tendrils& inputs, tendrils& outputs)
+  int process(const ecto::tendrils& inputs, ecto::tendrils& outputs)
   {
-    const std::vector<cv::KeyPoint> &keypoints = inputs.get<std::vector<cv::KeyPoint> >("keypoints");
-    const cv::Mat & descriptors = inputs.get<cv::Mat>("descriptors");
+    // Get the different matches
+    const std::vector<std::vector<cv::DMatch> > & matches = inputs.get<std::vector<std::vector<cv::DMatch> > >(
+        "matches");
+    const std::vector<std::vector<cv::Point3f> > & matches_3d = inputs.get<std::vector<std::vector<cv::Point3f> > >(
+        "matches_3d");
+
+    // Get the original keypoints and point cloud
     const pcl::PointCloud<pcl::PointXYZRGB> & point_cloud = inputs.get<pcl::PointCloud<pcl::PointXYZRGB> >(
         "point_cloud");
 
-    std::vector<tod_stub::Result> results;
-    // match to our objects
-    std::vector<tod::Guess> found_objects = outputs.get<std::vector<tod::Guess> >("guesses");
-    tod::Features2d test;
-    test.keypoints = keypoints;
-    test.descriptors = descriptors;
-    recognizer_->match(test, point_cloud, found_objects);
+    // Get the outputs
+    std::vector<ObjectId> &object_ids = outputs.get<std::vector<ObjectId> >("object_ids");
+    std::vector<opencv_candidate::Pose> &poses = outputs.get<std::vector<opencv_candidate::Pose> >("poses");
+
+    if (point_cloud.points.empty())
+    {
+      // Only use 2d to 3d matching
+      // TODO
+      const std::vector<cv::KeyPoint> &keypoints = inputs.get<std::vector<cv::KeyPoint> >("keypoints");
+    }
+    else
+    {
+      // Use 3d to 3d matching
+
+      // Cluster the matches per object ID
+      std::map<ObjectId, pcl::PointCloud<pcl::PointXYZ> > query_point_clouds;
+      std::map<ObjectId, pcl::PointCloud<pcl::PointXYZ> > training_point_clouds;
+      for (unsigned int matches_index = 0; matches_index < matches.size(); ++matches_index)
+      {
+        const std::vector<cv::DMatch> &local_matches = matches[matches_index];
+        const std::vector<cv::Point3f> &local_matches_3d = matches_3d[matches_index];
+        for (unsigned int match_index = 0; match_index < local_matches.size(); ++match_index)
+        {
+          pcl::PointXYZRGB query_point = point_cloud[local_matches[match_index].trainIdx];
+
+          // TODO: replace this by doing 3d to 3d with an unknown depth for that point
+          if ((std::isnan(query_point.x)) || (std::isnan(query_point.y)) || (std::isnan(query_point.z)))
+            continue;
+
+          ObjectId object_id = local_matches[match_index].imgIdx;
+          // Fill in the training cloud
+          const cv::Point3d & training_point3f = local_matches_3d[match_index];
+          training_point_clouds[object_id].push_back(
+              pcl::PointXYZ(training_point3f.x, training_point3f.y, training_point3f.z));
+          // Fill in the query cloud
+          query_point_clouds[object_id].push_back(pcl::PointXYZ(query_point.x, query_point.y, query_point.z));
+        }
+      }
+
+      // For each object, perform 3d to 3d matching
+      for (std::map<ObjectId, pcl::PointCloud<pcl::PointXYZ> >::const_iterator query_iterator;
+          query_iterator != query_point_clouds.end(); ++query_iterator)
+          {
+        ObjectId object_id = query_iterator->first;
+        unsigned int n_points = query_iterator->second.size();
+        if (n_points < min_inliers_)
+          continue;
+
+        std::vector<int> good_indices;
+        for (unsigned int i = 0; i < n_points; ++i)
+          good_indices.push_back(i);
+
+        pcl::SampleConsensusModelRegistration<pcl::PointXYZ>::Ptr model(
+            new pcl::SampleConsensusModelRegistration<pcl::PointXYZ>(training_point_clouds[object_id].makeShared(),
+                                                                     good_indices));
+        //pcl::RandomSampleConsensus<pcl::PointXYZ> sample_consensus(model);
+        pcl::ProgressiveSampleConsensus<pcl::PointXYZ> sample_consensus(model);
+
+        model->setInputTarget(query_point_clouds[object_id].makeShared(), good_indices);
+        sample_consensus.setDistanceThreshold(0.01);
+        sample_consensus.setMaxIterations(n_ransac_iterations_);
+        sample_consensus.computeModel();
+        std::vector<int> inliers;
+        sample_consensus.getInliers(inliers);
+        if (inliers.size() >= min_inliers_)
+        {
+          // Create a pose object
+          Eigen::VectorXf coefficients;
+          sample_consensus.getModelCoefficients(coefficients);
+
+          cv::Mat_<float> R_mat(3, 3), tvec(3, 1);
+          for (unsigned int j = 0; j < 3; ++j)
+          {
+            for (unsigned int i = 0; i < 3; ++i)
+              R_mat(j, i) = coefficients[4 * j + i];
+            tvec(j, 0) = coefficients[4 * j + 3];
+          }
+          opencv_candidate::Pose pose;
+          pose.setR(R_mat);
+          pose.setT(tvec);
+          // And store it in the outputs
+          poses.push_back(pose);
+          object_ids.push_back(object_id);
+        }
+      }
+    }
 
     return 0;
   }
 private:
   boost::shared_ptr<tod::Recognizer> recognizer_;
   boost::shared_ptr<tod::TrainingBase> training_base_;
+  /** The minimum number of inliers in order to do pose matching */
+  unsigned int min_inliers_;
+  /** The number of RANSAC iterations to perform */
+  unsigned int n_ransac_iterations_;
 };
 
 void wrap_GuessGenerator()

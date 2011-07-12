@@ -6,6 +6,7 @@
  */
 
 #include <boost/filesystem.hpp>
+#include <boost/foreach.hpp>
 #include <boost/program_options.hpp>
 
 #include <ecto/ecto.hpp>
