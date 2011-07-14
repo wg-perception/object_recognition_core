@@ -14,12 +14,15 @@
 #include <opencv2/core/core.hpp>
 #include <opencv2/features2d/features2d.hpp>
 
+#include "objcog/db/db.h"
+
 struct DescriptorMatcher
 {
   static void declare_params(ecto::tendrils& p)
   {
     p.declare<std::string>("db", "The DB to connect to");
-    // We can do radius or ratio test. Both does not make sense
+    p.declare<std::vector<std::string> >("object_ids", "The list of objects we should consider");
+    // We can do radius and/or ratio test
     p.declare<float>("radius", "The radius for the NN search", 0);
     p.declare<float>("ratio", "The min ratio between a match and the next one to be valid", 0);
   }
@@ -41,7 +44,12 @@ struct DescriptorMatcher
     // TODO Create the matcher depending on the type of descriptors
     //matcher_
 
-    // TODO load the descriptors from the DB
+    // load the descriptors from the DB
+    ObjectDb db(params.get<std::string>("db"));
+    Query query;
+    std::string regex;
+    query.add_where("objec_id", regex);
+
     features_3d_;
   }
 

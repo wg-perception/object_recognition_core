@@ -33,12 +33,12 @@
  *
  */
 
-#include "db.h"
+#include "db_base.h"
 
 #ifndef DB_COUCH_H_
 #define DB_COUCH_H_
 
-class DbCouch : public ObjectDb {
+class ObjectDbCouch : public ObjectDbBase {
 
 };
 

@@ -24,14 +24,12 @@ struct TwoDToThreeD
 {
   static void declare_params(tendrils& p)
   {
-    p.declare<int>("n_features", "The number of desired features", 1000);
-    p.declare<int>("n_levels", "The number of scales", 3);
-    p.declare<float>("scale_factor", "The factor between scales", 1.2);
   }
 
   static void declare_io(const tendrils& params, tendrils& inputs, tendrils& outputs)
   {
-    inputs.declare<std::vector<cv::KeyPoint> >("keypoints", "The keypoints");
+    inputs.declare<std::vector<cv::KeyPoint> >("keypoints", "The keypoints we want to 3d-fy");
+    inputs.declare<std::vector<cv::Point2f> >("points", "The points we want to 3d-fy (an aternative to the keypoints)");
     inputs.declare<cv::Mat>("K", "The calibration matrix");
     inputs.declare<cv::Mat>("depth", "The depth image");
     outputs.declare<std::vector<cv::Point3f> >("points", "The output 3d points");
@@ -51,29 +49,45 @@ struct TwoDToThreeD
     // We have lam (x,y,1) = K (X,Y,Z), hence lam=Z
     const std::vector<cv::KeyPoint> &keypoints = inputs.get<std::vector<cv::KeyPoint> >("keypoints");
     const cv::Mat & depth_image = inputs.get<cv::Mat>("depth");
-    cv::Mat_<float> K = inputs.get<cv::Mat>("K");
 
-    unsigned int n_points = keypoints.size();
-    cv::Mat_<float> scaled_points(3, n_points);
+    cv::Mat_<float> scaled_points;
 
     // Create the scaled keypoints
-    unsigned int i = 0;
-    BOOST_FOREACH(const cv::KeyPoint & keypoint, keypoints)
-        {
-          float depth = depth_image.at<short int>(keypoint.pt.y, keypoint.pt.x);
-          scaled_points(0, i) = keypoint.pt.x * depth;
-          scaled_points(1, i) = keypoint.pt.y * depth;
-          scaled_points(2, i) = depth;
-          ++i;
-        }
+    int i = 0;
+    if (keypoints.empty())
+    {
+      const std::vector<cv::Point2f> &points = inputs.get<std::vector<cv::Point2f> >("points");
+      scaled_points = cv::Mat_<float>(3, points.size());
+      BOOST_FOREACH(const cv::Point2f & point, points)
+          {
+            float depth = depth_image.at<short int>(point.y, point.x);
+            scaled_points(0, i) = point.x * depth;
+            scaled_points(1, i) = point.y * depth;
+            scaled_points(2, i) = depth;
+            ++i;
+          }
+    }
+    else
+    {
+      scaled_points = cv::Mat_<float>(3, keypoints.size());
+      BOOST_FOREACH(const cv::KeyPoint & keypoint, keypoints)
+          {
+            float depth = depth_image.at<short int>(keypoint.pt.y, keypoint.pt.x);
+            scaled_points(0, i) = keypoint.pt.x * depth;
+            scaled_points(1, i) = keypoint.pt.y * depth;
+            scaled_points(2, i) = depth;
+            ++i;
+          }
+    }
 
     // Figure out the original points
     cv::Mat_<float> points;
+    cv::Mat_<float> K = inputs.get<cv::Mat>("K");
     cv::solve(K, scaled_points, points);
 
     // Fill out the output
     std::vector<cv::Point3f> ouput;
-    for (i = 0; i < n_points; ++i)
+    for (i = 0; i < points.cols; ++i)
       ouput.push_back(cv::Point3f(points(0, i), points(1, i), points(2, i)));
     outputs.get<std::vector<cv::Point3f> >("points") = ouput;
 

@@ -302,7 +302,7 @@ struct TodModelReader
     couch::Document doc = docs_[current_frame_];
     doc.update();
 
-    doc.get_attachment<std::vector<cv::Point3f> >("points", outputs.get<std::vector<cv::Point3f> >("points"));
+    //doc.get_attachment<std::vector<cv::Point3f> >("points", outputs.get<std::vector<cv::Point3f> >("points"));
     doc.get_attachment<cv::Mat>("descriptors", outputs.get<cv::Mat>("descriptors"));
 
     return 0;
