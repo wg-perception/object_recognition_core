@@ -7,7 +7,7 @@ debug = True
 plasm = ecto.Plasm()
 
 
-image_view = highgui.imshow(name="RGB", waitKey=20, autoSize=True)
+image_view = highgui.imshow(name="RGB", waitKey=5, autoSize=True)
 mask_view = highgui.imshow(name="mask", waitKey= -1, autoSize=True)
 depth_view = highgui.imshow(name="Depth", waitKey= -1, autoSize=True);
 db_reader = tod_db.ObservationReader("db_reader", object_id="object_1311046926")

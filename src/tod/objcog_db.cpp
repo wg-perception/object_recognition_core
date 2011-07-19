@@ -129,6 +129,7 @@ namespace db
       inputs.declare<cv::Mat> ("R", "The orientation.");
       inputs.declare<cv::Mat> ("T", "The translation.");
       inputs.declare<cv::Mat> ("K", "The camera intrinsic matrix");
+      inputs.declare<bool>("found", "Whether or not the R|T is valid.", false);
       inputs.declare<int> ("trigger", "Capture trigger, 'c' for capture.",'c');
     }
 
@@ -139,22 +140,19 @@ namespace db
 
     void on_object_id_change(const std::string& id)
     {
-      SHOW();
-      object_id = id;
       std::cout << "object_id = " << id << std::endl;
+      object_id = id;
+      frame_number = 0;
     }
     void configure(tendrils& params, tendrils& inputs, tendrils& outputs)
     {
-
       ecto::spore<std::string> object_id = params.at("object_id");
       object_id.set_callback(boost::bind(&ObservationInserter::on_object_id_change, this, _1));
       db.create();
-      on_object_id_change(params.get<std::string> ("object_id"));
-
     }
     int process(const tendrils& inputs, tendrils& outputs)
     {
-      if (inputs.get<int> ("trigger") != 'c')
+      if (inputs.get<int> ("trigger") != 'c' || inputs.get<bool>("found") == false)
         return 0;
       std::cout << "Inserting" << std::endl;
       Observation obj;
@@ -280,7 +278,6 @@ struct TodModelReader
   {
     SHOW();
     std::cout << "object_id = " << id << std::endl;
-
     couch::View v;
     v.add_map("map", boost::str(boost::format(where_doc_id) % id));
     db_.run_view(v, -1, 0, total_rows_, offset_, docs_);
@@ -371,6 +368,19 @@ struct TodModelInserter
   couch::Db db_;
   std::string object_id_;
 };
+
+bool insert_object(std::string object_id, std::string object_desc, std::string tags)
+{
+    couch::Db id_db(std::string(DEFAULT_COUCHDB_URL) + "/objects");
+    id_db.create();
+    couch::Document doc(id_db, object_id);
+    doc.create();
+    doc.set_value("object_id",object_id);
+    doc.set_value("description",object_desc);
+    doc.set_value("tags",tags);
+    doc.commit();
+    return true;
+}
 }
 
 BOOST_PYTHON_MODULE(tod_db)
@@ -379,5 +389,6 @@ BOOST_PYTHON_MODULE(tod_db)
   ecto::wrap<db::ObservationReader>("ObservationReader");
   ecto::wrap<db::TodModelInserter>("TodModelInserter");
   ecto::wrap<db::TodModelReader>("TodModelReader");
+  boost::python::def("insert_object",db::insert_object);
 }
 ;

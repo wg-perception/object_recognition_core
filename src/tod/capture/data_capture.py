@@ -11,6 +11,7 @@ import ecto_ros, ecto_sensor_msgs, ecto_geometry_msgs
 import sys
 import argparse
 import time
+from IPython.Shell import IPShellEmbed
 
 ImageSub = ecto_sensor_msgs.Subscriber_Image
 CameraInfoSub = ecto_sensor_msgs.Subscriber_CameraInfo
@@ -18,12 +19,13 @@ CameraInfoSub = ecto_sensor_msgs.Subscriber_CameraInfo
 if "__main__" == __name__:
     ecto_ros.init(sys.argv, "data_capture",False)
     parser = argparse.ArgumentParser(description='Captures data appropriate for training object recognition pipelines.')
-    parser.add_argument('--OBJECT_ID', metavar='OBJECT_ID',  dest='object_id', type=str, default='object_%d'%int(time.time()),
+    parser.add_argument('-i','--object_id', metavar='OBJECT_ID',  dest='object_id', type=str, default='object_%d'%int(time.time()),
                        help='The object id to insert into the db.')
-#    parser.add_argument('--frame_id', dest='frame_id', type=str, default='base',
-#                       help='The frame id to associate this camera with.')
-#    parser.add_argument('--threads', dest='threads', type=int, default=1,
-#                       help='The number of threads to run with.')
+    parser.add_argument('-d','--description', metavar='OBJECT_DESCRIPTION',dest='description',type=str,
+                       default='An object',
+                       help='Give the object a description. Quote please.')
+    parser.add_argument('tags', metavar='TAG',nargs='+',type=str,
+                       help='Tags to mark the object with.')
     args = parser.parse_args()
     plasm = ecto.Plasm()
     sched = ecto.schedulers.Singlethreaded(plasm)
@@ -48,7 +50,7 @@ if "__main__" == __name__:
     print gray2rgb.__doc__
     
 
-    display = highgui.imshow('Poses', name='Poses', waitKey=2, autoSize=True)
+    display = highgui.imshow('Poses', name='Poses', waitKey=10, autoSize=True)
     mask_display = highgui.imshow('Masks', name='Masks', waitKey= -1, autoSize=True)
     object_display = highgui.imshow('Object', name='Object', waitKey= -1, autoSize=True)
 
@@ -60,8 +62,8 @@ if "__main__" == __name__:
     im2mat_rgb = ecto_ros.Image2Mat()
     im2mat_depth = ecto_ros.Image2Mat()
     
+    tod_db.insert_object(args.object_id,args.description, ','.join(args.tags))
     db_inserter = tod_db.ObservationInserter("db_inserter", object_id=args.object_id)
-                      
     plasm.connect(
                   sync["image"] >> im2mat_rgb["image"],
                   im2mat_rgb["image"] >> (brg2rgb[:],),
@@ -79,12 +81,13 @@ if "__main__" == __name__:
                   brg2rgb[:] >> db_inserter['image'],
                   im2mat_depth['image'] >> db_inserter['depth'],
                   bitwise_and[:] >> db_inserter['mask'],
-                  poser['R', 'T'] >> db_inserter['R','T'],
+                  poser['R', 'T','found'] >> db_inserter['R','T','found'],
                   camera_info['K'] >> db_inserter['K'],
                   )
                 
-    ecto.view_plasm(plasm)
+    #ecto.view_plasm(plasm)
     sched.execute()
+    #ipshell() # this call anywhere in your program will start IPython
 
 '''
 #!/bin/python
