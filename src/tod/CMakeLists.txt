@@ -1,9 +1,4 @@
-find_package(Eigen REQUIRED)
-
-include_directories(${EIGEN_INCLUDE_DIRS})
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
-include_directories(${CMAKE_SOURCE_DIR}/include)
-
 # deal with the tod module bag_reader.cpp guess_generator.cpp willow_tod
 ectomodule(tod
                 tod.cpp 

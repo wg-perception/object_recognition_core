@@ -20,6 +20,6 @@ set_target_properties(objcog_db PROPERTIES
             )
 #install the main shared lib
 install(TARGETS objcog_db
-  LIBRARY DESTINATION lib
+  DESTINATION lib
   COMPONENT main
   )
