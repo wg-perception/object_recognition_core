@@ -1,31 +1,19 @@
 cmake_minimum_required(VERSION 2.8)
-include($ENV{ROS_ROOT}/core/rosbuild/rosbuild.cmake)
+set(CMAKE_BUILD_TYPE "Release" CACHE STRING "The build type.")
+project(objcog)
+add_definitions("-Werror -fno-strict-aliasing -Wall -Wl,--no-undefined")
 
-# Set the build type.  Options are:
-#  Coverage       : w/ debug symbols, w/o optimization, w/ code-coverage
-#  Debug          : w/ debug symbols, w/o optimization
-#  Release        : w/o debug symbols, w/ optimization
-#  RelWithDebInfo : w/ debug symbols, w/ optimization
-#  MinSizeRel     : w/o debug symbols, w/ optimization, stripped binaries
-#set(ROS_BUILD_TYPE RelWithDebInfo)
+#set the default path for built libraries to the "ecto_opencv" directory
+set(LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR})
 
-rosbuild_init()
-
-#set the default path for built executables to the "bin" directory
-set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)
-#set the default path for built libraries to the "lib" directory
-set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
-
-#uncomment if you have defined messages
-#rosbuild_genmsg()
-#uncomment if you have defined services
-#rosbuild_gensrv()
-
-add_definitions(" -Wall -Wl,--no-undefined")
-
-#common commands for building c++ executables and libraries
-#rosbuild_add_library(${PROJECT_NAME} src/example.cpp)
-#target_link_libraries(${PROJECT_NAME} another_library)
-rosbuild_add_boost_directories()
-
+#use the cmake cache, to -DOpenCV_dir=<path_to_build_of_opencv>
+#  svn co https://code.ros.org/svn/opencv/trunk
+#  and cmake that baby
+find_package(OpenCV 2.3.1 EXACT REQUIRED)
+find_package(ecto 0.1.0 REQUIRED)
+find_package(Boost COMPONENTS system filesystem serialization REQUIRED)
+find_package(Eigen REQUIRED)
+include_directories(${EIGEN_INCLUDE_DIRS})
+ecto_python_env_gen(${CMAKE_BINARY_DIR})
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
 add_subdirectory(src)
