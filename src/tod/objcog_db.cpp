@@ -407,13 +407,11 @@ namespace db
   bool
   insert_object(std::string object_id, std::string object_desc, bp::object tags)
   {
-    std::cout << "object_id=" << object_id << "\n" << "desc=" << object_desc << std::endl;
     couch::Db id_db(std::string(DEFAULT_COUCHDB_URL) + "/objects");
     id_db.create();
     bp::stl_input_iterator<std::string> begin(tags), end;
     std::vector<std::string> tags_v;
     std::copy(begin, end, std::back_inserter(tags_v));
-    std::copy(tags_v.begin(),tags_v.end(), std::ostream_iterator<std::string>(std::cout,"\n"));
     couch::Document doc(id_db, object_id);
     doc.create();
     doc.set_value("object_id", object_id);

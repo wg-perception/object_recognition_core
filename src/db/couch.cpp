@@ -64,11 +64,8 @@ namespace
       {
         return 0;
       }
-
       writer* data = static_cast<writer*>(userdata);
-      //data->written +=size*nmemb;
       data->stream.write(ptr, size * nmemb);
-      //std::cout << "**"<< data->written << std::endl;
       return size * nmemb;
     }
 
@@ -251,7 +248,6 @@ namespace
         std::getline(header_writer_stream_, line, '\n');
         if (!line.empty())
           line.resize(line.size() - 1);
-        std::cout << headerX << ">==<" << line << "\n";
         header_response_values[headerX] = line;
       }
     }
@@ -268,12 +264,10 @@ namespace
   {
     cURL_GS()
     {
-      //std::cout << "curl init" << std::endl;
       curl_global_init(CURL_GLOBAL_ALL);
     }
     ~cURL_GS()
     {
-      //std::cout << "curl cleanup" << std::endl;
       curl_global_cleanup();
     }
   };
@@ -443,7 +437,6 @@ namespace couch
           }
       std::stringstream stream;
       json_spirit::write(obj, stream);
-      json_spirit::write(obj, std::cout);
       reader r(stream);
       stream_.str("");
       curl_.reset();
@@ -968,11 +961,9 @@ template<>
 void
 couch::Document::set_value<std::vector<std::string> >(const std::string& key, const std::vector<std::string>& val)
 {
-  std::cout << __PRETTY_FUNCTION__ << std::endl;
   json_spirit::Array array;
   for (size_t i = 0; i < val.size(); i++)
   {
-    std::cout << val[i] << std::endl;
     json_spirit::Value v(val[i]);
     array.push_back(v);
   }
