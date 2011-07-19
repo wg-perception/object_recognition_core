@@ -49,8 +49,6 @@ struct DescriptorMatcher
     Query query;
     std::string regex;
     query.add_where("objec_id", regex);
-
-    features_3d_;
   }
 
   /** Get the 2d keypoints and figure out their 3D position from the depth map

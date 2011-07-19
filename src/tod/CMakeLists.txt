@@ -23,6 +23,10 @@ link_ecto(tod ${OpenCV_LIBS})
 install_ecto_module(tod)
 
 #deal with the objcog module
-ectomodule(tod_db objcog_db.cpp)
-link_ecto(tod_db ${OpenCV_LIBS})
+ectomodule(tod_db
+    objcog_db.cpp
+    )
+link_ecto(tod_db 
+    ${OpenCV_LIBS}
+    )
 install_ecto_module(tod_db)
