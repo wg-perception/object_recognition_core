@@ -16,9 +16,9 @@
 #include <boost/archive/binary_oarchive.hpp>
 #include <boost/archive/text_oarchive.hpp>
 #include <boost/archive/text_iarchive.hpp>
+#include <boost/property_tree/ptree.hpp>
 
 #include <boost/shared_ptr.hpp>
-#include "opencv2/core/core.hpp"
 
 typedef std::string CollectionName;
 typedef std::string Field;
@@ -48,22 +48,21 @@ public:
   virtual ~ObjectDbBase()
   {
   }
-  virtual ObjectId insert_object(const CollectionName &collection, const std::map<FieldName, Field> &fields) const = 0;
+  virtual void insert_object(const CollectionName &collection, const boost::property_tree::ptree &fields,
+                             ObjectId & object_id, RevisionId & revision_id) = 0;
 
-  virtual void persist_fields(const ObjectId & object_id, const CollectionName &collection,
-                              const std::map<FieldName, Field> &fields) const = 0;
+  virtual void persist_fields(ObjectId & object_id, RevisionId & revision_id, const CollectionName &collection,
+                              const boost::property_tree::ptree &fields) = 0;
 
   virtual void load_fields(const ObjectId & object_id, const CollectionName &collection,
-                           std::map<FieldName, Field> &fields) const = 0;
+                           boost::property_tree::ptree &fields) = 0;
 
   virtual void query(const CollectionName &collection, const std::map<FieldName, std::string> &regexps
-                     , std::vector<ObjectId> & object_ids) const = 0;
+                     , std::vector<ObjectId> & object_ids) = 0;
+
+  virtual void set_attachment_stream(ObjectId & object_id, RevisionId & revision_id, const CollectionName &collection,
+                                     const std::string& attachment_name, std::istream& stream,
+                                     const std::string& content_type) = 0;
+
+  virtual void get_attachment_stream(const std::string& attachment_name, std::ostream& stream) = 0;
 };
-
-template<typename DbType, typename Attachment>
-  void load_attachment(const DbType&db, const ObjectId & object_id, const CollectionName &collection,
-                       const FieldName &field_name, Attachment &attachment);
-
-template<typename DbType, typename Attachment>
-  void persist_attachment(const DbType&db, const ObjectId & object_id, const CollectionName &collection,
-                          const FieldName &field, Attachment &attachment);

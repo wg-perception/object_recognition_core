@@ -67,14 +67,6 @@ namespace couch
     void clear_value(const std::string& key);
 
     template<typename T>
-    T get_value(const std::string& key);
-
-    template<typename T>
-    void set_value(const std::string& key, const T& val);
-
-    void set_value(const std::string& key, const char* val);
-
-    template<typename T>
     void attach(const std::string& attachment_name, const T& value)
     {
       typedef boost::archive::binary_oarchive OutputArchive;
