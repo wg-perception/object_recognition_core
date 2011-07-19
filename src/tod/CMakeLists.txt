@@ -3,6 +3,7 @@ ecto_python_env_gen(${CMAKE_BINARY_DIR})
 
 find_package(OpenCV 2.3.1 REQUIRED)
 find_package(Eigen REQUIRED)
+find_package(Boost COMPONENTS system filesystem serialization REQUIRED)
 
 include_directories(${EIGEN_INCLUDE_DIRS})
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
@@ -26,7 +27,8 @@ install_ecto_module(tod)
 ectomodule(tod_db
     objcog_db.cpp
     )
-link_ecto(tod_db 
+link_ecto(tod_db
+    objcog_db
     ${OpenCV_LIBS}
     )
 install_ecto_module(tod_db)

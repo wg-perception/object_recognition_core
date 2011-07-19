@@ -129,7 +129,7 @@ namespace db
       inputs.declare<cv::Mat> ("R", "The orientation.");
       inputs.declare<cv::Mat> ("T", "The translation.");
       inputs.declare<cv::Mat> ("K", "The camera intrinsic matrix");
-      inputs.declare<int> ("trigger", "Capture trigger, 'c' for capture.");
+      inputs.declare<int> ("trigger", "Capture trigger, 'c' for capture.",'c');
     }
 
     ObservationInserter() :
@@ -160,6 +160,10 @@ namespace db
       Observation obj;
       obj.image = inputs.get<cv::Mat> ("image");
       obj.depth = inputs.get<cv::Mat> ("depth");
+      if(obj.depth.depth() == CV_32F)
+      {
+        obj.depth.clone().convertTo(obj.depth,CV_16UC1,1000);
+      }
       obj.mask = inputs.get<cv::Mat> ("mask");
       obj.R = inputs.get<cv::Mat> ("R");
       obj.T = inputs.get<cv::Mat> ("T");
@@ -181,7 +185,7 @@ namespace db
   std::string where_doc_id = STRINGYFY(
       function(doc)
         {
-          if(doc.object_id_ == "%s" )
+          if(doc.object_id == "%s" )
           emit(null,null);
         }
   );
@@ -206,7 +210,6 @@ namespace db
     {
       SHOW();
       std::cout << "object_id = " << id << std::endl;
-
       couch::View v;
       v.add_map("map", boost::str(boost::format(where_doc_id) % id));
       db.run_view(v, -1, 0, total_rows, offset, docs);
@@ -223,8 +226,6 @@ namespace db
     {
       ecto::spore<std::string> object_id = params.at("object_id");
       object_id.set_callback(boost::bind(&ObservationReader::on_object_id_change, this, _1));
-      std::string id = const_cast<const tendrils&> (params).get<std::string> ("object_id");
-      on_object_id_change(id);
     }
     int process(const tendrils& inputs, tendrils& outputs)
     {

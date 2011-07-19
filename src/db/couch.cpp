@@ -409,6 +409,7 @@ namespace couch
               }
       std::stringstream stream;
       json_spirit::write(obj, stream);
+      json_spirit::write(obj,std::cout);
       reader r(stream);
       stream_.str("");
       curl_.reset();

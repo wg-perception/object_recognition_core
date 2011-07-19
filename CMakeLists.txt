@@ -1,5 +1,7 @@
 cmake_minimum_required(VERSION 2.8)
 include($ENV{ROS_ROOT}/core/rosbuild/rosbuild.cmake)
+set(ROS_BUILD_TYPE Release)
+add_definitions("-Werror -fno-strict-aliasing -Wall -Wl,--no-undefined")
 
 # Set the build type.  Options are:
 #  Coverage       : w/ debug symbols, w/o optimization, w/ code-coverage
