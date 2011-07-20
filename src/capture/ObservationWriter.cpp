@@ -20,6 +20,7 @@ namespace objcog
       {
         params.declare<std::string>("object_id", "The object id, to associate this frame with.").required(true);
         params.declare<std::string>("session_id", "The session id, to associate this frame with.").required(true);
+        params.declare<std::string>("db_url", "The database url", std::string(DEFAULT_COUCHDB_URL));
       }
       static void
       declare_io(const tendrils& params, tendrils& inputs, tendrils& outputs)
@@ -35,7 +36,6 @@ namespace objcog
       }
       ObservationInserter()
           :
-            db(std::string(DEFAULT_COUCHDB_URL) + "/observations"),
             frame_number(0)
       {
       }
@@ -60,6 +60,7 @@ namespace objcog
         object_id.set_callback(boost::bind(&ObservationInserter::on_object_id_change, this, _1));
         ecto::spore<std::string> session_id = params.at("session_id");
         session_id.set_callback(boost::bind(&ObservationInserter::on_session_id_change, this, _1));
+        db = couch::Db(params.get<std::string>("db_url") + "/observations");
         db.create();
       }
       int
@@ -94,4 +95,5 @@ namespace objcog
     };
   }
 }
-ECTO_CELL(capture, objcog::capture::ObservationInserter, "ObservationInserter", "Inserts observations into the database.");
+ECTO_CELL(capture, objcog::capture::ObservationInserter, "ObservationInserter",
+          "Inserts observations into the database.");

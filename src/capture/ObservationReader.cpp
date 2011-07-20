@@ -24,7 +24,6 @@ namespace objcog
           emit("frame_number",doc.frame_number);
         }
     );
-
     struct result_less
     {
       bool operator()(const couch::View::result& lhs, const couch::View::result& rhs)
@@ -39,6 +38,7 @@ namespace objcog
       declare_params(tendrils& params)
       {
         params.declare<std::string>("object_id", "The object id, to associate this frame with.", "object_01");
+        params.declare<std::string>("db_url", "The database url", std::string(DEFAULT_COUCHDB_URL));
       }
 
       static void
@@ -70,16 +70,16 @@ namespace objcog
       }
       ObservationReader()
           :
-            db(std::string(DEFAULT_COUCHDB_URL) + "/frames"),
             current_frame(0)
       {
-        db.create();
       }
       void
       configure(tendrils& params, tendrils& inputs, tendrils& outputs)
       {
         ecto::spore<std::string> object_id = params.at("object_id");
         object_id.set_callback(boost::bind(&ObservationReader::on_object_id_change, this, _1));
+        db = couch::Db(params.get<std::string>("db_url")+ "/observations");
+        db.create();
       }
       int
       process(const tendrils& inputs, tendrils& outputs)
