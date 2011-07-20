@@ -45,9 +45,9 @@ struct DescriptorMatcher
     //matcher_
 
     // load the descriptors from the DB
-    ObjectDb db(params.get<std::string>("db"));
+    db_future::ObjectDb db(params.get<std::string>("db"));
     BOOST_FOREACH(const std::string & object_id, params.get<std::vector<std::string> >("object_ids")) {
-      Query query;
+      db_future::Query query;
       query.add_where("object_id", object_id);
       query.query(db);
     }
