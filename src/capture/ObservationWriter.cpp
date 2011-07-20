@@ -39,7 +39,6 @@ namespace objcog
             frame_number(0)
       {
       }
-
       void
       on_object_id_change(const std::string& id)
       {
@@ -56,12 +55,12 @@ namespace objcog
       void
       configure(tendrils& params, tendrils& inputs, tendrils& outputs)
       {
+        db = couch::Db(params.get<std::string>("db_url") + "/observations");
+        db.create();
         ecto::spore<std::string> object_id = params.at("object_id");
         object_id.set_callback(boost::bind(&ObservationInserter::on_object_id_change, this, _1));
         ecto::spore<std::string> session_id = params.at("session_id");
         session_id.set_callback(boost::bind(&ObservationInserter::on_session_id_change, this, _1));
-        db = couch::Db(params.get<std::string>("db_url") + "/observations");
-        db.create();
       }
       int
       process(const tendrils& inputs, tendrils& outputs)

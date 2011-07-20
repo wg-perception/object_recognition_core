@@ -1,4 +1,5 @@
-#!/bin/python
+#!/usr/bin/env python
+
 import ecto
 from ecto_opencv import highgui, cv_bp as opencv, calib, imgproc
 import capture

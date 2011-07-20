@@ -55,8 +55,6 @@ namespace objcog
       void
       on_object_id_change(const std::string& id)
       {
-        SHOW();
-        std::cout << "object_id = " << id << std::endl;
         couch::View v;
         v.add_map("map", boost::str(boost::format(where_doc_id) % id));
         std::vector<couch::View::result> results = db.run_view(v, -1, 0, total_rows, offset);
@@ -76,10 +74,10 @@ namespace objcog
       void
       configure(tendrils& params, tendrils& inputs, tendrils& outputs)
       {
+        db = couch::Db(params.get<std::string>("db_url")+ "/observations");
+        db.update_info();
         ecto::spore<std::string> object_id = params.at("object_id");
         object_id.set_callback(boost::bind(&ObservationReader::on_object_id_change, this, _1));
-        db = couch::Db(params.get<std::string>("db_url")+ "/observations");
-        db.create();
       }
       int
       process(const tendrils& inputs, tendrils& outputs)

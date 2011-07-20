@@ -321,6 +321,7 @@ namespace couch
           url_(rhs.url_),
           json_writer_(stream_)
     {
+      curl_.setURL(url_);
     }
 
     impl&
@@ -329,6 +330,7 @@ namespace couch
       if (&rhs == this)
         return *this;
       url_ = rhs.url_;
+      curl_.setURL(url_);
       return *this;
 
     }
