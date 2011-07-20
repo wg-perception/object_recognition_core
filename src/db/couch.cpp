@@ -64,11 +64,8 @@ namespace
       {
         return 0;
       }
-
       writer* data = static_cast<writer*>(userdata);
-      //data->written +=size*nmemb;
       data->stream.write(ptr, size * nmemb);
-      //std::cout << "**"<< data->written << std::endl;
       return size * nmemb;
     }
 
@@ -233,9 +230,8 @@ namespace
         header_writer_stream_ >> _ /*used to eatup the http version.*/
         >> response_status_code_;
         std::getline(header_writer_stream_, response_reason_phrase_, '\n');
-        response_reason_phrase_.resize(response_reason_phrase_.size() - 1);
-        //          std::cout << "code: " << response_status_code_ << " reason: "
-        //              << response_reason_phrase_ << "\n";
+        if (!response_reason_phrase_.empty())
+          response_reason_phrase_.resize(response_reason_phrase_.size() - 1);
       } while (response_status_code_ == Continue); //handle continuecontinue
 
       header_response_values.clear();
@@ -250,8 +246,8 @@ namespace
         }
         header_writer_stream_.ignore(1, ' '); //eatup the space.
         std::getline(header_writer_stream_, line, '\n');
-        line.resize(line.size() - 1);
-        //std::cout << headerX << ">==<" << line << "\n";
+        if (!line.empty())
+          line.resize(line.size() - 1);
         header_response_values[headerX] = line;
       }
     }
@@ -268,12 +264,10 @@ namespace
   {
     cURL_GS()
     {
-      //std::cout << "curl init" << std::endl;
       curl_global_init(CURL_GLOBAL_ALL);
     }
     ~cURL_GS()
     {
-      //std::cout << "curl cleanup" << std::endl;
       curl_global_cleanup();
     }
   };
@@ -443,7 +437,6 @@ namespace couch
           }
       std::stringstream stream;
       json_spirit::write(obj, stream);
-      json_spirit::write(obj, std::cout);
       reader r(stream);
       stream_.str("");
       curl_.reset();
@@ -564,12 +557,16 @@ namespace couch
 
       curl_.setURL(url_id());
       curl_.GET();
+
       curl_.perform();
 
-      //update the object from the result.
-      json_spirit::Value val;
-      get(val);
-      json_spirit::obj_to_map(val.get_obj(), obj_);
+      if (curl_.get_response_code() == cURL::OK)
+      {
+        //update the object from the result.
+        json_spirit::Value val;
+        get(val);
+        json_spirit::obj_to_map(val.get_obj(), obj_);
+      }
     }
 
     void
@@ -651,6 +648,7 @@ namespace couch
     {
       json_spirit::Value val;
       get(val);
+      if(val.is_null()) return false;
       const json_spirit::Object& obj = val.get_obj();
       json_spirit::Object::const_iterator it = std::find_if(obj.begin(), obj.end(),
                                                             value_type_find(prefix + "id", json_spirit::str_type));
@@ -959,6 +957,32 @@ couch::Document::set_value(const std::string& key, const char* val)
   impl_->set_value(key, val);
 }
 
+template<>
+void
+couch::Document::set_value<std::vector<std::string> >(const std::string& key, const std::vector<std::string>& val)
+{
+  json_spirit::Array array;
+  for (size_t i = 0; i < val.size(); i++)
+  {
+    json_spirit::Value v(val[i]);
+    array.push_back(v);
+  }
+  impl_->set_value(key, array);
+}
+
+template<>
+std::vector<std::string>
+couch::Document::get_value<std::vector<std::string> >(const std::string& key)
+{
+
+  json_spirit::Array array = impl_->get_value<json_spirit::Array>(key);
+  std::vector<std::string> vec;
+  for (size_t i = 0; i < array.size(); i++)
+  {
+    vec.push_back(array[i].get_str());
+  }
+  return vec;
+}
 template<>
 bool
 couch::Db::get_info_item<bool>(const std::string& item)

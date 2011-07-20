@@ -104,6 +104,8 @@ namespace couch
   double Document::get_value<double>(const std::string& key);
   template<>
   std::string Document::get_value<std::string>(const std::string& key);
+  template<>
+  std::vector<std::string> Document::get_value<std::vector<std::string> >(const std::string& key);
 
   template<>
   void Document::set_value<bool>(const std::string& key, const bool& val);
@@ -111,10 +113,14 @@ namespace couch
   void Document::set_value<int>(const std::string& key, const int& val);
   template<>
   void Document::set_value<double>(const std::string& key, const double& val);
-
   template<>
   void Document::set_value<std::string>(const std::string& key,
                                         const std::string& val);
+  template<>
+  void Document::set_value<std::vector<std::string> >(const std::string& key,
+                                        const std::vector<std::string>& val);
+
+
 
   template<>
   bool Db::get_info_item<bool>(const std::string& item);
