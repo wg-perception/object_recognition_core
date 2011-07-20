@@ -227,20 +227,6 @@ private:
 
 };
 
-struct cURL_GS
-{
-  cURL_GS()
-  {
-    //std::cout << "curl init" << std::endl;
-    curl_global_init(CURL_GLOBAL_ALL);
-  }
-  ~cURL_GS()
-  {
-    //std::cout << "curl cleanup" << std::endl;
-    curl_global_cleanup();
-  }
-};
-
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 class ObjectDbCouch : public db_future::ObjectDbBase

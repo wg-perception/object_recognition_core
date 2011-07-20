@@ -49,10 +49,10 @@ ObjectDb::ObjectDb(const std::string & json_params)
   ssparams << json_params;
   boost::property_tree::read_json(ssparams, params);
 
-  std::string db_type = params.get < std::string > ("type");
+  std::string db_type = params.get<std::string>("type");
   if (db_type == "couch")
   {
-    db_ = boost::shared_ptr < ObjectDbBase > (new ObjectDbCouch(params.get < std::string > ("url")));
+    db_ = boost::shared_ptr<ObjectDbBase>(new ObjectDbCouch(params.get<std::string>("url")));
   }
 }
 
@@ -81,50 +81,7 @@ void Document::SetIdRev(const std::string& id, const std::string& rev)
 {
   object_id_ = id;
   revision_id_ = rev;
-  set_value < std::string > ("_id", id);
-  set_value < std::string > ("_rev", rev);
+  set_value<std::string>("_id", id);
+  set_value<std::string>("_rev", rev);
 }
-
-// Implementation of the class functions
-template<>
-  bool Document::get_value<bool>(const std::string& key)
-  {
-    return fields_.get<bool>(key);
-  }
-template<>
-  int Document::get_value<int>(const std::string& key)
-  {
-    return fields_.get<int>(key);
-  }
-template<>
-  double Document::get_value<double>(const std::string& key)
-  {
-    return fields_.get<double>(key);
-  }
-template<>
-  std::string Document::get_value<std::string>(const std::string& key)
-  {
-    return fields_.get < std::string > (key);
-  }
-
-template<>
-  void Document::set_value<bool>(const std::string& key, const bool& val)
-  {
-    fields_.put<bool>(key, val);
-  }
-template<>
-  void Document::set_value<int>(const std::string& key, const int& val)
-  {
-    fields_.put<int>(key, val);
-  }
-template<>
-  void Document::set_value<double>(const std::string& key, const double& val)
-  {
-    fields_.put<double>(key, val);
-  }
-/*template<>
- void Document::set_value<std::string>(const std::string& key, const std::string& val)
- {
- fields_.put<std::string>(key, val);
- }*/
 }

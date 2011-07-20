@@ -52,7 +52,7 @@ struct DescriptorMatcher
       query.query(db);
     }
 
-    features_3d_;
+    //features_3d_;
   }
 
   /** Get the 2d keypoints and figure out their 3D position from the depth map

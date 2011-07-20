@@ -35,17 +35,14 @@
 
 #include <curl/curl.h>
 
-#include "db_base.h"
+#include "db_couch.h"
 
 using db_future::CollectionName;
 using db_future::FieldName;
 using db_future::ObjectId;
 using db_future::RevisionId;
 
-namespace
-{
-
-static size_t writer::cb(char *ptr, size_t size, size_t nmemb, void *userdata)
+size_t writer::cb(char *ptr, size_t size, size_t nmemb, void *userdata)
 {
   if (!userdata)
   {
@@ -62,7 +59,7 @@ static size_t writer::cb(char *ptr, size_t size, size_t nmemb, void *userdata)
 /**
  * static callback for c style void pointer cookies.
  */
-static size_t reader::cb(char *ptr, size_t size, size_t nmemb, void *thiz)
+size_t reader::cb(char *ptr, size_t size, size_t nmemb, void *thiz)
 {
   if (!thiz)
   {
@@ -87,8 +84,6 @@ struct cURL_GS
 };
 
 cURL_GS curl_init_cleanup;
-
-}
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -160,7 +155,7 @@ void ObjectDbCouch::get_attachment_stream(const std::string& attachment_name, st
   curl_.perform();
 }
 
-void ObjectDbCouch::getid(std::string & object_id, std::string & revision_id, const std::string& prefix = "")
+void ObjectDbCouch::getid(std::string & object_id, std::string & revision_id, const std::string& prefix)
 {
   boost::property_tree::ptree params;
   boost::property_tree::read_json(json_writer_stream_, params);
@@ -193,12 +188,4 @@ void ObjectDbCouch::upload_json(const boost::property_tree::ptree &ptree, const 
     curl_.setCustomRequest(request.c_str());
   }
   curl_.perform();
-}
-inline std::string ObjectDbCouch::url_id(const ObjectId & id) const
-{
-  return url_ + (id.empty() ? "" : "/" + id);
-}
-inline std::string ObjectDbCouch::url_id_rev(const ObjectId & id, const RevisionId & rev) const
-{
-  return url_id(id) + "?rev=" + rev;
 }
