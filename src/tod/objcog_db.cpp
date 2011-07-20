@@ -91,6 +91,7 @@ namespace db
       doc.attach("K", K);
       doc.update();
       doc.set_value("object_id", object_id);
+      doc.set_value("session_id",session_id);
       doc.set_value("frame_number", frame_number);
       doc.commit();
     }
@@ -111,12 +112,11 @@ namespace db
     {
       doc.update();
       object_id = doc.get_value<std::string>("object_id");
+      session_id = doc.get_value<std::string>("session_id");
       frame_number = doc.get_value<int>("frame_number");
-
       get_png_attachment(image, doc, "image");
       get_png_attachment(depth, doc, "depth");
       get_png_attachment(mask, doc, "mask");
-
       doc.get_attachment("R", R);
       doc.get_attachment("T", T);
       doc.get_attachment("K", K);
@@ -128,8 +128,8 @@ namespace db
     declare_params(tendrils& params)
     {
       params.declare<std::string>("object_id", "The object id, to associate this frame with.", "object_01");
+      params.declare<std::string>("session_id", "The session id, to associate this frame with.", "session_01");
     }
-
     static void
     declare_io(const tendrils& params, tendrils& inputs, tendrils& outputs)
     {
@@ -142,7 +142,6 @@ namespace db
       inputs.declare<bool>("found", "Whether or not the R|T is valid.", false);
       inputs.declare<int>("trigger", "Capture trigger, 'c' for capture.", 'c');
     }
-
     ObservationInserter()
         :
           db(std::string(DEFAULT_COUCHDB_URL) + "/frames"),
@@ -155,6 +154,12 @@ namespace db
     {
       std::cout << "object_id = " << id << std::endl;
       object_id = id;
+    }
+    void
+    on_session_id_change(const std::string& id)
+    {
+      std::cout << "session_id = " << id << std::endl;
+      session_id = id;
       frame_number = 0;
     }
     void
@@ -162,6 +167,8 @@ namespace db
     {
       ecto::spore<std::string> object_id = params.at("object_id");
       object_id.set_callback(boost::bind(&ObservationInserter::on_object_id_change, this, _1));
+      ecto::spore<std::string> session_id = params.at("session_id");
+      session_id.set_callback(boost::bind(&ObservationInserter::on_session_id_change, this, _1));
       db.create();
     }
     int
@@ -183,6 +190,7 @@ namespace db
       obj.K = inputs.get<cv::Mat>("K");
       obj.frame_number = frame_number;
       obj.object_id = object_id;
+      obj.session_id = session_id;
       couch::Document doc(db);
       doc.create();
       obj >> doc;
@@ -191,7 +199,7 @@ namespace db
     }
     couch::Db db;
     int frame_number;
-    std::string object_id;
+    std::string object_id,session_id;
   };
 #define STRINGYFY(A) #A
 
@@ -433,7 +441,7 @@ namespace db
     doc.create();
     doc.set_value("session_id", session_id);
     doc.set_value("object_id", object_id);
-    doc.set_value("description", object_desc);
+    doc.set_value("description", desc);
     doc.set_value("tags", tags_v);
     doc.commit();
     return true;
