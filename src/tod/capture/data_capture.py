@@ -62,7 +62,11 @@ if "__main__" == __name__:
     im2mat_rgb = ecto_ros.Image2Mat()
     im2mat_depth = ecto_ros.Image2Mat()
     
+    session_id = 'session_%d'%int(time.time())
+    
     tod_db.insert_object(args.object_id,args.description, args.tags)
+    tod_db.insert_session(args.object_id,args.description, args.tags)
+
     db_inserter = tod_db.ObservationInserter("db_inserter", object_id=args.object_id)
     plasm.connect(
                   sync["image"] >> im2mat_rgb["image"],

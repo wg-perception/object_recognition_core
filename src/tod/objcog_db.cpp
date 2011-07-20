@@ -77,7 +77,7 @@ namespace db
   {
     cv::Mat image, depth, mask;
     cv::Mat R, T, K;
-    std::string object_id;
+    std::string object_id,session_id;
     int frame_number;
     void
     operator>>(couch::Document& doc)
@@ -235,7 +235,7 @@ namespace db
     }
     ObservationReader()
         :
-          db(std::string(DEFAULT_COUCHDB_URL) + "/frames"),
+          db(std::string(DEFAULT_COUCHDB_URL) + "/observations"),
           current_frame(0)
     {
       db.create();
@@ -421,6 +421,24 @@ namespace db
     return true;
   }
 
+  bool
+  insert_session(std::string session_id,std::string object_id, std::string desc, bp::object tags)
+  {
+    couch::Db id_db(std::string(DEFAULT_COUCHDB_URL) + "/sessions");
+    id_db.create();
+    bp::stl_input_iterator<std::string> begin(tags), end;
+    std::vector<std::string> tags_v;
+    std::copy(begin, end, std::back_inserter(tags_v));
+    couch::Document doc(id_db, session_id);
+    doc.create();
+    doc.set_value("session_id", session_id);
+    doc.set_value("object_id", object_id);
+    doc.set_value("description", object_desc);
+    doc.set_value("tags", tags_v);
+    doc.commit();
+    return true;
+  }
+
 }
 
 BOOST_PYTHON_MODULE(tod_db)
@@ -430,5 +448,7 @@ BOOST_PYTHON_MODULE(tod_db)
   ecto::wrap<db::TodModelInserter>("TodModelInserter");
   ecto::wrap<db::TodModelReader>("TodModelReader");
   boost::python::def("insert_object", db::insert_object);
+  boost::python::def("insert_session", db::insert_session);
+
 }
 ;
