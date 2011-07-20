@@ -39,10 +39,17 @@
 #include <boost/property_tree/json_parser.hpp>
 #include <boost/property_tree/ptree.hpp>
 
-#include "db_couch.h"
-
-namespace db
+namespace db_future
 {
+//Forward declare some classes
+class ObjectDbBase;
+
+typedef std::string CollectionName;
+typedef std::string Field;
+typedef std::string FieldName;
+typedef std::string ObjectId;
+typedef std::string RevisionId;
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 class ObjectDb
@@ -51,31 +58,23 @@ public:
   /** Constructor
    * @param params a JSON string containing the parameters for the DB
    */
-  ObjectDb(const std::string & json_params)
-  {
-    boost::property_tree::ptree params;
-    std::stringstream ssparams;
-    ssparams << json_params;
-    boost::property_tree::read_json(ssparams, params);
+  ObjectDb(const std::string & json_params);
 
-    std::string db_type = params.get<std::string>("type");
-    if (db_type == "couch")
-    {
-      db_ = boost::shared_ptr<ObjectDbBase>(new ObjectDbCouch(params.get<std::string>("url")));
-    }
-
-  }
   void set_attachment(ObjectId & object_id, RevisionId & revision_id, const CollectionName &collection,
-                             const std::string& attachment_name, std::istream& stream, const std::string& content_type)
-  {
-  }
+                      const std::string& attachment_name, std::istream& stream, const std::string& content_type);
 
-  void get_attachment(const std::string& attachment_name, std::ostream& stream)
-  {
-  }
+  void get_attachment(const std::string& attachment_name, std::ostream& stream);
 
-  friend class Query;
-  friend class Document;
+  void insert_object(const CollectionName &collection, const boost::property_tree::ptree &fields, ObjectId & object_id,
+                     RevisionId & revision_id);
+
+  void persist_fields(ObjectId & object_id, RevisionId & revision_id, const CollectionName &collection,
+                      const boost::property_tree::ptree &fields);
+
+  void load_fields(const ObjectId & object_id, const CollectionName &collection, boost::property_tree::ptree &fields);
+
+  void query(const CollectionName &collection, const std::map<FieldName, std::string> &regexps
+             , std::vector<ObjectId> & object_ids);
 
 private:
   /** The DB from which we'll get all the info */
@@ -91,15 +90,15 @@ class Document
 {
 public:
   Document(ObjectDb & db) :
-      db_(db.db_)
+      db_(db)
   {
   }
 
   Document(ObjectDb & db, const CollectionName & collection, const ObjectId &object_id) :
-      collection_(collection), object_id_(object_id), db_(db.db_)
+      collection_(collection), object_id_(object_id), db_(db)
   {
     // Load all fields from the DB (not the attachments)
-    db_->load_fields(object_id_, collection_, fields_);
+    db_.load_fields(object_id_, collection_, fields_);
   }
 
   virtual ~Document();
@@ -108,9 +107,9 @@ public:
   {
     // Persist the object if it does not exist in the DB
     if (object_id_.empty())
-      db_->insert_object(collection_, fields_, object_id_, revision_id_);
+      db_.insert_object(collection_, fields_, object_id_, revision_id_);
     else
-      db_->persist_fields(object_id_, revision_id_, collection_, fields_);
+      db_.persist_fields(object_id_, revision_id_, collection_, fields_);
 
     // Persist the attachments
     boost::any nothing_any;
@@ -181,7 +180,7 @@ private:
   mutable CollectionName collection_;
   mutable ObjectId object_id_;
   RevisionId revision_id_;
-  boost::shared_ptr<ObjectDbBase> db_;
+  ObjectDb db_;
   /** contains the attachments: binary blobs */
   std::map<FieldName, boost::any> attachments_;
   /** contains the fields: they are of integral types */
@@ -242,7 +241,7 @@ public:
   }
   friend class Query;
 private:
-  ObjectDb & db_;
+  ObjectDb db_;
   CollectionName collection_;
   boost::shared_ptr<Document> object_;
   std::vector<ObjectId> object_ids_;
@@ -270,7 +269,7 @@ public:
   {
     // Process the query and get the ids of several objects
     std::vector<ObjectId> object_ids;
-    db.db_->query(collection_, regexes_, object_ids);
+    db.query(collection_, regexes_, object_ids);
     return QueryIterator(db, collection_, object_ids);
   }
 private:

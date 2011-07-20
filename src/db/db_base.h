@@ -5,6 +5,9 @@
  *      Author: vrabaud
  */
 
+#ifndef DB_BASE_H_
+#define DB_BASE_H_
+
 #include <algorithm>
 #include <iterator>
 #include <map>
@@ -20,24 +23,12 @@
 
 #include <boost/shared_ptr.hpp>
 
-typedef std::string CollectionName;
-typedef std::string Field;
-typedef std::string FieldName;
-typedef std::string ObjectId;
-typedef std::string RevisionId;
+#include "objcog/db/db.h"
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-namespace db_serialization
+namespace db_future
 {
-template<class Archive, typename T>
-  void save(Archive & ar, const T & m);
-
-template<class Archive, typename T>
-  void load(const Archive & ar, T & m);
-} // namespace serialization
-
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 /** The main class that interact with the db
  * A collection is similar to the term used in CouchDB. It could be a schema/table in SQL
@@ -66,3 +57,6 @@ public:
 
   virtual void get_attachment_stream(const std::string& attachment_name, std::ostream& stream) = 0;
 };
+}
+
+#endif // DB_BASE_H_
