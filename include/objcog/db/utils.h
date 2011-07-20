@@ -11,3 +11,4 @@ namespace objcog
     return name_of(typeid(T));
   }
 }
+

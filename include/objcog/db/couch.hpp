@@ -18,6 +18,12 @@ namespace couch
     void add_map(const std::string& key, const std::string& function);
     void add_reduce(const std::string& key, const std::string& function);
     std::map<std::string, std::string> map, reduce;
+    struct result
+    {
+      std::string id;
+      std::string key;
+      std::string value;
+    };
   };
 
   class Db
@@ -37,6 +43,8 @@ namespace couch
     bool delete_();
     std::string url() const;
     void print();
+    std::vector<View::result> run_view(View& v, int limit_rows, int start_offset, int& total_rows,
+                      int& offset);
     void run_view(View& v, int limit_rows, int start_offset, int& total_rows,
                   int& offset, std::vector<couch::Document>& docs);
   private:

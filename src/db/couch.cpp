@@ -321,6 +321,7 @@ namespace couch
           url_(rhs.url_),
           json_writer_(stream_)
     {
+      curl_.setURL(url_);
     }
 
     impl&
@@ -329,6 +330,7 @@ namespace couch
       if (&rhs == this)
         return *this;
       url_ = rhs.url_;
+      curl_.setURL(url_);
       return *this;
 
     }
@@ -422,11 +424,10 @@ namespace couch
       stream_.seekg(0);
       std::cout << stream_.rdbuf();
     }
-
-    void
-    run_view(View& v, int limit_rows, int start_offset, int& total_rows, int& offset,
-             std::vector<couch::Document>& docs)
+    std::vector<View::result>
+    run_view(View& v, int limit_rows, int start_offset, int& total_rows, int& offset)
     {
+      std::vector<View::result> results;
       if (limit_rows <= 0)
         limit_rows = std::numeric_limits<int>::max();
       json_spirit::Object obj;
@@ -455,12 +456,28 @@ namespace couch
       total_rows = result_map["total_rows"].get_int();
       offset = result_map["offset"].get_int();
       std::vector<json_spirit::Value> rows = result_map["rows"].get_array();
-      Db db(url_);
+      results.reserve(rows.size());
       BOOST_FOREACH(const json_spirit::Value& v, rows)
           {
             std::map<std::string, json_spirit::Value> row_map;
             json_spirit::obj_to_map(v.get_obj(), row_map);
-            Document doc(db, row_map["id"].get_str());
+            View::result r =
+            { row_map["id"].get_str(), json_spirit::write(row_map["key"]), json_spirit::write(row_map["value"]) };
+            results.push_back(r);
+          }
+      return results;
+    }
+    void
+    run_view(View& v, int limit_rows, int start_offset, int& total_rows, int& offset,
+             std::vector<couch::Document>& docs)
+    {
+      docs.clear();
+      std::vector<View::result> results = run_view(v, limit_rows, start_offset, total_rows, offset);
+      Db db(url_);
+      docs.reserve(results.size());
+      BOOST_FOREACH(const View::result& x, results)
+          {
+            Document doc(db, x.id);
             docs.push_back(doc);
           }
 
@@ -648,7 +665,8 @@ namespace couch
     {
       json_spirit::Value val;
       get(val);
-      if(val.is_null()) return false;
+      if (val.is_null())
+        return false;
       const json_spirit::Object& obj = val.get_obj();
       json_spirit::Object::const_iterator it = std::find_if(obj.begin(), obj.end(),
                                                             value_type_find(prefix + "id", json_spirit::str_type));
@@ -1022,6 +1040,12 @@ void
 couch::View::add_reduce(const std::string & key, const std::string & function)
 {
   reduce[key] = function;
+}
+
+std::vector<couch::View::result>
+couch::Db::run_view(View & v, int limit_rows, int start_offset, int& total_rows, int& offset)
+{
+  return impl_->run_view(v, limit_rows, start_offset, total_rows, offset);
 }
 
 void
