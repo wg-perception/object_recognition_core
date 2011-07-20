@@ -33,7 +33,7 @@ if "__main__" == __name__:
     debug = True
     poser = OpposingDotPoseEstimator(plasm,
                                         rows=5, cols=3,
-                                        pattern_type="acircles",
+                                        pattern_type=calib.ASYMMETRIC_CIRCLES_GRID,
                                         square_size=0.04, debug=debug)
     camera_info = calib.CameraIntrinsics('Camera Info',
                                                   camera_file="camera.yml")
@@ -47,8 +47,6 @@ if "__main__" == __name__:
     brg2rgb = imgproc.cvtColor('bgr -> rgb', flag=4)
     rgb2gray = imgproc.cvtColor('rgb -> gray', flag=7)
     gray2rgb = imgproc.cvtColor('gray -> rgb', flag=8)
-    print gray2rgb.__doc__
-    
 
     display = highgui.imshow('Poses', name='Poses', waitKey=10, autoSize=True)
     mask_display = highgui.imshow('Masks', name='Masks', waitKey= -1, autoSize=True)
@@ -63,11 +61,13 @@ if "__main__" == __name__:
     im2mat_depth = ecto_ros.Image2Mat()
     
     session_id = 'session_%d'%int(time.time())
-    
+    capture_description = "data_capture.py, given a fiducial produces views that are registered to the object with R|T and produces a binary mask."
+    capture_tags = ['calibration','mask','intrinsics','extrinsics',
+                    'depth','rgb']
     tod_db.insert_object(args.object_id,args.description, args.tags)
-    tod_db.insert_session(args.object_id,args.description, args.tags)
+    tod_db.insert_session(session_id,args.object_id,capture_description, capture_tags)
 
-    db_inserter = tod_db.ObservationInserter("db_inserter", object_id=args.object_id)
+    db_inserter = tod_db.ObservationInserter("db_inserter", object_id=args.object_id, session_id=session_id)
     plasm.connect(
                   sync["image"] >> im2mat_rgb["image"],
                   im2mat_rgb["image"] >> (brg2rgb[:],),

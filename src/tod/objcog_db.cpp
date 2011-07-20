@@ -2,73 +2,11 @@
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
 #include <objcog/db/couch.hpp>
+#include <objcog/db/opencv.h>
 #include <boost/python/stl_iterator.hpp>
-#include <boost/serialization/binary_object.hpp>
-#include <boost/serialization/split_free.hpp>
 #include <boost/format.hpp>
 #include <string>
 using ecto::tendrils;
-
-namespace boost
-{
-  namespace serialization
-  {
-    template<class Archive>
-    void
-    save(Archive & ar, const cv::Mat & m, const unsigned int version)
-    {
-      int type = m.type();
-      ar & m.rows;
-      ar & m.cols;
-      ar & type;
-      const uchar * data = m.data, *end = m.dataend;
-      ar & boost::serialization::make_binary_object(const_cast<uchar*>(data), size_t(end - data));
-    }
-
-    template<class Archive>
-    void
-    load(Archive & ar, cv::Mat & m, const unsigned int version)
-    {
-      int rows, cols, type;
-      ar & rows;
-      ar & cols;
-      ar & type;
-      if (rows > 0 && cols > 0)
-      {
-        m.create(rows, cols, type);
-        uchar * data = m.data, *end = m.dataend;
-        ar & boost::serialization::make_binary_object(data, end - data);
-      }
-      else
-      {
-        std::cout << "bad matrix" << std::endl;
-      }
-    }
-  } // namespace serialization
-} // namespace boost
-
-BOOST_SERIALIZATION_SPLIT_FREE( cv::Mat)
-
-void
-png_attach(cv::Mat image, couch::Document& doc, const std::string& name)
-{
-  std::vector<uint8_t> buffer;
-  std::stringstream ss;
-  cv::imencode(".png", image, buffer);
-  std::copy(buffer.begin(), buffer.end(), std::ostream_iterator<uint8_t>(ss));
-  doc.attach(name, ss, "image/png");
-}
-
-void
-get_png_attachment(cv::Mat& image, couch::Document& doc, const std::string& name)
-{
-  std::stringstream ss;
-  doc.get_attachment_stream(name, ss);
-  std::streampos length = ss.tellp();
-  std::vector<uint8_t> buffer(length);
-  ss.read((char*) buffer.data(), length);
-  image = cv::imdecode(buffer, CV_LOAD_IMAGE_ANYDEPTH | CV_LOAD_IMAGE_ANYCOLOR);
-}
 
 namespace db
 {
@@ -77,21 +15,29 @@ namespace db
   {
     cv::Mat image, depth, mask;
     cv::Mat R, T, K;
-    std::string object_id,session_id;
+    std::string object_id, session_id;
     int frame_number;
+
     void
     operator>>(couch::Document& doc)
     {
+      std::map<std::string, cv::Mat> intrinsics, extrinsics;
+      intrinsics["K"] = K;
+      extrinsics["R"] = R;
+      extrinsics["T"] = T;
+      std::stringstream intr_ss, extr_ss;
+      objcog::db::mats2yaml(intrinsics, intr_ss);
+      objcog::db::mats2yaml(extrinsics, extr_ss);
+
       doc.update();
-      png_attach(image, doc, "image");
-      png_attach(depth, doc, "depth");
-      png_attach(mask, doc, "mask");
-      doc.attach("R", R);
-      doc.attach("T", T);
-      doc.attach("K", K);
+      objcog::db::png_attach(image, doc, "image");
+      objcog::db::png_attach(depth, doc, "depth");
+      objcog::db::png_attach(mask, doc, "mask");
+      doc.attach("intrinsics.yml", intr_ss, "text/x-yaml");
+      doc.attach("extrinsics.yml", extr_ss, "text/x-yaml");
       doc.update();
       doc.set_value("object_id", object_id);
-      doc.set_value("session_id",session_id);
+      doc.set_value("session_id", session_id);
       doc.set_value("frame_number", frame_number);
       doc.commit();
     }
@@ -114,12 +60,21 @@ namespace db
       object_id = doc.get_value<std::string>("object_id");
       session_id = doc.get_value<std::string>("session_id");
       frame_number = doc.get_value<int>("frame_number");
-      get_png_attachment(image, doc, "image");
-      get_png_attachment(depth, doc, "depth");
-      get_png_attachment(mask, doc, "mask");
-      doc.get_attachment("R", R);
-      doc.get_attachment("T", T);
-      doc.get_attachment("K", K);
+      objcog::db::get_png_attachment(image, doc, "image");
+      objcog::db::get_png_attachment(depth, doc, "depth");
+      objcog::db::get_png_attachment(mask, doc, "mask");
+      std::stringstream intr_ss, extr_ss;
+      doc.get_attachment_stream("intrinsics.yml", intr_ss);
+      doc.get_attachment_stream("extrinsics.yml", extr_ss);
+      std::map<std::string, cv::Mat> intrinsics, extrinsics;
+      intrinsics["K"] = cv::Mat();
+      extrinsics["R"] = cv::Mat();
+      extrinsics["T"] = cv::Mat();
+      objcog::db::yaml2mats(intrinsics, intr_ss);
+      objcog::db::yaml2mats(extrinsics, extr_ss);
+      K = intrinsics["K"];
+      R = extrinsics["R"];
+      T = extrinsics["T"];
     }
   };
   struct ObservationInserter
@@ -127,8 +82,8 @@ namespace db
     static void
     declare_params(tendrils& params)
     {
-      params.declare<std::string>("object_id", "The object id, to associate this frame with.", "object_01");
-      params.declare<std::string>("session_id", "The session id, to associate this frame with.", "session_01");
+      params.declare<std::string>("object_id", "The object id, to associate this frame with.").required(true);
+      params.declare<std::string>("session_id", "The session id, to associate this frame with.").required(true);
     }
     static void
     declare_io(const tendrils& params, tendrils& inputs, tendrils& outputs)
@@ -199,7 +154,7 @@ namespace db
     }
     couch::Db db;
     int frame_number;
-    std::string object_id,session_id;
+    std::string object_id, session_id;
   };
 #define STRINGYFY(A) #A
 
@@ -430,7 +385,7 @@ namespace db
   }
 
   bool
-  insert_session(std::string session_id,std::string object_id, std::string desc, bp::object tags)
+  insert_session(std::string session_id, std::string object_id, std::string desc, bp::object tags)
   {
     couch::Db id_db(std::string(DEFAULT_COUCHDB_URL) + "/sessions");
     id_db.create();
