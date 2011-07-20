@@ -1,4 +1,6 @@
 #include <ecto/ecto.hpp>
+#include <objcog/db/couch.hpp>
+#include <boost/python/stl_iterator.hpp>
 namespace bp = boost::python;
 
 namespace objcog

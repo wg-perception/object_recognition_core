@@ -5,12 +5,34 @@
 #include <objcog/db/opencv.h>
 #include <boost/python/stl_iterator.hpp>
 #include <boost/format.hpp>
+#include <boost/foreach.hpp>
+#include <boost/lexical_cast.hpp>
 #include <string>
+#include <objcog/capture/capture.hpp>
+
 using ecto::tendrils;
 namespace objcog
 {
   namespace capture
   {
+#define STRINGYFY(A) #A
+
+    std::string where_doc_id = STRINGYFY(
+        function(doc)
+        {
+          if(doc.object_id == "%s" )
+          emit("frame_number",doc.frame_number);
+        }
+    );
+
+    struct result_less
+    {
+      bool operator()(const couch::View::result& lhs, const couch::View::result& rhs)
+      {
+        return boost::lexical_cast<int>(lhs.value) < boost::lexical_cast<int>(rhs.value);
+      }
+    };
+
     struct ObservationReader
     {
       static void
@@ -37,14 +59,18 @@ namespace objcog
         std::cout << "object_id = " << id << std::endl;
         couch::View v;
         v.add_map("map", boost::str(boost::format(where_doc_id) % id));
-        db.run_view(v, -1, 0, total_rows, offset, docs);
-        db.print();
+        std::vector<couch::View::result> results = db.run_view(v, -1, 0, total_rows, offset);
+        std::sort(results.begin(),results.end(),result_less());
+        BOOST_FOREACH(const couch::View::result& x, results)
+             {
+               couch::Document doc(db, x.id);
+               docs.push_back(doc);
+             }
         current_frame = 0;
-
       }
       ObservationReader()
           :
-            db(std::string(DEFAULT_COUCHDB_URL) + "/observations"),
+            db(std::string(DEFAULT_COUCHDB_URL) + "/frames"),
             current_frame(0)
       {
         db.create();

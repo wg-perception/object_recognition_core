@@ -2,7 +2,7 @@
 # abstract the input.
 import ecto
 from ecto_opencv import highgui, calib, imgproc
-import tod_db
+import capture
 from fiducial_pose_est import *
 #lil bit of ros
 PKG = 'ecto_ros' # this package name
@@ -64,10 +64,9 @@ if "__main__" == __name__:
     capture_description = "data_capture.py, given a fiducial produces views that are registered to the object with R|T and produces a binary mask."
     capture_tags = ['calibration','mask','intrinsics','extrinsics',
                     'depth','rgb']
-    tod_db.insert_object(args.object_id,args.description, args.tags)
-    tod_db.insert_session(session_id,args.object_id,capture_description, capture_tags)
-
-    db_inserter = tod_db.ObservationInserter("db_inserter", object_id=args.object_id, session_id=session_id)
+    capture.insert_object(args.object_id,args.description, args.tags)
+    capture.insert_session(session_id,args.object_id,capture_description, capture_tags)
+    db_inserter = capture.ObservationInserter("db_inserter", object_id=args.object_id, session_id=session_id)
     plasm.connect(
                   sync["image"] >> im2mat_rgb["image"],
                   im2mat_rgb["image"] >> (brg2rgb[:],),
