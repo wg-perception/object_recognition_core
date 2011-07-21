@@ -36,20 +36,45 @@
 #ifndef DB_H_
 #define DB_H_
 
-#include "db_couch.h"
+#include <boost/property_tree/json_parser.hpp>
+#include <boost/property_tree/ptree.hpp>
+
+namespace db_future
+{
+//Forward declare some classes
+class ObjectDbBase;
+
+typedef std::string CollectionName;
+typedef std::string Field;
+typedef std::string FieldName;
+typedef std::string ObjectId;
+typedef std::string RevisionId;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 class ObjectDb
 {
 public:
-  /** Cosntructor
+  /** Constructor
    * @param params a JSON string containing the parameters for the DB
    */
-  ObjectDb(const std::string & params)
-  {
+  ObjectDb(const std::string & json_params);
 
-  }
+  void set_attachment(ObjectId & object_id, RevisionId & revision_id, const CollectionName &collection,
+                      const std::string& attachment_name, std::istream& stream, const std::string& content_type);
+
+  void get_attachment(const std::string& attachment_name, std::ostream& stream);
+
+  void insert_object(const CollectionName &collection, const boost::property_tree::ptree &fields, ObjectId & object_id,
+                     RevisionId & revision_id);
+
+  void persist_fields(ObjectId & object_id, RevisionId & revision_id, const CollectionName &collection,
+                      const boost::property_tree::ptree &fields);
+
+  void load_fields(const ObjectId & object_id, const CollectionName &collection, boost::property_tree::ptree &fields);
+
+  void query(const CollectionName &collection, const std::map<FieldName, std::string> &regexps
+             , std::vector<ObjectId> & object_ids);
 
 private:
   /** The DB from which we'll get all the info */
@@ -64,13 +89,13 @@ private:
 class Document
 {
 public:
-  Document(ObjectDbBase & db) :
+  Document(ObjectDb & db) :
       db_(db)
   {
   }
 
-  Document(ObjectDbBase & db, const CollectionName & collection, const ObjectId &object_id) :
-      object_id_(object_id), collection_(collection), db_(db)
+  Document(ObjectDb & db, const CollectionName & collection, const ObjectId &object_id) :
+      collection_(collection), object_id_(object_id), db_(db)
   {
     // Load all fields from the DB (not the attachments)
     db_.load_fields(object_id_, collection_, fields_);
@@ -78,13 +103,13 @@ public:
 
   virtual ~Document();
 
-  virtual void persist() const
+  virtual void persist()
   {
     // Persist the object if it does not exist in the DB
     if (object_id_.empty())
-      object_id_ = db_.insert_object(collection_, fields_);
+      db_.insert_object(collection_, fields_, object_id_, revision_id_);
     else
-      db_.persist_fields(object_id_, collection_, fields_);
+      db_.persist_fields(object_id_, revision_id_, collection_, fields_);
 
     // Persist the attachments
     boost::any nothing_any;
@@ -95,7 +120,8 @@ public:
       if (attachment->second.empty())
         continue;
       // Persist the attachment
-      persist_attachment(db_, object_id_, collection_, attachment->first, attachment->second);
+      // TODO
+      //persist_attachment(db_, object_id_, collection_, attachment->first, attachment->second);
     }
   }
 
@@ -116,8 +142,8 @@ public:
       else
       {
         // Otherwise, load it from the DB
-        // TODO : maybe we want to load all attachments first
-        load_attachment(db_, object_id_, collection_, field, t);
+        // TODO
+        //load_attachment(db_, object_id_, collection_, field, t);
         attachments_[field] = t;
       }
     }
@@ -131,27 +157,90 @@ public:
     {
       attachments_[field] = t;
     }
+
+  /** Get a specific value */
+  template<typename T>
+    T get_value(const std::string& key);
+
+  /** Set a specific value */
+  template<typename T>
+    void set_value(const std::string& key, const T& val);
+
+  /** Clear all the fields, there are no fields left after */
+  void clear_all_fields();
+
+  /** Remove a specific field */
+  void clear_field(const std::string& key);
+
+  /** Set the id and the revision number */
+  void SetIdRev(const std::string& id, const std::string& rev);
+
 private:
   bool is_loaded_;
-  mutable ObjectId object_id_;
   mutable CollectionName collection_;
-  RevisionId revision_id;
-  ObjectDbBase & db_;
+  mutable ObjectId object_id_;
+  RevisionId revision_id_;
+  ObjectDb db_;
+  /** contains the attachments: binary blobs */
   std::map<FieldName, boost::any> attachments_;
-  std::map<FieldName, Field> fields_;
+  /** contains the fields: they are of integral types */
+  boost::property_tree::ptree fields_;
 };
+
+// Implementation of some specializations
+template<>
+  inline bool Document::get_value<bool>(const std::string& key)
+  {
+    return fields_.get<bool>(key);
+  }
+template<>
+  inline int Document::get_value<int>(const std::string& key)
+  {
+    return fields_.get<int>(key);
+  }
+template<>
+  inline double Document::get_value<double>(const std::string& key)
+  {
+    return fields_.get<double>(key);
+  }
+template<>
+  inline std::string Document::get_value<std::string>(const std::string& key)
+  {
+    return fields_.get<std::string>(key);
+  }
+
+template<>
+  inline void Document::set_value<bool>(const std::string& key, const bool& val)
+  {
+    fields_.put<bool>(key, val);
+  }
+template<>
+  inline void Document::set_value<int>(const std::string& key, const int& val)
+  {
+    fields_.put<int>(key, val);
+  }
+template<>
+  inline void Document::set_value<double>(const std::string& key, const double& val)
+  {
+    fields_.put<double>(key, val);
+  }
+template<>
+  inline void Document::set_value<std::string>(const std::string& key, const std::string& val)
+  {
+    fields_.put<std::string>(key, val);
+  }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 class QueryIterator : public std::iterator<std::forward_iterator_tag, int>
 {
 public:
-  QueryIterator(ObjectDbBase& db) :
+  QueryIterator(ObjectDb& db) :
       db_(db)
   {
   }
 
-  QueryIterator(ObjectDbBase& db, const CollectionName &collection, const std::vector<std::string> & object_ids) :
+  QueryIterator(ObjectDb& db, const CollectionName &collection, const std::vector<std::string> & object_ids) :
       db_(db), collection_(collection), object_ids_(object_ids)
   {
     // Load the first element in the db
@@ -195,7 +284,7 @@ public:
   }
   friend class Query;
 private:
-  ObjectDbBase & db_;
+  ObjectDb db_;
   CollectionName collection_;
   boost::shared_ptr<Document> object_;
   std::vector<ObjectId> object_ids_;
@@ -219,7 +308,7 @@ public:
    */
   void set_collection(CollectionName & collection);
 
-  QueryIterator query(ObjectDbBase &db)
+  QueryIterator query(ObjectDb &db)
   {
     // Process the query and get the ids of several objects
     std::vector<ObjectId> object_ids;
@@ -231,5 +320,6 @@ private:
   /** the list of regexes to use */
   std::map<FieldName, std::string> regexes_;
 };
+}
 
 #endif /* DB_H_ */

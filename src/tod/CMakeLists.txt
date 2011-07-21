@@ -7,9 +7,10 @@ ectomodule(tod
                 cameraToWorld.cpp
                 #detecting/guess_generator.cpp
                 #detecting/guess_writer.cpp
-                detecting/descriptor_matcher.cpp
+                #detecting/descriptor_matcher.cpp
                 )
-link_ecto(tod ${OpenCV_LIBS})
+include_directories(${PCL_INCLUDE_DIRS})
+link_ecto(tod ${OpenCV_LIBS} objcog_db ${PCL_LIBRARIES})
 install_ecto_module(tod)
 
 #deal with the objcog module

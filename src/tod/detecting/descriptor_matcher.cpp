@@ -20,7 +20,7 @@ struct DescriptorMatcher
 {
   static void declare_params(ecto::tendrils& p)
   {
-    p.declare<std::string>("db", "The DB to connect to");
+    p.declare<std::string>("db", "A JSON string describing the db to use");
     p.declare<std::vector<std::string> >("object_ids", "The list of objects we should consider");
     // We can do radius and/or ratio test
     p.declare<float>("radius", "The radius for the NN search", 0);
@@ -45,10 +45,14 @@ struct DescriptorMatcher
     //matcher_
 
     // load the descriptors from the DB
-    ObjectDb db(params.get<std::string>("db"));
-    Query query;
-    std::string regex;
-    query.add_where("objec_id", regex);
+    db_future::ObjectDb db(params.get<std::string>("db"));
+    BOOST_FOREACH(const std::string & object_id, params.get<std::vector<std::string> >("object_ids")) {
+      db_future::Query query;
+      query.add_where("object_id", object_id);
+      query.query(db);
+    }
+
+    //features_3d_;
   }
 
   /** Get the 2d keypoints and figure out their 3D position from the depth map
