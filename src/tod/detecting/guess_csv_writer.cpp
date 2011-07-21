@@ -15,31 +15,20 @@
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/features2d/features2d.hpp>
 
+#include <pcl/point_types.h>
+#include <pcl/point_cloud.h>
+
 #include <iostream>
 
-#include "tod/detecting/GuessGenerator.h"
-#include "tod/detecting/Loader.h"
-#include "tod/detecting/Recognizer.h"
-#include "tod_stub/tod_stub.h"
-#include "tod_stub/tod_stub_impl.h"
-#include "tod_stub/csv.h"
+#include "opencv_candidate/PoseRT.h"
+
+#include "csv.h"
 
 namespace po = boost::program_options;
 
-using ecto::tendrils;
+typedef unsigned int ObjectId;
 
-struct DetectorOptions
-{
-  /** The path to a ROS bag file
-   */
-  std::string bag_file_;
-  std::string imageFile;
-  std::string baseDirectory;
-  std::string config;
-  tod::TODParameters params;
-  int verbose;
-  int mode;
-};
+using ecto::tendrils;
 
 /** Ecto implementation of a module that takes
  *
@@ -54,8 +43,8 @@ struct GuessWriter
 
   static void declare_io(const tendrils& params, tendrils& inputs, tendrils& outputs)
   {
-    inputs.declare<std::vector<tod::Guess> >("guesses", "The guesse about the objects and their positions.");
-    inputs.declare<pcl::PointCloud<pcl::PointXYZRGB> >("point_cloud", "The original point cloud");
+    inputs.declare<std::vector<ObjectId> >("object_ids", "the id's of the found objects");
+    inputs.declare<std::vector<opencv_candidate::Pose> >("poses", "The poses of the found objects");
   }
 
   void configure(tendrils& params, tendrils& inputs, tendrils& outputs)
@@ -73,34 +62,36 @@ struct GuessWriter
         "point_cloud");
 
     // match to our objects
-    const std::vector<tod::Guess> &guesses  = inputs.get<std::vector<tod::Guess> >("guesses");
+    const std::vector<ObjectId> &object_ids = inputs.get<std::vector<ObjectId> >("object_ids");
+    const std::vector<opencv_candidate::Pose> &poses = inputs.get<std::vector<opencv_candidate::Pose> >("poses");
+    int run_number = inputs.get<int>("run_number");
+    const std::string &team_name = inputs.get<std::string>("team_name");
+
     tod_stub::RunInfo run_info;
-    tod_stub::Options opts;
     run_info.ts.set();
-    run_info.runID = opts.run_number;
-    run_info.name = opts.team_name;
+    run_info.runID = run_number;
+    run_info.name = team_name;
     tod_stub::CSVOutput csv_out = openCSV(run_info);
     int dID = 0; //detection id
-    BOOST_FOREACH(const tod::Guess &g, guesses)
+    for (unsigned int i = 0; i < object_ids.size(); ++i)
     {
-      tod::PoseRT pose = g.aligned_pose();
-      pose.rvec.clone().convertTo(pose.rvec, CV_64F);
-      pose.tvec.clone().convertTo(pose.tvec, CV_64F);
-      tod_stub::Result r(cv::Mat(), pose.tvec, g.getObject()->name);
-      cv::Rodrigues(pose.rvec, r.R);
+      const ObjectId & object_id = object_ids[i];
+      const opencv_candidate::Pose & pose = poses[i];
 
       tod_stub::PoseInfo poseInfo;
+      cv::Mat R = pose.r<cv::Mat>();
+      cv::Mat T = pose.t<cv::Mat>();
       for (int i = 0; i < 9; i++)
       {
-        poseInfo.Rot[i] = r.R.at<double>(i % 3, i / 3);
+        poseInfo.Rot[i] = R.at<double>(i % 3, i / 3);
       }
 
-      poseInfo.Tx = r.T.at<double>(0);
-      poseInfo.Ty = r.T.at<double>(1);
-      poseInfo.Tz = r.T.at<double>(2);
+      poseInfo.Tx = T.at<double>(0);
+      poseInfo.Ty = T.at<double>(1);
+      poseInfo.Tz = T.at<double>(2);
       poseInfo.ts.set();
       poseInfo.frame = point_cloud.header.seq;
-      poseInfo.oID = r.object_id;
+      poseInfo.oID = object_id;
       poseInfo.dID = dID++; //training (only one detection per frame)
       writeCSV(csv_out, poseInfo);
     }

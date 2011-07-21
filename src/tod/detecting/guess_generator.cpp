@@ -20,12 +20,7 @@
 #include <pcl/sample_consensus/prosac.h>
 #include <pcl/sample_consensus/sac_model_registration.h>
 
-#include "tod/detecting/GuessGenerator.h"
-#include "tod/detecting/Loader.h"
-#include "tod/detecting/Recognizer.h"
-#include "tod_stub/tod_stub.h"
-#include "tod_stub/tod_stub_impl.h"
-#include "tod_stub/csv.h"
+#include "opencv_candidate/PoseRT.h"
 
 namespace po = boost::program_options;
 
@@ -39,7 +34,6 @@ struct DetectorOptions
   std::string imageFile;
   std::string baseDirectory;
   std::string config;
-  tod::TODParameters params;
   int verbose;
   int mode;
 };
@@ -62,7 +56,8 @@ struct GuessGenerator
     inputs.declare<std::vector<std::vector<cv::DMatch> > >("matches", "The list of OpenCV DMatch");
     inputs.declare<std::vector<std::vector<cv::Point3f> > >("matches_3d",
                                                             "The corresponding 3d position of those matches");
-    outputs.declare<std::vector<tod::Guess> >("guesses", "The output 3d points");
+    outputs.declare<std::vector<ObjectId> >("object_ids", "the id's of the found objects");
+    outputs.declare<std::vector<opencv_candidate::Pose> >("poses", "The poses of the found objects");
   }
 
   void configure(ecto::tendrils& params, ecto::tendrils& inputs, ecto::tendrils& outputs)
@@ -98,30 +93,6 @@ struct GuessGenerator
       std::cout << desc << std::endl;
       throw std::runtime_error("Bad options");
     }
-
-    // Create the base of training data
-    tod::Loader loader(opts.baseDirectory);
-    std::cout << config_file << std::endl;
-    std::vector<cv::Ptr<tod::TexturedObject> > objects;
-    loader.readTexturedObjects(objects);
-
-    std::cout << "loaded " << objects.size() << " objects from training base." << std::endl;
-    if (!objects.size())
-    {
-      std::cout << "Empty base\n" << std::endl;
-      throw tod_stub::ERROR;
-    }
-
-    training_base_.reset(new tod::TrainingBase(objects));
-
-    // Create the matcher
-    cv::Ptr<tod::Matcher> rtMatcher = tod::Matcher::create(opts.params.matcherParams);
-    rtMatcher->add(*training_base_);
-
-    // Create the recognizer
-    recognizer_.reset(
-        new tod::KinectRecognizer(training_base_.get(), rtMatcher, &opts.params.guessParams, opts.verbose,
-                                  opts.baseDirectory));
   }
 
   /** Get the 2d keypoints and figure out their 3D position from the depth map
@@ -149,7 +120,7 @@ struct GuessGenerator
     {
       // Only use 2d to 3d matching
       // TODO
-      const std::vector<cv::KeyPoint> &keypoints = inputs.get<std::vector<cv::KeyPoint> >("keypoints");
+      //const std::vector<cv::KeyPoint> &keypoints = inputs.get<std::vector<cv::KeyPoint> >("keypoints");
     }
     else
     {
@@ -167,7 +138,7 @@ struct GuessGenerator
           pcl::PointXYZRGB query_point = point_cloud[local_matches[match_index].trainIdx];
 
           // TODO: replace this by doing 3d to 3d with an unknown depth for that point
-          if ((std::isnan(query_point.x)) || (std::isnan(query_point.y)) || (std::isnan(query_point.z)))
+          if ((query_point.x != query_point.x) || (query_point.y != query_point.y) || (query_point.z != query_point.z))
             continue;
 
           ObjectId object_id = local_matches[match_index].imgIdx;
@@ -231,13 +202,12 @@ struct GuessGenerator
     return 0;
   }
 private:
-  boost::shared_ptr<tod::Recognizer> recognizer_;
-  boost::shared_ptr<tod::TrainingBase> training_base_;
   /** The minimum number of inliers in order to do pose matching */
   unsigned int min_inliers_;
   /** The number of RANSAC iterations to perform */
   unsigned int n_ransac_iterations_;
-};
+}
+;
 
 void wrap_GuessGenerator()
 {

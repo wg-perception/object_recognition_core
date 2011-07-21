@@ -6,7 +6,7 @@ ectomodule(tod
                 twoDToThreeD.cpp
                 cameraToWorld.cpp
                 detecting/guess_generator.cpp
-                detecting/guess_writer.cpp
+                detecting/guess_csv_writer.cpp
                 detecting/descriptor_matcher.cpp
                 )
 include_directories(${PCL_INCLUDE_DIRS})
