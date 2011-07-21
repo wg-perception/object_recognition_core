@@ -5,9 +5,9 @@ ectomodule(tod
                 #bag_reader.cpp
                 twoDToThreeD.cpp
                 cameraToWorld.cpp
-                #detecting/guess_generator.cpp
-                #detecting/guess_writer.cpp
-                #detecting/descriptor_matcher.cpp
+                detecting/guess_generator.cpp
+                detecting/guess_writer.cpp
+                detecting/descriptor_matcher.cpp
                 )
 include_directories(${PCL_INCLUDE_DIRS})
 link_ecto(tod ${OpenCV_LIBS} objcog_db ${PCL_LIBRARIES})
