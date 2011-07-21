@@ -4,6 +4,7 @@ from ecto_opencv import highgui, cv_bp as opencv, calib, imgproc, features2d
 from optparse import OptionParser
 import sys
 import time
+import capture
 import tod
 import tod_db
 
@@ -55,16 +56,16 @@ if __name__ == '__main__':
     options = parse_options()
 
     # define the input
-    db_reader = tod_db.ObservationReader("db_reader", object_id="object_01")
+    db_reader = capture.ObservationReader("db_reader", object_id="object_01")
 
     # connect the visualization
-    image_view = highgui.imshow(name="RGB", waitKey=1000, autoSize=True)
-    mask_view = highgui.imshow(name="mask", waitKey= -1, autoSize=True)
-    depth_view = highgui.imshow(name="Depth", waitKey= -1, autoSize=True);
+    #image_view = highgui.imshow(name="RGB", waitKey=1000, autoSize=True)
+    #mask_view = highgui.imshow(name="mask", waitKey= -1, autoSize=True)
+    #depth_view = highgui.imshow(name="Depth", waitKey= -1, autoSize=True);
     plasm = ecto.Plasm()
-    plasm.connect(db_reader['image'] >> image_view['input'],
-                  db_reader['mask'] >> mask_view['input'],
-                  db_reader['depth'] >> depth_view['input'])
+    #plasm.connect(db_reader['image'] >> image_view['input'],
+    #              db_reader['mask'] >> mask_view['input'],
+    #              db_reader['depth'] >> depth_view['input'])
 
     # connect to the model computation
     tod_model = TodModelComputation(plasm, options.config_file)
