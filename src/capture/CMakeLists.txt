@@ -5,6 +5,7 @@ ectomodule(capture
     capture_db.cpp
     ObservationReader.cpp
     ObservationWriter.cpp
+    DeltaRT.cpp
     )
 link_ecto(capture
     objcog_db

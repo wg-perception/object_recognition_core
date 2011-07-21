@@ -15,33 +15,54 @@ from IPython.Shell import IPShellEmbed
 
 ImageSub = ecto_sensor_msgs.Subscriber_Image
 CameraInfoSub = ecto_sensor_msgs.Subscriber_CameraInfo
+ImageBagger = ecto_sensor_msgs.Bagger_Image
+CameraInfoBagger = ecto_sensor_msgs.Bagger_CameraInfo
 
-if "__main__" == __name__:
-    ecto_ros.init(sys.argv, "data_capture",False)
+
+def parse_args():
     parser = argparse.ArgumentParser(description='Captures data appropriate for training object recognition pipelines.')
-    parser.add_argument('-i','--object_id', metavar='OBJECT_ID',  dest='object_id', type=str, default='object_%d'%int(time.time()),
+    parser.add_argument('-i', '--object_id', metavar='OBJECT_ID', dest='object_id', type=str, default='object_%d' % int(time.time()),
                        help='The object id to insert into the db.')
-    parser.add_argument('-d','--description', metavar='OBJECT_DESCRIPTION',dest='description',type=str,
+    parser.add_argument('-d', '--description', metavar='OBJECT_DESCRIPTION', dest='description', type=str,
                        default='An object',
                        help='Give the object a description. Quote please.')
-    parser.add_argument('tags', metavar='TAG',nargs='+',type=str,
+    parser.add_argument('-b', '--bag', metavar='BAG_FILE', dest='bag', type=str,
+                       default='',
+                       help='A bagfile to capture from.')
+    parser.add_argument('tags', metavar='TAG', nargs='+', type=str,
                        help='Tags to mark the object with.')
     args = parser.parse_args()
+    print args
+    return args
+
+if "__main__" == __name__:
+    if '-b' not in sys.argv:
+        ecto_ros.init(sys.argv, "data_capture", False)
+    args = parse_args()
     plasm = ecto.Plasm()
-    sched = ecto.schedulers.Singlethreaded(plasm)
-    
+    sched = ecto.schedulers.Threadpool(plasm)
     debug = True
     poser = OpposingDotPoseEstimator(plasm,
                                         rows=5, cols=3,
                                         pattern_type=calib.ASYMMETRIC_CIRCLES_GRID,
                                         square_size=0.04, debug=debug)
     camera_info = calib.CameraIntrinsics('Camera Info',
-                                                  camera_file="camera.yml")
-    subs = dict(image=ImageSub(topic_name='camera/rgb/image_color', queue_size=0),
-                depth=ImageSub(topic_name='camera/depth/image', queue_size=0),
-                )
-    
-    sync = ecto_ros.Synchronizer('Synchronizator', subs=subs
+                                         camera_file="camera.yml")
+    sync = None
+    if len(args.bag) == 0:
+        subs = dict(image=ImageSub(topic_name='camera/rgb/image_color', queue_size=0),
+                    depth=ImageSub(topic_name='camera/depth/image', queue_size=0),
+                    )
+        
+        sync = ecto_ros.Synchronizer('Synchronizator', subs=subs
+                                     )
+    else:
+        baggers = dict(image=ImageBagger(topic_name='/camera/rgb/image_color'),
+                        depth=ImageBagger(topic_name='/camera/depth/image'),
+                       )
+        sync = ecto_ros.BagReader('Bag Reader',
+                                  baggers=baggers,
+                                  bag=args.bag,
                                  )
 
     brg2rgb = imgproc.cvtColor('bgr -> rgb', flag=4)
@@ -60,13 +81,14 @@ if "__main__" == __name__:
     im2mat_rgb = ecto_ros.Image2Mat()
     im2mat_depth = ecto_ros.Image2Mat()
     
-    session_id = 'session_%d'%int(time.time())
+    session_id = 'session_%d' % int(time.time())
     capture_description = "data_capture.py, given a fiducial produces views that are registered to the object with R|T and produces a binary mask."
-    capture_tags = ['calibration','mask','intrinsics','extrinsics',
-                    'depth','rgb']
-    capture.insert_object(args.object_id,args.description, args.tags)
-    capture.insert_session(session_id,args.object_id,capture_description, capture_tags)
+    capture_tags = ['calibration', 'mask', 'intrinsics', 'extrinsics',
+                    'depth', 'rgb']
+    capture.insert_object(args.object_id, args.description, args.tags)
+    capture.insert_session(session_id, args.object_id, capture_description, capture_tags)
     db_inserter = capture.ObservationInserter("db_inserter", object_id=args.object_id, session_id=session_id)
+    delta_pose = capture.DeltaRT("delta R|T", angle_thresh=3.14 / 36) #5 degree increments.
     plasm.connect(
                   sync["image"] >> im2mat_rgb["image"],
                   im2mat_rgb["image"] >> (brg2rgb[:],),
@@ -83,9 +105,11 @@ if "__main__" == __name__:
                   bitwise_and[:] >> object_display[:],
                   brg2rgb[:] >> db_inserter['image'],
                   im2mat_depth['image'] >> db_inserter['depth'],
-                  bitwise_and[:] >> db_inserter['mask'],
-                  poser['R', 'T','found'] >> db_inserter['R','T','found'],
+                  masker['mask'] >> db_inserter['mask'],
+                  poser['R', 'T', 'found'] >> delta_pose['R', 'T', 'found'],
+                  poser['R', 'T'] >> db_inserter['R', 'T'],
+                  delta_pose['novel'] >> db_inserter['found'],
                   camera_info['K'] >> db_inserter['K'],
                   )
-                
+    ecto.view_plasm(plasm)
     sched.execute()
