@@ -1,9 +1,12 @@
+#include <cstdio>
+
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
 #include <boost/filesystem.hpp>
 #include <boost/foreach.hpp>
-#include <objcog/db/opencv.h>
-#include <cstdio>
+
+#include "object_recognition/db/opencv.h"
+
 namespace fs = boost::filesystem;
 namespace
 {
@@ -23,7 +26,7 @@ namespace
     return fname;
   }
 }
-namespace objcog
+namespace object_recognition
 {
   namespace db
   {

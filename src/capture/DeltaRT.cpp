@@ -2,16 +2,17 @@
 #include <opencv2/core/core.hpp>
 #include <opencv2/calib3d/calib3d.hpp>
 #include <opencv2/highgui/highgui.hpp>
-#include <objcog/db/couch.hpp>
-#include <objcog/db/opencv.h>
 #include <boost/python/stl_iterator.hpp>
 #include <boost/format.hpp>
 #include <string>
-#include <objcog/capture/capture.hpp>
 #include <numeric>
 
+#include "object_recognition/capture/capture.hpp"
+#include "object_recognition/db/couch.hpp"
+#include "object_recognition/db/opencv.h"
+
 using ecto::tendrils;
-namespace objcog
+namespace object_recognition
 {
   namespace capture
   {
@@ -80,5 +81,5 @@ namespace objcog
     };
   }
 }
-ECTO_CELL(capture, objcog::capture::DeltaRT, "DeltaRT",
+ECTO_CELL(capture, object_recognition::capture::DeltaRT, "DeltaRT",
           "Uses the R|T of the camera to determine when a frame in novel.");

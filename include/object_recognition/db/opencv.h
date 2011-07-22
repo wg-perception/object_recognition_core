@@ -1,13 +1,16 @@
 #pragma once
+
 #include <fstream>
 #include <string>
 #include <map>
+
 #include <opencv2/core/core.hpp>
 #include <boost/serialization/binary_object.hpp>
 #include <boost/serialization/split_free.hpp>
-#include <objcog/db/couch.hpp>
 
-namespace objcog
+#include "object_recognition/db/couch.hpp"
+
+namespace object_recognition
 {
   namespace db
   {

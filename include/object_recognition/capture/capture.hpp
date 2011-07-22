@@ -1,9 +1,11 @@
 #pragma once
 #include <ecto/ecto.hpp>
 #include <opencv2/core/core.hpp>
-#include <objcog/db/couch.hpp>
 #include <string>
-namespace objcog
+
+#include "object_recognition/db/couch.hpp"
+
+namespace object_recognition
 {
   namespace capture
   {

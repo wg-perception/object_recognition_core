@@ -1,4 +1,6 @@
-#include <objcog/db/couch.hpp>
+#include <cstdio>
+#include <streambuf>
+#include <string>
 
 #include <boost/serialization/vector.hpp>
 #include <boost/serialization/binary_object.hpp>
@@ -11,9 +13,7 @@
 
 #include <json_spirit/json_spirit.h>
 
-#include <streambuf>
-#include <string>
-#include <cstdio>
+#include "object_recognition/db/couch.hpp"
 
 namespace
 {

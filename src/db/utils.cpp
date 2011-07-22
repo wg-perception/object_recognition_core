@@ -5,7 +5,7 @@
 #include <cxxabi.h>
 #include <string>
 #include <cstdlib>
-namespace objcog
+namespace object_recognition
 {
   std::string name_of(const std::type_info &ti)
   {

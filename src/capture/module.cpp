@@ -1,9 +1,11 @@
 #include <ecto/ecto.hpp>
-#include <objcog/db/couch.hpp>
 #include <boost/python/stl_iterator.hpp>
+
+#include "object_recognition/db/couch.hpp"
+
 namespace bp = boost::python;
 
-namespace objcog
+namespace object_recognition
 {
   namespace capture
   {
@@ -45,6 +47,6 @@ namespace objcog
 }
 ECTO_DEFINE_MODULE(capture)
 {
-  boost::python::def("insert_object", objcog::capture::insert_object);
-  boost::python::def("insert_session", objcog::capture::insert_session);
+  boost::python::def("insert_object", object_recognition::capture::insert_object);
+  boost::python::def("insert_session", object_recognition::capture::insert_session);
 }

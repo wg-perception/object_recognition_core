@@ -1,15 +1,17 @@
 #include <ecto/ecto.hpp>
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
-#include <objcog/db/couch.hpp>
-#include <objcog/db/opencv.h>
 #include <boost/python/stl_iterator.hpp>
 #include <boost/format.hpp>
 #include <string>
-#include <objcog/capture/capture.hpp>
+
+#include "object_recognition/capture/capture.hpp"
+#include "object_recognition/db/couch.hpp"
+#include "object_recognition/db/opencv.h"
+
 using ecto::tendrils;
 
-namespace objcog
+namespace object_recognition
 {
   namespace capture
   {
@@ -22,13 +24,13 @@ namespace objcog
       extrinsics["R"] = R;
       extrinsics["T"] = T;
       std::stringstream intr_ss, extr_ss;
-      objcog::db::mats2yaml(intrinsics, intr_ss);
-      objcog::db::mats2yaml(extrinsics, extr_ss);
+      object_recognition::db::mats2yaml(intrinsics, intr_ss);
+      object_recognition::db::mats2yaml(extrinsics, extr_ss);
 
       doc.update();
-      objcog::db::png_attach(image, doc, "image");
-      objcog::db::png_attach(depth, doc, "depth");
-      objcog::db::png_attach(mask, doc, "mask");
+      object_recognition::db::png_attach(image, doc, "image");
+      object_recognition::db::png_attach(depth, doc, "depth");
+      object_recognition::db::png_attach(mask, doc, "mask");
       doc.attach("intrinsics.yml", intr_ss, "text/x-yaml");
       doc.attach("extrinsics.yml", extr_ss, "text/x-yaml");
       doc.update();
@@ -44,9 +46,9 @@ namespace objcog
       object_id = doc.get_value<std::string>("object_id");
       session_id = doc.get_value<std::string>("session_id");
       frame_number = doc.get_value<int>("frame_number");
-      objcog::db::get_png_attachment(image, doc, "image");
-      objcog::db::get_png_attachment(depth, doc, "depth");
-      objcog::db::get_png_attachment(mask, doc, "mask");
+      object_recognition::db::get_png_attachment(image, doc, "image");
+      object_recognition::db::get_png_attachment(depth, doc, "depth");
+      object_recognition::db::get_png_attachment(mask, doc, "mask");
       std::stringstream intr_ss, extr_ss;
       doc.get_attachment_stream("intrinsics.yml", intr_ss);
       doc.get_attachment_stream("extrinsics.yml", extr_ss);
@@ -54,8 +56,8 @@ namespace objcog
       intrinsics["K"] = cv::Mat();
       extrinsics["R"] = cv::Mat();
       extrinsics["T"] = cv::Mat();
-      objcog::db::yaml2mats(intrinsics, intr_ss);
-      objcog::db::yaml2mats(extrinsics, extr_ss);
+      object_recognition::db::yaml2mats(intrinsics, intr_ss);
+      object_recognition::db::yaml2mats(extrinsics, extr_ss);
       K = intrinsics["K"];
       R = extrinsics["R"];
       T = extrinsics["T"];
