@@ -4,6 +4,7 @@ ectomodule(tod
                 tod.cpp 
                 twoDToThreeD.cpp
                 cameraToWorld.cpp
+                detecting/csv.cpp
                 detecting/guess_generator.cpp
                 detecting/guess_csv_writer.cpp
                 detecting/descriptor_matcher.cpp

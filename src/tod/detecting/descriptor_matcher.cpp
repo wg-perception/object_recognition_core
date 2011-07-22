@@ -14,7 +14,7 @@
 #include <opencv2/core/core.hpp>
 #include <opencv2/features2d/features2d.hpp>
 
-#include "objcog/db/db.h"
+#include "object_recognition/db/db.h"
 
 struct DescriptorMatcher
 {

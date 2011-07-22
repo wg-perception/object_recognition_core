@@ -293,7 +293,6 @@ public:
   {
     return QueryIterator(db_);
   }
-  friend class Query;
 private:
   ObjectDb db_;
   CollectionName collection_;
@@ -319,13 +318,11 @@ public:
    */
   void set_collection(CollectionName & collection);
 
-  QueryIterator query(ObjectDb &db)
-  {
-    // Process the query and get the ids of several objects
-    std::vector<ObjectId> object_ids;
-    db.query(collection_, regexes_, object_ids);
-    return QueryIterator(db, collection_, object_ids);
-  }
+  /** Perform the query itself
+   * @param db The db on which the query is performed
+   * @return an Iterator that will iterate over each result
+   */
+  QueryIterator query(ObjectDb &db);
 private:
   CollectionName collection_;
   /** the list of regexes to use */

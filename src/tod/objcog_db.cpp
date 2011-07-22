@@ -1,11 +1,13 @@
 #include <ecto/ecto.hpp>
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
-#include <objcog/db/couch.hpp>
-#include <objcog/db/opencv.h>
 #include <boost/python/stl_iterator.hpp>
 #include <boost/format.hpp>
 #include <string>
+
+#include "object_recognition/db/couch.hpp"
+#include "object_recognition/db/opencv.h"
+
 using ecto::tendrils;
 
 namespace db

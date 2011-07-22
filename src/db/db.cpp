@@ -37,7 +37,7 @@
 
 #include "db_base.h"
 #include "db_couch.h"
-#include "objcog/db/db.h"
+#include "object_recognition/db/db.h"
 
 namespace db_future
 {
@@ -71,6 +71,22 @@ void ObjectDb::insert_object(const CollectionName &collection, const boost::prop
   db_->insert_object(collection, fields, object_id, revision_id);
 }
 
+void ObjectDb::load_fields(const ObjectId & object_id, const CollectionName &collection,
+                           boost::property_tree::ptree &fields)
+{
+  //TODO
+}
+
+void ObjectDb::persist_fields(ObjectId & object_id, RevisionId & revision_id, const CollectionName &collection,
+                              const boost::property_tree::ptree &fields)
+{ //TODO
+}
+
+void ObjectDb::query(const CollectionName &collection, const std::map<FieldName, std::string> &regexps
+                     , std::vector<ObjectId> & object_ids)
+{ //TODO
+}
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 void Document::ClearAllFields()
@@ -89,5 +105,40 @@ void Document::SetIdRev(const std::string& id, const std::string& rev)
   revision_id_ = rev;
   set_value<std::string>("_id", id);
   set_value<std::string>("_rev", rev);
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+Query::Query()
+{
+}
+
+/** Add requirements for the documents to retrieve
+ * @param field a field to match. Only one regex per field will be accepted
+ * @param regex the regular expression the field verifies, in TODO format
+ */
+void Query::add_where(const FieldName & field, const std::string & regex)
+{
+  regexes_[field] = regex;
+}
+
+/** Add collections that should be checked for specific fields
+ * @param collection
+ */
+void Query::set_collection(CollectionName & collection)
+{
+  collection_ = collection;
+}
+
+/** Perform the query itself
+ * @param db The db on which the query is performed
+ * @return an Iterator that will iterate over each result
+ */
+QueryIterator Query::query(ObjectDb &db)
+{
+  // Process the query and get the ids of several objects
+  std::vector<ObjectId> object_ids;
+  db.query(collection_, regexes_, object_ids);
+  return QueryIterator(db, collection_, object_ids);
 }
 }
