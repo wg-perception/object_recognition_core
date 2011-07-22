@@ -67,18 +67,18 @@ struct GuessWriter
     int run_number = inputs.get<int>("run_number");
     const std::string &team_name = inputs.get<std::string>("team_name");
 
-    tod_stub::RunInfo run_info;
+    tod::RunInfo run_info;
     run_info.ts.set();
     run_info.runID = run_number;
     run_info.name = team_name;
-    tod_stub::CSVOutput csv_out = openCSV(run_info);
+    tod::CSVOutput csv_out = openCSV(run_info);
     int dID = 0; //detection id
     for (unsigned int i = 0; i < object_ids.size(); ++i)
     {
       const ObjectId & object_id = object_ids[i];
       const opencv_candidate::Pose & pose = poses[i];
 
-      tod_stub::PoseInfo poseInfo;
+      tod::PoseInfo poseInfo;
       cv::Mat R = pose.r<cv::Mat>();
       cv::Mat T = pose.t<cv::Mat>();
       for (int i = 0; i < 9; i++)

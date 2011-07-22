@@ -68,10 +68,10 @@ public:
   void insert_object(const CollectionName &collection, const boost::property_tree::ptree &fields, ObjectId & object_id,
                      RevisionId & revision_id);
 
+  void load_fields(const ObjectId & object_id, const CollectionName &collection, boost::property_tree::ptree &fields);
+
   void persist_fields(ObjectId & object_id, RevisionId & revision_id, const CollectionName &collection,
                       const boost::property_tree::ptree &fields);
-
-  void load_fields(const ObjectId & object_id, const CollectionName &collection, boost::property_tree::ptree &fields);
 
   void query(const CollectionName &collection, const std::map<FieldName, std::string> &regexps
              , std::vector<ObjectId> & object_ids);
@@ -101,9 +101,12 @@ public:
     db_.load_fields(object_id_, collection_, fields_);
   }
 
-  virtual ~Document();
+  virtual ~Document()
+  {
+  }
+  ;
 
-  virtual void persist()
+  virtual void Persist()
   {
     // Persist the object if it does not exist in the DB
     if (object_id_.empty())
@@ -160,17 +163,25 @@ public:
 
   /** Get a specific value */
   template<typename T>
-    T get_value(const std::string& key);
+    T get_value(const std::string& key)
+    {
+      std::cerr << "Document::get_value<T> not implemented for that type";
+      throw;
+    }
 
   /** Set a specific value */
   template<typename T>
-    void set_value(const std::string& key, const T& val);
+    void set_value(const std::string& key, const T& val)
+    {
+      std::cerr << "Document::set_value<T> not implemented for that type";
+      throw;
+    }
 
   /** Clear all the fields, there are no fields left after */
-  void clear_all_fields();
+  void ClearAllFields();
 
   /** Remove a specific field */
-  void clear_field(const std::string& key);
+  void ClearField(const std::string& key);
 
   /** Set the id and the revision number */
   void SetIdRev(const std::string& id, const std::string& rev);

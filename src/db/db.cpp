@@ -65,14 +65,20 @@ void ObjectDb::get_attachment(const std::string& attachment_name, std::ostream& 
 {
 }
 
+void ObjectDb::insert_object(const CollectionName &collection, const boost::property_tree::ptree &fields,
+                             ObjectId & object_id, RevisionId & revision_id)
+{
+  db_->insert_object(collection, fields, object_id, revision_id);
+}
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-void Document::clear_all_fields()
+void Document::ClearAllFields()
 {
   fields_.clear();
 }
 
-void Document::clear_field(const std::string& key)
+void Document::ClearField(const std::string& key)
 {
   fields_.erase(key);
 }

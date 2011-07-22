@@ -42,7 +42,7 @@
 #pragma warning (disable:4996)
 #endif
 
-namespace tod_stub
+namespace tod
 {
 //! @brief Timestamp descriptor object
 //!

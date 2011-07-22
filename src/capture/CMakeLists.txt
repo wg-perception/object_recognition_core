@@ -7,7 +7,7 @@ ectomodule(capture
     ObservationWriter.cpp
     )
 link_ecto(capture
-    objcog_db
+    object_recognition_db
     ${OpenCV_LIBS}
     )
 install_ecto_module(capture)

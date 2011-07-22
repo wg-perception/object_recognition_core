@@ -1,8 +1,7 @@
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
-# deal with the tod module bag_reader.cpp guess_generator.cpp willow_tod
+# deal with the TOD module
 ectomodule(tod
                 tod.cpp 
-                #bag_reader.cpp
                 twoDToThreeD.cpp
                 cameraToWorld.cpp
                 detecting/guess_generator.cpp
@@ -10,15 +9,12 @@ ectomodule(tod
                 detecting/descriptor_matcher.cpp
                 )
 include_directories(${PCL_INCLUDE_DIRS})
-link_ecto(tod ${OpenCV_LIBS} objcog_db ${PCL_LIBRARIES})
+link_ecto(tod ${OpenCV_LIBS} object_recognition_db ${PCL_LIBRARIES} boost_program_options)
 install_ecto_module(tod)
 
-#deal with the objcog module
+#deal with the db part of TOD
 ectomodule(tod_db
     objcog_db.cpp
     )
-link_ecto(tod_db
-    objcog_db
-    ${OpenCV_LIBS}
-    )
+link_ecto(tod_db object_recognition_db ${OpenCV_LIBS})
 install_ecto_module(tod_db)
