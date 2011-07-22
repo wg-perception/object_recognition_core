@@ -37,24 +37,12 @@ namespace objcog
       doc.set_value("frame_number", frame_number);
       doc.commit();
     }
-
-    void
-    Observation::operator>>(ecto::tendrils& o)
-    {
-      o.get < cv::Mat > ("image") = image;
-      o.get < cv::Mat > ("mask") = mask;
-      o.get < cv::Mat > ("depth") = depth;
-      o.get < cv::Mat > ("R") = R;
-      o.get < cv::Mat > ("T") = T;
-      o.get < cv::Mat > ("K") = K;
-      o.get<int>("frame_number") = frame_number;
-    }
     void
     Observation::operator<<(couch::Document& doc)
     {
       doc.update();
-      object_id = doc.get_value < std::string > ("object_id");
-      session_id = doc.get_value < std::string > ("session_id");
+      object_id = doc.get_value<std::string>("object_id");
+      session_id = doc.get_value<std::string>("session_id");
       frame_number = doc.get_value<int>("frame_number");
       objcog::db::get_png_attachment(image, doc, "image");
       objcog::db::get_png_attachment(depth, doc, "depth");
@@ -72,5 +60,28 @@ namespace objcog
       R = extrinsics["R"];
       T = extrinsics["T"];
     }
+    void
+    Observation::operator>>(ecto::tendrils& o)
+    {
+      o.get<cv::Mat>("image") = image;
+      o.get<cv::Mat>("mask") = mask;
+      o.get<cv::Mat>("depth") = depth;
+      o.get<cv::Mat>("R") = R;
+      o.get<cv::Mat>("T") = T;
+      o.get<cv::Mat>("K") = K;
+      o.get<int>("frame_number") = frame_number;
+    }
+    void
+    Observation::operator<<(ecto::tendrils& i)
+    {
+      i["image"] >> image;
+      i["mask"] >> mask;
+      i["depth"] >> depth;
+      i["R"] >> R;
+      i["T"] >> T;
+      i["K"] >> K;
+      i["frame_number"] >> frame_number;
+    }
+
   }
 }

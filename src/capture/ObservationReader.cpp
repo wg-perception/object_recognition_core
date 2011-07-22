@@ -26,7 +26,8 @@ namespace objcog
     );
     struct result_less
     {
-      bool operator()(const couch::View::result& lhs, const couch::View::result& rhs)
+      bool
+      operator()(const couch::View::result& lhs, const couch::View::result& rhs)
       {
         return boost::lexical_cast<int>(lhs.value) < boost::lexical_cast<int>(rhs.value);
       }
@@ -58,12 +59,12 @@ namespace objcog
         couch::View v;
         v.add_map("map", boost::str(boost::format(where_doc_id) % id));
         std::vector<couch::View::result> results = db.run_view(v, -1, 0, total_rows, offset);
-        std::sort(results.begin(),results.end(),result_less());
+        std::sort(results.begin(), results.end(), result_less());
         BOOST_FOREACH(const couch::View::result& x, results)
-             {
-               couch::Document doc(db, x.id);
-               docs.push_back(doc);
-             }
+            {
+              couch::Document doc(db, x.id);
+              docs.push_back(doc);
+            }
         current_frame = 0;
       }
       ObservationReader()
@@ -74,7 +75,7 @@ namespace objcog
       void
       configure(tendrils& params, tendrils& inputs, tendrils& outputs)
       {
-        db = couch::Db(params.get<std::string>("db_url")+ "/observations");
+        db = couch::Db(params.get<std::string>("db_url") + "/observations");
         db.update_info();
         ecto::spore<std::string> object_id = params.at("object_id");
         object_id.set_callback(boost::bind(&ObservationReader::on_object_id_change, this, _1));
@@ -99,4 +100,4 @@ namespace objcog
     };
   }
 }
-ECTO_CELL(capture,objcog::capture::ObservationReader,"ObservationReader","Reads observations from the database.");
+ECTO_CELL(capture, objcog::capture::ObservationReader, "ObservationReader", "Reads observations from the database.");

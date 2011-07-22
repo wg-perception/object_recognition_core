@@ -16,9 +16,11 @@ namespace objcog
       void
       operator>>(couch::Document& doc);
       void
+      operator<<(couch::Document& doc);
+      void
       operator>>(ecto::tendrils& o);
       void
-      operator<<(couch::Document& doc);
+      operator<<(ecto::tendrils& i);
     };
   }
 }

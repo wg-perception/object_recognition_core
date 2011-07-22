@@ -67,7 +67,7 @@ namespace objcog
       {
         if (inputs.get<int>("trigger") != 'c' || inputs.get<bool>("found") == false)
           return 0;
-        std::cout << "Inserting" << std::endl;
+        std::cout << "Inserting frame: " << frame_number << std::endl;
         Observation obj;
         obj.image = inputs.get<cv::Mat>("image");
         obj.depth = inputs.get<cv::Mat>("depth");
@@ -86,7 +86,7 @@ namespace objcog
         doc.create();
         obj >> doc;
         frame_number++;
-        return 0;
+        return ecto::OK;
       }
       couch::Db db;
       int frame_number;
