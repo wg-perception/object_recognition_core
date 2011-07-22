@@ -9,7 +9,7 @@ ectomodule(tod
                 detecting/descriptor_matcher.cpp
                 )
 include_directories(${PCL_INCLUDE_DIRS})
-link_ecto(tod ${OpenCV_LIBS} object_recognition_db ${PCL_LIBRARIES} boost_program_options)
+link_ecto(tod ${OpenCV_LIBS} object_recognition_db ${PCL_LIBRARIES} boost_program_options opencv_candidate)
 install_ecto_module(tod)
 
 #deal with the db part of TOD
