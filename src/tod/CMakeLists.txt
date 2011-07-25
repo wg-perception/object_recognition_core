@@ -1,21 +1,47 @@
-include_directories(${CMAKE_CURRENT_SOURCE_DIR})
+#find_package(PCL REQUIRED)
+find_package(Eigen REQUIRED)
+find_ros_package(pcl) #find the ros version of pcl for now.
+
+if(pcl_NOTFOUND)
+message(STATUS "pcl could not be found, so not building tod.")
+return()
+endif()
+
+include_directories(
+                    ${CMAKE_CURRENT_SOURCE_DIR}
+                    ${pcl_INCLUDES}
+                    ${EIGEN_INCLUDE_DIR}
+                    )
+
 # deal with the TOD module
 ectomodule(tod
-                tod.cpp 
-                twoDToThreeD.cpp
-                cameraToWorld.cpp
-                detecting/csv.cpp
-                detecting/guess_generator.cpp
-                detecting/guess_csv_writer.cpp
-                detecting/descriptor_matcher.cpp
-                )
-include_directories(${PCL_INCLUDE_DIRS})
-link_ecto(tod ${OpenCV_LIBS} object_recognition_db ${PCL_LIBRARIES} boost_program_options opencv_candidate)
+  tod.cpp 
+  twoDToThreeD.cpp
+  cameraToWorld.cpp
+  detecting/csv.cpp
+  detecting/guess_generator.cpp
+  detecting/guess_csv_writer.cpp
+  detecting/descriptor_matcher.cpp
+  )
+
+link_ecto(tod
+  ${OpenCV_LIBS}
+  object_recognition_db
+  ${pcl_LIBRARIES}
+  ${Boost_LIBRARIES}
+  opencv_candidate
+  )
+
 install_ecto_module(tod)
 
 #deal with the db part of TOD
 ectomodule(tod_db
-    objcog_db.cpp
-    )
-link_ecto(tod_db object_recognition_db ${OpenCV_LIBS})
+  objcog_db.cpp
+  )
+
+link_ecto(tod_db
+  object_recognition_db
+  ${OpenCV_LIBS}
+  )
+
 install_ecto_module(tod_db)
