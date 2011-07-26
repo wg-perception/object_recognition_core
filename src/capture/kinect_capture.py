@@ -67,7 +67,7 @@ if "__main__" == __name__:
                                      pattern_type=calib.ASYMMETRIC_CIRCLES_GRID,
                                      square_size=0.04, debug=True)
     rgb2gray = imgproc.cvtColor('rgb -> gray', flag=imgproc.CV_RGB2GRAY)
-    delta_pose = capture.DeltaRT("delta R|T", angle_thresh=opts.delta)
+    delta_pose = capture.DeltaRT("delta R|T", angle_thresh=args.delta)
     display = highgui.imshow('Poses', name='Poses', waitKey=5, autoSize=True)
     graph += [sync['image'] >> im2mat_rgb[:],
               im2mat_rgb[:] >> (rgb2gray[:], poser['color_image']),
@@ -79,6 +79,6 @@ if "__main__" == __name__:
               delta_pose['novel'] >> bagwriter['__test__'],
               ]
     plasm.connect(graph)
-    ecto.view_plasm(plasm)
+    #ecto.view_plasm(plasm)
     sched = ecto.schedulers.Singlethreaded(plasm)
     sched.execute()
