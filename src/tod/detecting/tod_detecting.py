@@ -1,16 +1,16 @@
 #!/usr/bin/env python
 import ecto
-from ecto_ros import BagReader
+import ecto_ros
+import ecto_pcl
+import ecto_pcl_ros
 from ecto_opencv import highgui, cv_bp as opencv, calib, imgproc, features2d
+import ecto_sensor_msgs
 from optparse import OptionParser
 import time
 import tod_db
 import tod
 
 DEBUG = True
-CameraInfoBagger = ecto_sensor_msgs.Bagger_CameraInfo
-ImageBagger = ecto_sensor_msgs.Bagger_Image
-PointCloudBagger = ecto_sensor_msgs.Bagger_pointCloud
 
 class TodDetection(ecto.BlackBox):
     def __init__(self, plasm, feature_descriptor_params_file):
@@ -32,7 +32,8 @@ class TodDetection(ecto.BlackBox):
                 'point_cloud':self.guess_generator['point_cloud']}
 
     def expose_outputs(self):
-        return {'guesses': self.guess_generator['guesses']}
+        return {'object_ids': self.guess_generator['object_ids'],
+                'poses': self.guess_generator['poses']}
 
     def expose_parameters(self):
         return {'feature_descriptor_params': self._feature_descriptor_params_file}
@@ -61,21 +62,21 @@ if __name__ == '__main__':
     options = parse_options()
 
     # define the input
-    baggers = dict(image=ImageBagger(topic_name='image_mono'),
-                   camera_info=CameraInfoBagger(topic_name='camera_info'),
-                   point_cloud=PointCloudBagger(topic_name='points'),
+    baggers = dict(image=ecto_sensor_msgs.Bagger_Image(topic_name='image_mono'),
+                   camera_info=ecto_sensor_msgs.Bagger_CameraInfo(topic_name='camera_info'),
+                   point_cloud=ecto_sensor_msgs.Bagger_PointCloud2(topic_name='points'),
                    )
     im2mat_rgb = ecto_ros.Image2Mat()
-    camera_info_conversion = ecto_ros.Image2Mat()
-    point_cloud_conversion = ecto_ros.Image2Mat()
+    camera_info_conversion = ecto_ros.CameraInfo2Cv()
+    point_cloud_conversion = ecto_pcl_ros.Message2PointCloud(format=ecto_pcl.XYZRGB)
 
     if options.bag:
-        bagreader = ecto_ros.BagReader('Bag Reader',
+        bag_reader = ecto_ros.BagReader('Bag Reader',
                                     baggers=baggers,
                                     bag=options.bag,
                                   )
     else:
-        bagreader = ecto_ros.BagReader('Bag Reader',
+        bag_reader = ecto_ros.BagReader('Bag Reader',
                                     baggers=baggers,
                                     bag="/home/vrabaud/tod_data/test_data/Willow_Final_Test_Set/T_01.bag",
                                   )
@@ -93,15 +94,15 @@ if __name__ == '__main__':
     plasm = ecto.Plasm()
     plasm.connect(bag_reader['image'] >> im2mat_rgb['image'],
                   bag_reader['camera_info'] >> camera_info_conversion['camera_info'],
-                  bag_reader['point_cloud'] >> point_cloud_conversion['point_cloud'])
+                  bag_reader['point_cloud'] >> point_cloud_conversion['input'])
     tod_detection = TodDetection(plasm, options.config_file)
-    plasm.connect(im2mat_rgb['image'] >> tod_detection['image'],
-                  camera_info_conversion['camera_info'] >> tod_detection['camera_info'],
-                  point_cloud_conversion['point_cloud'] >> tod_detection['point_cloud'])
+    plasm.connect(im2mat_rgb['image'] >> tod_detection['image'])#,
+                  #point_cloud_conversion['output'] >> tod_detection['point_cloud'])
 
     # write data back to a file
-    guess_writer = tod.GuessWriter()
-    plasm.connect(tod_detection['guesses'] >> guess_writer['guesses'])
+    guess_writer = tod.GuessCsvWriter()
+    plasm.connect(tod_detection['object_ids'] >> guess_writer['object_ids'],
+                  tod_detection['poses'] >> guess_writer['poses'])
 
     # send data back to the API
 

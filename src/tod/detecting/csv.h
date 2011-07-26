@@ -42,6 +42,8 @@
 #pragma warning (disable:4996)
 #endif
 
+namespace object_recognition
+{
 namespace tod
 {
 //! @brief Timestamp descriptor object
@@ -144,4 +146,4 @@ CSVOutput openCSV(const RunInfo &rn);
 void writeCSV (CSVOutput out, const PoseInfo &ps);
 
 }
-
+}
