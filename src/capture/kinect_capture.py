@@ -1,16 +1,14 @@
 #!/usr/bin/env python
 # abstract the input.
 import ecto
-from ecto_opencv import highgui, calib, imgproc
+from ecto_opencv import highgui, calib, imgproc, cv_bp as cv
 import capture
 from fiducial_pose_est import *
-#lil bit of ros
-PKG = 'ecto_ros' # this package name
-import roslib; roslib.load_manifest(PKG)
 import ecto_ros, ecto_sensor_msgs, ecto_geometry_msgs
 import sys
 import argparse
 import time
+import math
 from IPython.Shell import IPShellEmbed
 
 ImageSub = ecto_sensor_msgs.Subscriber_Image
@@ -24,6 +22,11 @@ def parse_args():
     parser.add_argument('-b', '--bag', metavar='BAG_FILE', dest='bag', type=str,
                        default='',
                        help='A bagfile to write to.')
+    parser.add_argument('-d', '--delta', metavar='RADIANS', dest='delta', type=float,
+                       default=math.pi/ 36,
+                       help='''The delta angular threshold in pose. Default is pi/36 radians.  
+Frames will not be recorded unless they are not closer to any other pose by this amount.
+''')
     args = parser.parse_args()
     return args
 
@@ -63,19 +66,19 @@ if "__main__" == __name__:
                                      rows=5, cols=3,
                                      pattern_type=calib.ASYMMETRIC_CIRCLES_GRID,
                                      square_size=0.04, debug=True)
-    rgb2gray = imgproc.cvtColor('rgb -> gray', flag=7)
+    rgb2gray = imgproc.cvtColor('rgb -> gray', flag=imgproc.CV_RGB2GRAY)
+    delta_pose = capture.DeltaRT("delta R|T", angle_thresh=opts.delta)
     display = highgui.imshow('Poses', name='Poses', waitKey=5, autoSize=True)
     graph += [sync['image'] >> im2mat_rgb[:],
               im2mat_rgb[:] >> (rgb2gray[:], poser['color_image']),
               rgb2gray[:] >> poser['image'],
               poser['debug_image'] >> display['input'],
               sync['image_ci'] >> camera_info['camera_info'],
-              camera_info['K'] >> (poser['K']),
-              poser['found'] >> bagwriter['__test__'],
+              camera_info['K'] >> poser['K'],
+              poser['R', 'T', 'found'] >> delta_pose['R', 'T', 'found'],
+              delta_pose['novel'] >> bagwriter['__test__'],
               ]
-    
     plasm.connect(graph)
     ecto.view_plasm(plasm)
     sched = ecto.schedulers.Singlethreaded(plasm)
     sched.execute()
-    

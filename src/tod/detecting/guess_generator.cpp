@@ -135,7 +135,7 @@ struct GuessGenerator
         const std::vector<cv::Point3f> &local_matches_3d = matches_3d[matches_index];
         for (unsigned int match_index = 0; match_index < local_matches.size(); ++match_index)
         {
-          pcl::PointXYZRGB query_point = point_cloud[local_matches[match_index].trainIdx];
+          pcl::PointXYZRGB query_point = point_cloud.at(size_t(local_matches[match_index].trainIdx),0);
 
           // TODO: replace this by doing 3d to 3d with an unknown depth for that point
           if ((query_point.x != query_point.x) || (query_point.y != query_point.y) || (query_point.z != query_point.z))
