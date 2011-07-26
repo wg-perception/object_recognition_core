@@ -19,6 +19,5 @@ find_package(OpenCV 2.3.1 EXACT REQUIRED)
 ecto_python_env_gen(${CMAKE_LIBRARY_OUTPUT_DIRECTORY})
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
-include_directories(${EIGEN_INCLUDE_DIRS})
 add_subdirectory(src)
 add_subdirectory(doc)
