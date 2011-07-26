@@ -238,8 +238,9 @@ public:
   virtual void insert_object(const CollectionName &collection, const boost::property_tree::ptree &fields,
                              ObjectId & object_id, RevisionId & revision_id);
 
-  virtual void persist_fields(ObjectId & object_id, RevisionId & revision_id, const CollectionName &collection,
-                              const boost::property_tree::ptree &fields);
+  virtual void
+  persist_fields(const ObjectId & object_id, const CollectionName &collection,
+                 const boost::property_tree::ptree &fields, RevisionId & revision_id);
 
   virtual void load_fields(const ObjectId & object_id, const CollectionName &collection,
                            boost::property_tree::ptree &fields);
@@ -257,7 +258,8 @@ public:
                         const AttachmentName& attachment_name, const MimeType& mime_type,
                         const std::istream& stream, RevisionId & revision_id);
 
-  void getid(std::string & object_id, std::string & revision_id, const std::string& prefix = "");
+  void
+  getid(const ObjectId& object_id, std::string & revision_id, const std::string& prefix = "");
 
   void query(const CollectionName &collection, const std::map<AttachmentName, std::string> &regexps
              , std::vector<ObjectId> & object_ids);

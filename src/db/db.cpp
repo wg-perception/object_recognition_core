@@ -62,16 +62,17 @@ ObjectDb::ObjectDb(const std::string & json_params)
 }
 
 void
-  ObjectDb::set_params(const std::string & json_params)
-  {
-    *this = ObjectDb(json_params);
-  }
+    ObjectDb::set_params(const std::string & json_params)
+    {
+      *this = ObjectDb(json_params);
+    }
 
-void ObjectDb::insert_object(const CollectionName &collection, const boost::property_tree::ptree &fields,
-                             ObjectId & object_id, RevisionId & revision_id)
-{
-  db_->insert_object(collection, fields, object_id, revision_id);
-}
+    void
+    ObjectDb::insert_object(const CollectionName &collection, const boost::property_tree::ptree &fields,
+                            ObjectId & object_id, RevisionId & revision_id)
+    {
+      db_->insert_object(collection, fields, object_id, revision_id);
+    }
 
     void
     ObjectDb::set_attachment_stream(const ObjectId & object_id, const CollectionName &collection,
@@ -89,22 +90,26 @@ void ObjectDb::insert_object(const CollectionName &collection, const boost::prop
       db_->get_attachment_stream(object_id, collection, attachment_name, content_type, stream, revision_id);
     }
 
-  void
-  ObjectDb::load_fields(const ObjectId & object_id, const CollectionName &collection,
-                        boost::property_tree::ptree &fields)
-{
-  //TODO
-}
+    void
+    ObjectDb::load_fields(const ObjectId & object_id, const CollectionName &collection,
+                          boost::property_tree::ptree &fields)
+    {
+      db_->load_fields(object_id, collection, fields);
+    }
 
-void ObjectDb::persist_fields(ObjectId & object_id, RevisionId & revision_id, const CollectionName &collection,
-                              const boost::property_tree::ptree &fields)
-{ //TODO
-}
+    void
+    ObjectDb::persist_fields(const ObjectId & object_id, const CollectionName &collection,
+                             const boost::property_tree::ptree &fields, RevisionId & revision_id)
+    {
+      db_->persist_fields(object_id, collection, fields, revision_id);
+    }
 
-void ObjectDb::query(const CollectionName &collection, const std::map<AttachmentName, std::string> &regexps
-                     , std::vector<ObjectId> & object_ids)
-{ //TODO
-}
+    void
+    ObjectDb::query(const CollectionName &collection, const std::map<AttachmentName, std::string> &regexps
+                    , std::vector<ObjectId> & object_ids)
+    {
+      db_->query(collection, regexps, object_ids);
+    }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 

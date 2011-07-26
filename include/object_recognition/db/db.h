@@ -78,20 +78,6 @@ public:
     void
     set_params(const std::string & json_params = "{type:empty}");
 
-    template<typename T>
-      void
-      set_attachment(const ObjectId & object_id, const RevisionId & revision_id, const std::string& attachment_name,
-                     const T& attachment)
-      { //TODO
-      }
-
-      template<typename T>
-      void
-      get_attachment(const ObjectId & object_id, const RevisionId & revision_id, const std::string& attachment_name,
-                     T& attachment)
-      { //TODO
-      }
-
       void
       get_attachment_stream(const ObjectId & object_id, const CollectionName &collection,
                             const AttachmentName& attachment_name, MimeType& content_type, std::ostream& stream,
@@ -107,8 +93,9 @@ public:
 
   void load_fields(const ObjectId & object_id, const CollectionName &collection, boost::property_tree::ptree &fields);
 
-  void persist_fields(ObjectId & object_id, RevisionId & revision_id, const CollectionName &collection,
-                      const boost::property_tree::ptree &fields);
+  void
+      persist_fields(const ObjectId & object_id, const CollectionName &collection,
+                     const boost::property_tree::ptree &fields, RevisionId & revision_id);
 
   void query(const CollectionName &collection, const std::map<AttachmentName, std::string> &regexps
              , std::vector<ObjectId> & object_ids);
@@ -151,7 +138,7 @@ private:
         if (object_id_.empty())
           db.insert_object(collection_, fields_, object_id_, revision_id_);
         else
-          db.persist_fields(object_id_, revision_id_, collection_, fields_);
+          db.persist_fields(object_id_, collection_, fields_, revision_id_);
 
         // Persist the attachments
         boost::any nothing_any;

@@ -94,11 +94,11 @@ void ObjectDbCouch::insert_object(const CollectionName &collection, const boost:
   getid(object_id, revision_id);
 }
 
-void ObjectDbCouch::persist_fields(ObjectId & object_id, RevisionId & revision_id, const CollectionName &collection,
-                                   const boost::property_tree::ptree &fields)
+void
+ObjectDbCouch::persist_fields(const ObjectId & object_id, const CollectionName &collection,
+                              const boost::property_tree::ptree &fields, RevisionId & revision_id)
 {
   precondition_id(object_id);
-  precondition_rev(revision_id);
   upload_json(fields, url_id(object_id), "PUT");
   //need to update the revision here.
   getid(object_id, revision_id);
@@ -155,11 +155,12 @@ ObjectDbCouch::get_attachment_stream(const ObjectId & object_id, const Collectio
   curl_.perform();
 }
 
-void ObjectDbCouch::getid(std::string & object_id, std::string & revision_id, const std::string& prefix)
+void
+ObjectDbCouch::getid(const std::string & object_id, std::string & revision_id, const std::string& prefix)
 {
   boost::property_tree::ptree params;
   boost::property_tree::read_json(json_writer_stream_, params);
-  object_id = params.get<std::string>("id", "");
+  //object_id = params.get<std::string>("id", "");
   revision_id = params.get<std::string>("rev", "");
   if ((object_id.empty()) || (revision_id.empty()))
     throw std::runtime_error("Could not find the id or revision number");
@@ -168,6 +169,7 @@ void ObjectDbCouch::getid(std::string & object_id, std::string & revision_id, co
 void ObjectDbCouch::query(const CollectionName &collection, const std::map<AttachmentName, std::string> &regexps
                           , std::vector<ObjectId> & object_ids)
 {
+  //TODO
 }
 
 void ObjectDbCouch::upload_json(const boost::property_tree::ptree &ptree, const std::string& url,
