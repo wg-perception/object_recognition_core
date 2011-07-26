@@ -42,10 +42,11 @@
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-using db_future::CollectionName;
-using db_future::FieldName;
-using db_future::ObjectId;
-using db_future::RevisionId;
+using object_recognition::db_future::AttachmentName;
+using object_recognition::db_future::CollectionName;
+using object_recognition::db_future::MimeType;
+using object_recognition::db_future::ObjectId;
+using object_recognition::db_future::RevisionId;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -67,7 +68,7 @@ private:
 struct reader
 {
 public:
-  reader(std::istream& stream) :
+  reader(const std::istream& stream) :
       stream(stream)
   {
   }
@@ -77,7 +78,7 @@ public:
    */
   static size_t cb(char *ptr, size_t size, size_t nmemb, void *thiz);
 private:
-  std::istream& stream;
+  const std::istream& stream;
 };
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -229,7 +230,7 @@ private:
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-class ObjectDbCouch : public db_future::ObjectDbBase
+class ObjectDbCouch : public object_recognition::db_future::ObjectDbBase
 {
 public:
   ObjectDbCouch(const std::string &url);
@@ -243,17 +244,22 @@ public:
   virtual void load_fields(const ObjectId & object_id, const CollectionName &collection,
                            boost::property_tree::ptree &fields);
 
-  virtual void query(const CollectionName &collection, const std::map<FieldName, std::string> &regexps
+  virtual void query(const CollectionName &collection, const std::map<AttachmentName, std::string> &regexps
                      , std::vector<ObjectId> & object_ids) const;
 
-  void set_attachment_stream(ObjectId & object_id, RevisionId & revision_id, const CollectionName &collection,
-                             const std::string& attachment_name, std::istream& stream, const std::string& content_type);
+  virtual void
+  get_attachment_stream(const ObjectId & object_id, const CollectionName &collection,
+                        const std::string& attachment_name, const std::string& content_type, std::ostream& stream,
+                        RevisionId & revision_id);
 
-  void get_attachment_stream(const std::string& attachment_name, std::ostream& stream);
+  virtual void
+  set_attachment_stream(const ObjectId & object_id, const CollectionName &collection,
+                        const AttachmentName& attachment_name, const MimeType& mime_type,
+                        const std::istream& stream, RevisionId & revision_id);
 
   void getid(std::string & object_id, std::string & revision_id, const std::string& prefix = "");
 
-  void query(const CollectionName &collection, const std::map<FieldName, std::string> &regexps
+  void query(const CollectionName &collection, const std::map<AttachmentName, std::string> &regexps
              , std::vector<ObjectId> & object_ids);
 private:
 

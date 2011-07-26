@@ -15,7 +15,7 @@ install_ecto_module(tod)
 
 #deal with the db part of TOD
 ectomodule(tod_db
-    objcog_db.cpp
+    tod_db.cpp
     )
 link_ecto(tod_db object_recognition_db ${OpenCV_LIBS})
 install_ecto_module(tod_db)
