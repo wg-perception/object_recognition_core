@@ -47,8 +47,7 @@ ObjectDbCouch::ObjectDbCouch(const std::string &url) :
 void ObjectDbCouch::insert_object(const CollectionName &collection, const boost::property_tree::ptree &fields,
                                   ObjectId & object_id, RevisionId & revision_id)
 {
-  upload_json(fields, url_id(""), "POST");
-  std::cout << curl_.get_response_reason_phrase() << std::endl;
+  upload_json(fields, url_id(collection, ""), "POST");
   GetObjectRevisionId(object_id, revision_id);
 }
 
@@ -57,7 +56,7 @@ ObjectDbCouch::persist_fields(const ObjectId & object_id, const CollectionName &
                               const boost::property_tree::ptree &fields, RevisionId & revision_id)
 {
   precondition_id(object_id);
-  upload_json(fields, url_id(object_id), "PUT");
+  upload_json(fields, url_id(collection, object_id), "PUT");
   //need to update the revision here.
   GetRevisionId(revision_id);
 }
@@ -70,7 +69,7 @@ void ObjectDbCouch::load_fields(const ObjectId & object_id, const CollectionName
   json_writer_stream_.str("");
   curl_.setWriter(&json_writer_);
 
-  curl_.setURL(url_id(object_id));
+  curl_.setURL(url_id(collection, object_id));
   curl_.GET();
 
   curl_.perform();
@@ -88,16 +87,20 @@ ObjectDbCouch::set_attachment_stream(const ObjectId & object_id, const Collectio
                                      const AttachmentName& attachment_name, const MimeType& mime_type,
                                      const std::istream& stream, RevisionId & revision_id)
 {
+  precondition_id(object_id);
+  precondition_rev(revision_id);
+
   object_recognition::curl::reader binary_reader(stream);
   curl_.reset();
   curl_.setReader(&binary_reader);
   json_writer_stream_.str("");
   curl_.setWriter(&json_writer_);
   curl_.setHeader("Content-Type: " + mime_type);
-  curl_.setURL(url_id(object_id) + "/" + attachment_name);
+  curl_.setURL(url_id(collection, object_id) + "/" + attachment_name + "?rev=" + revision_id);
   curl_.PUT();
   curl_.perform();
-  std::string object_id_new;
+  std::cout << "atach: " << attachment_name << " " << (url_id(collection, object_id) + "/" + attachment_name) << std::endl;
+  std::cout << curl_.get_response_reason_phrase() <<std::endl;
   GetRevisionId(revision_id);
 }
 
@@ -110,7 +113,7 @@ ObjectDbCouch::get_attachment_stream(const ObjectId & object_id, const Collectio
   curl_.reset();
   json_writer_stream_.str("");
   curl_.setWriter(&binary_writer);
-  curl_.setURL(url_id(object_id) + "/" + attachment_name);
+  curl_.setURL(url_id(collection, object_id) + "/" + attachment_name);
   curl_.GET();
   curl_.perform();
 }
@@ -135,7 +138,7 @@ ObjectDbCouch::GetRevisionId(RevisionId & revision_id)
   boost::property_tree::read_json(json_writer_stream_, params);
   revision_id = params.get<std::string>("rev", "");
   if (revision_id.empty())
-    throw std::runtime_error("Could not find the revision number");
+    throw std::runtime_error("Could not find the revision number, from GetRevisionId");
 }
 
 void
@@ -156,6 +159,7 @@ ObjectDbCouch::upload_json(const boost::property_tree::ptree &ptree, const std::
   curl_.setReader(&json_reader_);
   //couch db post to the db
   curl_.setURL(url);
+  std::cout << url << std::endl;
   curl_.setHeader("Content-Type: application/json");
   if (request == "PUT")
   {

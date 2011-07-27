@@ -61,22 +61,24 @@ namespace object_recognition
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-class ObjectDb
-{
-public:
-  /** Constructor
-   * @param params a JSON string containing the parameters for the DB. Depending on the type of DB, it should have the
-   * following formatting:
-   *    - empty DB: {type:empty}
-   *    - CouchDB: {type: CouchDB, url: "whatever_url_you_want:whatever_port"}
-   */
-  ObjectDb(const std::string & json_params = "{type:empty}");
+    class ObjectDb
+    {
+    public:
+      static const std::string JSON_PARAMS_EMPTY_DB;
 
-  /** Set the parameters of the DB.
-     * @param json_params string that follows the conventions of the constructor
-     */
-    void
-    set_params(const std::string & json_params = "{type:empty}");
+      /** Constructor
+       * @param params a JSON string containing the parameters for the DB. Depending on the type of DB, it should have the
+       * following formatting:
+       *    - empty DB: {"type": "empty"}
+       *    - CouchDB: {"type": "CouchDB", "url": "whatever_url_you_want:whatever_port"}
+       */
+      ObjectDb(const std::string & json_params = JSON_PARAMS_EMPTY_DB);
+
+      /** Set the parameters of the DB.
+       * @param json_params string that follows the conventions of the constructor
+       */
+      void
+      set_params(const std::string & json_params = JSON_PARAMS_EMPTY_DB);
 
       void
       get_attachment_stream(const ObjectId & object_id, const CollectionName &collection,
@@ -132,8 +134,9 @@ private:
       }
 
       virtual void
-      Persist(ObjectDb & db)
+      Persist(ObjectDb & db, const CollectionName & collection)
       {
+        collection_ = collection;
         // Persist the object if it does not exist in the DB
         if (object_id_.empty())
           db.insert_object(collection_, fields_, object_id_, revision_id_);

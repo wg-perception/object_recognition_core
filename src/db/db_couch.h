@@ -93,13 +93,13 @@ private:
 
   void upload_json(const boost::property_tree::ptree &ptree, const std::string& url, const std::string& request);
 
-  inline std::string url_id(const ObjectId & id) const
+  inline std::string url_id(const CollectionName & collection_name, const ObjectId & id) const
   {
-    return url_ + (id.empty() ? "" : "/" + id);
+    return url_ + "/" + collection_name + (id.empty() ? "" : "/" + id);
   }
-  inline std::string url_id_rev(const ObjectId & id, const RevisionId & rev) const
+  inline std::string url_id_rev(const CollectionName &collection_name, const ObjectId & id, const RevisionId & rev) const
   {
-    return url_id(id) + "?rev=" + rev;
+    return url_id(collection_name, id) + "?rev=" + rev;
   }
 
   void

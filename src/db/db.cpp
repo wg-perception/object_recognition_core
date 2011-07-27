@@ -43,6 +43,7 @@ namespace object_recognition
 {
   namespace db_future
   {
+    const std::string ObjectDb::JSON_PARAMS_EMPTY_DB = "{\"type\":\"empty\"}";
 
 ObjectDb::ObjectDb(const std::string & json_params)
 {
