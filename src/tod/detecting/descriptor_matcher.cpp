@@ -16,6 +16,10 @@
 
 #include "object_recognition/db/db.h"
 
+namespace object_recognition
+{
+namespace tod
+{
 struct DescriptorMatcher
 {
   static void declare_params(ecto::tendrils& p)
@@ -30,7 +34,9 @@ struct DescriptorMatcher
   static void declare_io(const ecto::tendrils& params, ecto::tendrils& inputs, ecto::tendrils& outputs)
   {
     inputs.declare<cv::Mat>("descriptors", "The descriptors to match to the database");
-    inputs.declare<std::string>("params", "The parameters used to compute the descriptors, as JSON string");
+    inputs.declare<std::string>("params", "The parameters used to compute the descriptors, as JSON string.\n"
+                                "object_ids: std::vector<std::string> the object ids to use from the db.\n"
+                                "collection_objects: std::string the collection where the objects are stored.\n");
     outputs.declare<std::vector<std::vector<cv::DMatch> > >("matches", "The matches for the input descriptors");
     outputs.declare<std::vector<std::vector<cv::Point3f> > >("matches_3d", "The 3d position of the matches");
   }
@@ -46,11 +52,19 @@ struct DescriptorMatcher
 
     // load the descriptors from the DB
     db_future::ObjectDb db(params.get<std::string>("db"));
-    BOOST_FOREACH(const std::string & object_id, params.get<std::vector<std::string> >("object_ids")) {
-      db_future::Query query;
-      query.add_where("object_id", object_id);
-      query.query(db);
-    }
+    BOOST_FOREACH(const std::string & object_id, params.get<std::vector<std::string> >("object_ids"))
+        {
+          db_future::Query query;
+          query.add_where("object_id", object_id);
+          query.set_db(db);
+          query.set_collection(params.get<std::string>("collection_objects"));
+          for (db_future::QueryIterator query_iterator = query.begin(), query_iterator_end =
+                                            db_future::QueryIterator::end(); query_iterator != query_iterator_end;
+              ++query_iterator)
+              {
+
+          }
+        }
 
     //features_3d_;
   }
@@ -104,8 +118,8 @@ private:
   /** The 3d position of the loaded descriptors (the first index is on the object ID) */
   std::vector<std::vector<cv::Point3f> > features_3d_;
 };
-
-void wrap_DescriptorMatcher()
-{
-  ecto::wrap<DescriptorMatcher>("DescriptorMatcher", "Given descriptors, find matches, relating to objects.");
 }
+}
+
+ECTO_CELL(tod, object_recognition::tod::DescriptorMatcher, "DescriptorMatcher",
+          "Given descriptors, find matches, relating to objects.");

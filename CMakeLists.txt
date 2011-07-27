@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 2.8)
 set(CMAKE_BUILD_TYPE "Release" CACHE STRING "The build type.")
 project(objcog)
-add_definitions("-Werror -fno-strict-aliasing -Wall -Wl,--no-undefined")
+add_definitions("-Wall -Werror -fno-strict-aliasing -Wl,--no-undefined")
 include(rosbuild_lite.cmake)
 
 #set the default path for built libraries to the "ecto_opencv" directory

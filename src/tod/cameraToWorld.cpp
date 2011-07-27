@@ -61,9 +61,5 @@ struct CameraToWorld
   }
 };
 
-void wrap_CameraToWorld()
-{
-  ecto::wrap<CameraToWorld>(
-      "CameraToWorld",
-      "An ORB detector. Takes a image and a mask, and computes keypoints and descriptors(32 byte binary).");
-}
+ECTO_CELL(tod, CameraToWorld, "CameraToWorld",
+          "An ORB detector. Takes a image and a mask, and computes keypoints and descriptors(32 byte binary).");

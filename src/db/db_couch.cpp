@@ -37,11 +37,6 @@
 
 #include "db_couch.h"
 
-using db_future::CollectionName;
-using db_future::FieldName;
-using db_future::ObjectId;
-using db_future::RevisionId;
-
 size_t writer::cb(char *ptr, size_t size, size_t nmemb, void *userdata)
 {
   if (!userdata)
@@ -123,28 +118,33 @@ void ObjectDbCouch::load_fields(const ObjectId & object_id, const CollectionName
   // TODO go from the json_writer_ to filling the property_tree
 }
 
-void ObjectDbCouch::query(const CollectionName &collection, const std::map<FieldName, std::string> &regexps
+void ObjectDbCouch::query(const CollectionName &collection, const std::map<AttachmentName, std::string> &regexps
                           , std::vector<ObjectId> & object_ids) const
 {
 }
 
-void ObjectDbCouch::set_attachment_stream(ObjectId & object_id, RevisionId & revision_id,
-                                          const CollectionName &collection, const std::string& attachment_name,
-                                          std::istream& stream, const std::string& content_type)
+void
+ObjectDbCouch::set_attachment_stream(const ObjectId & object_id, const CollectionName &collection,
+                                     const AttachmentName& attachment_name, const MimeType& mime_type,
+                                     const std::istream& stream, RevisionId & revision_id)
 {
   reader binary_reader(stream);
   curl_.reset();
   curl_.setReader(&binary_reader);
   json_writer_stream_.str("");
   curl_.setWriter(&json_writer_);
-  curl_.setHeader("Content-Type: " + content_type);
-  curl_.setURL(url_id(object_id) + "/" + attachment_name + "?rev=" + revision_id);
+  curl_.setHeader("Content-Type: " + mime_type);
+  curl_.setURL(url_id(object_id) + "/" + attachment_name);
   curl_.PUT();
   curl_.perform();
-  getid(object_id, revision_id);
+  std::string object_id_new;
+  getid(object_id_new, revision_id);
 }
 
-void ObjectDbCouch::get_attachment_stream(const std::string& attachment_name, std::ostream& stream)
+void
+ObjectDbCouch::get_attachment_stream(const ObjectId & object_id, const CollectionName &collection,
+                                     const std::string& attachment_name, const std::string& content_type,
+                                     std::ostream& stream, RevisionId & revision_id)
 {
   writer binary_writer(stream);
   curl_.reset();
@@ -165,7 +165,7 @@ void ObjectDbCouch::getid(std::string & object_id, std::string & revision_id, co
     throw std::runtime_error("Could not find the id or revision number");
 }
 
-void ObjectDbCouch::query(const CollectionName &collection, const std::map<FieldName, std::string> &regexps
+void ObjectDbCouch::query(const CollectionName &collection, const std::map<AttachmentName, std::string> &regexps
                           , std::vector<ObjectId> & object_ids)
 {
 }

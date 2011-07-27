@@ -36,19 +36,28 @@
 #ifndef DB_H_
 #define DB_H_
 
+#include <sstream>
+
+#include <boost/archive/binary_iarchive.hpp>
+#include <boost/archive/binary_oarchive.hpp>
 #include <boost/property_tree/json_parser.hpp>
 #include <boost/property_tree/ptree.hpp>
 
-namespace db_future
+namespace object_recognition
 {
-//Forward declare some classes
-class ObjectDbBase;
+  namespace db_future
+  {
+    //Forward declare some classes
+    class ObjectDbBase;
 
-typedef std::string CollectionName;
-typedef std::string Field;
-typedef std::string FieldName;
-typedef std::string ObjectId;
-typedef std::string RevisionId;
+    typedef std::string AttachmentName;
+    typedef std::string CollectionName;
+    typedef std::string MimeType;
+    typedef std::string Field;
+    typedef std::string ObjectId;
+    typedef std::string RevisionId;
+
+    const std::string MIME_TYPE_DEFAULT = "application/octet-stream";
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -56,14 +65,42 @@ class ObjectDb
 {
 public:
   /** Constructor
-   * @param params a JSON string containing the parameters for the DB
+   * @param params a JSON string containing the parameters for the DB. Depending on the type of DB, it should have the
+   * following formatting:
+   *    - empty DB: {type:empty}
+   *    - CouchDB: {type: CouchDB, url: "whatever_url_you_want:whatever_port"}
    */
-  ObjectDb(const std::string & json_params);
+  ObjectDb(const std::string & json_params = "{type:empty}");
 
-  void set_attachment(ObjectId & object_id, RevisionId & revision_id, const CollectionName &collection,
-                      const std::string& attachment_name, std::istream& stream, const std::string& content_type);
+  /** Set the parameters of the DB.
+     * @param json_params string that follows the conventions of the constructor
+     */
+    void
+    set_params(const std::string & json_params = "{type:empty}");
 
-  void get_attachment(const std::string& attachment_name, std::ostream& stream);
+    template<typename T>
+      void
+      set_attachment(const ObjectId & object_id, const RevisionId & revision_id, const std::string& attachment_name,
+                     const T& attachment)
+      { //TODO
+      }
+
+      template<typename T>
+      void
+      get_attachment(const ObjectId & object_id, const RevisionId & revision_id, const std::string& attachment_name,
+                     T& attachment)
+      { //TODO
+      }
+
+      void
+      get_attachment_stream(const ObjectId & object_id, const CollectionName &collection,
+                            const AttachmentName& attachment_name, MimeType& content_type, std::ostream& stream,
+                            RevisionId & revision_id);
+
+      void
+      set_attachment_stream(const ObjectId & object_id, const CollectionName &collection,
+                            const AttachmentName& attachment_name, const MimeType& content_type,
+                            const std::istream& stream, RevisionId & revision_id);
 
   void insert_object(const CollectionName &collection, const boost::property_tree::ptree &fields, ObjectId & object_id,
                      RevisionId & revision_id);
@@ -73,7 +110,7 @@ public:
   void persist_fields(ObjectId & object_id, RevisionId & revision_id, const CollectionName &collection,
                       const boost::property_tree::ptree &fields);
 
-  void query(const CollectionName &collection, const std::map<FieldName, std::string> &regexps
+  void query(const CollectionName &collection, const std::map<AttachmentName, std::string> &regexps
              , std::vector<ObjectId> & object_ids);
 
 private:
@@ -83,83 +120,109 @@ private:
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-/** A Document holds fields (in the CouchDB sense) which are strings that are queryable, and attachments (that are
- * un-queryable binary blobs)
- */
-class Document
-{
-public:
-  Document(ObjectDb & db) :
-      db_(db)
-  {
-  }
+    /** A Document holds fields (in the CouchDB sense) which are strings that are queryable, and attachments (that are
+     * un-queryable binary blobs)
+     */
+    class Document
+    {
+    public:
+      Document()
+      {
+      }
 
-  Document(ObjectDb & db, const CollectionName & collection, const ObjectId &object_id) :
-      collection_(collection), object_id_(object_id), db_(db)
-  {
-    // Load all fields from the DB (not the attachments)
-    db_.load_fields(object_id_, collection_, fields_);
-  }
+      Document(ObjectDb & db, const CollectionName & collection, const ObjectId &object_id)
+          :
+            collection_(collection),
+            object_id_(object_id)
+      {
+        // Load all fields from the DB (not the attachments)
+        db.load_fields(object_id_, collection_, fields_);
+      }
 
-  virtual ~Document()
-  {
-  }
-  ;
+      virtual
+      ~Document()
+      {
+      }
 
-  virtual void Persist()
-  {
-    // Persist the object if it does not exist in the DB
-    if (object_id_.empty())
-      db_.insert_object(collection_, fields_, object_id_, revision_id_);
-    else
-      db_.persist_fields(object_id_, revision_id_, collection_, fields_);
+      virtual void
+      Persist(ObjectDb & db)
+      {
+        // Persist the object if it does not exist in the DB
+        if (object_id_.empty())
+          db.insert_object(collection_, fields_, object_id_, revision_id_);
+        else
+          db.persist_fields(object_id_, revision_id_, collection_, fields_);
 
-    // Persist the attachments
-    boost::any nothing_any;
-    for (std::map<FieldName, boost::any>::const_iterator attachment = attachments_.begin(), attachment_end =
-                                                             attachments_.end(); attachment != attachment_end;
-        ++attachment)
+        // Persist the attachments
+        boost::any nothing_any;
+        for (std::map<AttachmentName, StreamAttachment>::const_iterator attachment = attachments_.begin(),
+            attachment_end = attachments_.end(); attachment != attachment_end; ++attachment)
         {
-      if (attachment->second.empty())
-        continue;
-      // Persist the attachment
-      // TODO
-      //persist_attachment(db_, object_id_, collection_, attachment->first, attachment->second);
-    }
-  }
-
-  /** Extract a specific field from the pre-loaded Document
-   * @param field
-   * @param t
-   */
-  template<typename T>
-    void get_attachment(const FieldName &field, T & t) const
-    {
-      // check if it is loaded
-      std::map<FieldName, boost::any>::const_iterator val = attachments_.find(field);
-      if ((val != attachments_.end()) && (!val->second.empty()))
-      {
-        t = *val;
-        return;
+          // Persist the attachment
+          db.set_attachment_stream(object_id_, collection_, attachment->first, attachment->second.type_,
+                                   attachment->second.stream_, revision_id_);
+        }
       }
-      else
-      {
-        // Otherwise, load it from the DB
-        // TODO
-        //load_attachment(db_, object_id_, collection_, field, t);
-        attachments_[field] = t;
-      }
-    }
 
-  /** Add a specific field to a Document (that has been pre-loaded or not)
-   * @param field
-   * @param t
-   */
-  template<typename T>
-    void set_attachment(const FieldName &field, const T & t)
-    {
-      attachments_[field] = t;
-    }
+      /** Extract a specific field from the pre-loaded Document
+       * @param field
+       * @param t
+       */
+      template<typename T>
+      void
+      get_attachment(const AttachmentName &attachment_name, T & value) const
+      {
+        typedef boost::archive::binary_iarchive InputArchive;
+        std::stringstream stream;
+        get_attachment_stream(attachment_name, stream);
+        stream.seekg(0);
+        InputArchive ar(stream);
+        ar & value;
+      }
+
+      /** Extract the stream of a specific attachment from the pre-loaded Document
+       * @param attachment_name the name of the attachment
+       * @param stream the string of data to write to
+       * @param mime_type the MIME type as stoerd in the DB
+       */
+      void
+      get_attachment_stream(const AttachmentName &attachment_name, std::ostream& stream, MimeType mime_type =
+          MIME_TYPE_DEFAULT) const;
+
+      /** Extract the stream of a specific attachment for a Document from the DB
+       * @param db the db to read from
+       * @param attachment_name the name of the attachment
+       * @param stream the string of data to write to
+       * @param mime_type the MIME type as stored in the DB
+       * @param do_use_cache if true, try to load and store data in the object itself
+       */
+      void
+      get_attachment_stream(ObjectDb & db, const AttachmentName &attachment_name, std::ostream& stream,
+                            MimeType mime_type = MIME_TYPE_DEFAULT, bool do_use_cache = true);
+
+      /** Add a specific field to a Document (that has been pre-loaded or not)
+       * @param field
+       * @param t
+       */
+      template<typename T>
+      void
+      set_attachment(const AttachmentName &field, const T & value, const MimeType& mime_type = MIME_TYPE_DEFAULT)
+      {
+        typedef boost::archive::binary_oarchive OutputArchive;
+        std::stringstream ss;
+        OutputArchive ar(ss);
+        ar & value;
+        set_attachment_stream(field, ss);
+      }
+
+      /** Add a stream attachment to a a Document
+       * @param attachment_name the name of the stream
+       * @param stream the stream itself
+       * @param content_type the MIME type of the stream
+       */
+      void
+      set_attachment_stream(const AttachmentName &attachment_name, const std::istream& stream,
+                            const MimeType& mime_type = MIME_TYPE_DEFAULT);
 
   /** Get a specific value */
   template<typename T>
@@ -191,9 +254,34 @@ private:
   mutable CollectionName collection_;
   mutable ObjectId object_id_;
   RevisionId revision_id_;
-  ObjectDb db_;
   /** contains the attachments: binary blobs */
-  std::map<FieldName, boost::any> attachments_;
+      struct StreamAttachment
+      {
+        StreamAttachment()
+        {
+        }
+        StreamAttachment(const MimeType &type)
+            :
+              type_(type)
+        {
+        }
+        StreamAttachment(const MimeType &type, const std::istream &stream)
+            :
+              type_(type)
+        {
+          stream_ << stream;
+        }
+        void operator=(const StreamAttachment& rhs) {
+          type_ = rhs.type_;
+          stream_ << rhs.stream_;
+        }
+        StreamAttachment(const StreamAttachment& rhs) {
+          *this = rhs;
+        }
+        MimeType type_;
+        std::stringstream stream_;
+      };
+      std::map<AttachmentName, StreamAttachment> attachments_;
   /** contains the fields: they are of integral types */
   boost::property_tree::ptree fields_;
 };
@@ -246,6 +334,10 @@ template<>
 class QueryIterator : public std::iterator<std::forward_iterator_tag, int>
 {
 public:
+  QueryIterator()
+  {
+  }
+
   QueryIterator(ObjectDb& db) :
       db_(db)
   {
@@ -289,9 +381,9 @@ public:
       return std::equal(query_iterator.object_ids_.begin(), query_iterator.object_ids_.end(), object_ids_.begin());
   }
 
-  QueryIterator end()
+  static QueryIterator end()
   {
-    return QueryIterator(db_);
+    return QueryIterator();
   }
 private:
   ObjectDb db_;
@@ -311,23 +403,36 @@ public:
    * @param field a field to match. Only one regex per field will be accepted
    * @param regex the regular expression the field verifies, in TODO format
    */
-  void add_where(const FieldName & field, const std::string & regex);
+  void add_where(const AttachmentName & field, const std::string & regex);
 
   /** Add collections that should be checked for specific fields
    * @param collection
    */
-  void set_collection(CollectionName & collection);
+  void set_collection(const CollectionName & collection);
+
+  /** Add collections that should be checked for specific fields
+   * @param collection
+   */
+  void set_db(const ObjectDb & db);
 
   /** Perform the query itself
    * @param db The db on which the query is performed
    * @return an Iterator that will iterate over each result
    */
-  QueryIterator query(ObjectDb &db);
+  QueryIterator begin();
+
+  /** Perform the query itself
+   * @param db The db on which the query is performed
+   * @return an Iterator that will iterate over each result
+   */
+  QueryIterator end();
 private:
+  ObjectDb db_;
   CollectionName collection_;
   /** the list of regexes to use */
-  std::map<FieldName, std::string> regexes_;
-};
+  std::map<AttachmentName, std::string> regexes_;
+    };
+  }
 }
 
 #endif /* DB_H_ */

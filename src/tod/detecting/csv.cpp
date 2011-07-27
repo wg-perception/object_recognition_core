@@ -37,6 +37,8 @@
 
 #include "csv.h"
 
+namespace object_recognition
+{
 namespace tod
 {
 
@@ -50,7 +52,7 @@ void TimeStamp::set()
   hour = Tm->tm_hour;
   min = Tm->tm_min;
   sec = Tm->tm_sec;
-  msec = 0;//FIXME get better resolution
+  msec = 0; //FIXME get better resolution
 }
 
 CSVOutput openCSV(const RunInfo &rn)
@@ -59,8 +61,8 @@ CSVOutput openCSV(const RunInfo &rn)
 
   //! Format the name of the output file
   std::string name = str(
-                         boost::format("RUN%.4d_%s_%d%d%d_%.2d.%.2d.%.2d.csv") % rn.runID % rn.name % rn.ts.year
-                             % rn.ts.month % rn.ts.day % rn.ts.hour % rn.ts.min % rn.ts.sec);
+      boost::format("RUN%.4d_%s_%d%d%d_%.2d.%.2d.%.2d.csv") % rn.runID % rn.name % rn.ts.year % rn.ts.month % rn.ts.day
+          % rn.ts.hour % rn.ts.min % rn.ts.sec);
   out->open(name.c_str());
   //! Print the key at the top of the file for data interpretation
   *out << "ts,Run,Frame,dID,oID,R11,R12,R13,R21,R22,R23,R31,R32,R33,Tx,Ty,Tz" << std::endl;
@@ -96,6 +98,8 @@ void writeCSV(CSVOutput out, const PoseInfo &ps)
   *out << ps.Tx << "," << ps.Ty << "," << ps.Tz << std::endl;
 }
 }
+}
+
 #if __STAND_ALONE__
 
 //! @brief A sample execution of the CSV output functionality

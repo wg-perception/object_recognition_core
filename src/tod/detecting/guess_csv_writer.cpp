@@ -30,10 +30,15 @@ typedef unsigned int ObjectId;
 
 using ecto::tendrils;
 
+namespace object_recognition
+{
+namespace tod
+{
+
 /** Ecto implementation of a module that takes
  *
  */
-struct GuessWriter
+struct GuessCsvWriter
 {
   static void declare_params(tendrils& p)
   {
@@ -67,7 +72,7 @@ struct GuessWriter
     int run_number = inputs.get<int>("run_number");
     const std::string &team_name = inputs.get<std::string>("team_name");
 
-    tod::RunInfo run_info;
+    RunInfo run_info;
     run_info.ts.set();
     run_info.runID = run_number;
     run_info.name = team_name;
@@ -99,8 +104,8 @@ struct GuessWriter
     return 0;
   }
 };
-
-void wrap_GuessWriter()
-{
-  ecto::wrap<GuessWriter>("GuessWriter", "Given guesses, writes them to a CSV.");
 }
+}
+
+ECTO_CELL(tod, object_recognition::tod::GuessCsvWriter, "GuessCsvWriter",
+          "Given guesses, writes them to a CSV.");

@@ -38,6 +38,11 @@ struct DetectorOptions
   int mode;
 };
 
+namespace object_recognition
+{
+namespace tod
+{
+
 /** Ecto implementation of a module that takes
  *
  */
@@ -206,10 +211,9 @@ private:
   unsigned int min_inliers_;
   /** The number of RANSAC iterations to perform */
   unsigned int n_ransac_iterations_;
+};
 }
-;
+}
 
-void wrap_GuessGenerator()
-{
-  ecto::wrap<GuessGenerator>("GuessGenerator", "Given ORB descriptors and 3D positions, compute object guesses.");
-}
+ECTO_CELL(tod, object_recognition::tod::GuessGenerator, "GuessGenerator",
+          "Given descriptors and 3D positions, compute object guesses.");
