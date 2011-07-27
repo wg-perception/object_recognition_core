@@ -14,6 +14,9 @@
 
 using ecto::tendrils;
 
+using object_recognition::db_future::CollectionName;
+using object_recognition::db_future::ObjectId;
+
 namespace object_recognition
 {
   namespace tod
@@ -42,7 +45,6 @@ namespace object_recognition
       void
       on_object_id_change(const std::string& id)
       {
-        SHOW();
         object_id_ = id;
         std::cout << "object_id = " << id << std::endl;
       }
@@ -70,13 +72,13 @@ namespace object_recognition
         doc.set_attachment<cv::Mat>("points", inputs.get<cv::Mat>("points"));
         doc.set_value("object_id", object_id_);
 
-        doc.Persist(db_);
-
+        std::cout << "Persisting" << std::endl;
+        doc.Persist(db_, collection_models_);
         return 0;
       }
       object_recognition::db_future::ObjectDb db_;
-      std::string object_id_;
-      std::string collection_models_;
+      ObjectId object_id_;
+      CollectionName collection_models_;
     };
   }
 }
