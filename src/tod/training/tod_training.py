@@ -83,8 +83,7 @@ if __name__ == '__main__':
     plasm.connect(db_reader['image', 'mask', 'depth', 'K', 'R', 'T'] >> tod_model['image', 'mask', 'depth', 'K', 'R', 'T'])
 
     # persist to the DB
-    db_json_params_str = str(db_json_params['db'])
-    db_json_params_str = db_json_params_str.replace("'", '"').replace('u"', '"').replace('{u', '{')
+    db_json_params_str = str(db_json_params['db']).replace("'", '"').replace('u"', '"').replace('{u', '{')
     db_writer = tod_db.TodModelInserter("db_writer", collection_models='models', db_json_params=db_json_params_str,
                                         object_id=object_id)
     orb_params = None
