@@ -16,108 +16,48 @@ using ecto::tendrils;
 
 namespace object_recognition
 {
-namespace tod
-{
-struct TodModel
-{
-  cv::Mat descriptors_;
-  std::string object_id_;
-  std::vector<cv::Point3f> points_;
-};
-
-/** Class reading the TOD models in the db
- */
-struct TodModelReader
-{
-  static void declare_params(tendrils& params)
+  namespace tod
   {
-    params.declare<std::string>("object_id", "The object id, to associate this frame with.");
-    params.declare<std::string>("db_params", "The db parameters, in JSON string. C.f. ObjectDb");
-  }
+    /** Class inserting the TOD models in the db
+     */
+    struct TodModelInserter
+    {
+      static void
+      declare_params(tendrils& params)
+      {
+        params.declare<std::string>("collection_models",
+                                    "std::string The collection in which to store the models on the db", "models");
+        params.declare<std::string>("db_json_params", "std::string The DB parameters, cf. ObjectDb", "models");
+        params.declare<std::string>("object_id", "The object id, to associate this frame with.");
+      }
 
-  static void declare_io(const tendrils& params, tendrils& inputs, tendrils& outputs)
-  {
-    inputs.declare<cv::Point3f>("points", "The 3d position of the points.");
-    inputs.declare<cv::Mat>("descriptors", "The descriptors.");
-    inputs.declare<int>("trigger", "Capture trigger, 'c' for capture.");
-  }
+      static void
+      declare_io(const tendrils& params, tendrils& inputs, tendrils& outputs)
+      {
+        inputs.declare<cv::Mat>("points", "The 3d position of the points.");
+        inputs.declare<cv::Mat>("descriptors", "The descriptors.");
+        inputs.declare<int>("trigger", "Capture trigger, 'c' for capture.");
+      }
 
-  void on_object_id_change(const std::string& id)
-  {
-//      SHOW();
-//      std::cout << "object_id = " << id << std::endl;
-//      couch::View v;
-//      //v.add_map("map", boost::str(boost::format(where_doc_id) % id));
-//      db_.run_view(v, -1, 0, total_rows_, offset_, docs_);
-//      db_.print();
-//      current_frame_ = 0;
-  }
+      void
+      on_object_id_change(const std::string& id)
+      {
+        SHOW();
+        object_id_ = id;
+        std::cout << "object_id = " << id << std::endl;
+      }
 
-  void configure(tendrils& params, tendrils& inputs, tendrils& outputs)
-  {
-    ecto::spore<std::string> object_id = params.at("object_id");
-    object_id.set_callback(boost::bind(&TodModelReader::on_object_id_change, this, _1));
-    db_.set_params(params.get<std::string>("db_params"));
-    on_object_id_change(params.get<std::string>("object_id"));
-  }
-
-  int process(const tendrils& inputs, tendrils& outputs)
-  {
-    //if (inputs.get<int> ("trigger") != 'c')
-    //  return 0;
-    couch::Document doc = docs_[current_frame_];
-    doc.update();
-
-    //doc.get_attachment<std::vector<cv::Point3f> >("points", outputs.get<std::vector<cv::Point3f> >("points"));
-    doc.get_attachment<cv::Mat>("descriptors", outputs.get<cv::Mat>("descriptors"));
-
-    return 0;
-  }
-
-  std::vector<couch::Document> docs_;
-  std::string object_id_;
-  int total_rows_, offset_;
-  db_future::ObjectDb db_;
-  int current_frame_;
-};
-
-/** Class inserting the TOD models in the db
- */
-struct TodModelInserter
-{
-  static void declare_params(tendrils& params)
-  {
-    params.declare<std::string>("collection_models",
-                                "std::string The collection in which to store the models on the db", "models");
-    params.declare<std::string>("db_json_params", "std::string The DB parameters, cf. ObjectDb", "models");
-    params.declare<std::string>("object_id", "The object id, to associate this frame with.");
-  }
-
-  static void declare_io(const tendrils& params, tendrils& inputs, tendrils& outputs)
-  {
-    inputs.declare<cv::Mat>("points", "The 3d position of the points.");
-    inputs.declare<cv::Mat>("descriptors", "The descriptors.");
-    inputs.declare<int>("trigger", "Capture trigger, 'c' for capture.");
-  }
-
-  void on_object_id_change(const std::string& id)
-  {
-    SHOW();
-    object_id_ = id;
-    std::cout << "object_id = " << id << std::endl;
-  }
-
-  void
+      void
       configure(tendrils& params, tendrils& inputs, tendrils& outputs)
       {
         ecto::spore<std::string> object_id = params.at("object_id");
         object_id.set_callback(boost::bind(&TodModelInserter::on_object_id_change, this, _1));
         db_.set_params(params.get<std::string>("db_json_params"));
-        collection_models_ =params.get<std::string>("collection_models");
+        collection_models_ = params.get<std::string>("collection_models");
         on_object_id_change(params.get<std::string>("object_id"));
       }
 
-  int
+      int
       process(const tendrils& inputs, tendrils& outputs)
       {
         //if (inputs.get<int> ("trigger") != 'c')
@@ -126,8 +66,8 @@ struct TodModelInserter
 
         object_recognition::db_future::Document doc;
 
-        doc.set_attachment("descriptors", inputs.get<cv::Mat>("descriptors"));
-        doc.set_attachment("points", inputs.get<cv::Mat>("points"));
+        doc.set_attachment<cv::Mat>("descriptors", inputs.get<cv::Mat>("descriptors"));
+        doc.set_attachment<cv::Mat>("points", inputs.get<cv::Mat>("points"));
         doc.set_value("object_id", object_id_);
 
         doc.Persist(db_);
@@ -142,7 +82,6 @@ struct TodModelInserter
 }
 
 ECTO_CELL(tod_db, object_recognition::tod::TodModelInserter, "TodModelInserter", "Insert a TOD model in the db")
-ECTO_CELL(tod_db, object_recognition::tod::TodModelReader, "TodModelReader", "Read a TOD model in the db")
 
 ECTO_DEFINE_MODULE(tod_db)
 {
