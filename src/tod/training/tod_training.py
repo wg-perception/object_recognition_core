@@ -11,7 +11,7 @@ import capture
 import tod
 import tod_db
 
-DEBUG = True
+DEBUG = False
 DISPLAY = False
 
 class TodModelComputation(ecto.BlackBox):
@@ -63,9 +63,10 @@ if __name__ == '__main__':
     if options.config_file is None or not os.path.exists(options.config_file):
         raise 'option file does not exist'
     
-    json_params = json.loads(open(options.config_file).read())
-    db_url = str(json_params['db_url'])
-    db_reader = capture.ObservationReader("db_reader", db_url=db_url, object_id="object_01")
+    db_json_params = json.loads(str(open(options.config_file).read()))
+    db_url = str(db_json_params['db']['url'])
+    object_id = "paneer_tikka_masala_spinach_trader_joes"
+    db_reader = capture.ObservationReader("db_reader", db_url=db_url, object_id=object_id)
 
     # connect the visualization
     plasm = ecto.Plasm()
@@ -82,7 +83,10 @@ if __name__ == '__main__':
     plasm.connect(db_reader['image', 'mask', 'depth', 'K', 'R', 'T'] >> tod_model['image', 'mask', 'depth', 'K', 'R', 'T'])
 
     # persist to the DB
-    db_writer = tod_db.TodModelInserter("db_writer", object_id="object_01")
+    db_json_params_str = str(db_json_params['db'])
+    db_json_params_str = db_json_params_str.replace("'", '"').replace('u"', '"').replace('{u', '{')
+    db_writer = tod_db.TodModelInserter("db_writer", collection_models='models', db_json_params=db_json_params_str,
+                                        object_id=object_id)
     orb_params = None
     #db_writer.add_misc(orb_params)
     plasm.connect(tod_model['points', 'descriptors'] >> db_writer['points', 'descriptors'])
