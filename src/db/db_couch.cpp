@@ -33,52 +33,9 @@
  *
  */
 
-#include <curl/curl.h>
-
 #include "db_couch.h"
 
-size_t writer::cb(char *ptr, size_t size, size_t nmemb, void *userdata)
-{
-  if (!userdata)
-  {
-    return 0;
-  }
-
-  writer* data = static_cast<writer*>(userdata);
-  //data->written +=size*nmemb;
-  data->stream.write(ptr, size * nmemb);
-  //std::cout << "**"<< data->written << std::endl;
-  return size * nmemb;
-}
-
-/**
- * static callback for c style void pointer cookies.
- */
-size_t reader::cb(char *ptr, size_t size, size_t nmemb, void *thiz)
-{
-  if (!thiz)
-  {
-    return 0;
-  }
-  reader* data = static_cast<reader*>(thiz);
-  return data->stream.rdbuf()->sgetn(ptr, size * nmemb);
-}
-
-struct cURL_GS
-{
-  cURL_GS()
-  {
-    //std::cout << "curl init" << std::endl;
-    curl_global_init(CURL_GLOBAL_ALL);
-  }
-  ~cURL_GS()
-  {
-    //std::cout << "curl cleanup" << std::endl;
-    curl_global_cleanup();
-  }
-};
-
-cURL_GS curl_init_cleanup;
+object_recognition::curl::cURL_GS curl_init_cleanup;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -91,6 +48,7 @@ void ObjectDbCouch::insert_object(const CollectionName &collection, const boost:
                                   ObjectId & object_id, RevisionId & revision_id)
 {
   upload_json(fields, url_id(""), "POST");
+  std::cout << curl_.get_response_reason_phrase() << std::endl;
   GetObjectRevisionId(object_id, revision_id);
 }
 
@@ -117,7 +75,7 @@ void ObjectDbCouch::load_fields(const ObjectId & object_id, const CollectionName
 
   curl_.perform();
 
-  if (curl_.get_response_code() == cURL::OK)
+  if (curl_.get_response_code() == object_recognition::curl::cURL::OK)
   {
     //update the object from the result.
     json_writer_stream_.seekg(0);
@@ -130,7 +88,7 @@ ObjectDbCouch::set_attachment_stream(const ObjectId & object_id, const Collectio
                                      const AttachmentName& attachment_name, const MimeType& mime_type,
                                      const std::istream& stream, RevisionId & revision_id)
 {
-  reader binary_reader(stream);
+  object_recognition::curl::reader binary_reader(stream);
   curl_.reset();
   curl_.setReader(&binary_reader);
   json_writer_stream_.str("");
@@ -148,7 +106,7 @@ ObjectDbCouch::get_attachment_stream(const ObjectId & object_id, const Collectio
                                      const std::string& attachment_name, const std::string& content_type,
                                      std::ostream& stream, RevisionId & revision_id)
 {
-  writer binary_writer(stream);
+  object_recognition::curl::writer binary_writer(stream);
   curl_.reset();
   json_writer_stream_.str("");
   curl_.setWriter(&binary_writer);
