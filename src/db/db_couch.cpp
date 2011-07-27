@@ -91,7 +91,7 @@ void ObjectDbCouch::insert_object(const CollectionName &collection, const boost:
                                   ObjectId & object_id, RevisionId & revision_id)
 {
   upload_json(fields, url_id(""), "POST");
-  getid(object_id, revision_id);
+  GetObjectRevisionId(object_id, revision_id);
 }
 
 void
@@ -101,7 +101,7 @@ ObjectDbCouch::persist_fields(const ObjectId & object_id, const CollectionName &
   precondition_id(object_id);
   upload_json(fields, url_id(object_id), "PUT");
   //need to update the revision here.
-  getid(object_id, revision_id);
+  GetRevisionId(revision_id);
 }
 
 void ObjectDbCouch::load_fields(const ObjectId & object_id, const CollectionName &collection,
@@ -109,18 +109,20 @@ void ObjectDbCouch::load_fields(const ObjectId & object_id, const CollectionName
 {
   precondition_id(object_id);
   curl_.reset();
+  json_writer_stream_.str("");
   curl_.setWriter(&json_writer_);
 
   curl_.setURL(url_id(object_id));
   curl_.GET();
+
   curl_.perform();
 
-  // TODO go from the json_writer_ to filling the property_tree
-}
-
-void ObjectDbCouch::query(const CollectionName &collection, const std::map<AttachmentName, std::string> &regexps
-                          , std::vector<ObjectId> & object_ids) const
-{
+  if (curl_.get_response_code() == cURL::OK)
+  {
+    //update the object from the result.
+    json_writer_stream_.seekg(0);
+    boost::property_tree::read_json(json_writer_stream_, fields);
+  }
 }
 
 void
@@ -138,7 +140,7 @@ ObjectDbCouch::set_attachment_stream(const ObjectId & object_id, const Collectio
   curl_.PUT();
   curl_.perform();
   std::string object_id_new;
-  getid(object_id_new, revision_id);
+  GetRevisionId(revision_id);
 }
 
 void
@@ -150,32 +152,48 @@ ObjectDbCouch::get_attachment_stream(const ObjectId & object_id, const Collectio
   curl_.reset();
   json_writer_stream_.str("");
   curl_.setWriter(&binary_writer);
-  curl_.setURL(url_id("") + "/" + attachment_name);
+  curl_.setURL(url_id(object_id) + "/" + attachment_name);
   curl_.GET();
   curl_.perform();
 }
 
 void
-ObjectDbCouch::getid(const std::string & object_id, std::string & revision_id, const std::string& prefix)
+ObjectDbCouch::GetObjectRevisionId(ObjectId& object_id, RevisionId & revision_id) {
+  boost::property_tree::ptree params;
+  boost::property_tree::read_json(json_writer_stream_, params);
+  object_id = params.get<std::string>("id", "");
+  revision_id = params.get<std::string>("rev", "");
+std::cout << "rev: " << revision_id <<std::endl;
+  if (object_id.empty())
+    throw std::runtime_error("Could not find the object id");
+  if (revision_id.empty())
+    throw std::runtime_error("Could not find the revision number");
+}
+
+void
+ObjectDbCouch::GetRevisionId(RevisionId & revision_id)
 {
   boost::property_tree::ptree params;
   boost::property_tree::read_json(json_writer_stream_, params);
-  //object_id = params.get<std::string>("id", "");
   revision_id = params.get<std::string>("rev", "");
-  if ((object_id.empty()) || (revision_id.empty()))
-    throw std::runtime_error("Could not find the id or revision number");
+  if (revision_id.empty())
+    throw std::runtime_error("Could not find the revision number");
 }
 
-void ObjectDbCouch::query(const CollectionName &collection, const std::map<AttachmentName, std::string> &regexps
-                          , std::vector<ObjectId> & object_ids)
+void
+ObjectDbCouch::query(const CollectionName &collection, const std::map<AttachmentName, std::string> &regexps
+                     , std::vector<ObjectId> & object_ids)
 {
   //TODO
 }
 
-void ObjectDbCouch::upload_json(const boost::property_tree::ptree &ptree, const std::string& url,
-                                const std::string& request)
+void
+ObjectDbCouch::upload_json(const boost::property_tree::ptree &ptree, const std::string& url, const std::string& request)
 {
   curl_.reset();
+  json_writer_stream_.str("");
+  json_reader_stream_.str("");
+  boost::property_tree::write_json(json_reader_stream_, ptree);
   curl_.setWriter(&json_writer_);
   curl_.setReader(&json_reader_);
   //couch db post to the db

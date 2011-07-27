@@ -242,11 +242,8 @@ public:
   persist_fields(const ObjectId & object_id, const CollectionName &collection,
                  const boost::property_tree::ptree &fields, RevisionId & revision_id);
 
-  virtual void load_fields(const ObjectId & object_id, const CollectionName &collection,
-                           boost::property_tree::ptree &fields);
-
-  virtual void query(const CollectionName &collection, const std::map<AttachmentName, std::string> &regexps
-                     , std::vector<ObjectId> & object_ids) const;
+  virtual void
+  load_fields(const ObjectId & object_id, const CollectionName &collection, boost::property_tree::ptree &fields);
 
   virtual void
   get_attachment_stream(const ObjectId & object_id, const CollectionName &collection,
@@ -255,14 +252,12 @@ public:
 
   virtual void
   set_attachment_stream(const ObjectId & object_id, const CollectionName &collection,
-                        const AttachmentName& attachment_name, const MimeType& mime_type,
-                        const std::istream& stream, RevisionId & revision_id);
+                        const AttachmentName& attachment_name, const MimeType& mime_type, const std::istream& stream,
+                        RevisionId & revision_id);
 
-  void
-  getid(const ObjectId& object_id, std::string & revision_id, const std::string& prefix = "");
-
-  void query(const CollectionName &collection, const std::map<AttachmentName, std::string> &regexps
-             , std::vector<ObjectId> & object_ids);
+  virtual void
+  query(const CollectionName &collection, const std::map<AttachmentName, std::string> &regexps
+        , std::vector<ObjectId> & object_ids);
 private:
 
   inline void precondition_id(const ObjectId & id) const
@@ -287,6 +282,12 @@ private:
   {
     return url_id(id) + "?rev=" + rev;
   }
+
+  void
+  GetObjectRevisionId(ObjectId& object_id, RevisionId & revision_id);
+
+  void
+  GetRevisionId(RevisionId & revision_id);
 
   /** The URL of the DB, including port */
   std::string url_;
