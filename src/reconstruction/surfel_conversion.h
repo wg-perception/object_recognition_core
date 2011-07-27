@@ -5,7 +5,7 @@
  *      Author: mkrainin
  */
 
-#ifndef SURFEL_CONVERSION_H_
+#ifndef SURFEL_CONVERSTION_H_
 #define SURFEL_CONVERSTION_H_
 
 #include <surfels.h>
@@ -20,7 +20,7 @@
 
 namespace surfels{
 
-struct surfelPt
+extern struct surfelPt
 {
         PCL_ADD_POINT4D;    // This adds the members x,y,z which can also be accessed using the point (which is float[4])
         float rgb; //packed

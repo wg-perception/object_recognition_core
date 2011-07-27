@@ -28,7 +28,7 @@ namespace surfels
     }
   }
 
-  float packRGB(const boost::array<float, 3> rgb) //args should be in [0, 1)
+  inline float packRGB(const boost::array<float, 3> rgb) //args should be in [0, 1)
   {
     const uint32_t rgbi = ((uint32_t)(255 * rgb[0]) << 16) | ((uint32_t)(255 * rgb[1]) << 8) | (uint32_t)(255 * rgb[2]);
     return *reinterpret_cast<const float*>(&rgbi);

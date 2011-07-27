@@ -9,7 +9,7 @@
 
 namespace surfels
 {
-
+surfelPt EIGEN_ALIGN_128;
 /*
 void convertModelToMarker(SurfelModel const& model, visualization_msgs::Marker &marker)
 {
