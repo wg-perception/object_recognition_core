@@ -39,4 +39,4 @@ if True:
     p = subprocess.Popen(mesh_args,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
     o, e = p.communicate()
     if p.returncode :
-        raise o,e,p.returncode
+        raise (o,e,p.returncode)

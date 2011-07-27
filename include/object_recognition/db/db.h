@@ -72,14 +72,16 @@ namespace object_recognition
        *    - empty DB: {"type": "empty"}
        *    - CouchDB: {"type": "CouchDB", "url": "whatever_url_you_want:whatever_port"}
        */
-      ObjectDb(const std::string & json_params = JSON_PARAMS_EMPTY_DB);
+      explicit ObjectDb(const std::string & json_params = JSON_PARAMS_EMPTY_DB);
+      explicit ObjectDb(const boost::property_tree::ptree& params);
 
       /** Set the parameters of the DB.
        * @param json_params string that follows the conventions of the constructor
        */
       void
       set_params(const std::string & json_params = JSON_PARAMS_EMPTY_DB);
-
+      void
+            set_params(const boost::property_tree::ptree& pt);
       void
       get_attachment_stream(const ObjectId & object_id, const CollectionName &collection,
                             const AttachmentName& attachment_name, MimeType& content_type, std::ostream& stream,

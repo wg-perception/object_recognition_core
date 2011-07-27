@@ -69,8 +69,7 @@ namespace object_recognition
         doc.set_attachment<cv::Mat>("descriptors", inputs.get<cv::Mat>("descriptors"));
         doc.set_attachment<cv::Mat>("points", inputs.get<cv::Mat>("points"));
         doc.set_value("object_id", object_id_);
-
-        doc.Persist(db_,db_future::CollectionName());
+        doc.Persist(db_,collection_models_);
 
         return 0;
       }

@@ -45,6 +45,17 @@ namespace object_recognition
   {
     const std::string ObjectDb::JSON_PARAMS_EMPTY_DB = "{\"type\":\"empty\"}";
 
+    ObjectDb::ObjectDb(const boost::property_tree::ptree& params)
+    {
+      std::string db_type = params.get<std::string>("type");
+      if (db_type == "empty")
+      {
+      }
+      else if (db_type == "CouchDB")
+      {
+        db_ = boost::shared_ptr<ObjectDbBase>(new ObjectDbCouch(params.get<std::string>("url")));
+      }
+    }
 ObjectDb::ObjectDb(const std::string & json_params)
 {
   boost::property_tree::ptree params;
@@ -67,6 +78,12 @@ void
     {
       *this = ObjectDb(json_params);
     }
+
+void
+ObjectDb::set_params(const boost::property_tree::ptree& pt)
+{
+    *this = ObjectDb(pt);
+}
 
     void
     ObjectDb::insert_object(const CollectionName &collection, const boost::property_tree::ptree &fields,
