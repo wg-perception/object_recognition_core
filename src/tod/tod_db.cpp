@@ -70,7 +70,7 @@ namespace object_recognition
         doc.set_attachment<cv::Mat>("points", inputs.get<cv::Mat>("points"));
         doc.set_value("object_id", object_id_);
 
-        doc.Persist(db_);
+        doc.Persist(db_,db_future::CollectionName());
 
         return 0;
       }

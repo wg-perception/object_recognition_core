@@ -744,7 +744,7 @@ void updateSurfelModel(SurfelModel &surfelModel, SurfelUpdateData &data, SurfelU
       }// add
     }// y
   }// x
-  std::cout<<"Added "<<numAdded<<" surfels"<<std::endl;
+  //std::cout<<"Added "<<numAdded<<" surfels"<<std::endl;
 
   //check for starvation removal
   unsigned int totalSurfels = surfels.size();
@@ -766,7 +766,7 @@ void updateSurfelModel(SurfelModel &surfelModel, SurfelUpdateData &data, SurfelU
       canUpdateSurfel.push_back(canUpdateCopy[i]);
     }
   }
-  std::cout<<"Removed "<<removed.size()<<" surfels"<<std::endl;
+  //std::cout<<"Removed "<<removed.size()<<" surfels"<<std::endl;
 
   //transform surfels back to original coordinate system
   if (!transformIsIdentity)

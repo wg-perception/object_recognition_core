@@ -1,0 +1,9 @@
+<!DOCTYPE FilterScript>
+<FilterScript>
+ <filter name="Surface Reconstruction: Poisson">
+  <Param type="RichInt" value="8" name="OctDepth"/>
+  <Param type="RichInt" value="8" name="SolverDivide"/>
+  <Param type="RichFloat" value="2" name="SamplesPerNode"/>
+  <Param type="RichFloat" value="1" name="Offset"/>
+ </filter>
+</FilterScript>
