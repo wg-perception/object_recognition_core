@@ -5,6 +5,7 @@
 #include <boost/filesystem.hpp>
 #include <boost/foreach.hpp>
 
+#include "object_recognition/db/couch.hpp"
 #include "object_recognition/db/opencv.h"
 
 namespace fs = boost::filesystem;
