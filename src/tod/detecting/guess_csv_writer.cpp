@@ -7,7 +7,6 @@
 
 #include <boost/filesystem.hpp>
 #include <boost/foreach.hpp>
-#include <boost/program_options.hpp>
 
 #include <ecto/ecto.hpp>
 
@@ -23,8 +22,6 @@
 #include "opencv_candidate/PoseRT.h"
 
 #include "csv.h"
-
-namespace po = boost::program_options;
 
 typedef unsigned int ObjectId;
 
