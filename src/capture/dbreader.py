@@ -11,7 +11,7 @@ while True:
     image_view = highgui.imshow(name="RGB", waitKey=5, autoSize=True)
     mask_view = highgui.imshow(name="mask", waitKey= -1, autoSize=True)
     depth_view = highgui.imshow(name="Depth", waitKey= -1, autoSize=True);
-    db_reader = capture.ObservationReader("db_reader", object_id="odwalla_orange_juice")
+    db_reader = capture.ObservationReader("db_reader", object_id="spam")
     
     plasm.connect(db_reader, "image", image_view, "input")
     plasm.connect(db_reader, "mask", mask_view, "input")

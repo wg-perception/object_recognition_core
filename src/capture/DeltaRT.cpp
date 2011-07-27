@@ -77,7 +77,6 @@ namespace object_recognition
       ecto::spore<cv::Mat> R_, T_;
       ecto::spore<bool> found_, novel_, reset_;
       ecto::spore<double> angle_thresh_;
-
     };
   }
 }

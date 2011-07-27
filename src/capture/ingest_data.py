@@ -4,14 +4,10 @@ import ecto
 from ecto_opencv import highgui, calib, imgproc
 import capture
 from fiducial_pose_est import *
-#lil bit of ros
-PKG = 'ecto_ros' # this package name
-import roslib; roslib.load_manifest(PKG)
 import ecto_ros, ecto_sensor_msgs, ecto_geometry_msgs
 import sys
 import argparse
 import time
-from IPython.Shell import IPShellEmbed
 
 ImageSub = ecto_sensor_msgs.Subscriber_Image
 CameraInfoSub = ecto_sensor_msgs.Subscriber_CameraInfo
@@ -20,7 +16,7 @@ CameraInfoBagger = ecto_sensor_msgs.Bagger_CameraInfo
 
 
 def parse_args():
-    parser = argparse.ArgumentParser(description='Captures data appropriate for training object recognition pipelines.')
+    parser = argparse.ArgumentParser(description='Ingests data into the database that is appropriate for training object recognition pipelines.')
     parser.add_argument('-i', '--object_id', metavar='OBJECT_ID', dest='object_id', type=str, default='object_%d' % int(time.time()),
                        help='The object id to insert into the db.')
     parser.add_argument('-d', '--description', metavar='OBJECT_DESCRIPTION', dest='description', type=str,
@@ -29,8 +25,10 @@ def parse_args():
     parser.add_argument('-b', '--bag', metavar='BAG_FILE', dest='bag', type=str,
                        default='',
                        help='A bagfile to capture from.')
+    parser.add_argument('--commit', type=bool, dest='commit',default=False)
     parser.add_argument('tags', metavar='TAG', nargs='+', type=str,
                        help='Tags to mark the object with.')
+
     args = parser.parse_args()
     return args
 
@@ -101,17 +99,17 @@ if "__main__" == __name__:
                   bitwise_and[:] >> mask_display[:],
                   poser['R', 'T', 'found'] >> delta_pose['R', 'T', 'found'],
                   )
-    #plasm.connect(
-#                  im2mat_depth['image'] >> db_inserter['depth'],
-#                  masker['mask'] >> db_inserter['mask'],
-#                  poser['R', 'T'] >> db_inserter['R', 'T'],
-#                  delta_pose['novel'] >> db_inserter['found'],
-#                  camera_info['K'] >> db_inserter['K'],
-#                  brg2rgb[:] >> db_inserter['image'],
-#                  )
-    ecto.view_plasm(plasm)
-
-    capture.insert_object(args.object_id, args.description, args.tags)
-    capture.insert_session(session_id, args.object_id, capture_description, capture_tags)
+    if args.commit:
+        plasm.connect(
+                      im2mat_depth['image'] >> db_inserter['depth'],
+                      masker['mask'] >> db_inserter['mask'],
+                      poser['R', 'T'] >> db_inserter['R', 'T'],
+                      delta_pose['novel'] >> db_inserter['found'],
+                      camera_info['K'] >> db_inserter['K'],
+                      brg2rgb[:] >> db_inserter['image'],
+                      )
+    
+        capture.insert_object(args.object_id, args.description, args.tags)
+        capture.insert_session(session_id, args.object_id, capture_description, capture_tags)
     
     sched.execute()
