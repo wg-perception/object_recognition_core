@@ -74,6 +74,7 @@ namespace object_recognition
 
         std::cout << "Persisting" << std::endl;
         doc.Persist(db_, collection_models_);
+
         return 0;
       }
       object_recognition::db_future::ObjectDb db_;

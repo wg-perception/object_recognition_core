@@ -14,10 +14,11 @@ ectomodule(reconstruction
   module.cpp
   surfel_conversion.cpp
   surfels.cpp
+  SurfelReconstruction.cpp
   )
 
 link_ecto(reconstruction
-  object_recognition_db
+  ${pcl_LIBRARIES}
   ${OpenCV_LIBS}
   )
 
