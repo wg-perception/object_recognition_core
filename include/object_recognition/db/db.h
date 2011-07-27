@@ -133,26 +133,12 @@ private:
       {
       }
 
+      /** Persist your object to a given DB
+       * @param db the DB to persist to
+       * @param collection the collection/schema where it should be saved
+       */
       virtual void
-      Persist(ObjectDb & db, const CollectionName & collection)
-      {
-        collection_ = collection;
-        // Persist the object if it does not exist in the DB
-        if (object_id_.empty())
-          db.insert_object(collection_, fields_, object_id_, revision_id_);
-        else
-          db.persist_fields(object_id_, collection_, fields_, revision_id_);
-
-        // Persist the attachments
-        boost::any nothing_any;
-        for (std::map<AttachmentName, StreamAttachment>::const_iterator attachment = attachments_.begin(),
-            attachment_end = attachments_.end(); attachment != attachment_end; ++attachment)
-        {
-          // Persist the attachment
-          db.set_attachment_stream(object_id_, collection_, attachment->first, attachment->second.type_,
-                                   attachment->second.stream_, revision_id_);
-        }
-      }
+      Persist(ObjectDb & db, const CollectionName & collection);
 
       /** Extract a specific field from the pre-loaded Document
        * @param field
@@ -191,18 +177,18 @@ private:
                             MimeType mime_type = MIME_TYPE_DEFAULT, bool do_use_cache = true);
 
       /** Add a specific field to a Document (that has been pre-loaded or not)
-       * @param field
-       * @param t
+       * @param attachment_name the name of the attachment
+       * @param value the attachment itself, that needs to be boost serializable
        */
       template<typename T>
       void
-      set_attachment(const AttachmentName &field, const T & value, const MimeType& mime_type = MIME_TYPE_DEFAULT)
+      set_attachment(const AttachmentName &attachment_name, const T & value)
       {
         typedef boost::archive::binary_oarchive OutputArchive;
         std::stringstream ss;
         OutputArchive ar(ss);
         ar & value;
-        set_attachment_stream(field, ss);
+        set_attachment_stream(attachment_name, ss);
       }
 
       /** Add a stream attachment to a a Document
@@ -214,37 +200,42 @@ private:
       set_attachment_stream(const AttachmentName &attachment_name, const std::istream& stream,
                             const MimeType& mime_type = MIME_TYPE_DEFAULT);
 
-  /** Get a specific value */
-  template<typename T>
-    T get_value(const std::string& key)
-    {
-      std::cerr << "Document::get_value<T> not implemented for that type";
-      throw;
-    }
+      /** Get a specific value */
+      template<typename T>
+      T
+      get_value(const std::string& key)
+      {
+        std::cerr << "Document::get_value<T> not implemented for that type";
+        throw;
+      }
 
-  /** Set a specific value */
-  template<typename T>
-    void set_value(const std::string& key, const T& val)
-    {
-      std::cerr << "Document::set_value<T> not implemented for that type";
-      throw;
-    }
+      /** Set a specific value */
+      template<typename T>
+      void
+      set_value(const std::string& key, const T& val)
+      {
+        std::cerr << "Document::set_value<T> not implemented for that type";
+        throw;
+      }
 
-  /** Clear all the fields, there are no fields left after */
-  void ClearAllFields();
+      /** Clear all the fields, there are no fields left after */
+      void
+      ClearAllFields();
 
-  /** Remove a specific field */
-  void ClearField(const std::string& key);
+      /** Remove a specific field */
+      void
+      ClearField(const std::string& key);
 
-  /** Set the id and the revision number */
-  void SetIdRev(const std::string& id, const std::string& rev);
+      /** Set the id and the revision number */
+      void
+      SetIdRev(const std::string& id, const std::string& rev);
 
-private:
-  bool is_loaded_;
-  mutable CollectionName collection_;
-  mutable ObjectId object_id_;
-  RevisionId revision_id_;
-  /** contains the attachments: binary blobs */
+    private:
+      bool is_loaded_;
+      mutable CollectionName collection_;
+      mutable ObjectId object_id_;
+      RevisionId revision_id_;
+      /** contains the attachments: binary blobs */
       struct StreamAttachment
       {
         StreamAttachment()
@@ -261,20 +252,23 @@ private:
         {
           stream_ << stream;
         }
-        void operator=(const StreamAttachment& rhs) {
+        void
+        operator=(const StreamAttachment& rhs)
+        {
           type_ = rhs.type_;
           stream_ << rhs.stream_;
         }
-        StreamAttachment(const StreamAttachment& rhs) {
+        StreamAttachment(const StreamAttachment& rhs)
+        {
           *this = rhs;
         }
         MimeType type_;
         std::stringstream stream_;
       };
       std::map<AttachmentName, StreamAttachment> attachments_;
-  /** contains the fields: they are of integral types */
-  boost::property_tree::ptree fields_;
-};
+      /** contains the fields: they are of integral types */
+      boost::property_tree::ptree fields_;
+    };
 
 // Implementation of some specializations
 template<>
