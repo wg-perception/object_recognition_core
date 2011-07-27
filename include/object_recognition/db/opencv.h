@@ -8,8 +8,9 @@
 #include <boost/serialization/binary_object.hpp>
 #include <boost/serialization/split_free.hpp>
 
-#include "object_recognition/db/couch.hpp"
-
+namespace couch {
+  class Document;
+}
 namespace object_recognition
 {
   namespace db

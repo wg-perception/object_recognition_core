@@ -72,8 +72,9 @@ public:
   virtual void insert_object(const CollectionName &collection, const boost::property_tree::ptree &fields,
                              ObjectId & object_id, RevisionId & revision_id) = 0;
 
-  virtual void persist_fields(ObjectId & object_id, RevisionId & revision_id, const CollectionName &collection,
-                              const boost::property_tree::ptree &fields) = 0;
+  virtual void
+      persist_fields(const ObjectId & object_id, const CollectionName &collection,
+                     const boost::property_tree::ptree &fields, RevisionId & revision_id) = 0;
 
   virtual void load_fields(const ObjectId & object_id, const CollectionName &collection,
                            boost::property_tree::ptree &fields) = 0;

@@ -4,5 +4,9 @@
 	{
 		"n_features": 1000
 	},
-	"db_url": "http://localhost:5984"
+	"db":
+	{
+		"type": "CouchDB",
+		"url": "http://localhost:5984"
+	}
 }

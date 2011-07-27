@@ -9,7 +9,6 @@
 #include <iostream>
 
 #include <boost/filesystem.hpp>
-#include <boost/program_options.hpp>
 
 #include <ecto/ecto.hpp>
 
@@ -22,26 +21,12 @@
 
 #include "opencv_candidate/PoseRT.h"
 
-namespace po = boost::program_options;
-
 typedef unsigned int ObjectId;
-
-struct DetectorOptions
-{
-  /** The path to a ROS bag file
-   */
-  std::string bag_file_;
-  std::string imageFile;
-  std::string baseDirectory;
-  std::string config;
-  int verbose;
-  int mode;
-};
 
 namespace object_recognition
 {
-namespace tod
-{
+  namespace tod
+  {
 
 /** Ecto implementation of a module that takes
  *
@@ -50,8 +35,8 @@ struct GuessGenerator
 {
   static void declare_params(ecto::tendrils& p)
   {
-    p.declare<std::string>("base_directory", "Base directory");
-    p.declare<std::string>("config_file", "Configuration file");
+    p.declare<std::string>("min_inliers", "Minimum number of inliers");
+    p.declare<std::string>("n_ransac_iterations", "Number of RANSAC iterations");
   }
 
   static void declare_io(const ecto::tendrils& params, ecto::tendrils& inputs, ecto::tendrils& outputs)
@@ -65,40 +50,12 @@ struct GuessGenerator
     outputs.declare<std::vector<opencv_candidate::Pose> >("poses", "The poses of the found objects");
   }
 
-  void configure(ecto::tendrils& params, ecto::tendrils& inputs, ecto::tendrils& outputs)
-  {
-    std::string config_file = params.get<std::string>("config_file");
-    DetectorOptions opts;
-
-    po::variables_map vm;
-
-    po::options_description desc("Allowed options");
-    desc.add_options()("base,B", po::value<std::string>(&opts.baseDirectory)->default_value("./"),
-                       "The directory that the training base is in.");
-    desc.add_options()("verbose,V", po::value<int>(&opts.verbose)->default_value(0), "Verbosity level.");
-
-    boost::filesystem::path cf(config_file);
-    if (boost::filesystem::exists(cf))
-    {
-      std::ifstream cf_is(cf.string().c_str());
-
-      po::store(po::parse_config_file(cf_is, desc, false), vm);
-      po::notify(vm);
-    }
-    else
-    {
-      std::cerr << cf << " does not exist!" << std::endl;
-      desc.print(std::cout);
-      throw std::runtime_error("Bad options");
-    }
-
-    if (!vm.count("base"))
-    {
-      std::cout << "Must supply training base directory." << "\n";
-      std::cout << desc << std::endl;
-      throw std::runtime_error("Bad options");
-    }
-  }
+  void
+      configure(ecto::tendrils& params, ecto::tendrils& inputs, ecto::tendrils& outputs)
+      {
+        min_inliers_ = params.get<unsigned int>("min_inliers");
+        n_ransac_iterations_ = params.get<unsigned int>("n_ransac_iterations");
+      }
 
   /** Get the 2d keypoints and figure out their 3D position from the depth map
    * @param inputs

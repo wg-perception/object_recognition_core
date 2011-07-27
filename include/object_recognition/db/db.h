@@ -61,36 +61,24 @@ namespace object_recognition
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-class ObjectDb
-{
-public:
-  /** Constructor
-   * @param params a JSON string containing the parameters for the DB. Depending on the type of DB, it should have the
-   * following formatting:
-   *    - empty DB: {type:empty}
-   *    - CouchDB: {type: CouchDB, url: "whatever_url_you_want:whatever_port"}
-   */
-  ObjectDb(const std::string & json_params = "{type:empty}");
+    class ObjectDb
+    {
+    public:
+      static const std::string JSON_PARAMS_EMPTY_DB;
 
-  /** Set the parameters of the DB.
-     * @param json_params string that follows the conventions of the constructor
-     */
-    void
-    set_params(const std::string & json_params = "{type:empty}");
+      /** Constructor
+       * @param params a JSON string containing the parameters for the DB. Depending on the type of DB, it should have the
+       * following formatting:
+       *    - empty DB: {"type": "empty"}
+       *    - CouchDB: {"type": "CouchDB", "url": "whatever_url_you_want:whatever_port"}
+       */
+      ObjectDb(const std::string & json_params = JSON_PARAMS_EMPTY_DB);
 
-    template<typename T>
+      /** Set the parameters of the DB.
+       * @param json_params string that follows the conventions of the constructor
+       */
       void
-      set_attachment(const ObjectId & object_id, const RevisionId & revision_id, const std::string& attachment_name,
-                     const T& attachment)
-      { //TODO
-      }
-
-      template<typename T>
-      void
-      get_attachment(const ObjectId & object_id, const RevisionId & revision_id, const std::string& attachment_name,
-                     T& attachment)
-      { //TODO
-      }
+      set_params(const std::string & json_params = JSON_PARAMS_EMPTY_DB);
 
       void
       get_attachment_stream(const ObjectId & object_id, const CollectionName &collection,
@@ -107,8 +95,9 @@ public:
 
   void load_fields(const ObjectId & object_id, const CollectionName &collection, boost::property_tree::ptree &fields);
 
-  void persist_fields(ObjectId & object_id, RevisionId & revision_id, const CollectionName &collection,
-                      const boost::property_tree::ptree &fields);
+  void
+      persist_fields(const ObjectId & object_id, const CollectionName &collection,
+                     const boost::property_tree::ptree &fields, RevisionId & revision_id);
 
   void query(const CollectionName &collection, const std::map<AttachmentName, std::string> &regexps
              , std::vector<ObjectId> & object_ids);
@@ -145,13 +134,14 @@ private:
       }
 
       virtual void
-      Persist(ObjectDb & db)
+      Persist(ObjectDb & db, const CollectionName & collection)
       {
+        collection_ = collection;
         // Persist the object if it does not exist in the DB
         if (object_id_.empty())
           db.insert_object(collection_, fields_, object_id_, revision_id_);
         else
-          db.persist_fields(object_id_, revision_id_, collection_, fields_);
+          db.persist_fields(object_id_, collection_, fields_, revision_id_);
 
         // Persist the attachments
         boost::any nothing_any;
