@@ -12,7 +12,7 @@ import time
 import tod_db
 import tod
 
-DEBUG = True
+DEBUG = False
 
 class TodDetection(ecto.BlackBox):
     def __init__(self, plasm, feature_descriptor_json_params, db_json_params, object_ids, search_json_params,
@@ -25,6 +25,7 @@ class TodDetection(ecto.BlackBox):
         self._guess_json_params = guess_json_params
 
         self.feature_descriptor = features2d.FeatureDescriptor(json_params=feature_descriptor_json_params)
+        print object_ids
         self.descriptor_matcher = tod.DescriptorMatcher(db_json_params=db_json_params, object_ids=object_ids,
                                                         search_json_params=search_json_params)
         self.guess_generator = tod.GuessGenerator(json_params=guess_json_params)
@@ -114,7 +115,7 @@ if __name__ == '__main__':
     json_params = json.loads(str(open(options.config_file).read()))
     feature_descriptor_json_params = str(json_params['feature_descriptor']).replace("'", '"').replace('u"', '"').replace('{u', '{')
     db_json_params = str(json_params['db']).replace("'", '"').replace('u"', '"').replace('{u', '{')
-    object_ids = str(json_params['object_ids']).replace("'", '"').replace('u"', '"').replace('{u', '{')
+    object_ids = eval(str(json_params['object_ids']).replace("'", '"').replace('u"', '"').replace('{u', '{'))
     guess_json_params = str(json_params['guess']).replace("'", '"').replace('u"', '"').replace('{u', '{')
     search_json_params = str(json_params['search']).replace("'", '"').replace('u"', '"').replace('{u', '{')
 
@@ -137,6 +138,4 @@ if __name__ == '__main__':
         ecto.view_plasm(plasm)
 
     # execute the pipeline
-    while True:
-        if(plasm.execute(1) != 0):
-            break
+    plasm.execute()

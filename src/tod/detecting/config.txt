@@ -1,7 +1,10 @@
 {
 	"feature_descriptor":
 	{
-		"combination": "ORB",
+		"combination":
+		{
+			"type": "ORB"
+		},
 		"feature":
 		{
 			"n_features": 1000

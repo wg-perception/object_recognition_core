@@ -77,23 +77,24 @@ namespace object_recognition
       configure(ecto::tendrils& params, ecto::tendrils& inputs, ecto::tendrils& outputs)
       {
         // get some parameters
-        boost::property_tree::ptree param_tree;
-        std::stringstream ssparams;
-        ssparams << params.get<std::string>("db_json_params");
-        boost::property_tree::read_json(ssparams, param_tree);
+        {
+          boost::property_tree::ptree search_param_tree;
+          std::stringstream ssparams;
+          ssparams << params.get<std::string>("search_json_params");
+          boost::property_tree::read_json(ssparams, search_param_tree);
 
-        radius_ = param_tree.get<float>("radius");
-        ratio_ = param_tree.get<float>("ratio");
+          radius_ = search_param_tree.get<float>("radius");
+          ratio_ = search_param_tree.get<float>("ratio");
+        }
 
         // Load the list of Object to study
-        boost::python::object python_object_ids;
+        const boost::python::object & python_object_ids = params.get<boost::python::object>("object_ids");
         boost::python::stl_input_iterator<std::string> begin(python_object_ids), end;
         std::vector<std::string> object_ids;
         std::copy(begin, end, std::back_inserter(object_ids));
 
         // load the descriptors from the DB
         db_future::ObjectDb db(params.get<std::string>("db_json_params"));
-        boost::property_tree::read_json(ssparams, param_tree);
         BOOST_FOREACH(const std::string & object_id, object_ids)
             {
               db_future::View query;
