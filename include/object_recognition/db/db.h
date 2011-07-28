@@ -72,39 +72,47 @@ namespace object_recognition
        *    - empty DB: {"type": "empty"}
        *    - CouchDB: {"type": "CouchDB", "url": "whatever_url_you_want:whatever_port"}
        */
-      explicit ObjectDb(const std::string & json_params = JSON_PARAMS_EMPTY_DB);
-      explicit ObjectDb(const boost::property_tree::ptree& params);
+      explicit
+      ObjectDb(const std::string & json_params = JSON_PARAMS_EMPTY_DB);
+      explicit
+      ObjectDb(const boost::property_tree::ptree& params);
 
       /** Set the parameters of the DB.
        * @param json_params string that follows the conventions of the constructor
        */
       void
       set_params(const std::string & json_params = JSON_PARAMS_EMPTY_DB);
+
       void
-            set_params(const boost::property_tree::ptree& pt);
+      set_params(const boost::property_tree::ptree& pt);
+
       void
       get_attachment_stream(const ObjectId & object_id, const CollectionName &collection,
                             const AttachmentName& attachment_name, MimeType& content_type, std::ostream& stream,
-                            RevisionId & revision_id);
+                            RevisionId & revision_id) const;
 
       void
       set_attachment_stream(const ObjectId & object_id, const CollectionName &collection,
                             const AttachmentName& attachment_name, const MimeType& content_type,
-                            const std::istream& stream, RevisionId & revision_id);
+                            const std::istream& stream, RevisionId & revision_id) const;
 
-  void insert_object(const CollectionName &collection, const boost::property_tree::ptree &fields, ObjectId & object_id,
-                     RevisionId & revision_id);
+      void
+      insert_object(const CollectionName &collection, const boost::property_tree::ptree &fields, ObjectId & object_id,
+                    RevisionId & revision_id) const;
 
-  void load_fields(const ObjectId & object_id, const CollectionName &collection, boost::property_tree::ptree &fields);
+      void
+      load_fields(const ObjectId & object_id, const CollectionName &collection,
+                  boost::property_tree::ptree &fields) const;
 
-  void
+      void
       persist_fields(const ObjectId & object_id, const CollectionName &collection,
-                     const boost::property_tree::ptree &fields, RevisionId & revision_id);
+                     const boost::property_tree::ptree &fields, RevisionId & revision_id) const;
 
-  void query(const CollectionName &collection, const std::map<AttachmentName, std::string> &regexps
-             , std::vector<ObjectId> & object_ids);
+      void
+      query(const CollectionName &collection, const std::map<AttachmentName, std::string> &regexps
+            , std::vector<ObjectId> & object_ids) const;
 
-private:
+    private:
       /** Set the db_ using a property tree
        * @params the boost property tree containing the different parameters
        */
@@ -149,8 +157,8 @@ private:
       Persist(ObjectDb & db, const CollectionName & collection);
 
       /** Extract a specific field from the pre-loaded Document
-       * @param field
-       * @param t
+       * @param attachment_name
+       * @param value
        */
       template<typename T>
       void
@@ -172,6 +180,25 @@ private:
       void
       get_attachment_stream(const AttachmentName &attachment_name, std::ostream& stream, MimeType mime_type =
           MIME_TYPE_DEFAULT) const;
+
+      /** Extract a specific attachment from a document in the DB
+       * @param db the db to read from
+       * @param attachment_name
+       * @param value
+       * @param do_use_cache if true, try to load and store data in the object itself
+       */
+      template<typename T>
+      void
+      get_attachment(ObjectDb & db, const AttachmentName &attachment_name, T & value, bool do_use_cache = true) const
+      {
+        typedef boost::archive::binary_iarchive InputArchive;
+        std::stringstream stream;
+        std::string tmp_mime_type;
+        get_attachment_stream(db, attachment_name, stream, tmp_mime_type, do_use_cache);
+        stream.seekg(0);
+        InputArchive ar(stream);
+        ar & value;
+      }
 
       /** Extract the stream of a specific attachment for a Document from the DB
        * @param db the db to read from
@@ -323,47 +350,52 @@ template<>
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-class QueryIterator : public std::iterator<std::forward_iterator_tag, int>
-{
-public:
-  QueryIterator()
-  {
-  }
-
-  QueryIterator(ObjectDb& db) :
-      db_(db)
-  {
-  }
-
-  QueryIterator(ObjectDb& db, const CollectionName &collection, const std::vector<std::string> & object_ids) :
-      db_(db), collection_(collection), object_ids_(object_ids)
-  {
-    // Load the first element in the db
-    if (object_ids_.empty())
-      return;
-    object_ = boost::shared_ptr<Document>(new Document(db_, collection_, object_ids_.back()));
-    object_ids_.pop_back();
-  }
-
-  QueryIterator & operator++()
-  {
-    // Move forward in the list of Objects to check
-    object_ids_.pop_back();
-    // Return the end iterator if we are done
-    if (object_ids_.empty())
+    class ViewIterator: public std::iterator<std::forward_iterator_tag, int>
     {
-      object_ = boost::shared_ptr<Document>();
-    }
-    else
-    {
-      // Fill the current object
-      object_ = boost::shared_ptr<Document>(new Document(db_, collection_, object_ids_.back()));
-      object_ids_.pop_back();
-    }
-    return *this;
-  }
+    public:
+      ViewIterator()
+      {
+      }
 
-  bool operator!=(const QueryIterator & query_iterator) const
+      ViewIterator(ObjectDb& db)
+          :
+            db_(db)
+      {
+      }
+
+      ViewIterator(ObjectDb& db, const CollectionName &collection, const std::vector<std::string> & object_ids)
+          :
+            db_(db),
+            collection_(collection),
+            object_ids_(object_ids)
+      {
+        // Load the first element in the db
+        if (object_ids_.empty())
+          return;
+        object_ = boost::shared_ptr<Document>(new Document(db_, collection_, object_ids_.back()));
+        object_ids_.pop_back();
+      }
+
+      ViewIterator &
+      operator++()
+      {
+        // Move forward in the list of Objects to check
+        object_ids_.pop_back();
+        // Return the end iterator if we are done
+        if (object_ids_.empty())
+        {
+          object_ = boost::shared_ptr<Document>();
+        }
+        else
+        {
+          // Fill the current object
+          object_ = boost::shared_ptr<Document>(new Document(db_, collection_, object_ids_.back()));
+          object_ids_.pop_back();
+        }
+        return *this;
+      }
+
+  bool operator!=(const ViewIterator & query_iterator) const
   {
     if (query_iterator.object_ids_.empty())
       return (!object_ids_.empty());
@@ -373,9 +405,9 @@ public:
       return std::equal(query_iterator.object_ids_.begin(), query_iterator.object_ids_.end(), object_ids_.begin());
   }
 
-  static QueryIterator end()
+  static ViewIterator end()
   {
-    return QueryIterator();
+    return ViewIterator();
   }
 private:
   ObjectDb db_;
@@ -386,43 +418,48 @@ private:
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-class Query
-{
-public:
-  Query();
+    class View
+    {
+    public:
+      View();
 
-  /** Add requirements for the documents to retrieve
-   * @param field a field to match. Only one regex per field will be accepted
-   * @param regex the regular expression the field verifies, in TODO format
-   */
-  void add_where(const AttachmentName & field, const std::string & regex);
+      /** Add requirements for the documents to retrieve
+       * @param field a field to match. Only one regex per field will be accepted
+       * @param regex the regular expression the field verifies, in TODO format
+       */
+      void
+      AddWhere(const AttachmentName & field, const std::string & regex);
 
-  /** Add collections that should be checked for specific fields
-   * @param collection
-   */
-  void set_collection(const CollectionName & collection);
+      /** Add collections that should be checked for specific fields
+       * @param collection
+       */
+      void
+      set_collection(const CollectionName & collection);
 
-  /** Add collections that should be checked for specific fields
-   * @param collection
-   */
-  void set_db(const ObjectDb & db);
+      /** Add collections that should be checked for specific fields
+       * @param collection
+       */
+      void
+      set_db(const ObjectDb & db);
 
-  /** Perform the query itself
-   * @param db The db on which the query is performed
-   * @return an Iterator that will iterate over each result
-   */
-  QueryIterator begin();
+      /** Perform the query itself
+       * @param db The db on which the query is performed
+       * @return an Iterator that will iterate over each result
+       */
+      ViewIterator
+      begin();
 
-  /** Perform the query itself
-   * @param db The db on which the query is performed
-   * @return an Iterator that will iterate over each result
-   */
-  QueryIterator end();
-private:
-  ObjectDb db_;
-  CollectionName collection_;
-  /** the list of regexes to use */
-  std::map<AttachmentName, std::string> regexes_;
+      /** Perform the query itself
+       * @param db The db on which the query is performed
+       * @return an Iterator that will iterate over each result
+       */
+      ViewIterator
+      end();
+    private:
+      ObjectDb db_;
+      CollectionName collection_;
+      /** the list of regexes to use */
+      std::map<AttachmentName, std::string> regexes_;
     };
   }
 }

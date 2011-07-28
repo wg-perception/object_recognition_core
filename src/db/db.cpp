@@ -63,13 +63,18 @@ namespace object_recognition
     void
     ObjectDb::set_params(const std::string & json_params)
     {
-      *this = ObjectDb(json_params);
+      boost::property_tree::ptree params;
+      std::stringstream ssparams;
+      ssparams << json_params;
+      boost::property_tree::read_json(ssparams, params);
+
+      set_db(params);
     }
 
     void
-    ObjectDb::set_params(const boost::property_tree::ptree& pt)
+    ObjectDb::set_params(const boost::property_tree::ptree& params)
     {
-      *this = ObjectDb(pt);
+      set_db(params);
     }
 
     /** Set the db_ using a property tree
@@ -90,7 +95,7 @@ namespace object_recognition
 
     void
     ObjectDb::insert_object(const CollectionName &collection, const boost::property_tree::ptree &fields,
-                            ObjectId & object_id, RevisionId & revision_id)
+                            ObjectId & object_id, RevisionId & revision_id) const
     {
       db_->insert_object(collection, fields, object_id, revision_id);
     }
@@ -98,7 +103,7 @@ namespace object_recognition
     void
     ObjectDb::set_attachment_stream(const ObjectId & object_id, const CollectionName &collection,
                                     const AttachmentName& attachment_name, const MimeType& content_type,
-                                    const std::istream& stream, RevisionId & revision_id)
+                                    const std::istream& stream, RevisionId & revision_id) const
     {
       db_->set_attachment_stream(object_id, collection, attachment_name, content_type, stream, revision_id);
     }
@@ -106,28 +111,28 @@ namespace object_recognition
     void
     ObjectDb::get_attachment_stream(const ObjectId & object_id, const CollectionName &collection,
                                     const AttachmentName& attachment_name, MimeType& content_type, std::ostream& stream,
-                                    RevisionId & revision_id)
+                                    RevisionId & revision_id) const
     {
       db_->get_attachment_stream(object_id, collection, attachment_name, content_type, stream, revision_id);
     }
 
     void
     ObjectDb::load_fields(const ObjectId & object_id, const CollectionName &collection,
-                          boost::property_tree::ptree &fields)
+                          boost::property_tree::ptree &fields) const
     {
       db_->load_fields(object_id, collection, fields);
     }
 
     void
     ObjectDb::persist_fields(const ObjectId & object_id, const CollectionName &collection,
-                             const boost::property_tree::ptree &fields, RevisionId & revision_id)
+                             const boost::property_tree::ptree &fields, RevisionId & revision_id) const
     {
       db_->persist_fields(object_id, collection, fields, revision_id);
     }
 
     void
     ObjectDb::query(const CollectionName &collection, const std::map<AttachmentName, std::string> &regexps
-                    , std::vector<ObjectId> & object_ids)
+                    , std::vector<ObjectId> & object_ids) const
     {
       db_->query(collection, regexps, object_ids);
     }
@@ -162,7 +167,7 @@ namespace object_recognition
     /** Extract the stream of a specific attachment from the pre-loaded Document
      * @param attachment_name the name of the attachment
      * @param stream the string of data to write to
-     * @param mime_type the MIME type as stoerd in the DB
+     * @param mime_type the MIME type as stored in the DB
      */
     void
     Document::get_attachment_stream(const AttachmentName &attachment_name, std::ostream& stream,
@@ -242,44 +247,48 @@ namespace object_recognition
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-Query::Query()
-{
-}
+    View::View()
+    {
+    }
 
-/** Add requirements for the documents to retrieve
- * @param field a field to match. Only one regex per field will be accepted
- * @param regex the regular expression the field verifies, in TODO format
- */
-void Query::add_where(const AttachmentName & field, const std::string & regex)
-{
-  regexes_[field] = regex;
-}
+    /** Add requirements for the documents to retrieve
+     * @param field a field to match. Only one regex per field will be accepted
+     * @param regex the regular expression the field verifies, in TODO format
+     */
+    void
+    View::AddWhere(const AttachmentName & field, const std::string & regex)
+    {
+      regexes_[field] = regex;
+    }
 
-/** Add collections that should be checked for specific fields
- * @param collection
- */
-void Query::set_collection(const CollectionName & collection)
-{
-  collection_ = collection;
-}
+    /** Add collections that should be checked for specific fields
+     * @param collection
+     */
+    void
+    View::set_collection(const CollectionName & collection)
+    {
+      collection_ = collection;
+    }
 
-/** Set the db on which to perform the Query
- * @param db The db on which the query is performed
- */
-void Query::set_db(const ObjectDb & db)
-{
-  db_ = db;
-}
+    /** Set the db on which to perform the Query
+     * @param db The db on which the query is performed
+     */
+    void
+    View::set_db(const ObjectDb & db)
+    {
+      db_ = db;
+    }
 
-/** Perform the query itself
- * @return an Iterator that will iterate over each result
- */
-QueryIterator Query::begin()
-{
-  // Process the query and get the ids of several objects
-  std::vector<ObjectId> object_ids;
-  db_.query(collection_, regexes_, object_ids);
-  return QueryIterator(db_, collection_, object_ids);
+    /** Perform the query itself
+     * @return an Iterator that will iterate over each result
+     */
+    ViewIterator
+    View::begin()
+    {
+      // Process the query and get the ids of several objects
+      std::vector<ObjectId> object_ids;
+      db_.query(collection_, regexes_, object_ids);
+      return ViewIterator(db_, collection_, object_ids);
     }
   }
 }
