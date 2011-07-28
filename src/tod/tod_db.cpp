@@ -15,7 +15,7 @@
 using ecto::tendrils;
 
 using object_recognition::db_future::CollectionName;
-using object_recognition::db_future::ObjectId;
+using object_recognition::db_future::DocumentId;
 
 namespace object_recognition
 {
@@ -31,7 +31,7 @@ namespace object_recognition
         params.declare<std::string>("collection_models",
                                     "std::string The collection in which to store the models on the db", "models");
         params.declare<std::string>("db_json_params", "std::string The DB parameters, cf. ObjectDb", "models");
-        params.declare<std::string>("object_id", "The object id, to associate this frame with.");
+        params.declare<std::string>("document_id", "The object id, to associate this frame with.");
       }
 
       static void
@@ -43,20 +43,20 @@ namespace object_recognition
       }
 
       void
-      on_object_id_change(const std::string& id)
+      on_document_id_change(const std::string& id)
       {
-        object_id_ = id;
-        std::cout << "object_id = " << id << std::endl;
+        document_id_ = id;
+        std::cout << "document_id = " << id << std::endl;
       }
 
       void
       configure(tendrils& params, tendrils& inputs, tendrils& outputs)
       {
-        ecto::spore<std::string> object_id = params.at("object_id");
-        object_id.set_callback(boost::bind(&TodModelInserter::on_object_id_change, this, _1));
+        ecto::spore<std::string> document_id = params.at("document_id");
+        document_id.set_callback(boost::bind(&TodModelInserter::on_document_id_change, this, _1));
         db_.set_params(params.get<std::string>("db_json_params"));
         collection_models_ = params.get<std::string>("collection_models");
-        on_object_id_change(params.get<std::string>("object_id"));
+        on_document_id_change(params.get<std::string>("document_id"));
       }
 
       int
@@ -70,14 +70,14 @@ namespace object_recognition
 
         doc.set_attachment<cv::Mat>("descriptors", inputs.get<cv::Mat>("descriptors"));
         doc.set_attachment<cv::Mat>("points", inputs.get<cv::Mat>("points"));
-        doc.set_value("object_id", object_id_);
+        doc.set_value("document_id", document_id_);
         std::cout << "Persisting" << std::endl;
         doc.Persist(db_, collection_models_);
 
         return 0;
       }
       object_recognition::db_future::ObjectDb db_;
-      ObjectId object_id_;
+      DocumentId document_id_;
       CollectionName collection_models_;
     };
   }

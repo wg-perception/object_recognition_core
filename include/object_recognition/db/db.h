@@ -52,9 +52,9 @@ namespace object_recognition
 
     typedef std::string AttachmentName;
     typedef std::string CollectionName;
-    typedef std::string MimeType;
+    typedef std::string DocumentId;
     typedef std::string Field;
-    typedef std::string ObjectId;
+    typedef std::string MimeType;
     typedef std::string RevisionId;
 
     const std::string MIME_TYPE_DEFAULT = "application/octet-stream";
@@ -87,30 +87,30 @@ namespace object_recognition
       set_params(const boost::property_tree::ptree& pt);
 
       void
-      get_attachment_stream(const ObjectId & object_id, const CollectionName &collection,
+      get_attachment_stream(const DocumentId & document_id, const CollectionName &collection,
                             const AttachmentName& attachment_name, MimeType& content_type, std::ostream& stream,
                             RevisionId & revision_id) const;
 
       void
-      set_attachment_stream(const ObjectId & object_id, const CollectionName &collection,
+      set_attachment_stream(const DocumentId & document_id, const CollectionName &collection,
                             const AttachmentName& attachment_name, const MimeType& content_type,
                             const std::istream& stream, RevisionId & revision_id) const;
 
       void
-      insert_object(const CollectionName &collection, const boost::property_tree::ptree &fields, ObjectId & object_id,
-                    RevisionId & revision_id) const;
+      insert_object(const CollectionName &collection, const boost::property_tree::ptree &fields,
+                    DocumentId & document_id, RevisionId & revision_id) const;
 
       void
-      load_fields(const ObjectId & object_id, const CollectionName &collection,
+      load_fields(const DocumentId & document_id, const CollectionName &collection,
                   boost::property_tree::ptree &fields) const;
 
       void
-      persist_fields(const ObjectId & object_id, const CollectionName &collection,
+      persist_fields(const DocumentId & document_id, const CollectionName &collection,
                      const boost::property_tree::ptree &fields, RevisionId & revision_id) const;
 
       void
       query(const CollectionName &collection, const std::map<AttachmentName, std::string> &regexps
-            , std::vector<ObjectId> & object_ids) const;
+            , std::vector<DocumentId> & document_ids) const;
 
     private:
       /** Set the db_ using a property tree
@@ -135,13 +135,13 @@ namespace object_recognition
       {
       }
 
-      Document(ObjectDb & db, const CollectionName & collection, const ObjectId &object_id)
+      Document(ObjectDb & db, const CollectionName & collection, const DocumentId &document_id)
           :
             collection_(collection),
-            object_id_(object_id)
+            document_id_(document_id)
       {
         // Load all fields from the DB (not the attachments)
-        db.load_fields(object_id_, collection_, fields_);
+        db.load_fields(document_id_, collection_, fields_);
       }
 
       virtual
@@ -209,7 +209,7 @@ namespace object_recognition
        */
       void
       get_attachment_stream(ObjectDb & db, const AttachmentName &attachment_name, std::ostream& stream,
-                            MimeType mime_type = MIME_TYPE_DEFAULT, bool do_use_cache = true);
+                            MimeType mime_type = MIME_TYPE_DEFAULT, bool do_use_cache = true) const;
 
       /** Add a specific field to a Document (that has been pre-loaded or not)
        * @param attachment_name the name of the attachment
@@ -238,7 +238,7 @@ namespace object_recognition
       /** Get a specific value */
       template<typename T>
       T
-      get_value(const std::string& key)
+      get_value(const std::string& key) const
       {
         std::cerr << "Document::get_value<T> not implemented for that type";
         throw;
@@ -266,10 +266,6 @@ namespace object_recognition
       SetIdRev(const std::string& id, const std::string& rev);
 
     private:
-      bool is_loaded_;
-      mutable CollectionName collection_;
-      mutable ObjectId object_id_;
-      RevisionId revision_id_;
       /** contains the attachments: binary blobs */
       struct StreamAttachment
       {
@@ -300,121 +296,136 @@ namespace object_recognition
         MimeType type_;
         std::stringstream stream_;
       };
-      std::map<AttachmentName, StreamAttachment> attachments_;
+
+      mutable CollectionName collection_;
+      mutable DocumentId document_id_;
+      mutable RevisionId revision_id_;
+      mutable std::map<AttachmentName, StreamAttachment> attachments_;
       /** contains the fields: they are of integral types */
       boost::property_tree::ptree fields_;
     };
 
-// Implementation of some specializations
-template<>
-  inline bool Document::get_value<bool>(const std::string& key)
-  {
-    return fields_.get<bool>(key);
-  }
-template<>
-  inline int Document::get_value<int>(const std::string& key)
-  {
-    return fields_.get<int>(key);
-  }
-template<>
-  inline double Document::get_value<double>(const std::string& key)
-  {
-    return fields_.get<double>(key);
-  }
-template<>
-  inline std::string Document::get_value<std::string>(const std::string& key)
-  {
-    return fields_.get<std::string>(key);
-  }
+    // Implementation of some specializations
+    template<>
+    inline bool
+    Document::get_value<bool>(const std::string& key) const
+    {
+      return fields_.get<bool>(key);
+    }
+    template<>
+    inline int
+    Document::get_value<int>(const std::string& key) const
+    {
+      return fields_.get<int>(key);
+    }
+    template<>
+    inline double
+    Document::get_value<double>(const std::string& key) const
+    {
+      return fields_.get<double>(key);
+    }
+    template<>
+    inline std::string
+    Document::get_value<std::string>(const std::string& key) const
+    {
+      return fields_.get<std::string>(key);
+    }
 
-template<>
-  inline void Document::set_value<bool>(const std::string& key, const bool& val)
-  {
-    fields_.put<bool>(key, val);
-  }
-template<>
-  inline void Document::set_value<int>(const std::string& key, const int& val)
-  {
-    fields_.put<int>(key, val);
-  }
-template<>
-  inline void Document::set_value<double>(const std::string& key, const double& val)
-  {
-    fields_.put<double>(key, val);
-  }
-template<>
-  inline void Document::set_value<std::string>(const std::string& key, const std::string& val)
-  {
-    fields_.put<std::string>(key, val);
-  }
+    template<>
+    inline void
+    Document::set_value<bool>(const std::string& key, const bool& val)
+    {
+      fields_.put<bool>(key, val);
+    }
+    template<>
+    inline void
+    Document::set_value<int>(const std::string& key, const int& val)
+    {
+      fields_.put<int>(key, val);
+    }
+    template<>
+    inline void
+    Document::set_value<double>(const std::string& key, const double& val)
+    {
+      fields_.put<double>(key, val);
+    }
+    template<>
+    inline void
+    Document::set_value<std::string>(const std::string& key, const std::string& val)
+    {
+      fields_.put<std::string>(key, val);
+    }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    class ViewIterator: public std::iterator<std::forward_iterator_tag, int>
+    class DocumentIterator: public std::iterator<std::forward_iterator_tag, int>
     {
     public:
-      ViewIterator()
+      DocumentIterator()
       {
       }
 
-      ViewIterator(ObjectDb& db)
+      DocumentIterator(ObjectDb& db)
           :
             db_(db)
       {
       }
 
-      ViewIterator(ObjectDb& db, const CollectionName &collection, const std::vector<std::string> & object_ids)
+      DocumentIterator(ObjectDb& db, const CollectionName &collection, const std::vector<std::string> & document_ids)
           :
             db_(db),
             collection_(collection),
-            object_ids_(object_ids)
+            document_ids_(document_ids)
       {
         // Load the first element in the db
-        if (object_ids_.empty())
+        if (document_ids_.empty())
           return;
-        object_ = boost::shared_ptr<Document>(new Document(db_, collection_, object_ids_.back()));
-        object_ids_.pop_back();
+        object_ = boost::shared_ptr<Document>(new Document(db_, collection_, document_ids_.back()));
+        document_ids_.pop_back();
       }
 
-      ViewIterator &
+      DocumentIterator &
       operator++()
       {
         // Move forward in the list of Objects to check
-        object_ids_.pop_back();
+        document_ids_.pop_back();
         // Return the end iterator if we are done
-        if (object_ids_.empty())
+        if (document_ids_.empty())
         {
           object_ = boost::shared_ptr<Document>();
         }
         else
         {
           // Fill the current object
-          object_ = boost::shared_ptr<Document>(new Document(db_, collection_, object_ids_.back()));
-          object_ids_.pop_back();
+          object_ = boost::shared_ptr<Document>(new Document(db_, collection_, document_ids_.back()));
+          document_ids_.pop_back();
         }
         return *this;
       }
 
-  bool operator!=(const ViewIterator & query_iterator) const
-  {
-    if (query_iterator.object_ids_.empty())
-      return (!object_ids_.empty());
-    if (object_ids_.size() >= query_iterator.object_ids_.size())
-      return std::equal(object_ids_.begin(), object_ids_.end(), query_iterator.object_ids_.begin());
-    else
-      return std::equal(query_iterator.object_ids_.begin(), query_iterator.object_ids_.end(), object_ids_.begin());
-  }
+      bool
+      operator!=(const DocumentIterator & query_iterator) const
+      {
+        if (query_iterator.document_ids_.empty())
+          return (!document_ids_.empty());
+        if (document_ids_.size() >= query_iterator.document_ids_.size())
+          return std::equal(document_ids_.begin(), document_ids_.end(), query_iterator.document_ids_.begin());
+        else
+          return std::equal(query_iterator.document_ids_.begin(), query_iterator.document_ids_.end(),
+                            document_ids_.begin());
+      }
 
-  static ViewIterator end()
-  {
-    return ViewIterator();
-  }
-private:
-  ObjectDb db_;
-  CollectionName collection_;
-  boost::shared_ptr<Document> object_;
-  std::vector<ObjectId> object_ids_;
-};
+      static DocumentIterator
+      end()
+      {
+        return DocumentIterator();
+      }
+    private:
+      ObjectDb db_;
+      CollectionName collection_;
+      boost::shared_ptr<Document> object_;
+      std::vector<DocumentId> document_ids_;
+    };
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -446,14 +457,14 @@ private:
        * @param db The db on which the query is performed
        * @return an Iterator that will iterate over each result
        */
-      ViewIterator
+      DocumentIterator
       begin();
 
       /** Perform the query itself
        * @param db The db on which the query is performed
        * @return an Iterator that will iterate over each result
        */
-      ViewIterator
+      DocumentIterator
       end();
     private:
       ObjectDb db_;
