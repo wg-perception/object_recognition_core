@@ -9,6 +9,8 @@
 #include <iostream>
 
 #include <boost/filesystem.hpp>
+#include <boost/property_tree/json_parser.hpp>
+#include <boost/property_tree/ptree.hpp>
 
 #include <ecto/ecto.hpp>
 
@@ -28,33 +30,41 @@ namespace object_recognition
   namespace tod
   {
 
-/** Ecto implementation of a module that takes
- *
- */
-struct GuessGenerator
-{
-  static void declare_params(ecto::tendrils& p)
-  {
-    p.declare<std::string>("min_inliers", "Minimum number of inliers");
-    p.declare<std::string>("n_ransac_iterations", "Number of RANSAC iterations");
-  }
-
-  static void declare_io(const ecto::tendrils& params, ecto::tendrils& inputs, ecto::tendrils& outputs)
-  {
-    inputs.declare<pcl::PointCloud<pcl::PointXYZRGB> >("point_cloud", "The point cloud");
-    inputs.declare<std::vector<cv::KeyPoint> >("keypoints", "The depth image");
-    inputs.declare<std::vector<std::vector<cv::DMatch> > >("matches", "The list of OpenCV DMatch");
-    inputs.declare<std::vector<std::vector<cv::Point3f> > >("matches_3d",
-                                                            "The corresponding 3d position of those matches");
-    outputs.declare<std::vector<ObjectId> >("object_ids", "the id's of the found objects");
-    outputs.declare<std::vector<opencv_candidate::Pose> >("poses", "The poses of the found objects");
-  }
-
-  void
-      configure(ecto::tendrils& params, ecto::tendrils& inputs, ecto::tendrils& outputs)
+    /** Ecto implementation of a module that takes
+     *
+     */
+    struct GuessGenerator
+    {
+      static void
+      declare_params(ecto::tendrils& p)
       {
-        min_inliers_ = params.get<unsigned int>("min_inliers");
-        n_ransac_iterations_ = params.get<unsigned int>("n_ransac_iterations");
+        p.declare<std::string>(
+            "json_params", "The parameters, as a JSON string.\n\"min_inliers\": "
+            "Minimum number of inliers. \n\"n_ransac_iterations\": Number of RANSAC iterations.\n");
+      }
+
+      static void
+      declare_io(const ecto::tendrils& params, ecto::tendrils& inputs, ecto::tendrils& outputs)
+      {
+        inputs.declare<pcl::PointCloud<pcl::PointXYZRGB> >("point_cloud", "The point cloud");
+        inputs.declare<std::vector<cv::KeyPoint> >("keypoints", "The depth image");
+        inputs.declare<std::vector<std::vector<cv::DMatch> > >("matches", "The list of OpenCV DMatch");
+        inputs.declare<std::vector<std::vector<cv::Point3f> > >("matches_3d",
+                                                                "The corresponding 3d position of those matches");
+        outputs.declare<std::vector<ObjectId> >("object_ids", "the id's of the found objects");
+        outputs.declare<std::vector<opencv_candidate::Pose> >("poses", "The poses of the found objects");
+      }
+
+      void
+      configure(ecto::tendrils& json_params, ecto::tendrils& inputs, ecto::tendrils& outputs)
+      {
+        boost::property_tree::ptree param_tree;
+        std::stringstream ssparams;
+        ssparams << json_params.get<std::string>("json_params");
+        boost::property_tree::read_json(ssparams, param_tree);
+
+        min_inliers_ = param_tree.get<unsigned int>("min_inliers");
+        n_ransac_iterations_ = param_tree.get<unsigned int>("n_ransac_iterations");
       }
 
   /** Get the 2d keypoints and figure out their 3D position from the depth map
