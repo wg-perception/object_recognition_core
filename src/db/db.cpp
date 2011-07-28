@@ -131,25 +131,32 @@ ObjectDb::set_params(const boost::property_tree::ptree& pt)
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-void Document::ClearAllFields()
-{
-  fields_.clear();
-}
+    /** Persist your object to a given DB
+     * @param db the DB to persist to
+     * @param collection the collection/schema where it should be saved
+     */
+    void
+    Document::Persist(ObjectDb & db, const CollectionName & collection)
+    {
+      collection_ = collection;
+      // Persist the object if it does not exist in the DB
+      if (object_id_.empty())
+        db.insert_object(collection_, fields_, object_id_, revision_id_);
+      else
+        db.persist_fields(object_id_, collection_, fields_, revision_id_);
 
-void Document::ClearField(const std::string& key)
-{
-  fields_.erase(key);
-}
+      // Persist the attachments
+      boost::any nothing_any;
+      for (std::map<AttachmentName, StreamAttachment>::const_iterator attachment = attachments_.begin(),
+          attachment_end = attachments_.end(); attachment != attachment_end; ++attachment)
+      {
+        // Persist the attachment
+        db.set_attachment_stream(object_id_, collection_, attachment->first, attachment->second.type_,
+                                 attachment->second.stream_, revision_id_);
+      }
+    }
 
-void Document::SetIdRev(const std::string& id, const std::string& rev)
-{
-  object_id_ = id;
-  revision_id_ = rev;
-  set_value<std::string>("_id", id);
-  set_value<std::string>("_rev", rev);
-}
-
-/** Extract the stream of a specific attachment from the pre-loaded Document
+    /** Extract the stream of a specific attachment from the pre-loaded Document
      * @param attachment_name the name of the attachment
      * @param stream the string of data to write to
      * @param mime_type the MIME type as stoerd in the DB
@@ -207,6 +214,27 @@ void Document::SetIdRev(const std::string& id, const std::string& rev)
     {
       StreamAttachment stream_attachment(mime_type, stream);
       attachments_[attachment_name] = stream_attachment;
+    }
+
+    void
+    Document::ClearAllFields()
+    {
+      fields_.clear();
+    }
+
+    void
+    Document::ClearField(const std::string& key)
+    {
+      fields_.erase(key);
+    }
+
+    void
+    Document::SetIdRev(const std::string& id, const std::string& rev)
+    {
+      object_id_ = id;
+      revision_id_ = rev;
+      set_value<std::string>("_id", id);
+      set_value<std::string>("_rev", rev);
     }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
