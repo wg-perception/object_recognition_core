@@ -47,6 +47,37 @@ namespace object_recognition
 
     ObjectDb::ObjectDb(const boost::property_tree::ptree& params)
     {
+      set_db(params);
+    }
+
+    ObjectDb::ObjectDb(const std::string & json_params)
+    {
+      boost::property_tree::ptree params;
+      std::stringstream ssparams;
+      ssparams << json_params;
+      boost::property_tree::read_json(ssparams, params);
+
+      set_db(params);
+    }
+
+    void
+    ObjectDb::set_params(const std::string & json_params)
+    {
+      *this = ObjectDb(json_params);
+    }
+
+    void
+    ObjectDb::set_params(const boost::property_tree::ptree& pt)
+    {
+      *this = ObjectDb(pt);
+    }
+
+    /** Set the db_ using a property tree
+     * @params the boost property tree containing the different parameters
+     */
+    void
+    ObjectDb::set_db(const boost::property_tree::ptree& params)
+    {
       std::string db_type = params.get<std::string>("type");
       if (db_type == "empty")
       {
@@ -56,34 +87,6 @@ namespace object_recognition
         db_ = boost::shared_ptr<ObjectDbBase>(new ObjectDbCouch(params.get<std::string>("url")));
       }
     }
-ObjectDb::ObjectDb(const std::string & json_params)
-{
-  boost::property_tree::ptree params;
-  std::stringstream ssparams;
-  ssparams << json_params;
-  boost::property_tree::read_json(ssparams, params);
-
-  std::string db_type = params.get<std::string>("type");
-  if (db_type == "empty")
-  {
-  }
-  else if (db_type == "CouchDB")
-  {
-    db_ = boost::shared_ptr<ObjectDbBase>(new ObjectDbCouch(params.get<std::string>("url")));
-  }
-}
-
-void
-    ObjectDb::set_params(const std::string & json_params)
-    {
-      *this = ObjectDb(json_params);
-    }
-
-void
-ObjectDb::set_params(const boost::property_tree::ptree& pt)
-{
-    *this = ObjectDb(pt);
-}
 
     void
     ObjectDb::insert_object(const CollectionName &collection, const boost::property_tree::ptree &fields,

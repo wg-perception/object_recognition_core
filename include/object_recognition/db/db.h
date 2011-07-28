@@ -105,9 +105,15 @@ namespace object_recognition
              , std::vector<ObjectId> & object_ids);
 
 private:
-  /** The DB from which we'll get all the info */
-  boost::shared_ptr<ObjectDbBase> db_;
-};
+      /** Set the db_ using a property tree
+       * @params the boost property tree containing the different parameters
+       */
+      void
+      set_db(const boost::property_tree::ptree& params);
+
+      /** The DB from which we'll get all the info */
+      boost::shared_ptr<ObjectDbBase> db_;
+    };
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
