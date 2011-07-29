@@ -1,15 +1,18 @@
 {
-	"feature": "ORB",
-	"descriptor": "ORB",
-	"combination": "ORB",
-	"feature_params":
+	"features_descriptors":
 	{
-		"n_features": 1000
+               "combination":
+                {
+                        "type": "ORB" 
+                },
+		"feature":
+		{
+			"n_features": 1000
+		}
 	},
-	"descriptor_params":
+	"db":
 	{
-	},
-	"combination_params":
-	{
+		"type": "CouchDB",
+		"url": "http://localhost:5984"
 	}
 }

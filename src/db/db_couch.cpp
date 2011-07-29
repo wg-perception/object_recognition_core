@@ -33,151 +33,137 @@
  *
  */
 
-#include <curl/curl.h>
-
 #include "db_couch.h"
 
-using db_future::CollectionName;
-using db_future::FieldName;
-using db_future::ObjectId;
-using db_future::RevisionId;
-
-size_t writer::cb(char *ptr, size_t size, size_t nmemb, void *userdata)
-{
-  if (!userdata)
-  {
-    return 0;
-  }
-
-  writer* data = static_cast<writer*>(userdata);
-  //data->written +=size*nmemb;
-  data->stream.write(ptr, size * nmemb);
-  //std::cout << "**"<< data->written << std::endl;
-  return size * nmemb;
-}
-
-/**
- * static callback for c style void pointer cookies.
- */
-size_t reader::cb(char *ptr, size_t size, size_t nmemb, void *thiz)
-{
-  if (!thiz)
-  {
-    return 0;
-  }
-  reader* data = static_cast<reader*>(thiz);
-  return data->stream.rdbuf()->sgetn(ptr, size * nmemb);
-}
-
-struct cURL_GS
-{
-  cURL_GS()
-  {
-    //std::cout << "curl init" << std::endl;
-    curl_global_init(CURL_GLOBAL_ALL);
-  }
-  ~cURL_GS()
-  {
-    //std::cout << "curl cleanup" << std::endl;
-    curl_global_cleanup();
-  }
-};
-
-cURL_GS curl_init_cleanup;
+object_recognition::curl::cURL_GS curl_init_cleanup;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-ObjectDbCouch::ObjectDbCouch(const std::string &url) :
-    url_(url), json_writer_(json_writer_stream_), json_reader_(json_reader_stream_)
+ObjectDbCouch::ObjectDbCouch(const std::string &url)
+    :
+      url_(url),
+      json_writer_(json_writer_stream_),
+      json_reader_(json_reader_stream_)
 {
 }
 
-void ObjectDbCouch::insert_object(const CollectionName &collection, const boost::property_tree::ptree &fields,
-                                  ObjectId & object_id, RevisionId & revision_id)
+void
+ObjectDbCouch::insert_object(const CollectionName &collection, const boost::property_tree::ptree &fields,
+                             DocumentId & document_id, RevisionId & revision_id)
 {
-  upload_json(fields, url_id(""), "POST");
-  getid(object_id, revision_id);
+  upload_json(fields, url_id(collection, ""), "POST");
+  GetObjectRevisionId(document_id, revision_id);
 }
 
-void ObjectDbCouch::persist_fields(ObjectId & object_id, RevisionId & revision_id, const CollectionName &collection,
-                                   const boost::property_tree::ptree &fields)
+void
+ObjectDbCouch::persist_fields(const DocumentId & document_id, const CollectionName &collection,
+                              const boost::property_tree::ptree &fields, RevisionId & revision_id)
 {
-  precondition_id(object_id);
-  precondition_rev(revision_id);
-  upload_json(fields, url_id(object_id), "PUT");
+  precondition_id(document_id);
+  upload_json(fields, url_id(collection, document_id), "PUT");
   //need to update the revision here.
-  getid(object_id, revision_id);
+  GetRevisionId(revision_id);
 }
 
-void ObjectDbCouch::load_fields(const ObjectId & object_id, const CollectionName &collection,
-                                boost::property_tree::ptree &fields)
+void
+ObjectDbCouch::load_fields(const DocumentId & document_id, const CollectionName &collection,
+                           boost::property_tree::ptree &fields)
 {
-  precondition_id(object_id);
+  precondition_id(document_id);
   curl_.reset();
+  json_writer_stream_.str("");
   curl_.setWriter(&json_writer_);
 
-  curl_.setURL(url_id(object_id));
+  curl_.setURL(url_id(collection, document_id));
   curl_.GET();
+
   curl_.perform();
 
-  // TODO go from the json_writer_ to filling the property_tree
+  if (curl_.get_response_code() == object_recognition::curl::cURL::OK)
+  {
+    //update the object from the result.
+    json_writer_stream_.seekg(0);
+    boost::property_tree::read_json(json_writer_stream_, fields);
+  }
 }
 
-void ObjectDbCouch::query(const CollectionName &collection, const std::map<FieldName, std::string> &regexps
-                          , std::vector<ObjectId> & object_ids) const
+void
+ObjectDbCouch::set_attachment_stream(const DocumentId & document_id, const CollectionName &collection,
+                                     const AttachmentName& attachment_name, const MimeType& mime_type,
+                                     const std::istream& stream, RevisionId & revision_id)
 {
-}
+  precondition_id(document_id);
+  precondition_rev(revision_id);
 
-void ObjectDbCouch::set_attachment_stream(ObjectId & object_id, RevisionId & revision_id,
-                                          const CollectionName &collection, const std::string& attachment_name,
-                                          std::istream& stream, const std::string& content_type)
-{
-  reader binary_reader(stream);
+  object_recognition::curl::reader binary_reader(stream);
   curl_.reset();
   curl_.setReader(&binary_reader);
   json_writer_stream_.str("");
   curl_.setWriter(&json_writer_);
-  curl_.setHeader("Content-Type: " + content_type);
-  curl_.setURL(url_id(object_id) + "/" + attachment_name + "?rev=" + revision_id);
+  curl_.setHeader("Content-Type: " + mime_type);
+  curl_.setURL(url_id(collection, document_id) + "/" + attachment_name + "?rev=" + revision_id);
   curl_.PUT();
   curl_.perform();
-  getid(object_id, revision_id);
+  GetRevisionId(revision_id);
 }
 
-void ObjectDbCouch::get_attachment_stream(const std::string& attachment_name, std::ostream& stream)
+void
+ObjectDbCouch::get_attachment_stream(const DocumentId & document_id, const CollectionName &collection,
+                                     const std::string& attachment_name, const std::string& content_type,
+                                     std::ostream& stream, RevisionId & revision_id)
 {
-  writer binary_writer(stream);
+  object_recognition::curl::writer binary_writer(stream);
   curl_.reset();
   json_writer_stream_.str("");
   curl_.setWriter(&binary_writer);
-  curl_.setURL(url_id("") + "/" + attachment_name);
+  curl_.setURL(url_id(collection, document_id) + "/" + attachment_name);
   curl_.GET();
   curl_.perform();
 }
 
-void ObjectDbCouch::getid(std::string & object_id, std::string & revision_id, const std::string& prefix)
+void
+ObjectDbCouch::GetObjectRevisionId(DocumentId& document_id, RevisionId & revision_id)
 {
   boost::property_tree::ptree params;
   boost::property_tree::read_json(json_writer_stream_, params);
-  object_id = params.get<std::string>("id", "");
+  document_id = params.get<std::string>("id", "");
   revision_id = params.get<std::string>("rev", "");
-  if ((object_id.empty()) || (revision_id.empty()))
-    throw std::runtime_error("Could not find the id or revision number");
+  std::cout << "rev: " << revision_id << std::endl;
+  if (document_id.empty())
+    throw std::runtime_error("Could not find the object id");
+  if (revision_id.empty())
+    throw std::runtime_error("Could not find the revision number");
 }
 
-void ObjectDbCouch::query(const CollectionName &collection, const std::map<FieldName, std::string> &regexps
-                          , std::vector<ObjectId> & object_ids)
+void
+ObjectDbCouch::GetRevisionId(RevisionId & revision_id)
 {
+  boost::property_tree::ptree params;
+  boost::property_tree::read_json(json_writer_stream_, params);
+  revision_id = params.get<std::string>("rev", "");
+  if (revision_id.empty())
+    throw std::runtime_error("Could not find the revision number, from GetRevisionId");
 }
 
-void ObjectDbCouch::upload_json(const boost::property_tree::ptree &ptree, const std::string& url,
-                                const std::string& request)
+void
+ObjectDbCouch::query(const CollectionName &collection, const std::map<AttachmentName, std::string> &regexps
+                     , std::vector<DocumentId> & document_ids)
+{
+  //TODO
+}
+
+void
+ObjectDbCouch::upload_json(const boost::property_tree::ptree &ptree, const std::string& url, const std::string& request)
 {
   curl_.reset();
+  json_writer_stream_.str("");
+  json_reader_stream_.str("");
+  boost::property_tree::write_json(json_reader_stream_, ptree);
   curl_.setWriter(&json_writer_);
   curl_.setReader(&json_reader_);
   //couch db post to the db
   curl_.setURL(url);
+  std::cout << url << std::endl;
   curl_.setHeader("Content-Type: application/json");
   if (request == "PUT")
   {

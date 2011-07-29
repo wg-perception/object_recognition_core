@@ -2,13 +2,17 @@
 import ecto
 from ecto_opencv import highgui, cv_bp as opencv, calib, imgproc, features2d
 from optparse import OptionParser
+import json
+import os
+import string
 import sys
 import time
 import capture
 import tod
 import tod_db
 
-debug = True
+DEBUG = False
+DISPLAY = False
 
 class TodModelComputation(ecto.BlackBox):
     def __init__(self, plasm, feature_descriptor_params_file):
@@ -56,31 +60,43 @@ if __name__ == '__main__':
     options = parse_options()
 
     # define the input
-    db_reader = capture.ObservationReader("db_reader", object_id="object_01")
+    if options.config_file is None or not os.path.exists(options.config_file):
+        raise 'option file does not exist'
+    
+    db_json_params = json.loads(str(open(options.config_file).read()))
+    db_url = str(db_json_params['db']['url'])
+    object_id = "paneer_tikka_masala_spinach_trader_joes"
+    db_reader = capture.ObservationReader("db_reader", db_url=db_url, object_id=object_id)
 
     # connect the visualization
-    #image_view = highgui.imshow(name="RGB", waitKey=1000, autoSize=True)
-    #mask_view = highgui.imshow(name="mask", waitKey= -1, autoSize=True)
-    #depth_view = highgui.imshow(name="Depth", waitKey= -1, autoSize=True);
     plasm = ecto.Plasm()
-    #plasm.connect(db_reader['image'] >> image_view['input'],
-    #              db_reader['mask'] >> mask_view['input'],
-    #              db_reader['depth'] >> depth_view['input'])
+    if DISPLAY:
+        image_view = highgui.imshow(name="RGB", waitKey=1000, autoSize=True)
+        mask_view = highgui.imshow(name="mask", waitKey= -1, autoSize=True)
+        depth_view = highgui.imshow(name="Depth", waitKey= -1, autoSize=True);
+        plasm.connect(db_reader['image'] >> image_view['input'],
+                      db_reader['mask'] >> mask_view['input'],
+                      db_reader['depth'] >> depth_view['input'])
 
     # connect to the model computation
     tod_model = TodModelComputation(plasm, options.config_file)
     plasm.connect(db_reader['image', 'mask', 'depth', 'K', 'R', 'T'] >> tod_model['image', 'mask', 'depth', 'K', 'R', 'T'])
 
     # persist to the DB
-    db_writer = tod_db.TodModelInserter("db_writer", object_id="object_01")
+    db_json_params_str = str(db_json_params['db']).replace("'", '"').replace('u"', '"').replace('{u', '{')
+    db_writer = tod_db.TodModelInserter("db_writer", collection_models='models', db_json_params=db_json_params_str,
+                                        object_id=object_id)
     orb_params = None
     #db_writer.add_misc(orb_params)
     plasm.connect(tod_model['points', 'descriptors'] >> db_writer['points', 'descriptors'])
 
-    if debug:
+    if DEBUG:
         #render the DAG with dot
         print plasm.viz()
         ecto.view_plasm(plasm)
 
-    while(image_view.outputs.out not in (27, ord('q'))):
-        if(plasm.execute(1) != 0): break
+    if DISPLAY:
+        while(image_view.outputs.out not in (27, ord('q'))):
+            if(plasm.execute(1) != 0): break
+    else:
+        plasm.execute()

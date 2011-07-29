@@ -9,7 +9,8 @@
 #include <iostream>
 
 #include <boost/filesystem.hpp>
-#include <boost/program_options.hpp>
+#include <boost/property_tree/json_parser.hpp>
+#include <boost/property_tree/ptree.hpp>
 
 #include <ecto/ecto.hpp>
 
@@ -22,78 +23,49 @@
 
 #include "opencv_candidate/PoseRT.h"
 
-namespace po = boost::program_options;
-
 typedef unsigned int ObjectId;
 
-struct DetectorOptions
+namespace object_recognition
 {
-  /** The path to a ROS bag file
-   */
-  std::string bag_file_;
-  std::string imageFile;
-  std::string baseDirectory;
-  std::string config;
-  int verbose;
-  int mode;
-};
-
-/** Ecto implementation of a module that takes
- *
- */
-struct GuessGenerator
-{
-  static void declare_params(ecto::tendrils& p)
+  namespace tod
   {
-    p.declare<std::string>("base_directory", "Base directory");
-    p.declare<std::string>("config_file", "Configuration file");
-  }
 
-  static void declare_io(const ecto::tendrils& params, ecto::tendrils& inputs, ecto::tendrils& outputs)
-  {
-    inputs.declare<pcl::PointCloud<pcl::PointXYZRGB> >("point_cloud", "The point cloud");
-    inputs.declare<std::vector<cv::KeyPoint> >("keypoints", "The depth image");
-    inputs.declare<std::vector<std::vector<cv::DMatch> > >("matches", "The list of OpenCV DMatch");
-    inputs.declare<std::vector<std::vector<cv::Point3f> > >("matches_3d",
-                                                            "The corresponding 3d position of those matches");
-    outputs.declare<std::vector<ObjectId> >("object_ids", "the id's of the found objects");
-    outputs.declare<std::vector<opencv_candidate::Pose> >("poses", "The poses of the found objects");
-  }
-
-  void configure(ecto::tendrils& params, ecto::tendrils& inputs, ecto::tendrils& outputs)
-  {
-    std::string config_file = params.get<std::string>("config_file");
-    DetectorOptions opts;
-
-    po::variables_map vm;
-
-    po::options_description desc("Allowed options");
-    desc.add_options()("base,B", po::value<std::string>(&opts.baseDirectory)->default_value("./"),
-                       "The directory that the training base is in.");
-    desc.add_options()("verbose,V", po::value<int>(&opts.verbose)->default_value(0), "Verbosity level.");
-
-    boost::filesystem::path cf(config_file);
-    if (boost::filesystem::exists(cf))
+    /** Ecto implementation of a module that takes
+     *
+     */
+    struct GuessGenerator
     {
-      std::ifstream cf_is(cf.string().c_str());
+      static void
+      declare_params(ecto::tendrils& p)
+      {
+        p.declare<std::string>(
+            "json_params", "The parameters, as a JSON string.\n\"min_inliers\": "
+            "Minimum number of inliers. \n\"n_ransac_iterations\": Number of RANSAC iterations.\n");
+      }
 
-      po::store(po::parse_config_file(cf_is, desc, false), vm);
-      po::notify(vm);
-    }
-    else
-    {
-      std::cerr << cf << " does not exist!" << std::endl;
-      desc.print(std::cout);
-      throw std::runtime_error("Bad options");
-    }
+      static void
+      declare_io(const ecto::tendrils& params, ecto::tendrils& inputs, ecto::tendrils& outputs)
+      {
+        inputs.declare<pcl::PointCloud<pcl::PointXYZRGB> >("point_cloud", "The point cloud");
+        inputs.declare<std::vector<cv::KeyPoint> >("keypoints", "The depth image");
+        inputs.declare<std::vector<std::vector<cv::DMatch> > >("matches", "The list of OpenCV DMatch");
+        inputs.declare<std::vector<std::vector<cv::Point3f> > >("matches_3d",
+                                                                "The corresponding 3d position of those matches");
+        outputs.declare<std::vector<ObjectId> >("object_ids", "the id's of the found objects");
+        outputs.declare<std::vector<opencv_candidate::Pose> >("poses", "The poses of the found objects");
+      }
 
-    if (!vm.count("base"))
-    {
-      std::cout << "Must supply training base directory." << "\n";
-      std::cout << desc << std::endl;
-      throw std::runtime_error("Bad options");
-    }
-  }
+      void
+      configure(ecto::tendrils& json_params, ecto::tendrils& inputs, ecto::tendrils& outputs)
+      {
+        boost::property_tree::ptree param_tree;
+        std::stringstream ssparams;
+        ssparams << json_params.get<std::string>("json_params");
+        boost::property_tree::read_json(ssparams, param_tree);
+
+        min_inliers_ = param_tree.get<unsigned int>("min_inliers");
+        n_ransac_iterations_ = param_tree.get<unsigned int>("n_ransac_iterations");
+      }
 
   /** Get the 2d keypoints and figure out their 3D position from the depth map
    * @param inputs
@@ -135,7 +107,7 @@ struct GuessGenerator
         const std::vector<cv::Point3f> &local_matches_3d = matches_3d[matches_index];
         for (unsigned int match_index = 0; match_index < local_matches.size(); ++match_index)
         {
-          pcl::PointXYZRGB query_point = point_cloud[local_matches[match_index].trainIdx];
+          pcl::PointXYZRGB query_point = point_cloud.at(size_t(local_matches[match_index].trainIdx),0);
 
           // TODO: replace this by doing 3d to 3d with an unknown depth for that point
           if ((query_point.x != query_point.x) || (query_point.y != query_point.y) || (query_point.z != query_point.z))
@@ -206,10 +178,9 @@ private:
   unsigned int min_inliers_;
   /** The number of RANSAC iterations to perform */
   unsigned int n_ransac_iterations_;
+};
 }
-;
+}
 
-void wrap_GuessGenerator()
-{
-  ecto::wrap<GuessGenerator>("GuessGenerator", "Given ORB descriptors and 3D positions, compute object guesses.");
-}
+ECTO_CELL(tod, object_recognition::tod::GuessGenerator, "GuessGenerator",
+          "Given descriptors and 3D positions, compute object guesses.");

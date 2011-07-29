@@ -1,15 +1,29 @@
 {
-	"feature": "ORB",
-	"descriptor": "ORB",
-	"combination": "ORB",
-	"feature_params":
+	"feature_descriptor":
 	{
-		"n_features": 1000
+		"combination":
+		{
+			"type": "ORB"
+		},
+		"feature":
+		{
+			"n_features": 1000
+		}
 	},
-	"descriptor_params":
+	"db":
 	{
+		"type": "CouchDB",
+		"url": "http://localhost:5984"
 	},
-	"combination_params":
+	"object_ids": ["paneer_tikka_masala_spinach_trader_joes", "odwalla_orange_juice"],
+	"guess":
 	{
+		"min_inliers": 15,
+		"n_ransac_iterations": 1000
+	},
+	"search":
+	{
+		"ratio": 0.8,
+		"radius": 60
 	}
 }
