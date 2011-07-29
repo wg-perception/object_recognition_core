@@ -1,8 +1,14 @@
 {
-	"combination": "ORB",
-	"feature_params":
+	"features_descriptors":
 	{
-		"n_features": 1000
+               "combination":
+                {
+                        "type": "ORB" 
+                },
+		"feature":
+		{
+			"n_features": 1000
+		}
 	},
 	"db":
 	{

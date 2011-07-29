@@ -47,15 +47,9 @@ namespace object_recognition
 
     ObjectDb::ObjectDb(const boost::property_tree::ptree& params)
     {
-      std::string db_type = params.get<std::string>("type");
-      if (db_type == "empty")
-      {
-      }
-      else if (db_type == "CouchDB")
-      {
-        db_ = boost::shared_ptr<ObjectDbBase>(new ObjectDbCouch(params.get<std::string>("url")));
-      }
+      set_db(params);
     }
+
     ObjectDb::ObjectDb(const std::string & json_params)
     {
       boost::property_tree::ptree params;
@@ -63,6 +57,32 @@ namespace object_recognition
       ssparams << json_params;
       boost::property_tree::read_json(ssparams, params);
 
+      set_db(params);
+    }
+
+    void
+    ObjectDb::set_params(const std::string & json_params)
+    {
+      boost::property_tree::ptree params;
+      std::stringstream ssparams;
+      ssparams << json_params;
+      boost::property_tree::read_json(ssparams, params);
+
+      set_db(params);
+    }
+
+    void
+    ObjectDb::set_params(const boost::property_tree::ptree& params)
+    {
+      set_db(params);
+    }
+
+    /** Set the db_ using a property tree
+     * @params the boost property tree containing the different parameters
+     */
+    void
+    ObjectDb::set_db(const boost::property_tree::ptree& params)
+    {
       std::string db_type = params.get<std::string>("type");
       if (db_type == "empty")
       {
@@ -74,59 +94,47 @@ namespace object_recognition
     }
 
     void
-    ObjectDb::set_params(const std::string & json_params)
-    {
-      *this = ObjectDb(json_params);
-    }
-
-    void
-    ObjectDb::set_params(const boost::property_tree::ptree& pt)
-    {
-      *this = ObjectDb(pt);
-    }
-
-    void
     ObjectDb::insert_object(const CollectionName &collection, const boost::property_tree::ptree &fields,
-                            ObjectId & object_id, RevisionId & revision_id)
+                            DocumentId & document_id, RevisionId & revision_id) const
     {
-      db_->insert_object(collection, fields, object_id, revision_id);
+      db_->insert_object(collection, fields, document_id, revision_id);
     }
 
     void
-    ObjectDb::set_attachment_stream(const ObjectId & object_id, const CollectionName &collection,
+    ObjectDb::set_attachment_stream(const DocumentId & document_id, const CollectionName &collection,
                                     const AttachmentName& attachment_name, const MimeType& content_type,
-                                    const std::istream& stream, RevisionId & revision_id)
+                                    const std::istream& stream, RevisionId & revision_id) const
     {
-      db_->set_attachment_stream(object_id, collection, attachment_name, content_type, stream, revision_id);
+      db_->set_attachment_stream(document_id, collection, attachment_name, content_type, stream, revision_id);
     }
 
     void
-    ObjectDb::get_attachment_stream(const ObjectId & object_id, const CollectionName &collection,
+    ObjectDb::get_attachment_stream(const DocumentId & document_id, const CollectionName &collection,
                                     const AttachmentName& attachment_name, MimeType& content_type, std::ostream& stream,
-                                    RevisionId & revision_id)
+                                    RevisionId & revision_id) const
     {
-      db_->get_attachment_stream(object_id, collection, attachment_name, content_type, stream, revision_id);
+      db_->get_attachment_stream(document_id, collection, attachment_name, content_type, stream, revision_id);
     }
 
     void
-    ObjectDb::load_fields(const ObjectId & object_id, const CollectionName &collection,
-                          boost::property_tree::ptree &fields)
+    ObjectDb::load_fields(const DocumentId & document_id, const CollectionName &collection,
+                          boost::property_tree::ptree &fields) const
     {
-      db_->load_fields(object_id, collection, fields);
+      db_->load_fields(document_id, collection, fields);
     }
 
     void
-    ObjectDb::persist_fields(const ObjectId & object_id, const CollectionName &collection,
-                             const boost::property_tree::ptree &fields, RevisionId & revision_id)
+    ObjectDb::persist_fields(const DocumentId & document_id, const CollectionName &collection,
+                             const boost::property_tree::ptree &fields, RevisionId & revision_id) const
     {
-      db_->persist_fields(object_id, collection, fields, revision_id);
+      db_->persist_fields(document_id, collection, fields, revision_id);
     }
 
     void
     ObjectDb::query(const CollectionName &collection, const std::map<AttachmentName, std::string> &regexps
-                    , std::vector<ObjectId> & object_ids)
+                    , std::vector<DocumentId> & document_ids) const
     {
-      db_->query(collection, regexps, object_ids);
+      db_->query(collection, regexps, document_ids);
     }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -140,10 +148,10 @@ namespace object_recognition
     {
       collection_ = collection;
       // Persist the object if it does not exist in the DB
-      if (object_id_.empty())
-        db.insert_object(collection_, fields_, object_id_, revision_id_);
+      if (document_id_.empty())
+        db.insert_object(collection_, fields_, document_id_, revision_id_);
       else
-        db.persist_fields(object_id_, collection_, fields_, revision_id_);
+        db.persist_fields(document_id_, collection_, fields_, revision_id_);
 
       // Persist the attachments
       boost::any nothing_any;
@@ -151,7 +159,7 @@ namespace object_recognition
           attachment != attachment_end; ++attachment)
           {
         // Persist the attachment
-        db.set_attachment_stream(object_id_, collection_, attachment->first, attachment->second->type_,
+        db.set_attachment_stream(document_id_, collection_, attachment->first, attachment->second->type_,
                                  attachment->second->stream_, revision_id_);
       }
     }
@@ -159,7 +167,7 @@ namespace object_recognition
     /** Extract the stream of a specific attachment from the pre-loaded Document
      * @param attachment_name the name of the attachment
      * @param stream the string of data to write to
-     * @param mime_type the MIME type as stoerd in the DB
+     * @param mime_type the MIME type as stored in the DB
      */
     void
     Document::get_attachment_stream(const AttachmentName &attachment_name, std::ostream& stream,
@@ -172,6 +180,7 @@ namespace object_recognition
     }
 
     /** Extract the stream of a specific attachment for a Document from the DB
+     * Not const because it might change the revision_id_
      * @param db the db to read from
      * @param attachment_name the name of the attachment
      * @param stream the string of data to write to
@@ -180,7 +189,7 @@ namespace object_recognition
      */
     void
     Document::get_attachment_stream(ObjectDb & db, const AttachmentName &attachment_name, std::ostream& stream,
-                                    MimeType mime_type, bool do_use_cache)
+                                    MimeType mime_type, bool do_use_cache) const
     {
       // check if it is loaded
       if (do_use_cache)
@@ -195,7 +204,7 @@ namespace object_recognition
 
       StreamAttachment::ptr stream_attachment(new StreamAttachment(mime_type));
       // Otherwise, load it from the DB
-      db.get_attachment_stream(object_id_, collection_, attachment_name, mime_type, stream_attachment->stream_,
+      db.get_attachment_stream(document_id_, collection_, attachment_name, mime_type, stream_attachment->stream_,
                                revision_id_);
       stream << stream_attachment->stream_.rdbuf();
       if (do_use_cache)
@@ -232,7 +241,7 @@ namespace object_recognition
     void
     Document::SetIdRev(const std::string& id, const std::string& rev)
     {
-      object_id_ = id;
+      document_id_ = id;
       revision_id_ = rev;
       set_value<std::string>("_id", id);
       set_value<std::string>("_rev", rev);
@@ -240,7 +249,7 @@ namespace object_recognition
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    Query::Query()
+    View::View()
     {
     }
 
@@ -249,7 +258,7 @@ namespace object_recognition
      * @param regex the regular expression the field verifies, in TODO format
      */
     void
-    Query::add_where(const AttachmentName & field, const std::string & regex)
+    View::AddWhere(const AttachmentName & field, const std::string & regex)
     {
       regexes_[field] = regex;
     }
@@ -258,7 +267,7 @@ namespace object_recognition
      * @param collection
      */
     void
-    Query::set_collection(const CollectionName & collection)
+    View::set_collection(const CollectionName & collection)
     {
       collection_ = collection;
     }
@@ -267,7 +276,7 @@ namespace object_recognition
      * @param db The db on which the query is performed
      */
     void
-    Query::set_db(const ObjectDb & db)
+    View::set_db(const ObjectDb & db)
     {
       db_ = db;
     }
@@ -275,13 +284,13 @@ namespace object_recognition
     /** Perform the query itself
      * @return an Iterator that will iterate over each result
      */
-    QueryIterator
-    Query::begin()
+    DocumentIterator
+    View::begin()
     {
       // Process the query and get the ids of several objects
-      std::vector<ObjectId> object_ids;
-      db_.query(collection_, regexes_, object_ids);
-      return QueryIterator(db_, collection_, object_ids);
+      std::vector<DocumentId> document_ids;
+      db_.query(collection_, regexes_, document_ids);
+      return DocumentIterator(db_, collection_, document_ids);
     }
   }
 }

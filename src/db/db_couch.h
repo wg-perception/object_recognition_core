@@ -43,67 +43,73 @@
 
 using object_recognition::db_future::AttachmentName;
 using object_recognition::db_future::CollectionName;
+using object_recognition::db_future::DocumentId;
 using object_recognition::db_future::MimeType;
-using object_recognition::db_future::ObjectId;
 using object_recognition::db_future::RevisionId;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-class ObjectDbCouch : public object_recognition::db_future::ObjectDbBase
+class ObjectDbCouch: public object_recognition::db_future::ObjectDbBase
 {
 public:
   ObjectDbCouch(const std::string &url);
 
-  virtual void insert_object(const CollectionName &collection, const boost::property_tree::ptree &fields,
-                             ObjectId & object_id, RevisionId & revision_id);
+  virtual void
+  insert_object(const CollectionName &collection, const boost::property_tree::ptree &fields, DocumentId & document_id,
+                RevisionId & revision_id);
 
   virtual void
-  persist_fields(const ObjectId & object_id, const CollectionName &collection,
+  persist_fields(const DocumentId & document_id, const CollectionName &collection,
                  const boost::property_tree::ptree &fields, RevisionId & revision_id);
 
   virtual void
-  load_fields(const ObjectId & object_id, const CollectionName &collection, boost::property_tree::ptree &fields);
+  load_fields(const DocumentId & document_id, const CollectionName &collection, boost::property_tree::ptree &fields);
 
   virtual void
-  get_attachment_stream(const ObjectId & object_id, const CollectionName &collection,
+  get_attachment_stream(const DocumentId & document_id, const CollectionName &collection,
                         const std::string& attachment_name, const std::string& content_type, std::ostream& stream,
                         RevisionId & revision_id);
 
   virtual void
-  set_attachment_stream(const ObjectId & object_id, const CollectionName &collection,
+  set_attachment_stream(const DocumentId & document_id, const CollectionName &collection,
                         const AttachmentName& attachment_name, const MimeType& mime_type, const std::istream& stream,
                         RevisionId & revision_id);
 
   virtual void
   query(const CollectionName &collection, const std::map<AttachmentName, std::string> &regexps
-        , std::vector<ObjectId> & object_ids);
+        , std::vector<DocumentId> & document_ids);
 private:
 
-  inline void precondition_id(const ObjectId & id) const
+  inline void
+  precondition_id(const DocumentId & id) const
   {
     if (id.empty())
       throw std::runtime_error("The document's id must be initialized.");
   }
 
-  inline void precondition_rev(const RevisionId & rev) const
+  inline void
+  precondition_rev(const RevisionId & rev) const
   {
     if (rev.empty())
       throw std::runtime_error("The document must have a valid revision.");
   }
 
-  void upload_json(const boost::property_tree::ptree &ptree, const std::string& url, const std::string& request);
+  void
+  upload_json(const boost::property_tree::ptree &ptree, const std::string& url, const std::string& request);
 
-  inline std::string url_id(const CollectionName & collection_name, const ObjectId & id) const
+  inline std::string
+  url_id(const CollectionName & collection_name, const DocumentId & id) const
   {
     return url_ + "/" + collection_name + (id.empty() ? "" : "/" + id);
   }
-  inline std::string url_id_rev(const CollectionName &collection_name, const ObjectId & id, const RevisionId & rev) const
+  inline std::string
+  url_id_rev(const CollectionName &collection_name, const DocumentId & id, const RevisionId & rev) const
   {
     return url_id(collection_name, id) + "?rev=" + rev;
   }
 
   void
-  GetObjectRevisionId(ObjectId& object_id, RevisionId & revision_id);
+  GetObjectRevisionId(DocumentId& document_id, RevisionId & revision_id);
 
   void
   GetRevisionId(RevisionId & revision_id);
