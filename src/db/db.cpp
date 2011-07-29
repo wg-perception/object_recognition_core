@@ -56,34 +56,34 @@ namespace object_recognition
         db_ = boost::shared_ptr<ObjectDbBase>(new ObjectDbCouch(params.get<std::string>("url")));
       }
     }
-ObjectDb::ObjectDb(const std::string & json_params)
-{
-  boost::property_tree::ptree params;
-  std::stringstream ssparams;
-  ssparams << json_params;
-  boost::property_tree::read_json(ssparams, params);
+    ObjectDb::ObjectDb(const std::string & json_params)
+    {
+      boost::property_tree::ptree params;
+      std::stringstream ssparams;
+      ssparams << json_params;
+      boost::property_tree::read_json(ssparams, params);
 
-  std::string db_type = params.get<std::string>("type");
-  if (db_type == "empty")
-  {
-  }
-  else if (db_type == "CouchDB")
-  {
-    db_ = boost::shared_ptr<ObjectDbBase>(new ObjectDbCouch(params.get<std::string>("url")));
-  }
-}
+      std::string db_type = params.get<std::string>("type");
+      if (db_type == "empty")
+      {
+      }
+      else if (db_type == "CouchDB")
+      {
+        db_ = boost::shared_ptr<ObjectDbBase>(new ObjectDbCouch(params.get<std::string>("url")));
+      }
+    }
 
-void
+    void
     ObjectDb::set_params(const std::string & json_params)
     {
       *this = ObjectDb(json_params);
     }
 
-void
-ObjectDb::set_params(const boost::property_tree::ptree& pt)
-{
-    *this = ObjectDb(pt);
-}
+    void
+    ObjectDb::set_params(const boost::property_tree::ptree& pt)
+    {
+      *this = ObjectDb(pt);
+    }
 
     void
     ObjectDb::insert_object(const CollectionName &collection, const boost::property_tree::ptree &fields,
@@ -147,12 +147,12 @@ ObjectDb::set_params(const boost::property_tree::ptree& pt)
 
       // Persist the attachments
       boost::any nothing_any;
-      for (std::map<AttachmentName, StreamAttachment>::const_iterator attachment = attachments_.begin(),
-          attachment_end = attachments_.end(); attachment != attachment_end; ++attachment)
-      {
+      for (AttachmentMap::const_iterator attachment = attachments_.begin(), attachment_end = attachments_.end();
+          attachment != attachment_end; ++attachment)
+          {
         // Persist the attachment
-        db.set_attachment_stream(object_id_, collection_, attachment->first, attachment->second.type_,
-                                 attachment->second.stream_, revision_id_);
+        db.set_attachment_stream(object_id_, collection_, attachment->first, attachment->second->type_,
+                                 attachment->second->stream_, revision_id_);
       }
     }
 
@@ -166,9 +166,9 @@ ObjectDb::set_params(const boost::property_tree::ptree& pt)
                                     MimeType mime_type) const
     {
       // check if it is loaded
-      std::map<AttachmentName, StreamAttachment>::const_iterator val = attachments_.find(attachment_name);
+      AttachmentMap::const_iterator val = attachments_.find(attachment_name);
       if (val != attachments_.end())
-        stream << val->second.stream_;
+        stream << val->second->stream_.rdbuf();
     }
 
     /** Extract the stream of a specific attachment for a Document from the DB
@@ -185,20 +185,21 @@ ObjectDb::set_params(const boost::property_tree::ptree& pt)
       // check if it is loaded
       if (do_use_cache)
       {
-        std::map<AttachmentName, StreamAttachment>::const_iterator val = attachments_.find(attachment_name);
+        AttachmentMap::const_iterator val = attachments_.find(attachment_name);
         if (val != attachments_.end())
         {
-          stream << val->second.stream_;
+          stream << val->second->stream_.rdbuf();
           return;
         }
       }
 
+      StreamAttachment::ptr stream_attachment(new StreamAttachment(mime_type));
       // Otherwise, load it from the DB
-      db.get_attachment_stream(object_id_, collection_, attachment_name, mime_type, stream, revision_id_);
+      db.get_attachment_stream(object_id_, collection_, attachment_name, mime_type, stream_attachment->stream_,
+                               revision_id_);
+      stream << stream_attachment->stream_.rdbuf();
       if (do_use_cache)
       {
-        StreamAttachment stream_attachment(mime_type);
-        stream_attachment.stream_ << stream;
         attachments_[attachment_name] = stream_attachment;
       }
     }
@@ -212,7 +213,7 @@ ObjectDb::set_params(const boost::property_tree::ptree& pt)
     Document::set_attachment_stream(const AttachmentName &attachment_name, const std::istream& stream,
                                     const MimeType& mime_type)
     {
-      StreamAttachment stream_attachment(mime_type, stream);
+      StreamAttachment::ptr stream_attachment(new StreamAttachment(mime_type, stream));
       attachments_[attachment_name] = stream_attachment;
     }
 
@@ -239,44 +240,48 @@ ObjectDb::set_params(const boost::property_tree::ptree& pt)
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-Query::Query()
-{
-}
+    Query::Query()
+    {
+    }
 
-/** Add requirements for the documents to retrieve
- * @param field a field to match. Only one regex per field will be accepted
- * @param regex the regular expression the field verifies, in TODO format
- */
-void Query::add_where(const AttachmentName & field, const std::string & regex)
-{
-  regexes_[field] = regex;
-}
+    /** Add requirements for the documents to retrieve
+     * @param field a field to match. Only one regex per field will be accepted
+     * @param regex the regular expression the field verifies, in TODO format
+     */
+    void
+    Query::add_where(const AttachmentName & field, const std::string & regex)
+    {
+      regexes_[field] = regex;
+    }
 
-/** Add collections that should be checked for specific fields
- * @param collection
- */
-void Query::set_collection(const CollectionName & collection)
-{
-  collection_ = collection;
-}
+    /** Add collections that should be checked for specific fields
+     * @param collection
+     */
+    void
+    Query::set_collection(const CollectionName & collection)
+    {
+      collection_ = collection;
+    }
 
-/** Set the db on which to perform the Query
- * @param db The db on which the query is performed
- */
-void Query::set_db(const ObjectDb & db)
-{
-  db_ = db;
-}
+    /** Set the db on which to perform the Query
+     * @param db The db on which the query is performed
+     */
+    void
+    Query::set_db(const ObjectDb & db)
+    {
+      db_ = db;
+    }
 
-/** Perform the query itself
- * @return an Iterator that will iterate over each result
- */
-QueryIterator Query::begin()
-{
-  // Process the query and get the ids of several objects
-  std::vector<ObjectId> object_ids;
-  db_.query(collection_, regexes_, object_ids);
-  return QueryIterator(db_, collection_, object_ids);
+    /** Perform the query itself
+     * @return an Iterator that will iterate over each result
+     */
+    QueryIterator
+    Query::begin()
+    {
+      // Process the query and get the ids of several objects
+      std::vector<ObjectId> object_ids;
+      db_.query(collection_, regexes_, object_ids);
+      return QueryIterator(db_, collection_, object_ids);
     }
   }
 }

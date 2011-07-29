@@ -21,7 +21,16 @@ namespace object_recognition
     std::string where_doc_id = STRINGYFY(
         function(doc)
         {
-          if(doc.object_id == "%s" )
+
+          if(doc.object_id == "%s")
+          emit("frame_number",doc.frame_number);
+        }
+    );
+
+    std::string where_doc_id_and_session = STRINGYFY(
+        function(doc)
+        {
+          if(doc.session_id == "%s")
           emit("frame_number",doc.frame_number);
         }
     );
@@ -39,7 +48,8 @@ namespace object_recognition
       static void
       declare_params(tendrils& params)
       {
-        params.declare<std::string>("object_id", "The object id, to associate this frame with.", "object_01");
+        params.declare<std::string>("object_id", "The object id, to associate this frame with.");
+        params.declare<std::string>("session_id", "The object id, to associate this frame with.");
         params.declare<std::string>("db_url", "The database url", std::string(DEFAULT_COUCHDB_URL));
       }
 
@@ -55,10 +65,21 @@ namespace object_recognition
         outputs.declare<int>("frame_number", "The frame number");
       }
       void
-      on_object_id_change(const std::string& id)
+      on_object_id_change(const std::string&)
       {
+        std::string id, session;
+        object_id.p() >> id;
+        session_id.p() >> session;
+
+        std::string view;
+        if(!session.empty())
+          view = boost::str(boost::format(where_doc_id_and_session) % session);
+        else if(!id.empty())
+           view = boost::str(boost::format(where_doc_id) % id);
+        else
+          throw std::runtime_error("You must supply either an object_id or a session_id.");
         couch::View v;
-        v.add_map("map", boost::str(boost::format(where_doc_id) % id));
+        v.add_map("map", view);
         std::vector<couch::View::result> results = db.run_view(v, -1, 0, total_rows, offset);
         std::sort(results.begin(), results.end(), result_less());
         BOOST_FOREACH(const couch::View::result& x, results)
@@ -78,8 +99,9 @@ namespace object_recognition
       {
         db = couch::Db(params.get<std::string>("db_url") + "/observations");
         db.update_info();
-        ecto::spore<std::string> object_id = params.at("object_id");
-        object_id.set_callback(boost::bind(&ObservationReader::on_object_id_change, this, _1));
+        object_id = params.at("object_id");
+        session_id = params.at("session_id");
+        session_id.set_callback(boost::bind(&ObservationReader::on_object_id_change, this, _1));
       }
       int
       process(const tendrils& inputs, tendrils& outputs)
@@ -96,6 +118,7 @@ namespace object_recognition
       std::vector<couch::Document> docs;
       Observation obs;
       int total_rows, offset;
+      ecto::spore<std::string> object_id,session_id;
       couch::Db db;
       int current_frame;
     };

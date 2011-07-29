@@ -1,5 +1,5 @@
 #!/bin/sh -ex
-#COMMIT="--commit 0"
+COMMIT="--commit 0"
 ./ingest_data.py -i amys_country_cheddar_bowl -d "Amy's frozen dinner. Country Cheddar Bowl" \
   -b data/amys_country_cheddar_bowl.bag \
   $COMMIT \

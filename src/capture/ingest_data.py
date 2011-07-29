@@ -76,7 +76,7 @@ if "__main__" == __name__:
     pose_display = highgui.imshow('Poses', name='Poses', waitKey=10, autoSize=True)
     mask_display = highgui.imshow('Masks', name='Masks', waitKey= -1, autoSize=True)
 
-    masker = calib.PlanarSegmentation(z_min=0.015, y_crop=0.15, x_crop=0.15)
+    masker = calib.PlanarSegmentation(z_min=0.008, y_crop=0.10, x_crop=0.10)
     bitwise_and = imgproc.BitwiseAnd()
     
     im2mat_rgb = ecto_ros.Image2Mat()
