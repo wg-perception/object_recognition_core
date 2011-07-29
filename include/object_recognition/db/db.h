@@ -56,6 +56,7 @@ namespace object_recognition
     typedef std::string Field;
     typedef std::string MimeType;
     typedef std::string RevisionId;
+    typedef std::string View;
 
     const std::string MIME_TYPE_DEFAULT = "application/octet-stream";
 
@@ -109,8 +110,8 @@ namespace object_recognition
                      const boost::property_tree::ptree &fields, RevisionId & revision_id) const;
 
       void
-      query(const CollectionName &collection, const std::map<AttachmentName, std::string> &regexps
-            , std::vector<DocumentId> & document_ids) const;
+      Query(const std::vector<std::string> & queries, const CollectionName & collection_name, int limit_rows,
+            int start_offset, int& total_rows, int& offset, std::vector<DocumentId> & document_ids) const;
 
     private:
       /** Set the db_ using a property tree
@@ -429,20 +430,20 @@ namespace object_recognition
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    class View
+    class DocumentView
     {
     public:
-      View();
-
-      /** Add requirements for the documents to retrieve
-       * @param field a field to match. Only one regex per field will be accepted
-       * @param regex the regular expression the field verifies, in TODO format
-       */
-      void
-      AddWhere(const AttachmentName & field, const std::string & regex);
+      DocumentView();
 
       /** Add collections that should be checked for specific fields
        * @param collection
+       */
+      void
+      set_db(const ObjectDb & db);
+
+      /** Set the collection on which to perform the Query. This might be part of the views_
+       * and unnecessary for certain DB's
+       * @param collection The collection on which the query is performed
        */
       void
       set_collection(const CollectionName & collection);
@@ -451,7 +452,7 @@ namespace object_recognition
        * @param collection
        */
       void
-      set_db(const ObjectDb & db);
+      AddView(const View & db);
 
       /** Perform the query itself
        * @param db The db on which the query is performed
@@ -469,8 +470,7 @@ namespace object_recognition
     private:
       ObjectDb db_;
       CollectionName collection_;
-      /** the list of regexes to use */
-      std::map<AttachmentName, std::string> regexes_;
+      std::vector<View> views_;
     };
   }
 }

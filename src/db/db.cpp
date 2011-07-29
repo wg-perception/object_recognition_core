@@ -131,10 +131,10 @@ namespace object_recognition
     }
 
     void
-    ObjectDb::query(const CollectionName &collection, const std::map<AttachmentName, std::string> &regexps
-                    , std::vector<DocumentId> & document_ids) const
+    ObjectDb::Query(const std::vector<std::string> & queries, const CollectionName & collection_name, int limit_rows,
+                    int start_offset, int& total_rows, int& offset, std::vector<DocumentId> & document_ids) const
     {
-      db_->query(collection, regexps, document_ids);
+      db_->Query(queries, collection_name, limit_rows, start_offset, total_rows, offset, document_ids);
     }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -248,47 +248,49 @@ namespace object_recognition
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    View::View()
+    DocumentView::DocumentView()
     {
     }
 
     /** Add requirements for the documents to retrieve
-     * @param field a field to match. Only one regex per field will be accepted
-     * @param regex the regular expression the field verifies, in TODO format
+     * @param view a View that will filter the Documents. The format depends on your ObjectDb
      */
     void
-    View::AddWhere(const AttachmentName & field, const std::string & regex)
+    DocumentView::AddView(const View & view)
     {
-      regexes_[field] = regex;
-    }
-
-    /** Add collections that should be checked for specific fields
-     * @param collection
-     */
-    void
-    View::set_collection(const CollectionName & collection)
-    {
-      collection_ = collection;
+      views_.push_back(view);
     }
 
     /** Set the db on which to perform the Query
      * @param db The db on which the query is performed
      */
     void
-    View::set_db(const ObjectDb & db)
+    DocumentView::set_db(const ObjectDb & db)
     {
       db_ = db;
+    }
+
+    /** Set the collection on which to perform the Query. This might be part of the views_
+     * and unnecessary for certain DB's
+     * @param collection The collection on which the query is performed
+     */
+    void
+    DocumentView::set_collection(const CollectionName & collection)
+    {
+      collection_ = collection;
     }
 
     /** Perform the query itself
      * @return an Iterator that will iterate over each result
      */
     DocumentIterator
-    View::begin()
+    DocumentView::begin()
     {
       // Process the query and get the ids of several objects
       std::vector<DocumentId> document_ids;
-      db_.query(collection_, regexes_, document_ids);
+      int limit_rows = 100, start_offset = 0;
+      int total_rows, offset;
+      db_.Query(views_, collection_, limit_rows, start_offset, total_rows, offset, document_ids);
       return DocumentIterator(db_, collection_, document_ids);
     }
   }

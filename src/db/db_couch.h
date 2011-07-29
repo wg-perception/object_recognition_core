@@ -76,8 +76,8 @@ public:
                         RevisionId & revision_id);
 
   virtual void
-  query(const CollectionName &collection, const std::map<AttachmentName, std::string> &regexps
-        , std::vector<DocumentId> & document_ids);
+  Query(const std::vector<std::string> & queries, const CollectionName & collection_name, int limit_rows,
+        int start_offset, int& total_rows, int& offset, std::vector<DocumentId> & document_ids);
 private:
 
   inline void
