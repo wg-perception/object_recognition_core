@@ -137,6 +137,12 @@ namespace object_recognition
       db_->Query(queries, collection_name, limit_rows, start_offset, total_rows, offset, document_ids);
     }
 
+    DbType
+    ObjectDb::type()
+    {
+      return db_->type();
+    }
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     /** Persist your object to a given DB
@@ -249,7 +255,11 @@ namespace object_recognition
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+    const unsigned int DocumentView::BATCH_SIZE = 100;
+
     DocumentView::DocumentView()
+        :
+          start_offset_(0)
     {
     }
 
@@ -284,15 +294,56 @@ namespace object_recognition
     /** Perform the query itself
      * @return an Iterator that will iterate over each result
      */
-    DocumentIterator
+    DocumentView &
     DocumentView::begin()
     {
       // Process the query and get the ids of several objects
       std::vector<DocumentId> document_ids;
-      int limit_rows = 100, start_offset = 0;
-      int total_rows, offset;
-      db_.Query(views_, collection_, limit_rows, start_offset, total_rows, offset, document_ids);
-      return DocumentIterator(db_, collection_, document_ids);
+      db_.Query(views_, collection_, BATCH_SIZE, start_offset_, total_rows_, offset_, document_ids_);
+      return *this;
+    }
+
+    DocumentView
+    DocumentView::end()
+    {
+      return DocumentView();
+    }
+
+    DocumentView &
+    DocumentView::operator++()
+    {
+      // Move forward in the list of Objects to check
+      document_ids_.pop_back();
+      // Return the end iterator if we are done
+      if (document_ids_.empty())
+      {
+        // Figure out if we need to query for more document ids
+        if (offset_ < total_rows_)
+          db_.Query(views_, collection_, BATCH_SIZE, start_offset_, total_rows_, offset_, document_ids_);
+      }
+      else
+      {
+        // Fill the current object
+        document_ids_.pop_back();
+      }
+      return *this;
+    }
+
+    bool
+    DocumentView::operator!=(const DocumentView & document_view) const
+    {
+      if (document_view.document_ids_.empty())
+        return (!document_ids_.empty());
+      if (document_ids_.size() >= document_view.document_ids_.size())
+        return std::equal(document_ids_.begin(), document_ids_.end(), document_view.document_ids_.begin());
+      else
+        return std::equal(document_view.document_ids_.begin(), document_view.document_ids_.end(), document_ids_.begin());
+    }
+
+    Document
+    DocumentView::operator*() const
+    {
+      return Document(db_, collection_, document_ids_.back());
     }
   }
 }

@@ -44,6 +44,7 @@
 using object_recognition::db_future::AttachmentName;
 using object_recognition::db_future::CollectionName;
 using object_recognition::db_future::DocumentId;
+using object_recognition::db_future::DbType;
 using object_recognition::db_future::MimeType;
 using object_recognition::db_future::RevisionId;
 
@@ -78,6 +79,12 @@ public:
   virtual void
   Query(const std::vector<std::string> & queries, const CollectionName & collection_name, int limit_rows,
         int start_offset, int& total_rows, int& offset, std::vector<DocumentId> & document_ids);
+
+  virtual DbType
+  type()
+  {
+    return "CouchDB";
+  }
 private:
 
   inline void

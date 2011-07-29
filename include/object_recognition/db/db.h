@@ -53,6 +53,7 @@ namespace object_recognition
     typedef std::string AttachmentName;
     typedef std::string CollectionName;
     typedef std::string DocumentId;
+    typedef std::string DbType;
     typedef std::string Field;
     typedef std::string MimeType;
     typedef std::string RevisionId;
@@ -113,6 +114,11 @@ namespace object_recognition
       Query(const std::vector<std::string> & queries, const CollectionName & collection_name, int limit_rows,
             int start_offset, int& total_rows, int& offset, std::vector<DocumentId> & document_ids) const;
 
+      /** The type of the DB
+       * @return The type of the DB as a string
+       */
+      DbType
+      type();
     private:
       /** Set the db_ using a property tree
        * @params the boost property tree containing the different parameters
@@ -136,7 +142,7 @@ namespace object_recognition
       {
       }
 
-      Document(ObjectDb & db, const CollectionName & collection, const DocumentId &document_id)
+      Document(const ObjectDb & db, const CollectionName & collection, const DocumentId &document_id)
           :
             collection_(collection),
             document_id_(document_id)
@@ -268,37 +274,37 @@ namespace object_recognition
 
     private:
       /** contains the attachments: binary blobs */
-      struct StreamAttachment : boost::noncopyable
+      struct StreamAttachment: boost::noncopyable
       {
-
         StreamAttachment()
         {
         }
+
         StreamAttachment(const MimeType &type)
             :
               type_(type)
         {
         }
+
         StreamAttachment(const MimeType &type, const std::istream &stream)
             :
               type_(type)
         {
           copy_from(stream);
         }
-        MimeType type_;
-        std::stringstream stream_;
         void
         copy_from(const std::istream& stream)
         {
           stream_ << stream.rdbuf();
           stream_.seekg(0);
         }
+        MimeType type_;
+        std::stringstream stream_;
         typedef boost::shared_ptr<StreamAttachment> ptr;
-
       };
 
-      mutable CollectionName collection_;
-      mutable DocumentId document_id_;
+      CollectionName collection_;
+      DocumentId document_id_;
       mutable RevisionId revision_id_;
       typedef std::map<AttachmentName, StreamAttachment::ptr> AttachmentMap;
       mutable AttachmentMap attachments_;
@@ -359,80 +365,11 @@ namespace object_recognition
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    class DocumentIterator: public std::iterator<std::forward_iterator_tag, int>
-    {
-    public:
-      DocumentIterator()
-      {
-      }
-
-      DocumentIterator(ObjectDb& db)
-          :
-            db_(db)
-      {
-      }
-
-      DocumentIterator(ObjectDb& db, const CollectionName &collection, const std::vector<std::string> & document_ids)
-          :
-            db_(db),
-            collection_(collection),
-            document_ids_(document_ids)
-      {
-        // Load the first element in the db
-        if (document_ids_.empty())
-          return;
-        object_ = boost::shared_ptr<Document>(new Document(db_, collection_, document_ids_.back()));
-        document_ids_.pop_back();
-      }
-
-      DocumentIterator &
-      operator++()
-      {
-        // Move forward in the list of Objects to check
-        document_ids_.pop_back();
-        // Return the end iterator if we are done
-        if (document_ids_.empty())
-        {
-          object_ = boost::shared_ptr<Document>();
-        }
-        else
-        {
-          // Fill the current object
-          object_ = boost::shared_ptr<Document>(new Document(db_, collection_, document_ids_.back()));
-          document_ids_.pop_back();
-        }
-        return *this;
-      }
-
-      bool
-      operator!=(const DocumentIterator & query_iterator) const
-      {
-        if (query_iterator.document_ids_.empty())
-          return (!document_ids_.empty());
-        if (document_ids_.size() >= query_iterator.document_ids_.size())
-          return std::equal(document_ids_.begin(), document_ids_.end(), query_iterator.document_ids_.begin());
-        else
-          return std::equal(query_iterator.document_ids_.begin(), query_iterator.document_ids_.end(),
-                            document_ids_.begin());
-      }
-
-      static DocumentIterator
-      end()
-      {
-        return DocumentIterator();
-      }
-    private:
-      ObjectDb db_;
-      CollectionName collection_;
-      boost::shared_ptr<Document> object_;
-      std::vector<DocumentId> document_ids_;
-    };
-
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
     class DocumentView
     {
     public:
+      static const unsigned int BATCH_SIZE;
+
       DocumentView();
 
       /** Add collections that should be checked for specific fields
@@ -458,19 +395,32 @@ namespace object_recognition
        * @param db The db on which the query is performed
        * @return an Iterator that will iterate over each result
        */
-      DocumentIterator
+      DocumentView &
       begin();
 
       /** Perform the query itself
        * @param db The db on which the query is performed
        * @return an Iterator that will iterate over each result
        */
-      DocumentIterator
+      static DocumentView
       end();
+
+      DocumentView &
+      operator++();
+
+      bool
+      operator!=(const DocumentView & document_view) const;
+
+      Document
+      operator*() const;
     private:
       ObjectDb db_;
       CollectionName collection_;
+      std::vector<DocumentId> document_ids_;
       std::vector<View> views_;
+      int offset_;
+      int start_offset_;
+      int total_rows_;
     };
   }
 }
