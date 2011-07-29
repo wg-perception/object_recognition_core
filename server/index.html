@@ -3,14 +3,16 @@
 <title>Object Recognition</title>
 </head>
 <body>
-	<p>
-	<FORM action="upload/bag" enctype="multipart/form-data" method="post">
-		<P>
-			object name: <INPUT type="text" name="object_name"><BR>
-			Bag file: <INPUT type="file" name="bag_file"><BR> <INPUT
-				type="submit" value="Send"> <INPUT type="reset">
-	</FORM>
-	</p>
+  <p>
+    <FORM action="cgi-bin/bag_upload.py" enctype="multipart/form-data" method="post">
+      object name: <INPUT type="text" name="object_name"><BR>
+      object description:<BR> <TEXTAREA rows=5 cols=20 name="object_desc">A semi detailed description of your object.</TEXTAREA><BR>
+      object tags: <INPUT type="text" name="object_tags"><BR>
+      email: <INPUT type="text" name="author_email"><BR>
+      Bag file: <INPUT type="file" name="bag_file"><BR>
+      <INPUT type="submit" value="Send"> <INPUT type="reset">
+    </FORM>
+  </p>
 </body>
 </html>
 
