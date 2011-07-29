@@ -195,7 +195,7 @@ namespace object_recognition
 
     template<typename PointT>
     void
-    writePLY2(const pcl::PointCloud<PointT>& cloud_m, const std::string& mesh_file_name)
+    writePLY(const pcl::PointCloud<PointT>& cloud_m, const std::string& mesh_file_name)
     {
       std::ofstream mesh_file(std::string(mesh_file_name).c_str());
       mesh_file << "ply\n"
@@ -326,7 +326,7 @@ namespace object_recognition
 
         //save as ply
         //rgbd::write_ply_file(*surfelCloud,out_file);
-        writePLY2(*surfelCloud, *filename);
+        writePLY(*surfelCloud, *filename);
         return ecto::OK;
       }
       ecto::spore<std::string> filename;
