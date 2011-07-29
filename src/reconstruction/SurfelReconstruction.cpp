@@ -60,8 +60,8 @@ namespace object_recognition
                          "max dist of new measurement from surface to be considered part of that surface", 0.005);
         // p.declare<unsigned int>("highConfidence", "high confidence surfels are exempt from any removal");
         p.declare<int>("starvationConfidence", "this confidence and higher are exempt from starvation removal", 4);
-        //p.declare<unsigned int>("timeDiffForRemoval", "how long ago lastSeen must be to perform starvation removal",);
-        p.declare<float>("maxNormalAngle", "max surfel angle away from camera to be updated", 85);
+        p.declare<int>("timeDiffForRemoval", "how long ago lastSeen must be to perform starvation removal", 5);
+        p.declare<float>("maxNormalAngle", "max surfel angle away from camera to be updated", 80 * M_PI / 180);
         //p.declare<float>("maxNormalAngleDiff", "max difference between an new reading and the existing surfel normal",);
 
       }
@@ -95,6 +95,7 @@ namespace object_recognition
         points3d = i["points3d"];
         params->maxInterpolationDist = p.get<float>("maxInterpolationDist");
         params->starvationConfidence = p.get<int>("starvationConfidence");
+        params->timeDiffForRemoval = p.get<int>("timeDiffForRemoval");
         params->maxNormalAngle = p.get<float>("maxNormalAngle");
         params->corrDistForUpdate = p.get<float>("corrDistForUpdate");
       }

@@ -155,12 +155,12 @@ namespace object_recognition
 
       // Persist the attachments
       boost::any nothing_any;
-      for (std::map<AttachmentName, StreamAttachment>::const_iterator attachment = attachments_.begin(),
-          attachment_end = attachments_.end(); attachment != attachment_end; ++attachment)
-      {
+      for (AttachmentMap::const_iterator attachment = attachments_.begin(), attachment_end = attachments_.end();
+          attachment != attachment_end; ++attachment)
+          {
         // Persist the attachment
-        db.set_attachment_stream(document_id_, collection_, attachment->first, attachment->second.type_,
-                                 attachment->second.stream_, revision_id_);
+        db.set_attachment_stream(document_id_, collection_, attachment->first, attachment->second->type_,
+                                 attachment->second->stream_, revision_id_);
       }
     }
 
@@ -174,9 +174,9 @@ namespace object_recognition
                                     MimeType mime_type) const
     {
       // check if it is loaded
-      std::map<AttachmentName, StreamAttachment>::const_iterator val = attachments_.find(attachment_name);
+      AttachmentMap::const_iterator val = attachments_.find(attachment_name);
       if (val != attachments_.end())
-        stream << val->second.stream_;
+        stream << val->second->stream_.rdbuf();
     }
 
     /** Extract the stream of a specific attachment for a Document from the DB
@@ -194,20 +194,21 @@ namespace object_recognition
       // check if it is loaded
       if (do_use_cache)
       {
-        std::map<AttachmentName, StreamAttachment>::const_iterator val = attachments_.find(attachment_name);
+        AttachmentMap::const_iterator val = attachments_.find(attachment_name);
         if (val != attachments_.end())
         {
-          stream << val->second.stream_;
+          stream << val->second->stream_.rdbuf();
           return;
         }
       }
 
+      StreamAttachment::ptr stream_attachment(new StreamAttachment(mime_type));
       // Otherwise, load it from the DB
-      db.get_attachment_stream(document_id_, collection_, attachment_name, mime_type, stream, revision_id_);
+      db.get_attachment_stream(document_id_, collection_, attachment_name, mime_type, stream_attachment->stream_,
+                               revision_id_);
+      stream << stream_attachment->stream_.rdbuf();
       if (do_use_cache)
       {
-        StreamAttachment stream_attachment(mime_type);
-        stream_attachment.stream_ << stream;
         attachments_[attachment_name] = stream_attachment;
       }
     }
@@ -221,7 +222,7 @@ namespace object_recognition
     Document::set_attachment_stream(const AttachmentName &attachment_name, const std::istream& stream,
                                     const MimeType& mime_type)
     {
-      StreamAttachment stream_attachment(mime_type, stream);
+      StreamAttachment::ptr stream_attachment(new StreamAttachment(mime_type, stream));
       attachments_[attachment_name] = stream_attachment;
     }
 

@@ -37,3 +37,10 @@ install(TARGETS object_recognition_db
   DESTINATION lib
   COMPONENT main
   )
+
+ectomodule(object_recognition_db
+    module.cpp
+    )
+link_ecto(object_recognition_db
+  object_recognition_db
+  )

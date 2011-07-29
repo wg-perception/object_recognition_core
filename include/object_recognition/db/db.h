@@ -268,8 +268,9 @@ namespace object_recognition
 
     private:
       /** contains the attachments: binary blobs */
-      struct StreamAttachment
+      struct StreamAttachment : boost::noncopyable
       {
+
         StreamAttachment()
         {
         }
@@ -282,26 +283,25 @@ namespace object_recognition
             :
               type_(type)
         {
-          stream_ << stream;
-        }
-        void
-        operator=(const StreamAttachment& rhs)
-        {
-          type_ = rhs.type_;
-          stream_ << rhs.stream_;
-        }
-        StreamAttachment(const StreamAttachment& rhs)
-        {
-          *this = rhs;
+          copy_from(stream);
         }
         MimeType type_;
         std::stringstream stream_;
+        void
+        copy_from(const std::istream& stream)
+        {
+          stream_ << stream.rdbuf();
+          stream_.seekg(0);
+        }
+        typedef boost::shared_ptr<StreamAttachment> ptr;
+
       };
 
       mutable CollectionName collection_;
       mutable DocumentId document_id_;
       mutable RevisionId revision_id_;
-      mutable std::map<AttachmentName, StreamAttachment> attachments_;
+      typedef std::map<AttachmentName, StreamAttachment::ptr> AttachmentMap;
+      mutable AttachmentMap attachments_;
       /** contains the fields: they are of integral types */
       boost::property_tree::ptree fields_;
     };
