@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 2.8)
 set(CMAKE_BUILD_TYPE "Release" CACHE STRING "The build type.")
-project(objcog)
+project(object_recognition)
 add_definitions("-Werror -fno-strict-aliasing -Wall -Wl,--no-undefined")
 include(rosbuild_lite.cmake)
 
@@ -21,4 +21,3 @@ ecto_python_env_gen(${CMAKE_LIBRARY_OUTPUT_DIRECTORY})
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
 include_directories(${EIGEN_INCLUDE_DIRS})
 add_subdirectory(src)
-add_subdirectory(doc)
