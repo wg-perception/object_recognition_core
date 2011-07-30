@@ -8,7 +8,7 @@
 #include <string>
 
 #include "object_recognition/capture/capture.hpp"
-#include "object_recognition/db/couch.hpp"
+#include "object_recognition/db/couch.h"
 #include "object_recognition/db/opencv.h"
 
 using ecto::tendrils;
@@ -21,7 +21,6 @@ namespace object_recognition
     std::string where_doc_id = STRINGYFY(
         function(doc)
         {
-
           if(doc.object_id == "%s")
           emit("frame_number",doc.frame_number);
         }
@@ -34,6 +33,7 @@ namespace object_recognition
           emit("frame_number",doc.frame_number);
         }
     );
+
     struct result_less
     {
       bool
@@ -70,7 +70,6 @@ namespace object_recognition
         std::string id, session;
         object_id.p() >> id;
         session_id.p() >> session;
-
         std::string view;
         if(!session.empty())
           view = boost::str(boost::format(where_doc_id_and_session) % session);
@@ -102,6 +101,13 @@ namespace object_recognition
         object_id = params.at("object_id");
         session_id = params.at("session_id");
         session_id.set_callback(boost::bind(&ObservationReader::on_object_id_change, this, _1));
+        {
+          // Make sure we make the query even though session is empty
+          std::string session;
+          session_id.p() >> session;
+          if (session.empty())
+            on_object_id_change("");
+        }
       }
       int
       process(const tendrils& inputs, tendrils& outputs)
