@@ -1,5 +1,5 @@
 {
-	"features_descriptors":
+	"feature_descriptor":
 	{
                "combination":
                 {
