@@ -8,7 +8,7 @@
 #include <string>
 
 #include "object_recognition/capture/capture.hpp"
-#include "object_recognition/db/couch.h"
+#include "object_recognition/db/couch.hpp"
 #include "object_recognition/db/opencv.h"
 
 using ecto::tendrils;
