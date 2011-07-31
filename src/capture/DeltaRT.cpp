@@ -35,9 +35,9 @@ namespace object_recognition
       void
       configure(tendrils& params, tendrils& inputs, tendrils& outputs)
       {
-        reset_ = params.at("reset");
-        angle_thresh_ = params.at("angle_thresh");
-        novel_ = outputs.at("novel");
+        reset_ = params["reset"];
+        angle_thresh_ = params["angle_thresh"];
+        novel_ = outputs["novel"];
         R_ = inputs["R"];
         T_ = inputs["T"];
         found_ = inputs["found"];

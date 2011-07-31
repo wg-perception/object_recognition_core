@@ -52,7 +52,7 @@ namespace object_recognition
       void
       configure(tendrils& params, tendrils& inputs, tendrils& outputs)
       {
-        ecto::spore<std::string> document_id = params.at("document_id");
+        ecto::spore<std::string> document_id = params["document_id"];
         document_id.set_callback(boost::bind(&TodModelInserter::on_document_id_change, this, _1));
         db_.set_params(params.get<std::string>("db_json_params"));
         collection_models_ = params.get<std::string>("collection_models");

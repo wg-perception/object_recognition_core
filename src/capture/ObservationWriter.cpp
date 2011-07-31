@@ -58,9 +58,9 @@ namespace object_recognition
       {
         db = couch::Db(params.get<std::string>("db_url") + "/observations");
         db.create();
-        ecto::spore<std::string> object_id = params.at("object_id");
+        ecto::spore<std::string> object_id = params["object_id"];
         object_id.set_callback(boost::bind(&ObservationInserter::on_object_id_change, this, _1));
-        ecto::spore<std::string> session_id = params.at("session_id");
+        ecto::spore<std::string> session_id = params["session_id"];
         session_id.set_callback(boost::bind(&ObservationInserter::on_session_id_change, this, _1));
       }
       int

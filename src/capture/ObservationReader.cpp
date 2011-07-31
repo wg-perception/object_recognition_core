@@ -99,8 +99,8 @@ namespace object_recognition
       {
         db = couch::Db(params.get<std::string>("db_url") + "/observations");
         db.update_info();
-        object_id = params.at("object_id");
-        session_id = params.at("session_id");
+        object_id = params["object_id"];
+        session_id = params["session_id"];
         session_id.set_callback(boost::bind(&ObservationReader::on_object_id_change, this, _1));
       }
       int
