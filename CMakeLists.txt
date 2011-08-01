@@ -16,7 +16,7 @@ find_package(Boost COMPONENTS system filesystem serialization REQUIRED)
 find_package(ecto 0.1.0 REQUIRED)
 find_package(OpenCV 2.3.1 EXACT REQUIRED)
 
-ecto_python_env_gen(${CMAKE_LIBRARY_OUTPUT_DIRECTORY} ${CMAKE_CURRENT_SOURCE_DIR}/couchdb-python/couchdb)
+ecto_python_env_gen(${CMAKE_LIBRARY_OUTPUT_DIRECTORY} ${CMAKE_CURRENT_SOURCE_DIR}/couchdb-python)
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
 add_subdirectory(src)
