@@ -15,12 +15,10 @@ DEBUG = False
 DISPLAY = False
 
 class TodModelComputation(ecto.BlackBox):
-    def __init__(self, plasm, feature_descriptor_params_file):
+    def __init__(self, plasm, feature_descriptor_json_params):
         ecto.BlackBox.__init__(self, plasm)
-        if not feature_descriptor_params_file:
-            feature_descriptor_params_file = ''
-        self._feature_descriptor_params_file = feature_descriptor_params_file
-        self.feature_descriptor = features2d.FeatureDescriptor(param_file=feature_descriptor_params_file)
+        self._feature_descriptor_json_params = feature_descriptor_json_params
+        self.feature_descriptor = features2d.FeatureDescriptor(json_params=feature_descriptor_json_params)
         self.twoDToThreeD = tod.TwoDToThreeD()
         self.cameraToWorld = tod.CameraToWorld()
 
@@ -37,7 +35,7 @@ class TodModelComputation(ecto.BlackBox):
                 'descriptors': self.feature_descriptor['descriptors']}
 
     def expose_parameters(self):
-        return {'feature_descriptor_param': self._feature_descriptor_params_file}
+        return {'feature_descriptor_json_params': self._feature_descriptor_json_params}
 
     def connections(self):
         return (self.feature_descriptor['keypoints'] >> self.twoDToThreeD['keypoints'],
@@ -63,8 +61,10 @@ if __name__ == '__main__':
     if options.config_file is None or not os.path.exists(options.config_file):
         raise 'option file does not exist'
     
-    db_json_params = json.loads(str(open(options.config_file).read()))
-    db_url = str(db_json_params['db']['url'])
+    json_params = json.loads(str(open(options.config_file).read()))
+    feature_descriptor_json_params = str(json_params['feature_descriptor']).replace("'", '"').replace('u"', '"').replace('{u', '{')
+
+    db_url = str(json_params['db']['url'])
     object_id = "paneer_tikka_masala_spinach_trader_joes"
     db_reader = capture.ObservationReader("db_reader", db_url=db_url, object_id=object_id)
 
@@ -79,11 +79,11 @@ if __name__ == '__main__':
                       db_reader['depth'] >> depth_view['input'])
 
     # connect to the model computation
-    tod_model = TodModelComputation(plasm, options.config_file)
+    tod_model = TodModelComputation(plasm, feature_descriptor_json_params)
     plasm.connect(db_reader['image', 'mask', 'depth', 'K', 'R', 'T'] >> tod_model['image', 'mask', 'depth', 'K', 'R', 'T'])
 
     # persist to the DB
-    db_json_params_str = str(db_json_params['db']).replace("'", '"').replace('u"', '"').replace('{u', '{')
+    db_json_params_str = str(json_params['db']).replace("'", '"').replace('u"', '"').replace('{u', '{')
     db_writer = tod_db.TodModelInserter("db_writer", collection_models='models', db_json_params=db_json_params_str,
                                         object_id=object_id)
     orb_params = None

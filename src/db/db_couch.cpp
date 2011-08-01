@@ -146,10 +146,48 @@ ObjectDbCouch::GetRevisionId(RevisionId & revision_id)
 }
 
 void
-ObjectDbCouch::query(const CollectionName &collection, const std::map<AttachmentName, std::string> &regexps
-                     , std::vector<DocumentId> & document_ids)
+ObjectDbCouch::Query(const std::vector<std::string> & queries, const CollectionName & collection_name, int limit_rows,
+                     int start_offset, int& total_rows, int& offset, std::vector<DocumentId> & document_ids)
 {
-  //TODO
+  if (limit_rows <= 0)
+    limit_rows = std::numeric_limits<int>::max();
+  json_spirit::Object obj;
+  typedef std::pair<std::string, std::string> value;
+  /*BOOST_FOREACH(const value& p, v.map)
+      {
+        obj.push_back(json_spirit::Pair("map", p.second));
+      }
+  std::stringstream stream;
+  json_spirit::write(obj, stream);
+  object_recognition::curl::reader r(stream);
+  stream_.str("");
+  curl_.reset();
+  curl_.setReader(&r);
+  curl_.setWriter(&json_writer_);
+  curl_.setURL(
+      url_ + "/_temp_view?limit=" + boost::lexical_cast<std::string>(limit_rows) + "&skip="
+      + boost::lexical_cast<std::string>(start_offset));
+  curl_.setHeader("Content-Type: application/json");
+  curl_.setCustomRequest("POST");
+  curl_.perform();
+  json_spirit::Value val;
+  get(val);
+  std::map<std::string, json_spirit::Value> result_map;
+  json_spirit::obj_to_map(val.get_obj(), result_map);
+  total_rows = result_map["total_rows"].get_int();
+  offset = result_map["offset"].get_int();
+  std::vector<json_spirit::Value> rows = result_map["rows"].get_array();
+  std::vector<View::result> results;
+  results.reserve(rows.size());
+  BOOST_FOREACH(const json_spirit::Value& v, rows)
+      {
+        std::map<std::string, json_spirit::Value> row_map;
+        json_spirit::obj_to_map(v.get_obj(), row_map);
+        View::result r =
+        { row_map["id"].get_str(), json_spirit::write(row_map["key"]), json_spirit::write(row_map["value"]) };
+        results.push_back(r);
+      }
+  return results;*/
 }
 
 void

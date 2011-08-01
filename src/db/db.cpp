@@ -131,10 +131,16 @@ namespace object_recognition
     }
 
     void
-    ObjectDb::query(const CollectionName &collection, const std::map<AttachmentName, std::string> &regexps
-                    , std::vector<DocumentId> & document_ids) const
+    ObjectDb::Query(const std::vector<std::string> & queries, const CollectionName & collection_name, int limit_rows,
+                    int start_offset, int& total_rows, int& offset, std::vector<DocumentId> & document_ids) const
     {
-      db_->query(collection, regexps, document_ids);
+      db_->Query(queries, collection_name, limit_rows, start_offset, total_rows, offset, document_ids);
+    }
+
+    DbType
+    ObjectDb::type()
+    {
+      return db_->type();
     }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -249,48 +255,95 @@ namespace object_recognition
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    View::View()
+    const unsigned int DocumentView::BATCH_SIZE = 100;
+
+    DocumentView::DocumentView()
+        :
+          start_offset_(0)
     {
     }
 
     /** Add requirements for the documents to retrieve
-     * @param field a field to match. Only one regex per field will be accepted
-     * @param regex the regular expression the field verifies, in TODO format
+     * @param view a View that will filter the Documents. The format depends on your ObjectDb
      */
     void
-    View::AddWhere(const AttachmentName & field, const std::string & regex)
+    DocumentView::AddView(const View & view)
     {
-      regexes_[field] = regex;
-    }
-
-    /** Add collections that should be checked for specific fields
-     * @param collection
-     */
-    void
-    View::set_collection(const CollectionName & collection)
-    {
-      collection_ = collection;
+      views_.push_back(view);
     }
 
     /** Set the db on which to perform the Query
      * @param db The db on which the query is performed
      */
     void
-    View::set_db(const ObjectDb & db)
+    DocumentView::set_db(const ObjectDb & db)
     {
       db_ = db;
+    }
+
+    /** Set the collection on which to perform the Query. This might be part of the views_
+     * and unnecessary for certain DB's
+     * @param collection The collection on which the query is performed
+     */
+    void
+    DocumentView::set_collection(const CollectionName & collection)
+    {
+      collection_ = collection;
     }
 
     /** Perform the query itself
      * @return an Iterator that will iterate over each result
      */
-    DocumentIterator
-    View::begin()
+    DocumentView &
+    DocumentView::begin()
     {
       // Process the query and get the ids of several objects
       std::vector<DocumentId> document_ids;
-      db_.query(collection_, regexes_, document_ids);
-      return DocumentIterator(db_, collection_, document_ids);
+      db_.Query(views_, collection_, BATCH_SIZE, start_offset_, total_rows_, offset_, document_ids_);
+      return *this;
+    }
+
+    DocumentView
+    DocumentView::end()
+    {
+      return DocumentView();
+    }
+
+    DocumentView &
+    DocumentView::operator++()
+    {
+      // Move forward in the list of Objects to check
+      document_ids_.pop_back();
+      // Return the end iterator if we are done
+      if (document_ids_.empty())
+      {
+        // Figure out if we need to query for more document ids
+        if (offset_ < total_rows_)
+          db_.Query(views_, collection_, BATCH_SIZE, start_offset_, total_rows_, offset_, document_ids_);
+      }
+      else
+      {
+        // Fill the current object
+        document_ids_.pop_back();
+      }
+      return *this;
+    }
+
+    bool
+    DocumentView::operator!=(const DocumentView & document_view) const
+    {
+      if (document_view.document_ids_.empty())
+        return (!document_ids_.empty());
+      if (document_ids_.size() >= document_view.document_ids_.size())
+        return std::equal(document_ids_.begin(), document_ids_.end(), document_view.document_ids_.begin());
+      else
+        return std::equal(document_view.document_ids_.begin(), document_view.document_ids_.end(), document_ids_.begin());
+    }
+
+    Document
+    DocumentView::operator*() const
+    {
+      return Document(db_, collection_, document_ids_.back());
     }
   }
 }

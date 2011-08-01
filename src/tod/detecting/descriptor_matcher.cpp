@@ -95,7 +95,7 @@ namespace object_recognition
 
         // load the descriptors from the DB
         db_future::ObjectDb db(params.get<std::string>("db_json_params"));
-        BOOST_FOREACH(const std::string & object_id, object_ids)
+        /*BOOST_FOREACH(const std::string & object_id, object_ids)
             {
               db_future::View query;
               query.AddWhere("object_id", object_id);
@@ -106,7 +106,7 @@ namespace object_recognition
               {
 
               }
-            }
+            }*/
 
         // TODO Create the matcher depending on the type of descriptors
         //matcher_
