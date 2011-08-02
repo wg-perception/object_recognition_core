@@ -3,7 +3,6 @@ import couchdb
 from couchdb.mapping import TextField, ListField, DateTimeField, Document
 from datetime import datetime
 
-
 class Object(Document):
     object_id = TextField()
     object_name = TextField()
