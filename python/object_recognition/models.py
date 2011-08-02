@@ -1,6 +1,6 @@
 from object_recognition.dbtools import DEFAULT_SERVER_URL, init_object_databases
 import couchdb
-from couchdb.mapping import TextField, ListField, DateTimeField, Document,ViewField
+from couchdb.mapping import TextField, ListField, DateTimeField, Document
 from datetime import datetime
 
 class Object(Document):
@@ -13,11 +13,7 @@ class Object(Document):
 
 class Session(Document):
     object_id = TextField()
-    session_id = TextField()
-    description = TextField()
-    tags = ListField(TextField())
-    author_name = TextField()
-    author_email = TextField()
+    bag_id = TextField()
     added = DateTimeField(default=datetime.now)
 
 class Bag(Document):

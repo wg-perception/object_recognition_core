@@ -33,7 +33,6 @@ namespace object_recognition
         inputs.declare<cv::Mat>("T", "The translation.");
         inputs.declare<cv::Mat>("K", "The camera intrinsic matrix");
         inputs.declare<bool>("found", "Whether or not the R|T is valid.", false);
-        inputs.declare<int>("trigger", "Capture trigger, 'c' for capture.", 'c');
       }
       ObservationInserter()
           :
@@ -66,7 +65,7 @@ namespace object_recognition
       int
       process(const tendrils& inputs, tendrils& outputs)
       {
-        if (inputs.get<int>("trigger") != 'c' || inputs.get<bool>("found") == false)
+        if (inputs.get<bool>("found") == false)
           return 0;
         std::cout << "Inserting frame: " << frame_number << std::endl;
         Observation obj;
