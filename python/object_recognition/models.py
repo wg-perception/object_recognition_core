@@ -1,10 +1,9 @@
 from object_recognition.dbtools import DEFAULT_SERVER_URL, init_object_databases
 import couchdb
-from couchdb.mapping import TextField, ListField, DateTimeField, Document
+from couchdb.mapping import TextField, ListField, DateTimeField, Document,ViewField
 from datetime import datetime
 
 class Object(Document):
-    object_id = TextField()
     object_name = TextField()
     description = TextField()
     tags = ListField(TextField())
@@ -20,7 +19,13 @@ class Session(Document):
     author_name = TextField()
     author_email = TextField()
     added = DateTimeField(default=datetime.now)
-                            
+
+class Bag(Document):
+    object_id = TextField()
+    author_name = TextField()
+    author_email = TextField()
+    added = DateTimeField(default=datetime.now)
+       
 if __name__ == "__main__":
     couch = couchdb.Server(DEFAULT_SERVER_URL)
     dbs = init_object_databases(couch)
