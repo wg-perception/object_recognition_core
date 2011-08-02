@@ -85,7 +85,7 @@ if __name__ == '__main__':
     # persist to the DB
     db_json_params_str = str(json_params['db']).replace("'", '"').replace('u"', '"').replace('{u', '{')
     db_writer = tod_db.TodModelInserter("db_writer", collection_models='models', db_json_params=db_json_params_str,
-                                        object_id=object_id)
+                                        object_id=object_id, model_json_params=feature_descriptor_json_params)
     orb_params = None
     #db_writer.add_misc(orb_params)
     plasm.connect(tod_model['points', 'descriptors'] >> db_writer['points', 'descriptors'])

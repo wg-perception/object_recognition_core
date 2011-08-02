@@ -29,9 +29,12 @@ namespace object_recognition
       declare_params(tendrils& params)
       {
         params.declare<std::string>("collection_models",
-                                    "std::string The collection in which to store the models on the db", "models");
-        params.declare<std::string>("db_json_params", "std::string The DB parameters, cf. ObjectDb", "models");
-        params.declare<std::string>("object_id", "The object id, to associate this frame with.");
+                                    "std::string The collection in which to store the models on the db", "models").required(
+            true);
+        params.declare<std::string>("db_json_params", "std::string The DB parameters, cf. ObjectDb", "models").required(
+            true);
+        params.declare<std::string>("object_id", "The object id, to associate this frame with.").required(true);
+        params.declare<std::string>("model_json_params", "The parameters used for the model, as JSON.").required(true);
       }
 
       static void
@@ -39,7 +42,6 @@ namespace object_recognition
       {
         inputs.declare<cv::Mat>("points", "The 3d position of the points.");
         inputs.declare<cv::Mat>("descriptors", "The descriptors.");
-        inputs.declare<int>("trigger", "Capture trigger, 'c' for capture.");
       }
 
       void
@@ -56,6 +58,7 @@ namespace object_recognition
         object_id.set_callback(boost::bind(&TodModelInserter::on_object_id_change, this, _1));
         db_.set_params(params.get<std::string>("db_json_params"));
         collection_models_ = params.get<std::string>("collection_models");
+        params_ = params.get<std::string>("model_json_params");
         on_object_id_change(params.get<std::string>("object_id"));
       }
 
@@ -71,6 +74,7 @@ namespace object_recognition
         doc.set_attachment<cv::Mat>("descriptors", inputs.get<cv::Mat>("descriptors"));
         doc.set_attachment<cv::Mat>("points", inputs.get<cv::Mat>("points"));
         doc.set_value("object_id", object_id_);
+        doc.set_value("model_params", params_);
         std::cout << "Persisting" << std::endl;
         doc.Persist(db_, collection_models_);
 
@@ -79,6 +83,8 @@ namespace object_recognition
       object_recognition::db_future::ObjectDb db_;
       DocumentId object_id_;
       CollectionName collection_models_;
+      /** The JSON parameters used to compuet the model */
+      std::string params_;
     };
   }
 }
