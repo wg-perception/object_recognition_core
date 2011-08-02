@@ -3,6 +3,7 @@ import sys
 import argparse
 import time
 import tempfile
+import os
 
 import ecto
 from ecto_opencv import highgui, calib, imgproc
@@ -57,11 +58,12 @@ class CalcObservations(ecto.BlackBox):
                   self.camera_info[:] >> (self.pose_calc['K'], self.masker['K']),
                   self.depth_image[:] >> self.masker['depth'],
                   self.pose_calc['R', 'T', 'found'] >> self.delta_pose['R', 'T', 'found'],
+                  self.pose_calc['R', 'T'] >> self.masker['R','T'],
                 ]
         return graph
     
 
-def connect_observation_calc(sync, commit, session_id, object_id):
+def connect_observation_calc(sync, commit, object_id, session_id,debug=False):
     plasm = ecto.Plasm()
     depth_ci = ecto_ros.CameraInfo2Cv('camera_info -> cv::Mat')
     image_ci = ecto_ros.CameraInfo2Cv('camera_info -> cv::Mat')
@@ -85,9 +87,12 @@ def connect_observation_calc(sync, commit, session_id, object_id):
                   depth[:] >> calc_observations['depth'],
                   image_ci['K'] >> calc_observations['K']
                   )
-    image_display = highgui.imshow('image display',name='image',waitKey=10,autoSize=True)
-    if True:
-        plasm.connect(rgb[:]>>image_display[:])
+    if debug:
+        image_display = highgui.imshow('image display', name='image', waitKey=10, autoSize=True)
+        mask_display = highgui.imshow('mask display', name='mask', waitKey=-1, autoSize=True)
+        plasm.connect(rgb[:] >> image_display[:])
+        plasm.connect(calc_observations['mask'] >> mask_display[:])
+
         
     if commit:
         db_inserter = capture.ObservationInserter("db_inserter", object_id=object_id, session_id=session_id)
@@ -104,49 +109,74 @@ def parse_args():
                                      '  This assumes that the bag is already in the database associated with an object.')
     parser.add_argument('-i', '--bag_id', metavar='BAG_ID', dest='bag_id', type=str, default='',
                        help='The id of the bag in DB to compute observations from.')
+    parser.add_argument('--all', dest='compute_all', action='store_const',
+                        const=True, default=False,
+                        help='Compute all observations possible given all bags in the system.')
+    parser.add_argument('--visualize', dest='visualize', action='store_const',
+                        const=True, default=False,
+                        help='Turn on visiualization')
     object_recognition.dbtools.add_db_options(parser)
     args = parser.parse_args()
     return args
+
+def compute_for_bag(bag,bags,args):
+    print "Loading bag with id:", bag.id
+    bag_file_lo = bags.get_attachment(bag, 'data.bag', None)
+    if bag_file_lo == None:
+        print "Could not load the attachment:", 'data.bag', 'from bag document:\n', bag
+        sys.exit(-1)
+    tmp_file = tempfile.NamedTemporaryFile(delete=False)
+    try:
+        tmp_file.write(bag_file_lo.read())
+        tmp_file.close()
+        print "Wrote bag to:", tmp_file.name
+       
+        baggers = dict(image=ImageBagger(topic_name='/camera/rgb/image_color'),
+                        depth=ImageBagger(topic_name='/camera/depth/image'),
+                        image_ci=CameraInfoBagger(topic_name='/camera/rgb/camera_info'),
+                        depth_ci=CameraInfoBagger(topic_name='/camera/depth/camera_info'),
+                       )
+        
+        sync = ecto_ros.BagReader('Bag Reader',
+                                  baggers=baggers,
+                                  bag=tmp_file.name,
+                                 )
+    
+        sessions = dbs['sessions']
+        session = models.Session()
+        session.object_id = bag.object_id
+        session.bag_id = bag.id
+        if args.commit:
+            session.store(sessions)
+        print "running graph"
+        plasm = connect_observation_calc(sync, args.commit, str(session.object_id), str(session.id),args.visualize)
+        sched = ecto.schedulers.Threadpool(plasm)
+        sched.execute()
+    finally:
+        print "Removing tmp_file:", tmp_file.name
+        os.remove(tmp_file.name)
 
 if "__main__" == __name__:
     args = parse_args()
     couch = couchdb.Server(args.db_root)
     dbs = dbtools.init_object_databases(couch)
     bags = dbs['bags']
-    bag = models.Bag.load(bags, args.bag_id)
-    if bag == None or bag.id == None:
-        print "Could not load bag with id:",args.bag_id
-        sys.exit(-1)
-    print "Loading bag with id:",bag.id
-    bag_file_lo = bags.get_attachment(bag, 'data.bag', None)
-    if bag_file_lo == None:
-        print "Could not load the attachment:",'data.bag','from bag document:\n',bag
-        sys.exit(-1)
-    tmp_file = tempfile.NamedTemporaryFile(delete=False)
-    tmp_file.write(bag_file_lo.read())
-    tmp_file.close()
-    print "Wrote bag to:", tmp_file.name
+    if args.compute_all:
+        models.sync_models(dbs)
+        results = models.Bag.all(bags)
+        for bag in results:
+            existing_sessions = models.Session.by_bag_id(dbs['sessions'],key=bag.id)
+            if(len(existing_sessions) == 0):
+                obj = models.Object.load(dbs['objects'], bag.object_id)
+                print "Computing session for:", obj.object_name, "\ndescription:",obj.description
+                compute_for_bag(bag,bags,args)
+            else:
+                print "Skipping bag:",bag.id,"Already computed %d sessions"%len(existing_sessions)
+    else:
+        bag = models.Bag.load(bags, args.bag_id)
+        if bag == None or bag.id == None:
+            print "Could not load bag with id:", args.bag_id
+            sys.exit(-1)
+        compute_for_bag(bag,bags,args)
     
-    baggers = dict(image=ImageBagger(topic_name='/camera/rgb/image_color'),
-                    depth=ImageBagger(topic_name='/camera/depth/image'),
-                    image_ci=CameraInfoBagger(topic_name='/camera/rgb/camera_info'),
-                    depth_ci=CameraInfoBagger(topic_name='/camera/depth/camera_info'),
-                   )
     
-    sync = ecto_ros.BagReader('Bag Reader',
-                              baggers=baggers,
-                              bag=tmp_file.name,
-                             )
-
-    sessions = dbs['sessions']
-    session = models.Session()
-    session.object_id = bag.object_id
-    session.bag_id = bag.id
-    if args.commit:
-        session.store(sessions)
-    print "running graph"
-    plasm = connect_observation_calc(sync, args.commit, session.object_id, session.id)
-    ecto.view_plasm(plasm)
-    sched = ecto.schedulers.Singlethreaded(plasm)
-    sched.execute()
-    del tm
