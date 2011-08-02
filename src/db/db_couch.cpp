@@ -33,6 +33,8 @@
  *
  */
 
+#include <boost/property_tree/json_parser.hpp>
+
 #include "db_couch.h"
 
 object_recognition::curl::cURL_GS curl_init_cleanup;

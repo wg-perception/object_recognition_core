@@ -1,7 +1,7 @@
 /*
  * Software License Agreement (BSD License)
  *
- *  Copyright (c) 2009, Willow Garage, Inc.
+ *  Copyright (c) 2011, Willow Garage, Inc.
  *  All rights reserved.
  *
  *  Redistribution and use in source and binary forms, with or without
@@ -43,23 +43,14 @@
 #include <boost/property_tree/json_parser.hpp>
 #include <boost/property_tree/ptree.hpp>
 
+#include "utils.h"
+
 namespace object_recognition
 {
   namespace db_future
   {
     //Forward declare some classes
     class ObjectDbBase;
-
-    typedef std::string AttachmentName;
-    typedef std::string CollectionName;
-    typedef std::string DocumentId;
-    typedef std::string DbType;
-    typedef std::string Field;
-    typedef std::string MimeType;
-    typedef std::string RevisionId;
-    typedef std::string View;
-
-    const std::string MIME_TYPE_DEFAULT = "application/octet-stream";
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -385,11 +376,12 @@ namespace object_recognition
       void
       set_collection(const CollectionName & collection);
 
-      /** Add collections that should be checked for specific fields
-       * @param collection
+      /** Add requirements for the documents to retrieve
+       * @param db_type the type of the db that will be used
+       * @param view a View that will filter the Documents. The format depends on your ObjectDb
        */
       void
-      AddView(const View & db);
+      AddView(const DbType &db_type, const View & view);
 
       /** Perform the query itself
        * @param db The db on which the query is performed
@@ -417,10 +409,24 @@ namespace object_recognition
       ObjectDb db_;
       CollectionName collection_;
       std::vector<DocumentId> document_ids_;
-      std::vector<View> views_;
       int offset_;
       int start_offset_;
       int total_rows_;
+      /** The strings to send to the db_ to perform the query, as well as for which db they are meant */
+      struct PodView
+      {
+        PodView(const View &view, const DbType &db_type)
+            :
+              view_(view),
+              db_type_(db_type)
+        {
+        }
+        View view_;
+        DbType db_type_;
+      };
+      std::vector<PodView> pod_views_;
+      /** The strings to send to the db_ to perform the query */
+      std::vector<View> views_;
     };
   }
 }

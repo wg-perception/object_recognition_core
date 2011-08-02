@@ -264,12 +264,13 @@ namespace object_recognition
     }
 
     /** Add requirements for the documents to retrieve
+     * @param db_type the type of the db that will be used
      * @param view a View that will filter the Documents. The format depends on your ObjectDb
      */
     void
-    DocumentView::AddView(const View & view)
+    DocumentView::AddView(const DbType &db_type, const View & view)
     {
-      views_.push_back(view);
+      pod_views_.push_back(PodView(db_type, view));
     }
 
     /** Set the db on which to perform the Query
@@ -297,6 +298,9 @@ namespace object_recognition
     DocumentView &
     DocumentView::begin()
     {
+      BOOST_FOREACH(const PodView & view_pod, pod_views_)
+            if (view_pod.db_type_ == db_.type())
+              views_.push_back(view_pod.view_);
       // Process the query and get the ids of several objects
       std::vector<DocumentId> document_ids;
       db_.Query(views_, collection_, BATCH_SIZE, start_offset_, total_rows_, offset_, document_ids_);

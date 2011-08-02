@@ -10,29 +10,13 @@
 #include "object_recognition/capture/capture.hpp"
 #include "object_recognition/db/couch.hpp"
 #include "object_recognition/db/opencv.h"
+#include "object_recognition/db/utils.h"
 
 using ecto::tendrils;
 namespace object_recognition
 {
   namespace capture
   {
-#define STRINGYFY(A) #A
-
-    std::string where_doc_id = STRINGYFY(
-        function(doc)
-        {
-          if(doc.object_id == "%s")
-          emit("frame_number",doc.frame_number);
-        }
-    );
-
-    std::string where_doc_id_and_session = STRINGYFY(
-        function(doc)
-        {
-          if(doc.session_id == "%s")
-          emit("frame_number",doc.frame_number);
-        }
-    );
 
     struct result_less
     {
@@ -71,10 +55,10 @@ namespace object_recognition
         object_id.p() >> id;
         session_id.p() >> session;
         std::string view;
-        if(!session.empty())
-          view = boost::str(boost::format(where_doc_id_and_session) % session);
-        else if(!id.empty())
-           view = boost::str(boost::format(where_doc_id) % id);
+        if (!session.empty())
+          view = db_future::couch::WhereSessionId(session);
+        else if (!id.empty())
+          view = db_future::couch::WhereDocId(id);
         else
           throw std::runtime_error("You must supply either an object_id or a session_id.");
         couch::View v;
