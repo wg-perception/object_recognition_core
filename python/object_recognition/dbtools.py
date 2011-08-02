@@ -13,8 +13,20 @@ def create_db(db_name, couch):
     return db
 
 def init_object_databases(couch):
-    dbs = dict(bags=create_db('bags',couch),
-               objects=create_db('objects',couch),
-               sessions=create_db('sessions',couch),
+    dbs = dict(bags=create_db('bags', couch),
+               objects=create_db('objects', couch),
+               sessions=create_db('sessions', couch),
+               observations=create_db('observations', couch),
                )
     return dbs
+
+def add_db_options(parser):
+    '''Appends some common arguments to the argparse parser.
+    db_root will contain the server url.
+    commit will contain a bool, that indicates whether anything should be changed in the database.
+    '''
+    parser.add_argument('--db_root', metavar='DB_ROOT_URL', dest='db_root', type=str, default=DEFAULT_SERVER_URL,
+                       help='The database root URL to connect to. e.g. %s or http://foo:5984' % DEFAULT_SERVER_URL)
+    parser.add_argument('--commit', metavar='COMMIT', dest='commit', action='store_const',
+                        const=True, default=False,
+                        help='Commit the data to the database.')
