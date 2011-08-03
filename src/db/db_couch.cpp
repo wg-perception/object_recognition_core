@@ -179,12 +179,13 @@ ObjectDbCouch::Query(const std::vector<std::string> & queries, const CollectionN
   boost::property_tree::read_json(json_writer_stream_, fields);
 
   total_rows = fields.get<unsigned int>("total_rows");
-  offset = fields.get<unsigned int>("offset");
+  document_ids.clear();
   BOOST_FOREACH(const boost::property_tree::ptree::value_type & v, fields.get_child("rows"))
       {
-        // values are: id, key,
+        // values are: id, key, value
         document_ids.push_back(v.second.get<std::string>("id"));
       }
+  offset = fields.get<unsigned int>("offset") + document_ids.size();
 }
 
 void

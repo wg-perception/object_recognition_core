@@ -409,7 +409,6 @@ namespace object_recognition
       ObjectDb db_;
       CollectionName collection_;
       std::vector<DocumentId> document_ids_;
-      int offset_;
       int start_offset_;
       int total_rows_;
       /** The strings to send to the db_ to perform the query, as well as for which db they are meant */

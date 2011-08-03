@@ -304,7 +304,7 @@ namespace object_recognition
 
       // Process the query and get the ids of several objects
       std::vector<DocumentId> document_ids;
-      db_.Query(views_, collection_, BATCH_SIZE, start_offset_, total_rows_, offset_, document_ids_);
+      db_.Query(views_, collection_, BATCH_SIZE, start_offset_, total_rows_, start_offset_, document_ids_);
       return *this;
     }
 
@@ -323,8 +323,8 @@ namespace object_recognition
       if (document_ids_.empty())
       {
         // Figure out if we need to query for more document ids
-        if (offset_ < total_rows_)
-          db_.Query(views_, collection_, BATCH_SIZE, start_offset_, total_rows_, offset_, document_ids_);
+        if (start_offset_ < total_rows_)
+          db_.Query(views_, collection_, BATCH_SIZE, start_offset_, total_rows_, start_offset_, document_ids_);
       }
       else
       {
