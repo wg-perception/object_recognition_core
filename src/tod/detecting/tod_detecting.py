@@ -8,11 +8,82 @@ import ecto_sensor_msgs
 import json
 from optparse import OptionParser
 import os
+import sys
 import time
 import tod_db
 import tod
 
 DEBUG = False
+
+########################################################################################################################
+
+ImageSub = ecto_sensor_msgs.Subscriber_Image
+CameraInfoSub = ecto_sensor_msgs.Subscriber_CameraInfo
+
+class TodDetectionKinectReader(ecto.BlackBox):
+    def __init__(self, plasm):
+        ecto.BlackBox.__init__(self, plasm)
+
+        subs = dict(image=ImageSub(topic_name='/camera/rgb/image_color', queue_size=0),
+                    depth=ImageSub(topic_name='/camera/depth/image', queue_size=0),
+                    depth_info=CameraInfoSub(topic_name='/camera/depth/camera_info', queue_size=0),
+                    image_info=CameraInfoSub(topic_name='/camera/rgb/camera_info', queue_size=0),
+                 )
+
+        self._sync = ecto_ros.Synchronizer('Synchronizator', subs=subs
+                                     )
+        self._im2mat_rgb = ecto_ros.Image2Mat()
+        self._im2mat_depth = ecto_ros.Image2Mat()
+        self._depth_to_point_cloud = tod.TwoDToThreeD(do_points=False, do_point_cloud=True)
+
+    def expose_inputs(self):
+        return {}
+
+    def expose_outputs(self):
+        return {'image': self._im2mat_rgb['image'],
+                'point_cloud': self._depth_to_point_cloud['point_cloud']}
+
+    def expose_parameters(self):
+        return {}
+
+    def connections(self):
+        return (self._sync["image"] >> self._im2mat_rgb["image"],
+                  self._sync["depth"] >> self._im2mat_depth["image"],
+                  self._im2mat_depth["image"] >> self._depth_to_point_cloud['depth']
+                  )
+
+########################################################################################################################
+
+class TodDetectionBagReader(ecto.BlackBox):
+    def __init__(self, plasm, baggers, bag):
+        ecto.BlackBox.__init__(self, plasm)
+
+        self._im2mat_rgb = ecto_ros.Image2Mat()
+        self._camera_info_conversion = ecto_ros.CameraInfo2Cv()
+        self._point_cloud_conversion = ecto_pcl_ros.Message2PointCloud(format=ecto_pcl.XYZRGB)
+        self._point_cloud_conversion2 = ecto_pcl.PointCloud2PointCloudT(format=ecto_pcl.XYZRGB)
+        self._bag_reader = ecto_ros.BagReader('Bag Reader',
+                                baggers=baggers,
+                                bag=options.bag,
+                              )
+
+    def expose_inputs(self):
+        return {}
+
+    def expose_outputs(self):
+        return {'image': self._im2mat_rgb['image'],
+                'point_cloud': self._point_cloud_conversion2['output']}
+
+    def expose_parameters(self):
+        return {}
+
+    def connections(self):
+        return (self._bag_reader['image'] >> self._im2mat_rgb['image'],
+                  self._bag_reader['camera_info'] >> self._camera_info_conversion['camera_info'],
+                  self._bag_reader['point_cloud'] >> self._point_cloud_conversion['input'],
+                  self._point_cloud_conversion['output'] >> self._point_cloud_conversion2['input'])
+
+########################################################################################################################
 
 class TodDetection(ecto.BlackBox):
     def __init__(self, plasm, feature_descriptor_json_params, db_json_params, object_ids, search_json_params,
@@ -32,7 +103,8 @@ class TodDetection(ecto.BlackBox):
     def expose_inputs(self):
         return {'image':self.feature_descriptor['image'],
                 'mask':self.feature_descriptor['mask'],
-                'point_cloud':self.guess_generator['point_cloud']}
+                'point_cloud':self.guess_generator['point_cloud'],
+                'point_cloud_rgb':self.guess_generator['point_cloud_rgb']}
 
     def expose_outputs(self):
         return {'object_ids': self.guess_generator['object_ids'],
@@ -64,6 +136,7 @@ def parse_options():
                       '"band_aid_plastic_strips"]\n'
                       '"search": the "type" of the search structure, the "radius" and/or "ratio" for the ratio test.\n'
                       )
+    parser.add_option("-k", "--kinect", dest="do_kinect", help="if set to something, it will read data from the kinect")
 
     (options, args) = parser.parse_args()
     return options
@@ -77,45 +150,8 @@ if __name__ == '__main__':
     # define the input
     if options.config_file is None or not os.path.exists(options.config_file):
         raise 'option file does not exist'
-    
-    db_json_params = json.loads(str(open(options.config_file).read()))
 
-    # define the input
-    baggers = dict(image=ecto_sensor_msgs.Bagger_Image(topic_name='image_mono'),
-                   camera_info=ecto_sensor_msgs.Bagger_CameraInfo(topic_name='camera_info'),
-                   point_cloud=ecto_sensor_msgs.Bagger_PointCloud2(topic_name='points'),
-                   )
-    im2mat_rgb = ecto_ros.Image2Mat()
-    camera_info_conversion = ecto_ros.CameraInfo2Cv()
-    point_cloud_conversion = ecto_pcl_ros.Message2PointCloud(format=ecto_pcl.XYZRGB)
-    point_cloud_conversion2 = ecto_pcl.PointCloud2PointCloudT(format=ecto_pcl.XYZRGB)
-
-    if options.bag:
-        bag_reader = ecto_ros.BagReader('Bag Reader',
-                                    baggers=baggers,
-                                    bag=options.bag,
-                                  )
-    else:
-        bag_reader = ecto_ros.BagReader('Bag Reader',
-                                    baggers=baggers,
-                                    bag="/home/vrabaud/tod_data/test_data/Willow_Final_Test_Set/T_01.bag",
-                                  )
-
-    # connect the visualization
-    #image_view = highgui.imshow(name="RGB", waitKey=1000, autoSize=True)
-    #mask_view = highgui.imshow(name="mask", waitKey= -1, autoSize=True)
-    #depth_view = highgui.imshow(name="Depth", waitKey= -1, autoSize=True);
-    #plasm.connect(db_reader['image'] >> image_view['input'],
-    #              db_reader['mask'] >> mask_view['input'],
-    #              db_reader['depth'] >> depth_view['input'])
-
-    # connect to the model computation
-    plasm = ecto.Plasm()
-    plasm.connect(bag_reader['image'] >> im2mat_rgb['image'],
-                  bag_reader['camera_info'] >> camera_info_conversion['camera_info'],
-                  bag_reader['point_cloud'] >> point_cloud_conversion['input'])
-    
-    #
+    # Get the parameters from the file
     json_params = json.loads(str(open(options.config_file).read()))
     feature_descriptor_json_params = str(json_params['feature_descriptor']).replace("'", '"').replace('u"', '"').replace('{u', '{')
     db_json_params = str(json_params['db']).replace("'", '"').replace('u"', '"').replace('{u', '{')
@@ -123,19 +159,31 @@ if __name__ == '__main__':
     guess_json_params = str(json_params['guess']).replace("'", '"').replace('u"', '"').replace('{u', '{')
     search_json_params = str(json_params['search']).replace("'", '"').replace('u"', '"').replace('{u', '{')
 
-    print ("starting analysis on ", object_ids)
+    # define the input
+    plasm = ecto.Plasm()
     tod_detection = TodDetection(plasm, feature_descriptor_json_params, db_json_params, object_ids, search_json_params,
                                  guess_json_params)
-    plasm.connect(im2mat_rgb['image'] >> tod_detection['image'],
-                  point_cloud_conversion['output'] >> point_cloud_conversion2['input'],
-                  point_cloud_conversion2['output'] >> tod_detection['point_cloud'])
+
+    if options.bag:
+        bag_reader = TodDetectionBagReader(plasm, dict(image=ecto_sensor_msgs.Bagger_Image(topic_name='image_mono'),
+                           camera_info=ecto_sensor_msgs.Bagger_CameraInfo(topic_name='camera_info'),
+                           point_cloud=ecto_sensor_msgs.Bagger_PointCloud2(topic_name='points'),
+                           ), options.bag)
+
+        # connect to the model computation
+        plasm.connect(bag_reader['image'] >> tod_detection['image'],
+                      bag_reader['point_cloud'] >> tod_detection['point_cloud_rgb'])
+
+    elif options.do_kinect:
+        ecto_ros.init(sys.argv, "ecto_node")
+        kinect_reader = TodDetectionKinectReader(plasm)
+        plasm.connect(kinect_reader['image'] >> tod_detection['image'],
+                      kinect_reader['point_cloud'] >> tod_detection['point_cloud'])
 
     # write data back to a file
     guess_writer = tod.GuessCsvWriter()
     plasm.connect(tod_detection['object_ids'] >> guess_writer['object_ids'],
                   tod_detection['poses'] >> guess_writer['poses'])
-
-    # send data back to the API
 
     # display DEBUG data if needed
     if DEBUG:
@@ -143,4 +191,8 @@ if __name__ == '__main__':
         ecto.view_plasm(plasm)
 
     # execute the pipeline
-    plasm.execute()
+    if options.bag:
+        plasm.execute()
+    else:
+        sched = ecto.schedulers.Threadpool(plasm)
+        sched.execute()

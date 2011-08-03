@@ -47,7 +47,8 @@ namespace object_recognition
       static void
       declare_io(const ecto::tendrils& params, ecto::tendrils& inputs, ecto::tendrils& outputs)
       {
-        inputs.declare<boost::shared_ptr<pcl::PointCloud<pcl::PointXYZRGB> const> >("point_cloud", "The point cloud");
+        inputs.declare<boost::shared_ptr<pcl::PointCloud<pcl::PointXYZ> const> >("point_cloud", "The point cloud");
+        inputs.declare<boost::shared_ptr<pcl::PointCloud<pcl::PointXYZRGB> const> >("point_cloud_rgb", "The RGB point cloud");
         inputs.declare<std::vector<cv::KeyPoint> >("keypoints", "The depth image");
         inputs.declare<std::vector<std::vector<cv::DMatch> > >("matches", "The list of OpenCV DMatch");
         inputs.declare<std::vector<std::vector<cv::Point3f> > >("matches_3d",
@@ -82,8 +83,20 @@ namespace object_recognition
         "matches_3d");
 
     // Get the original keypoints and point cloud
-    boost::shared_ptr<pcl::PointCloud<pcl::PointXYZRGB> const> point_cloud = inputs.get<boost::shared_ptr<pcl::PointCloud<pcl::PointXYZRGB> const> >(
-        "point_cloud");
+        boost::shared_ptr<pcl::PointCloud<pcl::PointXYZ> const> point_cloud = inputs.get<
+            boost::shared_ptr<pcl::PointCloud<pcl::PointXYZ> const> >("point_cloud");
+        if (point_cloud->points.empty())
+        {
+          boost::shared_ptr<pcl::PointCloud<pcl::PointXYZ> > new_point_cloud = boost::shared_ptr<
+              pcl::PointCloud<pcl::PointXYZ> >(new pcl::PointCloud<pcl::PointXYZ>());
+
+          boost::shared_ptr<pcl::PointCloud<pcl::PointXYZRGB> const> point_cloud_rgb = inputs.get<
+              boost::shared_ptr<pcl::PointCloud<pcl::PointXYZRGB> const> >("point_cloud_rgb");
+          new_point_cloud->points.reserve(point_cloud_rgb->points.size());
+          BOOST_FOREACH(const pcl::PointXYZRGB & point, point_cloud_rgb->points)
+                new_point_cloud->points.push_back(pcl::PointXYZ(point.x, point.y, point.z));
+          point_cloud = new_point_cloud;
+        }
 
     // Get the outputs
     std::vector<ObjectId> &object_ids = outputs.get<std::vector<ObjectId> >("object_ids");
@@ -108,7 +121,7 @@ namespace object_recognition
         const std::vector<cv::Point3f> &local_matches_3d = matches_3d[matches_index];
         for (unsigned int match_index = 0; match_index < local_matches.size(); ++match_index)
         {
-          pcl::PointXYZRGB query_point = point_cloud->at(size_t(local_matches[match_index].trainIdx),0);
+          pcl::PointXYZ query_point = point_cloud->at(size_t(local_matches[match_index].trainIdx),0);
 
           // TODO: replace this by doing 3d to 3d with an unknown depth for that point
           if ((query_point.x != query_point.x) || (query_point.y != query_point.y) || (query_point.z != query_point.z))
