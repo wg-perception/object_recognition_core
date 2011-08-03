@@ -57,7 +57,15 @@ def parse_options():
     parser = OptionParser()
     parser.add_option("-c", "--config_file", dest="config_file",
                       help="the file containing the configuration")
-    parser.add_option("-a", "--bag", dest="bag", help="The bag to analyze")
+    parser.add_option("-b", "--bag", dest="bag", help="The bag to analyze")
+    parser.add_option("-c", "--config_file", dest="config_file",
+                      help='the file containing the configuration as JSON. It should contain the following fields.\n'
+                      '"feature_descriptor": with parameters for "combination", "feature" and "descriptor".\n'
+                      '"db": parameters about the db: "type", "url".\n'
+                      '"objects_ids": the list of object to process, e.g. ["amys_country_cheddar_bowl",'
+                      '"band_aid_plastic_strips"]\n'
+                      '"search": the "type" of the search structure, the "radius" and/or "ratio" for the ratio test.\n'
+                      )
 
     (options, args) = parser.parse_args()
     return options
