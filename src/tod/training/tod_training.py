@@ -72,6 +72,7 @@ if __name__ == '__main__':
     db_url = str(json_params['db']['url'])
     object_ids = json_params['object_ids']
     for object_id in object_ids:
+        object_id = object_id.encode('ascii')
         db_reader = capture.ObservationReader("db_reader", db_url=db_url, object_id=object_id)
 
         # connect the visualization

@@ -55,8 +55,6 @@ class TodDetection(ecto.BlackBox):
 
 def parse_options():
     parser = OptionParser()
-    parser.add_option("-c", "--config_file", dest="config_file",
-                      help="the file containing the configuration")
     parser.add_option("-b", "--bag", dest="bag", help="The bag to analyze")
     parser.add_option("-c", "--config_file", dest="config_file",
                       help='the file containing the configuration as JSON. It should contain the following fields.\n'
