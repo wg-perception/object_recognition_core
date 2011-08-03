@@ -23,6 +23,10 @@
 	},
 	"search":
 	{
+		"type": "LSH",
+		"n_tables": 10,
+		"key_size": 16,
+		"multi_probe_level": 2,
 		"ratio": 0.8,
 		"radius": 60
 	}

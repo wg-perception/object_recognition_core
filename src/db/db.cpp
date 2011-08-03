@@ -301,6 +301,7 @@ namespace object_recognition
       BOOST_FOREACH(const PodView & view_pod, pod_views_)
             if (view_pod.db_type_ == db_.type())
               views_.push_back(view_pod.view_);
+
       // Process the query and get the ids of several objects
       std::vector<DocumentId> document_ids;
       db_.Query(views_, collection_, BATCH_SIZE, start_offset_, total_rows_, offset_, document_ids_);

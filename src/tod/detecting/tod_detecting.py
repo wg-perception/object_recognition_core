@@ -25,7 +25,6 @@ class TodDetection(ecto.BlackBox):
         self._guess_json_params = guess_json_params
 
         self.feature_descriptor = features2d.FeatureDescriptor(json_params=feature_descriptor_json_params)
-        print object_ids
         self.descriptor_matcher = tod.DescriptorMatcher(db_json_params=db_json_params, object_ids=object_ids,
                                                         search_json_params=search_json_params)
         self.guess_generator = tod.GuessGenerator(json_params=guess_json_params)
@@ -95,7 +94,6 @@ if __name__ == '__main__':
                                     baggers=baggers,
                                     bag="/home/vrabaud/tod_data/test_data/Willow_Final_Test_Set/T_01.bag",
                                   )
-        
 
     # connect the visualization
     #image_view = highgui.imshow(name="RGB", waitKey=1000, autoSize=True)
@@ -119,6 +117,7 @@ if __name__ == '__main__':
     guess_json_params = str(json_params['guess']).replace("'", '"').replace('u"', '"').replace('{u', '{')
     search_json_params = str(json_params['search']).replace("'", '"').replace('u"', '"').replace('{u', '{')
 
+    print ("starting analysis on ", object_ids)
     tod_detection = TodDetection(plasm, feature_descriptor_json_params, db_json_params, object_ids, search_json_params,
                                  guess_json_params)
     plasm.connect(im2mat_rgb['image'] >> tod_detection['image'],

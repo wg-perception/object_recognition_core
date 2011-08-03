@@ -45,6 +45,8 @@
 #include <opencv2/features2d/features2d.hpp>
 
 #include "object_recognition/db/db.h"
+#include "object_recognition/db/opencv.h"
+#include "opencv_candidate/lsh.hpp"
 
 namespace object_recognition
 {
@@ -55,14 +57,14 @@ namespace object_recognition
       static void
       declare_params(ecto::tendrils& p)
       {
-        p.declare<std::string>("collection_objects", "The collection where the objects are stored.");
-        p.declare<std::string>("db_json_params", "A JSON string describing the db to use");
-        p.declare<boost::python::object>("object_ids", "The list of objects ids we should consider.\n");
+        p.declare<std::string>("collection_models", "The collection where the models are stored.", "models");
+        p.declare<std::string>("db_json_params", "A JSON string describing the db to use").required();
+        p.declare<boost::python::object>("object_ids", "The list of objects ids we should consider.\n").required();
         // We can do radius and/or ratio test
         std::stringstream ss;
         ss << "JSON string that can contain the following fields: \"radius\" (for epsilon nearest neighbor search), "
            << "\"ratio\" when applying the ratio criterion like in SIFT";
-        p.declare<std::string>("search_json_params", ss.str());
+        p.declare<std::string>("search_json_params", ss.str()).required();
       }
 
       static void
@@ -85,6 +87,20 @@ namespace object_recognition
 
           radius_ = search_param_tree.get<float>("radius");
           ratio_ = search_param_tree.get<float>("ratio");
+
+          // Create the matcher depending on the type of descriptors
+          std::string search_type = search_param_tree.get<std::string>("type", "none");
+          if (search_type == "LSH")
+          {
+            matcher_ = new lsh::LshMatcher(search_param_tree.get<unsigned int>("n_tables"),
+                                           search_param_tree.get<unsigned int>("key_size"),
+                                           search_param_tree.get<unsigned int>("multi_probe_level"));
+          }
+          else
+          {
+            std::cerr << "Search not implemented for that type" << search_type;
+            throw;
+          }
         }
 
         // Load the list of Object to study
@@ -95,74 +111,81 @@ namespace object_recognition
 
         // load the descriptors from the DB
         db_future::ObjectDb db(params.get<std::string>("db_json_params"));
-        /*BOOST_FOREACH(const std::string & object_id, object_ids)
+        collection_models_ = params.get<std::string>("collection_models");
+        BOOST_FOREACH(const std::string & object_id, object_ids)
             {
-              db_future::View query;
-              query.AddWhere("object_id", object_id);
+              db_future::DocumentView query;
               query.set_db(db);
-              query.set_collection(params.get<std::string>("collection_objects"));
-              for (db_future::DocumentIterator query_iterator = query.begin(), query_iterator_end =
-                  db_future::DocumentIterator::end(); query_iterator != query_iterator_end; ++query_iterator)
-              {
+              query.set_collection(collection_models_);
+              query.AddView("CouchDB", db_future::couch::WhereDocId(object_id));
+              for (db_future::DocumentView view = query.begin(), view_end = db_future::DocumentView::end();
+                  view != view_end; ++view)
+                  {
+                db_future::Document doc = *view;
+                cv::Mat descriptors;
+                doc.get_attachment<cv::Mat>(db, "descriptors", descriptors);
 
+                std::vector<cv::Mat> descriptors_tmp;
+                descriptors_tmp.push_back(descriptors);
+                matcher_->add(descriptors_tmp);
               }
-            }*/
-
-        // TODO Create the matcher depending on the type of descriptors
-        //matcher_
-
+            }
       }
 
-  /** Get the 2d keypoints and figure out their 3D position from the depth map
-   * @param inputs
-   * @param outputs
-   * @return
-   */
-  int process(const ecto::tendrils& inputs, ecto::tendrils& outputs)
-  {
-    std::vector<std::vector<cv::DMatch> > &matches = outputs.get<std::vector<std::vector<cv::DMatch> > >("matches");
-    const cv::Mat & descriptors = inputs.get<cv::Mat>("descriptors");
+      /** Get the 2d keypoints and figure out their 3D position from the depth map
+       * @param inputs
+       * @param outputs
+       * @return
+       */
+      int
+      process(const ecto::tendrils& inputs, ecto::tendrils& outputs)
+      {
+        std::vector<std::vector<cv::DMatch> > &matches = outputs.get<std::vector<std::vector<cv::DMatch> > >("matches");
+        const cv::Mat & descriptors = inputs.get<cv::Mat>("descriptors");
 
-    // Perform radius search
-    if (radius_)
-    {
-      // Perform radius search
-      matcher_->radiusMatch(descriptors, matches, radius_);
-    }
+        // Perform radius search
+        if (radius_)
+        {
+          // Perform radius search
+          matcher_->radiusMatch(descriptors, matches, radius_);
+        }
 
-    // TODO Perform ratio testing if necessary
-    if (ratio_)
-    {
+        // TODO Perform ratio testing if necessary
+        if (ratio_)
+        {
 
-    }
+        }
 
-    // TODO remove matches that match the same (common descriptors)
+        // TODO remove matches that match the same (common descriptors)
 
-    // Build the 3D positions of the matches
-    std::vector<std::vector<cv::Point3f> > &matches_3d = outputs.get<std::vector<std::vector<cv::Point3f> > >(
-        "matches_3d");
-    matches_3d.clear();
-    matches_3d.resize(descriptors.cols);
-    for (int match_index = 0; match_index < descriptors.cols; ++match_index)
-    {
-      std::vector<cv::Point3f> & local_matches_3d = matches_3d[match_index];
-      BOOST_FOREACH(const cv::DMatch & match, matches[match_index])
-            local_matches_3d.push_back(features_3d_[match.imgIdx][match.trainIdx]);
-    }
+        // Build the 3D positions of the matches
+        std::vector<std::vector<cv::Point3f> > &matches_3d = outputs.get<std::vector<std::vector<cv::Point3f> > >(
+            "matches_3d");
+        matches_3d.clear();
+        matches_3d.resize(descriptors.cols);
+        std::cout << "Matching done" << std::endl;
+        for (int match_index = 0; match_index < descriptors.cols; ++match_index)
+        {
+          std::vector<cv::Point3f> & local_matches_3d = matches_3d[match_index];
+          BOOST_FOREACH(const cv::DMatch & match, matches[match_index])
+                local_matches_3d.push_back(features_3d_[match.imgIdx][match.trainIdx]);
+        }
 
-    return 0;
+        return 0;
+      }
+    private:
+      /** The collection where the models are stored */
+      std::string collection_models_;
+      /** The object used to match descriptors to our DB of descriptors */
+      cv::Ptr<cv::DescriptorMatcher> matcher_;
+      /** The radius for the nearest neighbors (if not using ratio) */
+      unsigned int radius_;
+      /** The ratio used for k-nearest neighbors, if not using radius search */
+      unsigned int ratio_;
+      /** The 3d position of the loaded descriptors (the first index is on the object ID) */
+      std::vector<std::vector<cv::Point3f> > features_3d_;
+    };
   }
-private:
-  /** The object used to match descriptors to our DB of descriptors */
-  cv::Ptr<cv::DescriptorMatcher> matcher_;
-  /** The radius for the nearest neighbors (if not using ratio) */
-  unsigned int radius_;
-  /** The ratio used for k-nearest neighbors, if not using radius search */
-  unsigned int ratio_;
-  /** The 3d position of the loaded descriptors (the first index is on the object ID) */
-  std::vector<std::vector<cv::Point3f> > features_3d_;
-};
-}
 }
 
 ECTO_CELL(tod, object_recognition::tod::DescriptorMatcher, "DescriptorMatcher",

@@ -415,7 +415,7 @@ namespace object_recognition
       /** The strings to send to the db_ to perform the query, as well as for which db they are meant */
       struct PodView
       {
-        PodView(const View &view, const DbType &db_type)
+        PodView(const DbType &db_type, const View &view)
             :
               view_(view),
               db_type_(db_type)

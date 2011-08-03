@@ -83,7 +83,7 @@ namespace object_recognition
       // Utilities for creating queries for CouchDB
 #define STRINGYFY(A) #A
       std::string
-      WherDocId(const std::string & object_id)
+      WhereDocId(const std::string & object_id)
       {
         return boost::str(boost::format(STRINGYFY(
             function(doc)

@@ -130,7 +130,6 @@ ObjectDbCouch::GetObjectRevisionId(DocumentId& document_id, RevisionId & revisio
   boost::property_tree::read_json(json_writer_stream_, params);
   document_id = params.get<std::string>("id", "");
   revision_id = params.get<std::string>("rev", "");
-  std::cout << "rev: " << revision_id << std::endl;
   if (document_id.empty())
     throw std::runtime_error("Could not find the object id");
   if (revision_id.empty())
@@ -153,43 +152,39 @@ ObjectDbCouch::Query(const std::vector<std::string> & queries, const CollectionN
 {
   if (limit_rows <= 0)
     limit_rows = std::numeric_limits<int>::max();
-  json_spirit::Object obj;
-  typedef std::pair<std::string, std::string> value;
-  /*BOOST_FOREACH(const value& p, v.map)
-      {
-        obj.push_back(json_spirit::Pair("map", p.second));
-      }
-  std::stringstream stream;
-  json_spirit::write(obj, stream);
-  object_recognition::curl::reader r(stream);
-  stream_.str("");
+  {
+    boost::property_tree::ptree fields;
+    BOOST_FOREACH(const std::string& query, queries)
+        {
+          fields.add<std::string>("map", query);
+        }
+    json_reader_stream_.str("");
+    boost::property_tree::write_json(json_reader_stream_, fields);
+  }
+  json_writer_stream_.str("");
   curl_.reset();
-  curl_.setReader(&r);
+  curl_.setReader(&json_reader_);
   curl_.setWriter(&json_writer_);
   curl_.setURL(
-      url_ + "/_temp_view?limit=" + boost::lexical_cast<std::string>(limit_rows) + "&skip="
+      url_ + "/" + collection_name + "/_temp_view?limit=" + boost::lexical_cast<std::string>(limit_rows) + "&skip="
       + boost::lexical_cast<std::string>(start_offset));
   curl_.setHeader("Content-Type: application/json");
   curl_.setCustomRequest("POST");
   curl_.perform();
-  json_spirit::Value val;
-  get(val);
-  std::map<std::string, json_spirit::Value> result_map;
-  json_spirit::obj_to_map(val.get_obj(), result_map);
-  total_rows = result_map["total_rows"].get_int();
-  offset = result_map["offset"].get_int();
-  std::vector<json_spirit::Value> rows = result_map["rows"].get_array();
-  std::vector<View::result> results;
-  results.reserve(rows.size());
-  BOOST_FOREACH(const json_spirit::Value& v, rows)
+
+  json_reader_stream_.seekg(0);
+  json_writer_stream_.seekg(0);
+  //std::cout << "view res" << json_writer_stream_.str() << std::endl;
+  boost::property_tree::ptree fields;
+  boost::property_tree::read_json(json_writer_stream_, fields);
+
+  total_rows = fields.get<unsigned int>("total_rows");
+  offset = fields.get<unsigned int>("offset");
+  BOOST_FOREACH(const boost::property_tree::ptree::value_type & v, fields.get_child("rows"))
       {
-        std::map<std::string, json_spirit::Value> row_map;
-        json_spirit::obj_to_map(v.get_obj(), row_map);
-        View::result r =
-        { row_map["id"].get_str(), json_spirit::write(row_map["key"]), json_spirit::write(row_map["value"]) };
-        results.push_back(r);
+        // values are: id, key,
+        document_ids.push_back(v.second.get<std::string>("id"));
       }
-  return results;*/
 }
 
 void
@@ -203,7 +198,6 @@ ObjectDbCouch::upload_json(const boost::property_tree::ptree &ptree, const std::
   curl_.setReader(&json_reader_);
   //couch db post to the db
   curl_.setURL(url);
-  std::cout << url << std::endl;
   curl_.setHeader("Content-Type: application/json");
   if (request == "PUT")
   {
