@@ -41,6 +41,8 @@ struct GuessCsvWriter
   {
     p.declare<std::string>("base_directory", "Base directory");
     p.declare<std::string>("config_file", "Configuration file");
+    p.declare<std::string>("team_name", "The name of the team to consider");
+    p.declare<int>("run_number", "The run number");
   }
 
   static void declare_io(const tendrils& params, tendrils& inputs, tendrils& outputs)
@@ -51,6 +53,8 @@ struct GuessCsvWriter
 
   void configure(tendrils& params, tendrils& inputs, tendrils& outputs)
   {
+    team_name_ = params.get<std::string>("team_name");
+    run_number_ = params.get<int>("run_number");
   }
 
   /** Get the 2d keypoints and figure out their 3D position from the depth map
@@ -60,19 +64,14 @@ struct GuessCsvWriter
    */
   int process(const tendrils& inputs, tendrils& outputs)
   {
-    const pcl::PointCloud<pcl::PointXYZRGB> & point_cloud = inputs.get<pcl::PointCloud<pcl::PointXYZRGB> >(
-        "point_cloud");
-
     // match to our objects
     const std::vector<ObjectId> &object_ids = inputs.get<std::vector<ObjectId> >("object_ids");
     const std::vector<opencv_candidate::Pose> &poses = inputs.get<std::vector<opencv_candidate::Pose> >("poses");
-    int run_number = inputs.get<int>("run_number");
-    const std::string &team_name = inputs.get<std::string>("team_name");
 
     RunInfo run_info;
     run_info.ts.set();
-    run_info.runID = run_number;
-    run_info.name = team_name;
+    run_info.runID = run_number_;
+    run_info.name = team_name_;
     tod::CSVOutput csv_out = openCSV(run_info);
     int dID = 0; //detection id
     for (unsigned int i = 0; i < object_ids.size(); ++i)
@@ -92,7 +91,7 @@ struct GuessCsvWriter
       poseInfo.Ty = T.at<double>(1);
       poseInfo.Tz = T.at<double>(2);
       poseInfo.ts.set();
-      poseInfo.frame = point_cloud.header.seq;
+      //poseInfo.frame = point_cloud.header.seq;
       poseInfo.oID = object_id;
       poseInfo.dID = dID++; //training (only one detection per frame)
       writeCSV(csv_out, poseInfo);
@@ -100,6 +99,9 @@ struct GuessCsvWriter
 
     return 0;
   }
+private:
+  int run_number_;
+  std::string team_name_;
 };
 }
 }

@@ -11,6 +11,7 @@
 #include <boost/filesystem.hpp>
 #include <boost/property_tree/json_parser.hpp>
 #include <boost/property_tree/ptree.hpp>
+#include <boost/shared_ptr.hpp>
 
 #include <ecto/ecto.hpp>
 
@@ -46,7 +47,7 @@ namespace object_recognition
       static void
       declare_io(const ecto::tendrils& params, ecto::tendrils& inputs, ecto::tendrils& outputs)
       {
-        inputs.declare<pcl::PointCloud<pcl::PointXYZRGB> >("point_cloud", "The point cloud");
+        inputs.declare<boost::shared_ptr<pcl::PointCloud<pcl::PointXYZRGB> const> >("point_cloud", "The point cloud");
         inputs.declare<std::vector<cv::KeyPoint> >("keypoints", "The depth image");
         inputs.declare<std::vector<std::vector<cv::DMatch> > >("matches", "The list of OpenCV DMatch");
         inputs.declare<std::vector<std::vector<cv::Point3f> > >("matches_3d",
@@ -81,14 +82,14 @@ namespace object_recognition
         "matches_3d");
 
     // Get the original keypoints and point cloud
-    const pcl::PointCloud<pcl::PointXYZRGB> & point_cloud = inputs.get<pcl::PointCloud<pcl::PointXYZRGB> >(
+    boost::shared_ptr<pcl::PointCloud<pcl::PointXYZRGB> const> point_cloud = inputs.get<boost::shared_ptr<pcl::PointCloud<pcl::PointXYZRGB> const> >(
         "point_cloud");
 
     // Get the outputs
     std::vector<ObjectId> &object_ids = outputs.get<std::vector<ObjectId> >("object_ids");
     std::vector<opencv_candidate::Pose> &poses = outputs.get<std::vector<opencv_candidate::Pose> >("poses");
 
-    if (point_cloud.points.empty())
+    if (point_cloud->points.empty())
     {
       // Only use 2d to 3d matching
       // TODO
@@ -107,7 +108,7 @@ namespace object_recognition
         const std::vector<cv::Point3f> &local_matches_3d = matches_3d[matches_index];
         for (unsigned int match_index = 0; match_index < local_matches.size(); ++match_index)
         {
-          pcl::PointXYZRGB query_point = point_cloud.at(size_t(local_matches[match_index].trainIdx),0);
+          pcl::PointXYZRGB query_point = point_cloud->at(size_t(local_matches[match_index].trainIdx),0);
 
           // TODO: replace this by doing 3d to 3d with an unknown depth for that point
           if ((query_point.x != query_point.x) || (query_point.y != query_point.y) || (query_point.z != query_point.z))
@@ -124,7 +125,7 @@ namespace object_recognition
       }
 
       // For each object, perform 3d to 3d matching
-      for (std::map<ObjectId, pcl::PointCloud<pcl::PointXYZ> >::const_iterator query_iterator;
+      for (std::map<ObjectId, pcl::PointCloud<pcl::PointXYZ> >::const_iterator query_iterator = query_point_clouds.begin();
           query_iterator != query_point_clouds.end(); ++query_iterator)
           {
         ObjectId object_id = query_iterator->first;
