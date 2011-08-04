@@ -13,6 +13,7 @@ import time
 import tod_db
 import tod
 
+DISPLAY = True
 DEBUG = False
 
 ########################################################################################################################
@@ -32,7 +33,7 @@ class TodDetectionKinectReader(ecto.BlackBox):
 
         self._sync = ecto_ros.Synchronizer('Synchronizator', subs=subs
                                      )
-        self._im2mat_rgb = ecto_ros.Image2Mat()
+        self._im2mat_rgb = ecto_ros.Image2Mat(swap_rgb = True)
         self._im2mat_depth = ecto_ros.Image2Mat()
         self._depth_to_point_cloud = tod.TwoDToThreeD(do_points=False, do_point_cloud=True)
 
@@ -108,7 +109,8 @@ class TodDetection(ecto.BlackBox):
 
     def expose_outputs(self):
         return {'object_ids': self.guess_generator['object_ids'],
-                'poses': self.guess_generator['poses']}
+                'poses': self.guess_generator['poses'],
+                'keypoints': self.feature_descriptor['keypoints']}
 
     def expose_parameters(self):
         return {'db_json_params': self._db_json_params,
@@ -184,6 +186,16 @@ if __name__ == '__main__':
     guess_writer = tod.GuessCsvWriter()
     plasm.connect(tod_detection['object_ids'] >> guess_writer['object_ids'],
                   tod_detection['poses'] >> guess_writer['poses'])
+
+    if DISPLAY:
+        image_view = highgui.imshow(name="RGB", waitKey=1000, autoSize=True)
+        keypoints_view = highgui.imshow(name="Keypoints", waitKey=1000, autoSize=True)
+        draw_keypoints = features2d.DrawKeypoints()
+        plasm.connect(kinect_reader['image'] >> image_view['input'],
+                       kinect_reader['image'] >> draw_keypoints['input'],
+                       tod_detection['keypoints'] >> draw_keypoints['kpts'],
+                       draw_keypoints['output'] >> keypoints_view['input']
+                       )
 
     # display DEBUG data if needed
     if DEBUG:
