@@ -191,9 +191,11 @@ if __name__ == '__main__':
         image_view = highgui.imshow(name="RGB", waitKey=1000, autoSize=True)
         keypoints_view = highgui.imshow(name="Keypoints", waitKey=1000, autoSize=True)
         draw_keypoints = features2d.DrawKeypoints()
-        plasm.connect(kinect_reader['image'] >> image_view['input'],
-                       kinect_reader['image'] >> draw_keypoints['input'],
-                       tod_detection['keypoints'] >> draw_keypoints['kpts'],
+        if options.do_kinect:
+            plasm.connect(kinect_reader['image'] >> image_view['input'],
+                       kinect_reader['image'] >> draw_keypoints['input']
+                       )
+        plasm.connect(tod_detection['keypoints'] >> draw_keypoints['kpts'],
                        draw_keypoints['output'] >> keypoints_view['input']
                        )
 
