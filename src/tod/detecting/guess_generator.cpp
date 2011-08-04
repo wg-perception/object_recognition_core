@@ -143,8 +143,8 @@ namespace object_recognition
           {
         ObjectId object_id = query_iterator->first;
         unsigned int n_points = query_iterator->second.size();
-        if (n_points < min_inliers_)
-          continue;
+        if ((n_points < min_inliers_) || (training_point_clouds[object_id].points.size() < 4))
+              continue;
 
         std::vector<int> good_indices;
         for (unsigned int i = 0; i < n_points; ++i)
