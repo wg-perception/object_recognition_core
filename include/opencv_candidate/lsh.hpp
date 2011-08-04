@@ -201,8 +201,9 @@ public:
    * @param multi_probe_level how far should we look for neighbors in multi-probe LSH. 0 for standard LSH, 2 is good
    */
   LshMatcher(unsigned int table_number, unsigned int key_size, unsigned int multi_probe_level) :
-    table_number_(table_number), key_size_(key_size), feature_size_(0), multi_probe_level_(multi_probe_level)
+    feature_size_(0)
   {
+    setDimensions(table_number, key_size, multi_probe_level);
   }
 
   /** Implementation of the virtual function

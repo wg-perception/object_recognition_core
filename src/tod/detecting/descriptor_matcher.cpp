@@ -112,6 +112,7 @@ namespace object_recognition
         // load the descriptors from the DB
         db_future::ObjectDb db(params.get<std::string>("db_json_params"));
         collection_models_ = params.get<std::string>("collection_models");
+        features_3d_.reserve(object_ids.size());
         BOOST_FOREACH(const std::string & object_id, object_ids)
             {
               db_future::DocumentView query;
@@ -128,6 +129,14 @@ namespace object_recognition
                 std::vector<cv::Mat> descriptors_tmp;
                 descriptors_tmp.push_back(descriptors);
                 matcher_->add(descriptors_tmp);
+
+                // Deal with the 3d positions
+                cv::Mat_<float> points3d;
+                doc.get_attachment<cv::Mat>(db, "points", points3d);
+                std::vector<cv::Point3f> points3d_vec;
+                for (int i = 0; i < points3d.cols; ++i)
+                  points3d_vec.push_back(cv::Point3f(points3d(0, i), points3d(1, i), points3d(2, i)));
+                features_3d_.push_back(points3d_vec);
               }
             }
       }
@@ -162,9 +171,9 @@ namespace object_recognition
         std::vector<std::vector<cv::Point3f> > &matches_3d = outputs.get<std::vector<std::vector<cv::Point3f> > >(
             "matches_3d");
         matches_3d.clear();
-        matches_3d.resize(descriptors.cols);
-        std::cout << "Matching done" << std::endl;
-        for (int match_index = 0; match_index < descriptors.cols; ++match_index)
+        matches_3d.resize(descriptors.rows);
+
+        for (int match_index = 0; match_index < descriptors.rows; ++match_index)
         {
           std::vector<cv::Point3f> & local_matches_3d = matches_3d[match_index];
           BOOST_FOREACH(const cv::DMatch & match, matches[match_index])
