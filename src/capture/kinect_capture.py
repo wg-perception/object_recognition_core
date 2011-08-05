@@ -3,7 +3,7 @@
 import ecto
 from ecto_opencv import highgui, calib, imgproc, cv_bp as cv
 import capture
-from fiducial_pose_est import *
+from object_recognition.observations.fiducial_pose_est import *
 import ecto_ros, ecto_sensor_msgs, ecto_geometry_msgs
 import sys
 import argparse
@@ -57,7 +57,6 @@ if "__main__" == __name__:
     keys = subs.keys()
     graph = [
                 sync[:] >> bagwriter[keys],
-                
             ]
     plasm = ecto.Plasm()
     im2mat_rgb = ecto_ros.Image2Mat('rgb -> cv::Mat')
@@ -79,6 +78,6 @@ if "__main__" == __name__:
               delta_pose['novel'] >> bagwriter['__test__'],
               ]
     plasm.connect(graph)
-    #ecto.view_plasm(plasm)
+    print >>open("capture.dot","w"), plasm.viz()
     sched = ecto.schedulers.Singlethreaded(plasm)
     sched.execute()
