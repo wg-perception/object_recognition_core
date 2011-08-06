@@ -52,8 +52,8 @@ namespace object_recognition
       on_object_id_change(const std::string&)
       {
         std::string id, session;
-        object_id.p() >> id;
-        session_id.p() >> session;
+        id = *object_id;
+        session = *session_id;
         std::string view;
         if (!session.empty())
           view = db_future::couch::WhereSessionId(session);
@@ -87,8 +87,7 @@ namespace object_recognition
         session_id.set_callback(boost::bind(&ObservationReader::on_object_id_change, this, _1));
         {
           // Make sure we make the query even though session is empty
-          std::string session;
-          session_id.p() >> session;
+          std::string session = *session_id;
           if (session.empty())
             on_object_id_change("");
         }
