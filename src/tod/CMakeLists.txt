@@ -10,7 +10,7 @@ endif()
 
 include_directories(
                     ${CMAKE_CURRENT_SOURCE_DIR}
-                    ${pcl_INCLUDES}
+                    ${pcl_INCLUDE_DIRS}
                     ${EIGEN_INCLUDE_DIR}
                     )
 
