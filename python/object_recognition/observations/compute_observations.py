@@ -5,21 +5,14 @@ import time
 import tempfile
 import os
 
+import couchdb
+
 import ecto
 from ecto_opencv import highgui, calib, imgproc
 import ecto_ros, ecto_sensor_msgs, ecto_geometry_msgs
-import capture
-from fiducial_pose_est import *
-
-import couchdb
 
 import object_recognition
-from object_recognition import dbtools, models
-
-ImageSub = ecto_sensor_msgs.Subscriber_Image
-CameraInfoSub = ecto_sensor_msgs.Subscriber_CameraInfo
-ImageBagger = ecto_sensor_msgs.Bagger_Image
-CameraInfoBagger = ecto_sensor_msgs.Bagger_CameraInfo
+from object_recognition import dbtools, models, capture, observations
 
 class CalcObservations(ecto.BlackBox):
     def __init__(self, plasm):
@@ -27,7 +20,7 @@ class CalcObservations(ecto.BlackBox):
         self.gray_image = ecto.Passthrough('gray Input')
         self.depth_image = ecto.Passthrough('depth Input')
         self.camera_info = ecto.Passthrough('K')
-        self.pose_calc = OpposingDotPoseEstimator(plasm,
+        self.pose_calc = observations.OpposingDotPoseEstimator(plasm,
                                         rows=5, cols=3,
                                         pattern_type=calib.ASYMMETRIC_CIRCLES_GRID,
                                         square_size=0.04, debug=False)
@@ -58,12 +51,12 @@ class CalcObservations(ecto.BlackBox):
                   self.camera_info[:] >> (self.pose_calc['K'], self.masker['K']),
                   self.depth_image[:] >> self.masker['depth'],
                   self.pose_calc['R', 'T', 'found'] >> self.delta_pose['R', 'T', 'found'],
-                  self.pose_calc['R', 'T'] >> self.masker['R','T'],
+                  self.pose_calc['R', 'T'] >> self.masker['R', 'T'],
                 ]
         return graph
     
 
-def connect_observation_calc(sync, commit, object_id, session_id,debug=False):
+def connect_observation_calc(sync, commit, object_id, session_id, debug=False):
     plasm = ecto.Plasm()
     depth_ci = ecto_ros.CameraInfo2Cv('camera_info -> cv::Mat')
     image_ci = ecto_ros.CameraInfo2Cv('camera_info -> cv::Mat')
@@ -89,7 +82,7 @@ def connect_observation_calc(sync, commit, object_id, session_id,debug=False):
                   )
     if debug:
         image_display = highgui.imshow('image display', name='image', waitKey=10, autoSize=True)
-        mask_display = highgui.imshow('mask display', name='mask', waitKey=-1, autoSize=True)
+        mask_display = highgui.imshow('mask display', name='mask', waitKey= -1, autoSize=True)
         plasm.connect(rgb[:] >> image_display[:])
         plasm.connect(calc_observations['mask'] >> mask_display[:])
 
@@ -119,7 +112,7 @@ def parse_args():
     args = parser.parse_args()
     return args
 
-def compute_for_bag(bag,bags,args):
+def compute_for_bag(bag, bags, args):
     print "Loading bag with id:", bag.id
     bag_file_lo = bags.get_attachment(bag, 'data.bag', None)
     if bag_file_lo == None:
@@ -149,7 +142,7 @@ def compute_for_bag(bag,bags,args):
         if args.commit:
             session.store(sessions)
         print "running graph"
-        plasm = connect_observation_calc(sync, args.commit, str(session.object_id), str(session.id),args.visualize)
+        plasm = connect_observation_calc(sync, args.commit, str(session.object_id), str(session.id), args.visualize)
         sched = ecto.schedulers.Threadpool(plasm)
         sched.execute()
     finally:
@@ -165,18 +158,18 @@ if "__main__" == __name__:
         models.sync_models(dbs)
         results = models.Bag.all(bags)
         for bag in results:
-            existing_sessions = models.Session.by_bag_id(dbs['sessions'],key=bag.id)
+            existing_sessions = models.Session.by_bag_id(dbs['sessions'], key=bag.id)
             if(len(existing_sessions) == 0):
                 obj = models.Object.load(dbs['objects'], bag.object_id)
-                print "Computing session for:", obj.object_name, "\ndescription:",obj.description
-                compute_for_bag(bag,bags,args)
+                print "Computing session for:", obj.object_name, "\ndescription:", obj.description
+                compute_for_bag(bag, bags, args)
             else:
-                print "Skipping bag:",bag.id,"Already computed %d sessions"%len(existing_sessions)
+                print "Skipping bag:", bag.id, "Already computed %d sessions" % len(existing_sessions)
     else:
         bag = models.Bag.load(bags, args.bag_id)
         if bag == None or bag.id == None:
             print "Could not load bag with id:", args.bag_id
             sys.exit(-1)
-        compute_for_bag(bag,bags,args)
+        compute_for_bag(bag, bags, args)
     
     

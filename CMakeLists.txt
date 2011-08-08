@@ -8,6 +8,8 @@ if (NOT CMAKE_LIBRARY_OUTPUT_DIRECTORY)
   set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 endif()
 
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/ecto_object_recognition)
+
 #use the cmake cache, to -DOpenCV_dir=<path_to_build_of_opencv>
 #  svn co https://code.ros.org/svn/opencv/trunk
 #  and cmake that baby
@@ -15,7 +17,20 @@ find_package(Boost COMPONENTS system filesystem serialization REQUIRED)
 find_package(ecto 0.1.0 REQUIRED)
 find_package(OpenCV 2.3.1 EXACT REQUIRED)
 
-ecto_python_env_gen(${CMAKE_LIBRARY_OUTPUT_DIRECTORY} ${CMAKE_CURRENT_SOURCE_DIR}/python)
+set_ecto_install_package_name(ecto_object_recognition)
+
+configure_file(python/__init__.py.in
+  ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/__init__.py
+  @ONLY)
+
+#path setup for executables
+set(APP_PATH ${CMAKE_CURRENT_SOURCE_DIR}/apps)
+configure_file( apps/setup.sh.in
+  ${CMAKE_CURRENT_BINARY_DIR}/setup.sh
+  @ONLY
+  )
+
+ecto_python_env_gen(${CMAKE_BINARY_DIR}/lib ${CMAKE_CURRENT_SOURCE_DIR}/python)
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
 add_subdirectory(src)
