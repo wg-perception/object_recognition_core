@@ -14,6 +14,11 @@ import ecto_ros, ecto_sensor_msgs, ecto_geometry_msgs
 import object_recognition
 from object_recognition import dbtools, models, capture, observations
 
+ImageSub = ecto_sensor_msgs.Subscriber_Image
+CameraInfoSub = ecto_sensor_msgs.Subscriber_CameraInfo
+ImageBagger = ecto_sensor_msgs.Bagger_Image
+CameraInfoBagger = ecto_sensor_msgs.Bagger_CameraInfo
+
 class CalcObservations(ecto.BlackBox):
     def __init__(self, plasm):
         ecto.BlackBox.__init__(self, plasm)

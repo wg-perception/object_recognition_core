@@ -30,7 +30,5 @@ if "__main__" == __name__:
     args = parse_args()
     plasm = openni_capture.create_capture_plasm(args.bag, args.angle_thresh)
     
-    ecto.view_plasm(plasm)
-    
     sched = ecto.schedulers.Threadpool(plasm)
     sched.execute()

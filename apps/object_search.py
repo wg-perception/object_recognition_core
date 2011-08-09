@@ -22,7 +22,7 @@ if __name__ == "__main__":
     if len(args.tag) > 0:
         results = models.Object.by_tag(objects,key=args.tag)
     else:
-        results = models.Object.all(objects)
+        results = models.Object.by_object_name(objects)
     for obj in results:
         print "******************************"
         print "Object Name:",obj.object_name

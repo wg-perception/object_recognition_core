@@ -1,0 +1,1 @@
+../python/object_recognition/observations/compute_observations.py

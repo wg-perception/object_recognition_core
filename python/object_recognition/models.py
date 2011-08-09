@@ -14,7 +14,7 @@ class Object(Document):
     
     all = ViewField('objects','''\
         function(doc) {
-            emit(doc.id,doc)
+            emit(null,doc)
         }
     ''')
     by_object_name = ViewField('objects', '''\
@@ -106,7 +106,7 @@ class Bag(Document):
     ''')
     all = ViewField('bags', '''\
         function(doc) {
-            emit(doc.id,doc)
+            emit(null,doc)
         }
     ''')
     
