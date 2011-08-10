@@ -26,6 +26,8 @@
 
 typedef unsigned int ObjectId;
 
+using ecto::tendrils;
+
 namespace object_recognition
 {
   namespace tod
@@ -37,7 +39,7 @@ namespace object_recognition
     struct GuessGenerator
     {
       static void
-      declare_params(ecto::tendrils& p)
+      declare_params(tendrils& p)
       {
         p.declare<std::string>(
             "json_params", "The parameters, as a JSON string.\n\"min_inliers\": "
@@ -45,7 +47,7 @@ namespace object_recognition
       }
 
       static void
-      declare_io(const ecto::tendrils& params, ecto::tendrils& inputs, ecto::tendrils& outputs)
+      declare_io(const tendrils& params, tendrils& inputs, tendrils& outputs)
       {
         inputs.declare<boost::shared_ptr<pcl::PointCloud<pcl::PointXYZ> const> >("point_cloud", "The point cloud");
         inputs.declare<boost::shared_ptr<pcl::PointCloud<pcl::PointXYZRGB> const> >("point_cloud_rgb", "The RGB point cloud");
@@ -58,11 +60,11 @@ namespace object_recognition
       }
 
       void
-      configure(ecto::tendrils& json_params, ecto::tendrils& inputs, ecto::tendrils& outputs)
+      configure(const tendrils& params, const tendrils& inputs,  const tendrils& outputs)
       {
         boost::property_tree::ptree param_tree;
         std::stringstream ssparams;
-        ssparams << json_params.get<std::string>("json_params");
+        ssparams << params.get<std::string>("json_params");
         boost::property_tree::read_json(ssparams, param_tree);
 
         min_inliers_ = param_tree.get<unsigned int>("min_inliers");
@@ -74,7 +76,7 @@ namespace object_recognition
    * @param outputs
    * @return
    */
-  int process(const ecto::tendrils& inputs, ecto::tendrils& outputs)
+  int process(const tendrils& inputs,const tendrils& outputs)
   {
     // Get the different matches
     const std::vector<std::vector<cv::DMatch> > & matches = inputs.get<std::vector<std::vector<cv::DMatch> > >(

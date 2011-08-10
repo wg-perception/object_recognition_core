@@ -52,7 +52,7 @@ namespace object_recognition
       }
 
       void
-      configure(tendrils& params, tendrils& inputs, tendrils& outputs)
+      configure(const tendrils& params, const tendrils& inputs,const tendrils& outputs)
       {
         ecto::spore<std::string> object_id = params["object_id"];
         object_id.set_callback(boost::bind(&TodModelInserter::on_object_id_change, this, _1));
@@ -63,7 +63,7 @@ namespace object_recognition
       }
 
       int
-      process(const tendrils& inputs, tendrils& outputs)
+      process(const tendrils& inputs,const tendrils& outputs)
       {
         //if (inputs.get<int> ("trigger") != 'c')
         //  return 0;

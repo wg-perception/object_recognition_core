@@ -82,7 +82,7 @@ namespace object_recognition
       }
 
       void
-      configure(tendrils&p, tendrils&i, tendrils&o)
+      configure(const tendrils&p,const tendrils&i,const tendrils&o)
       {
         model = o["model"];
         params = o["params"];
@@ -101,7 +101,7 @@ namespace object_recognition
       }
 
       int
-      process(tendrils& i, tendrils& o)
+      process(const tendrils& i, const tendrils& o)
       {
         cv::Mat mask_resized = *mask;
         cv::Mat rvec, tvec, K;
@@ -240,7 +240,7 @@ namespace object_recognition
       }
 
       void
-      configure(tendrils&p, tendrils&i, tendrils&o)
+      configure(const tendrils&p,const tendrils&i,const tendrils&o)
       {
         model = i["model"];
         params = i["params"];
@@ -249,7 +249,7 @@ namespace object_recognition
       }
 
       int
-      process(tendrils& i, tendrils& o)
+      process(const tendrils& i, const tendrils& o)
       {
         //clean up the model
         std::vector<unsigned int> removed;

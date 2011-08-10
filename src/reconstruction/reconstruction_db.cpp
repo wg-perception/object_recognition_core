@@ -58,7 +58,7 @@ namespace object_recognition
 //      }
 //
 //      void
-//      configure(tendrils& params, tendrils& inputs, tendrils& outputs)
+//      configure(const tendrils& params, const tendrils& inputs,const tendrils& outputs)
 //      {
 //        object_id = params["object_id"];
 //        session_id = params["session_id"];
@@ -72,7 +72,7 @@ namespace object_recognition
 //      }
 //
 //      int
-//      process(const tendrils& inputs, tendrils& outputs)
+//      process(const tendrils& inputs,const tendrils& outputs)
 //      {
 //
 //        return 0;

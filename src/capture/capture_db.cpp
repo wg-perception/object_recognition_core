@@ -63,7 +63,7 @@ namespace object_recognition
       T = extrinsics["T"];
     }
     void
-    Observation::operator>>(ecto::tendrils& o)
+    Observation::operator>>(const ecto::tendrils& o)
     {
       o.get<cv::Mat>("image") = image;
       o.get<cv::Mat>("mask") = mask;
@@ -74,7 +74,7 @@ namespace object_recognition
       o.get<int>("frame_number") = frame_number;
     }
     void
-    Observation::operator<<(ecto::tendrils& i)
+    Observation::operator<<(const ecto::tendrils& i)
     {
       i["image"] >> image;
       i["mask"] >> mask;

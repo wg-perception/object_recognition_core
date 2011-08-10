@@ -9,7 +9,7 @@ using ecto::tendrils;
  {
  static void declare_params(tendrils& params);
  static void declare_io(const tendrils& params, tendrils& in, tendrils& out);
- void configure(tendrils& params, tendrils& inputs, tendrils& outputs);
+ void configure(const tendrils& params, const tendrils& inputs,const tendrils& outputs);
  int process(const tendrils& in, tendrils& out);
  void destroy();
  };
@@ -19,48 +19,46 @@ namespace tod
 {
   struct PlanarSegmentation
   {
-    static void declare_params(tendrils& params)
+    static void
+    declare_params(tendrils& params)
     {
-      params.declare<float> ("x_crop",
-                             "The amount to keep in the x direction (meters) relative\n"
-                               "to the coordinate frame defined by the pose.",
-                             0.1);
-      params.declare<float> ("y_crop",
-                             "The amount to keep in the y direction (meters) relative to\n"
-                               "the coordinate frame defined by the pose.", 0.1);
-      params.declare<float> ("z_crop",
-                             "The amount to keep in the z direction (meters) relative to\n"
-                               "the coordinate frame defined by the pose.",
-                             0.25);
-      params.declare<float> ("z_min",
-                             "The amount to crop above the plane, in meters.",
-                             0.02);
+      params.declare<float>("x_crop", "The amount to keep in the x direction (meters) relative\n"
+                            "to the coordinate frame defined by the pose.",
+                            0.1);
+      params.declare<float>("y_crop", "The amount to keep in the y direction (meters) relative to\n"
+                            "the coordinate frame defined by the pose.",
+                            0.1);
+      params.declare<float>("z_crop", "The amount to keep in the z direction (meters) relative to\n"
+                            "the coordinate frame defined by the pose.",
+                            0.25);
+      params.declare<float>("z_min", "The amount to crop above the plane, in meters.", 0.02);
     }
 
-    static void declare_io(const tendrils& params, tendrils& in, tendrils& out)
+    static void
+    declare_io(const tendrils& params, tendrils& in, tendrils& out)
     {
-      in.declare<cv::Mat> ("depth", "The depth image to segment");
+      in.declare<cv::Mat>("depth", "The depth image to segment");
       //FIXME use a pose object here?
-      in.declare<cv::Mat> ("R", "The pose rotation matrix.");
-      in.declare<cv::Mat> ("T", "The pose translation vector.");
-      in.declare<cv::Mat> ("K", "The camera matrix.");
+      in.declare<cv::Mat>("R", "The pose rotation matrix.");
+      in.declare<cv::Mat>("T", "The pose translation vector.");
+      in.declare<cv::Mat>("K", "The camera matrix.");
 
-      out.declare<cv::Mat> ("mask",
-                            "The output mask, determined by the segmentation.\n"
-                              "255 is the value for objects satisfying the constraints.\n"
-                              "0 otherwise.");
+      out.declare<cv::Mat>("mask", "The output mask, determined by the segmentation.\n"
+                           "255 is the value for objects satisfying the constraints.\n"
+                           "0 otherwise.");
     }
-    void configure(tendrils& p, tendrils& inputs, tendrils& outputs)
+    void
+    configure(const tendrils& p,const tendrils& inputs,const tendrils& outputs)
     {
-      z_crop = p.get<float> ("z_crop");
-      x_crop = p.get<float> ("x_crop");
-      y_crop = p.get<float> ("y_crop");
-      z_min = p.get<float> ("z_min");
+      z_crop = p.get<float>("z_crop");
+      x_crop = p.get<float>("x_crop");
+      y_crop = p.get<float>("y_crop");
+      z_min = p.get<float>("z_min");
 
     }
 
-    void computeNormal(const cv::Mat& R, const cv::Mat& T,
-                       cv::Matx<double, 3, 1>& N, cv::Matx<double, 3, 1>& O)
+    void
+    computeNormal(const cv::Mat& R, const cv::Mat& T, cv::Matx<double, 3, 1>& N, cv::Matx<double, 3, 1>& O)
     {
 
       cv::Vec3d z(0, 0, 1);
@@ -75,20 +73,21 @@ namespace tod
 
     }
 
-    int process(const tendrils& in, tendrils& out)
+    int
+    process(const tendrils& in, const tendrils& out)
     {
       cv::Mat R, T, K, depth;
-      in.get<cv::Mat> ("R").convertTo(R, CV_64F);
-      in.get<cv::Mat> ("T").convertTo(T, CV_64F);
-      in.get<cv::Mat> ("K").convertTo(K, CV_64F);
-      depth = in.get<cv::Mat> ("depth");
-      cv::Mat& mask = out.get<cv::Mat> ("mask");
+      in.get<cv::Mat>("R").convertTo(R, CV_64F);
+      in.get<cv::Mat>("T").convertTo(T, CV_64F);
+      in.get<cv::Mat>("K").convertTo(K, CV_64F);
+      depth = in.get<cv::Mat>("depth");
+      cv::Mat& mask = out.get<cv::Mat>("mask");
 
       if (!depth.empty())
-        {
-          mask.create(depth.size(), CV_8UC1);
-          mask = cv::Scalar(0);
-        }
+      {
+        mask.create(depth.size(), CV_8UC1);
+        mask = cv::Scalar(0);
+      }
       else
         return 0;
       if (R.empty() || T.empty() || K.empty())
@@ -108,14 +107,12 @@ namespace tod
       box[7] = cv::Point3f(x_crop, -y_crop, z_crop);
 
       std::vector<cv::Point2f> projected, hull;
-      cv::projectPoints(box, R, T, K, cv::Mat(4, 1, CV_64FC1, cv::Scalar(0)),
-                        projected);
+      cv::projectPoints(box, R, T, K, cv::Mat(4, 1, CV_64FC1, cv::Scalar(0)), projected);
 
       cv::convexHull(projected, hull, true);
       std::vector<cv::Point> points(hull.size());
       std::copy(hull.begin(), hull.end(), points.begin());
-      cv::fillConvexPoly(box_mask, points.data(), points.size(),
-                         cv::Scalar::all(255));
+      cv::fillConvexPoly(box_mask, points.data(), points.size(), cv::Scalar::all(255));
       cv::Matx<double, 3, 3> A_x;
 
       A_x = K;
@@ -128,27 +125,25 @@ namespace tod
       double numerator = numerator_(0);
       int width = mask.size().width;
       int height = mask.size().height;
-      cv::Mat_<uint16_t>::iterator dit = depth.begin<uint16_t> ();
-      cv::Mat_<uint8_t>::iterator it = mask.begin<uint8_t> ();
+      cv::Mat_<uint16_t>::iterator dit = depth.begin<uint16_t>();
+      cv::Mat_<uint8_t>::iterator it = mask.begin<uint8_t>();
       cv::Mat_<uint8_t>::iterator mit = box_mask.begin();
       cv::Vec3d uv(0, 0, 1);
       for (int v = 0; v < height; v++)
+      {
+        uv[1] = v;
+        for (int u = 0; u < width; u++, ++it, ++mit, ++dit)
         {
-          uv[1] = v;
-          for (int u = 0; u < width; u++, ++it, ++mit, ++dit)
-            {
-              if (*mit == 0)
-                continue;
-              uv[0] = u;
-              cv::Matx<double, 1, 1> AtN = N_t_A_x * uv;
-              double k = numerator / AtN(0);
-              cv::Matx<double, 1, 1> X = k * (A_x.row(2) * uv);
-              uint16_t depth = *dit;
-              *it = 255 * uint8_t(
-                                  (depth > (O(2) + z_crop)) && (depth
-                                      < uint16_t(X(0) * 1000)));
-            }
+          if (*mit == 0)
+            continue;
+          uv[0] = u;
+          cv::Matx<double, 1, 1> AtN = N_t_A_x * uv;
+          double k = numerator / AtN(0);
+          cv::Matx<double, 1, 1> X = k * (A_x.row(2) * uv);
+          uint16_t depth = *dit;
+          *it = 255 * uint8_t((depth > (O(2) + z_crop)) && (depth < uint16_t(X(0) * 1000)));
         }
+      }
       return 0;
     }
     float x_crop, y_crop, z_crop, z_min;

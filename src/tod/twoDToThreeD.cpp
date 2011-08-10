@@ -44,7 +44,7 @@ struct TwoDToThreeD
   }
 
   void
-  configure(tendrils& params, tendrils& inputs, tendrils& outputs)
+  configure(const tendrils& params, const tendrils& inputs,const tendrils& outputs)
   {
     do_points_ = params.get<bool>("do_points");
     do_point_cloud_ = params.get<bool>("do_point_cloud");
@@ -56,7 +56,7 @@ struct TwoDToThreeD
    * @return
    */
   int
-  process(const tendrils& inputs, tendrils& outputs)
+  process(const tendrils& inputs,const tendrils& outputs)
   {
     // We have lam (x,y,1) = K (X,Y,Z), hence lam=Z
     const cv::Mat & depth_image = inputs.get<cv::Mat>("depth");

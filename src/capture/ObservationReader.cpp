@@ -78,7 +78,7 @@ namespace object_recognition
       {
       }
       void
-      configure(tendrils& params, tendrils& inputs, tendrils& outputs)
+      configure(const tendrils& params, const tendrils& inputs,const tendrils& outputs)
       {
         db = couch::Db(params.get<std::string>("db_url") + "/observations");
         db.update_info();
@@ -93,7 +93,7 @@ namespace object_recognition
         }
       }
       int
-      process(const tendrils& inputs, tendrils& outputs)
+      process(const tendrils& inputs,const tendrils& outputs)
       {
         couch::Document doc = docs[current_frame];
         doc.update();

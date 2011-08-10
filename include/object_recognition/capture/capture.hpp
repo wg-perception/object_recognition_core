@@ -20,9 +20,9 @@ namespace object_recognition
       void
       operator<<(couch::Document& doc);
       void
-      operator>>(ecto::tendrils& o);
+      operator>>(const ecto::tendrils& o);
       void
-      operator<<(ecto::tendrils& i);
+      operator<<(const ecto::tendrils& i);
     };
   }
 }

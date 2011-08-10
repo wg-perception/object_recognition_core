@@ -51,7 +51,7 @@ struct GuessCsvWriter
     inputs.declare<std::vector<opencv_candidate::Pose> >("poses", "The poses of the found objects");
   }
 
-  void configure(tendrils& params, tendrils& inputs, tendrils& outputs)
+  void configure(const tendrils& params, const tendrils& inputs,const tendrils& outputs)
   {
     team_name_ = params.get<std::string>("team_name");
     run_number_ = params.get<int>("run_number");
@@ -62,7 +62,7 @@ struct GuessCsvWriter
    * @param outputs
    * @return
    */
-  int process(const tendrils& inputs, tendrils& outputs)
+  int process(const tendrils& inputs,const tendrils& outputs)
   {
     // match to our objects
     const std::vector<ObjectId> &object_ids = inputs.get<std::vector<ObjectId> >("object_ids");

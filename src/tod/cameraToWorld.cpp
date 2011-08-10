@@ -34,11 +34,11 @@ struct CameraToWorld
     outputs.declare<cv::Mat>("points", "The keypoints");
   }
 
-  void configure(tendrils& params, tendrils& inputs, tendrils& outputs)
+  void configure(const tendrils& params, const tendrils& inputs,const tendrils& outputs)
   {
   }
 
-  int process(const tendrils& inputs, tendrils& outputs)
+  int process(const tendrils& inputs,const tendrils& outputs)
   {
     cv::Mat_<float> R = inputs.get<cv::Mat>("R");
     const cv::Mat & T = inputs.get<cv::Mat>("T");

@@ -33,7 +33,7 @@ namespace object_recognition
         outputs.declare<bool>("novel", "Whether or not the R|T is novel relative to previous novel R|T poses.", false);
       }
       void
-      configure(tendrils& params, tendrils& inputs, tendrils& outputs)
+      configure(const tendrils& params, const tendrils& inputs,const tendrils& outputs)
       {
         reset_ = params["reset"];
         angle_thresh_ = params["angle_thresh"];
@@ -43,7 +43,7 @@ namespace object_recognition
         found_ = inputs["found"];
       }
       int
-      process(const tendrils& inputs, tendrils& outputs)
+      process(const tendrils& inputs,const tendrils& outputs)
       {
         *novel_ = false;
         if (*found_ == false)

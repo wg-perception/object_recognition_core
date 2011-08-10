@@ -76,7 +76,7 @@ namespace object_recognition
       }
 
       void
-      configure(ecto::tendrils& params, ecto::tendrils& inputs, ecto::tendrils& outputs)
+      configure(const ecto::tendrils& params,const ecto::tendrils& inputs, const ecto::tendrils& outputs)
       {
         // get some parameters
         {
@@ -147,7 +147,7 @@ namespace object_recognition
        * @return
        */
       int
-      process(const ecto::tendrils& inputs, ecto::tendrils& outputs)
+      process(const ecto::tendrils& inputs,const ecto::tendrils& outputs)
       {
         std::vector<std::vector<cv::DMatch> > &matches = outputs.get<std::vector<std::vector<cv::DMatch> > >("matches");
         const cv::Mat & descriptors = inputs.get<cv::Mat>("descriptors");

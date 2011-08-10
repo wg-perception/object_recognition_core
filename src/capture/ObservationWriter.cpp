@@ -53,7 +53,7 @@ namespace object_recognition
         frame_number = 0;
       }
       void
-      configure(tendrils& params, tendrils& inputs, tendrils& outputs)
+      configure(const tendrils& params, const tendrils& inputs,const tendrils& outputs)
       {
         db = couch::Db(params.get<std::string>("db_url") + "/observations");
         db.create();
@@ -63,7 +63,7 @@ namespace object_recognition
         session_id.set_callback(boost::bind(&ObservationInserter::on_session_id_change, this, _1));
       }
       int
-      process(const tendrils& inputs, tendrils& outputs)
+      process(const tendrils& inputs,const tendrils& outputs)
       {
         if (inputs.get<bool>("found") == false)
           return 0;
