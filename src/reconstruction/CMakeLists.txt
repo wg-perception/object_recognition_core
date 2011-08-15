@@ -1,6 +1,5 @@
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
-find_package(Eigen REQUIRED)
-include_directories(${EIGEN_INCLUDE_DIR})
+
 find_ros_package(pcl) #find the ros version of pcl for now.
 add_definitions("-Wno-unknown-pragmas")
 

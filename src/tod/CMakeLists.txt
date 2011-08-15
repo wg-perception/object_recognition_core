@@ -1,6 +1,3 @@
-find_package(Eigen REQUIRED)
-include_directories(${EIGEN_INCLUDE_DIR})
-
 find_ros_package(pcl) #find the ros version of pcl for now.
 
 if(NOT pcl_FOUND)
@@ -11,7 +8,6 @@ endif()
 include_directories(
                     ${CMAKE_CURRENT_SOURCE_DIR}
                     ${pcl_INCLUDE_DIRS}
-                    ${EIGEN_INCLUDE_DIR}
                     )
 
 # deal with the TOD module
