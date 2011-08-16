@@ -37,9 +37,10 @@ def parse_args():
 def mesh_session(session, args):
     db_reader = capture.ObservationReader('db_reader', session_id=session.id)
     depthTo3d = calib.DepthTo3d()
-    surfel_reconstruction = reconstruction.SurfelReconstruction(corrDistForUpdate=0.005,
-                                                                starvationConfidence=4,
-                                                                timeDiffForRemoval=10,
+    surfel_reconstruction = reconstruction.SurfelReconstruction(corrDistForUpdate=0.01,
+                                                                maxInterpolationDist=0.02,
+                                                                starvationConfidence=2,
+                                                                timeDiffForRemoval=20,
                                                                 maxNormalAngle=90 * math.pi / 180)
     if True:
         plasm = ecto.Plasm()
