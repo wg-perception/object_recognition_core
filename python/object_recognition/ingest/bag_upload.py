@@ -24,3 +24,4 @@ def upload_bag(obj,bag_file,couchdb_url=dbtools.DEFAULT_SERVER_URL):
                      )
     bag.store(bags)
     bags.put_attachment(doc=bag, content=bag_file, filename='data.bag', content_type='application/octet-stream')
+    return bag

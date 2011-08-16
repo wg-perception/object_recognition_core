@@ -50,11 +50,14 @@ def create_capture_plasm(bag_name, angle_thresh):
                                      rows=5, cols=3,
                                      pattern_type=calib.ASYMMETRIC_CIRCLES_GRID,
                                      square_size=0.04, debug=True)
-    rgb2gray = imgproc.cvtColor('rgb -> gray', flag=imgproc.CV_RGB2GRAY)
+
+    bgr2rgb = imgproc.cvtColor('rgb -> bgr', flag=imgproc.Conversion.RGB2BGR)
+    rgb2gray = imgproc.cvtColor('rgb -> gray', flag=imgproc.Conversion.RGB2GRAY)
     delta_pose = capture.DeltaRT("delta R|T", angle_thresh=angle_thresh)
     display = highgui.imshow('Poses', name='Poses', waitKey=5, autoSize=True)
     graph += [sync['image'] >> im2mat_rgb[:],
-              im2mat_rgb[:] >> (rgb2gray[:], poser['color_image']),
+              im2mat_rgb[:] >> (rgb2gray[:],bgr2rgb[:]),
+              bgr2rgb[:] >> poser['color_image'],
               rgb2gray[:] >> poser['image'],
               poser['debug_image'] >> display['input'],
               sync['image_ci'] >> camera_info['camera_info'],

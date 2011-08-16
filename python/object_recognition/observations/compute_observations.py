@@ -14,8 +14,6 @@ import ecto_ros, ecto_sensor_msgs, ecto_geometry_msgs
 import object_recognition
 from object_recognition import dbtools, models, capture, observations
 
-ImageSub = ecto_sensor_msgs.Subscriber_Image
-CameraInfoSub = ecto_sensor_msgs.Subscriber_CameraInfo
 ImageBagger = ecto_sensor_msgs.Bagger_Image
 CameraInfoBagger = ecto_sensor_msgs.Bagger_CameraInfo
 
@@ -29,7 +27,7 @@ class CalcObservations(ecto.BlackBox):
                                         rows=5, cols=3,
                                         pattern_type=calib.ASYMMETRIC_CIRCLES_GRID,
                                         square_size=0.04, debug=False)
-        self.masker = calib.PlanarSegmentation(z_min=0.0125, y_crop=0.10, x_crop=0.10)
+        self.masker = calib.PlanarSegmentation(z_min=0.02, y_crop=0.10, x_crop=0.10)
         self.delta_pose = capture.DeltaRT("delta R|T", angle_thresh=3.14 / 36) #5 degree increments.
 
     def expose_outputs(self):
@@ -76,8 +74,8 @@ def connect_observation_calc(sync, commit, object_id, session_id, debug=False):
                   sync['depth_ci'] >> depth_ci[:]
                   )
     
-    rgb = imgproc.cvtColor('bgr -> rgb', flag=imgproc.CV_BGR2RGB)
-    gray = imgproc.cvtColor('rgb -> gray', flag=imgproc.CV_RGB2GRAY)
+    rgb = imgproc.cvtColor('bgr -> rgb', flag=imgproc.Conversion.BGR2RGB)
+    gray = imgproc.cvtColor('rgb -> gray', flag=imgproc.Conversion.RGB2GRAY)
 
     calc_observations = CalcObservations(plasm)
     plasm.connect(image[:] >> (rgb[:], gray[:]),
@@ -150,6 +148,7 @@ def compute_for_bag(bag, bags, args):
         plasm = connect_observation_calc(sync, args.commit, str(session.object_id), str(session.id), args.visualize)
         sched = ecto.schedulers.Threadpool(plasm)
         sched.execute()
+        return session
     finally:
         print "Removing tmp_file:", tmp_file.name
         os.remove(tmp_file.name)
@@ -175,6 +174,7 @@ if "__main__" == __name__:
         if bag == None or bag.id == None:
             print "Could not load bag with id:", args.bag_id
             sys.exit(-1)
-        compute_for_bag(bag, bags, args)
+        session = compute_for_bag(bag, bags, args)
+        print "Calculated session_id =", session.id
     
     

@@ -23,6 +23,9 @@ def parse_args():
                    help='Tags to add to object description.')
     add_db_options(parser)
     args = parser.parse_args()
+    if len(args.bag) < 1:
+      parser.print_help()
+      sys.exit(1)
     return args
 
 if "__main__" == __name__:
@@ -34,5 +37,5 @@ if "__main__" == __name__:
                         author_name=args.author_name,
                         author_email=args.author_email,
                         )
-    upload_bag(obj, bag, couchdb_url=args.db_root)
-
+    bag_up = upload_bag(obj, bag, couchdb_url=args.db_root)
+    print "Uploaded bag has id =", bag_up.id

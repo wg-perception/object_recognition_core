@@ -23,6 +23,9 @@ def parse_args():
 Frames will not be recorded unless they are not closer to any other pose by this amount.
 ''')
     args = parser.parse_args()
+    if len(args.bag) < 1:
+      print parser.print_help()
+      sys.exit(1)
     return args
 
 if "__main__" == __name__:

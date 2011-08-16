@@ -70,11 +70,7 @@ class Session(Document):
     object_id = TextField()
     bag_id = TextField()
     added = DateTimeField(default=datetime.now)
-    all = ViewField('sessions','''\
-        function(doc) {
-            emit(doc.id,doc)
-        }
-    ''')
+
     by_object_id = ViewField('sessions', '''\
         function(doc) {
             emit(doc.object_id,doc)
@@ -89,7 +85,6 @@ class Session(Document):
 
     @classmethod
     def sync(cls,db):
-        cls.all.sync(db)
         cls.by_object_id.sync(db)
         cls.by_bag_id.sync(db)
 
