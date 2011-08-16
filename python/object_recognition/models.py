@@ -11,8 +11,8 @@ class Object(Document):
     author_name = TextField()
     author_email = TextField()
     added = DateTimeField(default=datetime.now)
-    
-    all = ViewField('objects','''\
+
+    all = ViewField('objects', '''\
         function(doc) {
             emit(null,doc)
         }
@@ -22,7 +22,7 @@ class Object(Document):
             emit(doc.object_name, doc)
         }
     ''')
-    
+
     by_tag = ViewField('objects', '''\
         function(doc) {
             for( tag in doc.tags )
@@ -32,7 +32,7 @@ class Object(Document):
         }
     ''')
     @classmethod
-    def sync(cls,db):
+    def sync(cls, db):
         cls.all.sync(db)
         cls.by_object_name.sync(db)
         cls.by_tag.sync(db)
@@ -41,19 +41,19 @@ class Observation(Document):
     object_id = TextField()
     session_id = TextField()
     frame_number = IntegerField()
-    
+
     by_object_id = ViewField('observations', '''\
         function(doc) {
             emit(doc.object_id, doc)
         }
     ''')
-    
+
     by_frame_number = ViewField('observations', '''\
         function(doc) {
             emit(doc.frame_number, doc)
         }
     ''')
-    
+
     by_session_id = ViewField('observations', '''\
         function(doc) {
             emit(doc.session_id, doc)
@@ -61,11 +61,11 @@ class Observation(Document):
     ''')
 
     @classmethod
-    def sync(cls,db):
+    def sync(cls, db):
         cls.by_session_id.sync(db)
         cls.by_object_id.sync(db)
         cls.by_frame_number.sync(db)
-    
+
 class Session(Document):
     object_id = TextField()
     bag_id = TextField()
@@ -84,11 +84,11 @@ class Session(Document):
 
 
     @classmethod
-    def sync(cls,db):
+    def sync(cls, db):
         cls.by_object_id.sync(db)
         cls.by_bag_id.sync(db)
 
-        
+
 class Bag(Document):
     object_id = TextField()
     author_name = TextField()
@@ -104,9 +104,9 @@ class Bag(Document):
             emit(null,doc)
         }
     ''')
-    
+
     @classmethod
-    def sync(cls,db):
+    def sync(cls, db):
         cls.all.sync(db)
         cls.by_object_id.sync(db)
 

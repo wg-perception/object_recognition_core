@@ -17,33 +17,33 @@ def create_capture_plasm(bag_name, angle_thresh):
     @param bag_name: A filename for the bag, will write to this file.
     @param angle_thresh: The angle threshhold in radians to sparsify the views with.  
     '''
-    
+
     plasm = ecto.Plasm()
-    
+
     baggers = dict(image=ImageBagger(topic_name='/camera/rgb/image_color'),
                    depth=ImageBagger(topic_name='/camera/depth/image'),
                    image_ci=CameraInfoBagger(topic_name='/camera/rgb/camera_info'),
                    depth_ci=CameraInfoBagger(topic_name='/camera/depth/camera_info'),
                    )
-    
+
     bagwriter = ecto.If('Bag Writer if R|T',
                         cell=ecto_ros.BagWriter(baggers=baggers, bag=bag_name)
                         )
-    
+
     subs = dict(image=ImageSub(topic_name='/camera/rgb/image_color', queue_size=0),
                 depth=ImageSub(topic_name='/camera/depth_registered/image', queue_size=0),
                 image_ci=CameraInfoSub(topic_name='/camera/rgb/camera_info', queue_size=0),
                 depth_ci=CameraInfoSub(topic_name='/camera/depth_registered/camera_info', queue_size=0),
                 )
-    
+
     sync = ecto_ros.Synchronizer('Synchronizator', subs=subs
                                  )
     keys = subs.keys()
-    
+
     graph = [
                 sync[:] >> bagwriter[keys],
             ]
-    
+
     im2mat_rgb = ecto_ros.Image2Mat('rgb -> cv::Mat')
     camera_info = ecto_ros.CameraInfo2Cv('camera_info -> cv::Mat')
     poser = OpposingDotPoseEstimator(plasm,
@@ -56,7 +56,7 @@ def create_capture_plasm(bag_name, angle_thresh):
     delta_pose = capture.DeltaRT("delta R|T", angle_thresh=angle_thresh)
     display = highgui.imshow('Poses', name='Poses', waitKey=5, autoSize=True)
     graph += [sync['image'] >> im2mat_rgb[:],
-              im2mat_rgb[:] >> (rgb2gray[:],bgr2rgb[:]),
+              im2mat_rgb[:] >> (rgb2gray[:], bgr2rgb[:]),
               bgr2rgb[:] >> poser['color_image'],
               rgb2gray[:] >> poser['image'],
               poser['debug_image'] >> display['input'],

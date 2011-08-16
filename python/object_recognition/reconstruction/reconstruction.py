@@ -60,17 +60,17 @@ def surfel_reconstruction(object_id, session_id, viz=True):
         surfel_saver.inputs.at('model').copy_value(surfel_reconstruction.outputs.at('model'))
         surfel_saver.inputs.at('params').copy_value(surfel_reconstruction.outputs.at('params'))
         surfel_saver.inputs.at('camera_params').copy_value(surfel_reconstruction.outputs.at('camera_params'))
-    
+
         plasm.insert(surfel_saver)
         sched = ecto.schedulers.Singlethreaded(plasm)
         sched.execute(niter=1)
-        
+
         mesh_args = ["meshlabserver", "-i", surfel_ply, "-o", meshed_ply, "-s", mesh_file_name, "-om", "vn", "fn", "vc", "fc"]
         p = subprocess.Popen(mesh_args, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         o, e = p.communicate()
         if p.returncode :
             raise (o, e, p.returncode)
-        
+
         db_url = 'http://localhost:5984'
         reconstruction.insert_mesh(db_url, object_id, session_id, meshed_ply, surfel_ply)
 def find_object_id(session_id):
@@ -89,19 +89,19 @@ def find_object_id(session_id):
         return objects[0][2].split('"')[1]
     else:
         raise "No object found with the given session:", session_id
-    
-    
+
+
 def find_sessions_that_need_meshing():
     db_url = 'http://localhost:5984'
-    
+
     find_all_objects = '''
             function(doc)
             {
               emit('tags',doc.tags);
             }
     '''
-    
-    
+
+
     find_all_sessions = '''
             function(doc)
             {
@@ -117,7 +117,7 @@ def find_sessions_that_need_meshing():
             }
     '''
     objects = object_recognition_db.run_view(db_url, 'objects', find_all_objects)
-    
+
     sessions_to_do = []
     for object in objects:
         print object
@@ -138,7 +138,7 @@ def parse_args():
 
 if __name__ == "__main__":
     args = parse_args()
-    
+
     if len(args.session_id) > 0:
         object_id = find_object_id(args.session_id)
         surfel_reconstruction(object_id=object_id, session_id=args.session_id)
@@ -147,4 +147,4 @@ if __name__ == "__main__":
         for object_id, session_id in sessions_to_do:
             print object_id, session_id
             surfel_reconstruction(object_id=object_id, session_id=session_id)
-    
+

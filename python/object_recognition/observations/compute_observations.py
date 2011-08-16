@@ -37,17 +37,17 @@ class CalcObservations(ecto.BlackBox):
                 'mask':self.masker['mask'],
                 'novel': self.delta_pose['novel'],
                }
-    
+
     def expose_inputs(self):
         return {
                 'image': self.gray_image[:],
                 'depth': self.depth_image[:],
                 'K': self.camera_info[:]
                }
-    
+
     def expose_parameters(self):
         return { }
-    
+
     def connections(self):
         graph = [
                   self.gray_image[:] >> self.pose_calc['image'],
@@ -57,7 +57,7 @@ class CalcObservations(ecto.BlackBox):
                   self.pose_calc['R', 'T'] >> self.masker['R', 'T'],
                 ]
         return graph
-    
+
 
 def connect_observation_calc(sync, commit, object_id, session_id, debug=False):
     plasm = ecto.Plasm()
@@ -73,7 +73,7 @@ def connect_observation_calc(sync, commit, object_id, session_id, debug=False):
                   sync['image_ci'] >> image_ci[:],
                   sync['depth_ci'] >> depth_ci[:]
                   )
-    
+
     rgb = imgproc.cvtColor('bgr -> rgb', flag=imgproc.Conversion.BGR2RGB)
     gray = imgproc.cvtColor('rgb -> gray', flag=imgproc.Conversion.RGB2GRAY)
 
@@ -89,7 +89,7 @@ def connect_observation_calc(sync, commit, object_id, session_id, debug=False):
         plasm.connect(rgb[:] >> image_display[:])
         plasm.connect(calc_observations['mask'] >> mask_display[:])
 
-        
+
     if commit:
         db_inserter = capture.ObservationInserter("db_inserter", object_id=object_id, session_id=session_id)
         plasm.connect(depth[:] >> db_inserter['depth'],
@@ -101,7 +101,7 @@ def connect_observation_calc(sync, commit, object_id, session_id, debug=False):
 
 
 def parse_args():
-    parser = argparse.ArgumentParser(description='Computes observations from a raw bag of appropriate data.' + 
+    parser = argparse.ArgumentParser(description='Computes observations from a raw bag of appropriate data.' +
                                      '  This assumes that the bag is already in the database associated with an object.')
     parser.add_argument('-i', '--bag_id', metavar='BAG_ID', dest='bag_id', type=str, default='',
                        help='The id of the bag in DB to compute observations from.')
@@ -126,18 +126,18 @@ def compute_for_bag(bag, bags, args):
         tmp_file.write(bag_file_lo.read())
         tmp_file.close()
         print "Wrote bag to:", tmp_file.name
-       
+
         baggers = dict(image=ImageBagger(topic_name='/camera/rgb/image_color'),
                         depth=ImageBagger(topic_name='/camera/depth/image'),
                         image_ci=CameraInfoBagger(topic_name='/camera/rgb/camera_info'),
                         depth_ci=CameraInfoBagger(topic_name='/camera/depth/camera_info'),
                        )
-        
+
         sync = ecto_ros.BagReader('Bag Reader',
                                   baggers=baggers,
                                   bag=tmp_file.name,
                                  )
-    
+
         sessions = dbs['sessions']
         session = models.Session()
         session.object_id = bag.object_id
@@ -176,5 +176,5 @@ if "__main__" == __name__:
             sys.exit(-1)
         session = compute_for_bag(bag, bags, args)
         print "Calculated session_id =", session.id
-    
-    
+
+

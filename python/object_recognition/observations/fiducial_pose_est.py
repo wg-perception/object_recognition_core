@@ -56,7 +56,7 @@ class OpposingDotPoseEstimator(ecto.BlackBox):
         self.gray_image = ecto.Passthrough('gray Input')
         self.rgb_image = ecto.Passthrough('rgb Input')
         self.camera_info = ecto.Passthrough('K')
-         
+
         self.gather = calib.GatherPoints("gather", N=2)
         self.invert = imgproc.BitwiseNot()
         self.debug = debug
@@ -95,7 +95,7 @@ class OpposingDotPoseEstimator(ecto.BlackBox):
         if self.debug:
             outputs['debug_image'] = self.pose_draw['output']
         return outputs
-    
+
     def expose_inputs(self):
         inputs = {
                   'image': self.gray_image[:],
@@ -103,8 +103,8 @@ class OpposingDotPoseEstimator(ecto.BlackBox):
                  }
         if self.debug:
             inputs['color_image'] = self.rgb_image[:]
-        return inputs 
-    
+        return inputs
+
     def expose_parameters(self):
         return {
                 }
@@ -124,6 +124,6 @@ class OpposingDotPoseEstimator(ecto.BlackBox):
                           self.pose_calc['R', 'T'] >> self.pose_draw['R', 'T'],
                           self.gather['out', 'found'] >> self.circle_drawer['points', 'found'],
                           self.gather['found'] >> self.pose_draw['trigger'],
-                          self.camera_info[:] >> self.pose_draw['K'], 
+                          self.camera_info[:] >> self.pose_draw['K'],
                          ])
         return graph
