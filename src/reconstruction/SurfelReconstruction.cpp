@@ -251,7 +251,7 @@ namespace object_recognition
       int
       process(const tendrils& i, const tendrils& o)
       {
-        //clean up the model
+//        //clean up the model
         std::vector<unsigned int> removed;
         surfels::finalCleanup(*model, *params, removed);
 
@@ -261,12 +261,12 @@ namespace object_recognition
 
         //passthrough filter (remove anything at or below table height
         pcl::PointCloud<surfels::surfelPt>::Ptr tmpCloud(new pcl::PointCloud<surfels::surfelPt>());
-        pcl::PassThrough<surfels::surfelPt> pass;
-        pass.setInputCloud(surfelCloud);
-        pass.setFilterFieldName("z");
-        pass.setFilterLimits(0.001, 1.0);
-        pass.filter(*tmpCloud);
-        surfelCloud.swap(tmpCloud);
+//        pcl::PassThrough<surfels::surfelPt> pass;
+//        pass.setInputCloud(surfelCloud);
+//        pass.setFilterFieldName("z");
+//        pass.setFilterLimits(0.001, 1.0);
+//        pass.filter(*tmpCloud);
+//        surfelCloud.swap(tmpCloud);
 
         //statistical outlier filter
         pcl::StatisticalOutlierRemoval<surfels::surfelPt> sor;
@@ -279,10 +279,10 @@ namespace object_recognition
         //try to determine the dimensions of the base
         float minX = 0, minY = 0, maxX = 0, maxY = 0;
         pcl::PassThrough<surfels::surfelPt> basePass;
-        pass.setInputCloud(surfelCloud);
-        pass.setFilterFieldName("z");
-        pass.setFilterLimits(0.001, 0.02);
-        pass.filter(*tmpCloud);
+        basePass.setInputCloud(surfelCloud);
+        basePass.setFilterFieldName("z");
+        basePass.setFilterLimits(0.001, 0.02);
+        basePass.filter(*tmpCloud);
         for (unsigned int i = 0; i < tmpCloud->points.size(); i++)
         {
           surfels::surfelPt const& pt = tmpCloud->points[i];
