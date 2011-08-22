@@ -1,7 +1,6 @@
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
 find_ros_package(pcl) #find the ros version of pcl for now.
-add_definitions("-Wno-unknown-pragmas")
 
 if(NOT pcl_FOUND)
 message(STATUS "pcl could not be found, so not building surfels.")
@@ -16,6 +15,11 @@ ectomodule(reconstruction
   SurfelReconstruction.cpp
   reconstruction_db.cpp
   )
+
+set_target_properties(reconstruction_ectomodule
+      PROPERTIES
+      COMPILE_FLAGS "-Wno-unknown-pragmas"
+      )
 
 link_ecto(reconstruction
   ${pcl_LIBRARIES}
