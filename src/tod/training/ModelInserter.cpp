@@ -1,5 +1,6 @@
 #include <string>
 
+#include <boost/foreach.hpp>
 #include <boost/format.hpp>
 #include <boost/python.hpp>
 #include <boost/python/stl_iterator.hpp>
@@ -40,8 +41,8 @@ namespace object_recognition
       static void
       declare_io(const tendrils& params, tendrils& inputs, tendrils& outputs)
       {
-        inputs.declare<cv::Mat>("points", "The 3d position of the points.");
-        inputs.declare<cv::Mat>("descriptors", "The descriptors.");
+        inputs.declare<std::vector<cv::Mat> >("points", "The 3d position of the points.");
+        inputs.declare<std::vector<cv::Mat> >("descriptors", "The descriptors.");
       }
 
       void
@@ -52,7 +53,7 @@ namespace object_recognition
       }
 
       void
-      configure(const tendrils& params, const tendrils& inputs,const tendrils& outputs)
+      configure(const tendrils& params, const tendrils& inputs, const tendrils& outputs)
       {
         ecto::spore<std::string> object_id = params["object_id"];
         object_id.set_callback(boost::bind(&TodModelInserter::on_object_id_change, this, _1));
@@ -63,16 +64,45 @@ namespace object_recognition
       }
 
       int
-      process(const tendrils& inputs,const tendrils& outputs)
+      process(const tendrils& inputs, const tendrils& outputs)
       {
         //if (inputs.get<int> ("trigger") != 'c')
         //  return 0;
-        std::cout << "Inserting" << std::endl;
+        std::vector<cv::Mat> input_descriptors = inputs.get<std::vector<cv::Mat> >("descriptors");
+        std::cout << "Inserting " << input_descriptors.size() << " images" << std::endl;
 
         object_recognition::db_future::Document doc;
 
-        doc.set_attachment<cv::Mat>("descriptors", inputs.get<cv::Mat>("descriptors"));
-        doc.set_attachment<cv::Mat>("points", inputs.get<cv::Mat>("points"));
+        // Stack all the descriptors together
+        unsigned int n_rows = 0;
+        BOOST_FOREACH(const cv::Mat& mat, input_descriptors)
+              n_rows += mat.rows;
+        cv::Mat descriptors, points;
+        if (n_rows != 0)
+        {
+          descriptors = cv::Mat(n_rows, input_descriptors[0].cols, input_descriptors[0].type());
+          int row_begin = 0;
+          BOOST_FOREACH(const cv::Mat& mat, input_descriptors)
+              {
+                cv::Mat row_range = cv::Mat(descriptors.rowRange(row_begin, row_begin + mat.rows));
+                mat.copyTo(row_range);
+                row_begin += mat.rows;
+              }
+
+          // Stack all the points
+          std::vector<cv::Mat> input_points = inputs.get<std::vector<cv::Mat> >("descriptors");
+          points = cv::Mat(3, n_rows, input_points[0].type());
+          int col_begin = 0;
+          BOOST_FOREACH(const cv::Mat& mat, inputs.get<std::vector<cv::Mat> >("points"))
+              {
+                cv::Mat col_range = cv::Mat(descriptors.colRange(col_begin, col_begin + mat.cols));
+                mat.copyTo(col_range);
+                col_begin += mat.cols;
+              }
+        }
+
+        doc.set_attachment<cv::Mat>("descriptors", descriptors);
+        doc.set_attachment<cv::Mat>("points", points);
         doc.set_value("object_id", object_id_);
         doc.set_value("model_params", params_);
         std::cout << "Persisting" << std::endl;
@@ -89,8 +119,8 @@ namespace object_recognition
   }
 }
 
-ECTO_CELL(tod_db, object_recognition::tod::TodModelInserter, "TodModelInserter", "Insert a TOD model in the db")
+ECTO_CELL(tod_training, object_recognition::tod::TodModelInserter, "TodModelInserter", "Insert a TOD model in the db")
 
-ECTO_DEFINE_MODULE(tod_db)
+ECTO_DEFINE_MODULE(tod_training)
 {
 }

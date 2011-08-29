@@ -32,12 +32,13 @@ link_ecto(tod
 install_ecto_module(tod)
 
 #deal with the db part of TOD
-ectomodule(tod_db
-    tod_db.cpp
+ectomodule(tod_training
+    training/ModelInserter.cpp
+    training/ModelStacker.cpp
     )
 
-link_ecto(tod_db
+link_ecto(tod_training
   object_recognition_db
   ${OpenCV_LIBS}
   )
-install_ecto_module(tod_db)
+install_ecto_module(tod_training)

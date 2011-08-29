@@ -10,8 +10,9 @@ from optparse import OptionParser
 import os
 import sys
 import time
-import tod_db
-import tod
+from ecto_object_recognition import tod_db
+from ecto_object_recognition import tod
+from ecto_object_recognition.tod import FeatureDescriptor
 
 DISPLAY = True
 DEBUG = False
@@ -87,16 +88,16 @@ class TodDetectionBagReader(ecto.BlackBox):
 ########################################################################################################################
 
 class TodDetection(ecto.BlackBox):
-    def __init__(self, plasm, feature_descriptor_json_params, db_json_params, object_ids, search_json_params,
+    def __init__(self, plasm, feature_descriptor_params, db_json_params, object_ids, search_json_params,
                  guess_json_params):
         ecto.BlackBox.__init__(self, plasm)
 
         self._db_json_params = db_json_params
-        self._feature_descriptor_json_params = feature_descriptor_json_params
         self._object_ids = object_ids
         self._guess_json_params = guess_json_params
 
-        self.feature_descriptor = features2d.FeatureDescriptor(json_params=feature_descriptor_json_params)
+        # parse the JSON and load the appropriate feature descriptor module
+        self.feature_descriptor = FeatureDescriptor(feature_descriptor_params)
         self.descriptor_matcher = tod.DescriptorMatcher(db_json_params=db_json_params, object_ids=object_ids,
                                                         search_json_params=search_json_params)
         self.guess_generator = tod.GuessGenerator(json_params=guess_json_params)
@@ -114,7 +115,6 @@ class TodDetection(ecto.BlackBox):
 
     def expose_parameters(self):
         return {'db_json_params': self._db_json_params,
-                'feature_descriptor_json_params': self._feature_descriptor_json_params,
                 'guess_json_params': self._guess_json_params,
                 'object_ids': self._object_ids
                 }
@@ -155,7 +155,8 @@ if __name__ == '__main__':
 
     # Get the parameters from the file
     json_params = json.loads(str(open(options.config_file).read()))
-    feature_descriptor_json_params = str(json_params['feature_descriptor']).replace("'", '"').replace('u"', '"').replace('{u', '{')
+    feature_descriptor_params = eval(str(json_params['feature_descriptor']).replace("'", '"').replace('u"', '"').\
+                                     replace('{u', '{'))
     db_json_params = str(json_params['db']).replace("'", '"').replace('u"', '"').replace('{u', '{')
     object_ids = eval(str(json_params['object_ids']).replace("'", '"').replace('u"', '"').replace('{u', '{'))
     guess_json_params = str(json_params['guess']).replace("'", '"').replace('u"', '"').replace('{u', '{')
@@ -163,7 +164,7 @@ if __name__ == '__main__':
 
     # define the input
     plasm = ecto.Plasm()
-    tod_detection = TodDetection(plasm, feature_descriptor_json_params, db_json_params, object_ids, search_json_params,
+    tod_detection = TodDetection(plasm, feature_descriptor_params, db_json_params, object_ids, search_json_params,
                                  guess_json_params)
 
     if options.bag:
@@ -193,10 +194,10 @@ if __name__ == '__main__':
         draw_keypoints = features2d.DrawKeypoints()
         if options.do_kinect:
             plasm.connect(kinect_reader['image'] >> image_view['input'],
-                       kinect_reader['image'] >> draw_keypoints['input']
+                       kinect_reader['image'] >> draw_keypoints['image']
                        )
-        plasm.connect(tod_detection['keypoints'] >> draw_keypoints['kpts'],
-                       draw_keypoints['output'] >> keypoints_view['input']
+        plasm.connect(tod_detection['keypoints'] >> draw_keypoints['keypoints'],
+                       draw_keypoints['image'] >> keypoints_view['input']
                        )
 
     # display DEBUG data if needed
@@ -208,5 +209,5 @@ if __name__ == '__main__':
     if options.bag:
         plasm.execute()
     else:
-        sched = ecto.schedulers.Threadpool(plasm)
+        sched = ecto.schedulers.Singlethreaded(plasm)
         sched.execute()

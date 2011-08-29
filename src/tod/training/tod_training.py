@@ -7,20 +7,20 @@ import os
 import string
 import sys
 import time
-import capture
-import tod
-import tod_db
+from ecto_object_recognition import capture, tod, tod_training
+from object_recognition.tod import FeatureDescriptor
 
 DEBUG = False
 DISPLAY = False
 
 class TodModelComputation(ecto.BlackBox):
-    def __init__(self, plasm, feature_descriptor_json_params):
+    def __init__(self, plasm, feature_descriptor_params):
         ecto.BlackBox.__init__(self, plasm)
-        self._feature_descriptor_json_params = feature_descriptor_json_params
-        self.feature_descriptor = features2d.FeatureDescriptor(json_params=feature_descriptor_json_params)
+        self._feature_descriptor_params = feature_descriptor_params
+        self.feature_descriptor = FeatureDescriptor(feature_descriptor_params)
         self.twoDToThreeD = tod.TwoDToThreeD()
         self.cameraToWorld = tod.CameraToWorld()
+        self._model_stacker = tod_training.TodModelStacker()
 
     def expose_inputs(self):
         return {'image':self.feature_descriptor['image'],
@@ -31,15 +31,17 @@ class TodModelComputation(ecto.BlackBox):
                 'T':self.cameraToWorld['T']}
 
     def expose_outputs(self):
-        return {'points': self.cameraToWorld['points'],
-                'descriptors': self.feature_descriptor['descriptors']}
+        return {'points': self._model_stacker['points'],
+                'descriptors': self._model_stacker['descriptors']}
 
     def expose_parameters(self):
-        return {'feature_descriptor_json_params': self._feature_descriptor_json_params}
+        return {'feature_descriptor_params': self._feature_descriptor_params}
 
     def connections(self):
         return (self.feature_descriptor['keypoints'] >> self.twoDToThreeD['keypoints'],
-                self.twoDToThreeD['points'] >> self.cameraToWorld['points'])
+                self.twoDToThreeD['points'] >> self.cameraToWorld['points'],
+                self.cameraToWorld['points'] >> self._model_stacker['points'],
+                self.feature_descriptor['descriptors'] >> self._model_stacker['descriptors'])
 
 ########################################################################################################################
 
@@ -67,7 +69,9 @@ if __name__ == '__main__':
         raise 'option file does not exist'
 
     json_params = json.loads(str(open(options.config_file).read()))
-    feature_descriptor_json_params = str(json_params['feature_descriptor']).replace("'", '"').replace('u"', '"').replace('{u', '{')
+    feature_descriptor_json_params = str(json_params['feature_descriptor']).replace("'", '"').\
+                                       replace('u"', '"').replace('{u', '{')
+    feature_descriptor_params = eval(feature_descriptor_json_params)
 
     db_url = str(json_params['db']['url'])
     object_ids = json_params['object_ids']
@@ -86,15 +90,21 @@ if __name__ == '__main__':
                           db_reader['depth'] >> depth_view['input'])
 
         # connect to the model computation
-        tod_model = TodModelComputation(plasm, feature_descriptor_json_params)
+        tod_model = TodModelComputation(plasm, feature_descriptor_params)
         plasm.connect(db_reader['image', 'mask', 'depth', 'K', 'R', 'T'] >> tod_model['image', 'mask', 'depth', 'K', 'R', 'T'])
 
         # persist to the DB
         db_json_params_str = str(json_params['db']).replace("'", '"').replace('u"', '"').replace('{u', '{')
-        db_writer = tod_db.TodModelInserter("db_writer", collection_models='models', db_json_params=db_json_params_str,
-                                            object_id=object_id, model_json_params=feature_descriptor_json_params)
+        _db_writer = tod_training.TodModelInserter("db_writer", collection_models='models',
+                                                  db_json_params=db_json_params_str, object_id=object_id,
+                                                  model_json_params=feature_descriptor_json_params)
         orb_params = None
+        # TODO
         #db_writer.add_misc(orb_params)
+        
+        # never execute the db_writer
+        db_writer = ecto.If(cell=_db_writer)
+        db_writer.inputs.__test__ = False
         plasm.connect(tod_model['points', 'descriptors'] >> db_writer['points', 'descriptors'])
 
         if DEBUG:
@@ -106,4 +116,7 @@ if __name__ == '__main__':
             while(image_view.outputs.out not in (27, ord('q'))):
                 if(plasm.execute(1) != 0): break
         else:
-            plasm.execute()
+            sched = ecto.schedulers.Singlethreaded(plasm)
+            sched.execute()
+
+        _db_writer.process()
