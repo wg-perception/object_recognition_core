@@ -29,9 +29,11 @@ install_ecto_module(tod)
 
 # deal with the detection TOD module
 ectomodule(tod_detection
-  tod.cpp 
-  twoDToThreeD.cpp
-  cameraToWorld.cpp
+  detecting/csv.cpp
+  detecting/descriptor_matcher.cpp
+  detecting/guess_csv_writer.cpp
+  detecting/guess_generator.cpp
+  detecting/TodDetection.cpp
   )
 
 link_ecto(tod_detection

@@ -93,6 +93,7 @@ struct GuessCsvWriter
       poseInfo.ts.set();
       //poseInfo.frame = point_cloud.header.seq;
       poseInfo.oID = object_id;
+      std::cout << "Found object " << object_id << std::endl;
       poseInfo.dID = dID++; //training (only one detection per frame)
       writeCSV(csv_out, poseInfo);
     }
@@ -106,5 +107,5 @@ private:
 }
 }
 
-ECTO_CELL(tod, object_recognition::tod::GuessCsvWriter, "GuessCsvWriter",
+ECTO_CELL(tod_detection, object_recognition::tod::GuessCsvWriter, "GuessCsvWriter",
           "Given guesses, writes them to a CSV.");

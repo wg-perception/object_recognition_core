@@ -10,9 +10,8 @@ from optparse import OptionParser
 import os
 import sys
 import time
-from ecto_object_recognition import tod_db
-from ecto_object_recognition import tod
-from ecto_object_recognition.tod import FeatureDescriptor
+from ecto_object_recognition import tod, tod_detection
+from object_recognition.tod.feature_descriptor import FeatureDescriptor
 
 DISPLAY = True
 DEBUG = False
@@ -98,9 +97,9 @@ class TodDetection(ecto.BlackBox):
 
         # parse the JSON and load the appropriate feature descriptor module
         self.feature_descriptor = FeatureDescriptor(feature_descriptor_params)
-        self.descriptor_matcher = tod.DescriptorMatcher(db_json_params=db_json_params, object_ids=object_ids,
+        self.descriptor_matcher = tod_detecting.DescriptorMatcher(db_json_params=db_json_params, object_ids=object_ids,
                                                         search_json_params=search_json_params)
-        self.guess_generator = tod.GuessGenerator(json_params=guess_json_params)
+        self.guess_generator = tod_detecting.GuessGenerator(json_params=guess_json_params)
 
     def expose_inputs(self):
         return {'image':self.feature_descriptor['image'],

@@ -9,6 +9,7 @@
 #include <iostream>
 
 #include <boost/filesystem.hpp>
+#include <boost/foreach.hpp>
 #include <boost/property_tree/json_parser.hpp>
 #include <boost/property_tree/ptree.hpp>
 #include <boost/shared_ptr.hpp>
@@ -20,6 +21,7 @@
 #include <opencv2/features2d/features2d.hpp>
 
 #include <pcl/sample_consensus/prosac.h>
+#include <pcl/sample_consensus/ransac.h>
 #include <pcl/sample_consensus/sac_model_registration.h>
 
 #include "opencv_candidate/PoseRT.h"
@@ -71,22 +73,25 @@ namespace object_recognition
         n_ransac_iterations_ = param_tree.get<unsigned int>("n_ransac_iterations");
       }
 
-  /** Get the 2d keypoints and figure out their 3D position from the depth map
-   * @param inputs
-   * @param outputs
-   * @return
-   */
-  int process(const tendrils& inputs,const tendrils& outputs)
-  {
-    // Get the different matches
-    const std::vector<std::vector<cv::DMatch> > & matches = inputs.get<std::vector<std::vector<cv::DMatch> > >(
-        "matches");
-    const std::vector<std::vector<cv::Point3f> > & matches_3d = inputs.get<std::vector<std::vector<cv::Point3f> > >(
-        "matches_3d");
+      /** Get the 2d keypoints and figure out their 3D position from the depth map
+       * @param inputs
+       * @param outputs
+       * @return
+       */
+      int
+      process(const tendrils& inputs, const tendrils& outputs)
+      {
+        // Get the different matches
+        const std::vector<std::vector<cv::DMatch> > & matches = inputs.get<std::vector<std::vector<cv::DMatch> > >(
+            "matches");
+        const std::vector<std::vector<cv::Point3f> > & matches_3d = inputs.get<std::vector<std::vector<cv::Point3f> > >(
+            "matches_3d");
 
-    // Get the original keypoints and point cloud
+        // Get the original keypoints and point cloud
+        const std::vector<cv::KeyPoint> & keypoints = inputs.get<std::vector<cv::KeyPoint> >("keypoints");
         boost::shared_ptr<pcl::PointCloud<pcl::PointXYZ> const> point_cloud = inputs.get<
             boost::shared_ptr<pcl::PointCloud<pcl::PointXYZ> const> >("point_cloud");
+
         if (point_cloud->points.empty())
         {
           boost::shared_ptr<pcl::PointCloud<pcl::PointXYZ> > new_point_cloud = boost::shared_ptr<
@@ -112,32 +117,44 @@ namespace object_recognition
     }
     else
     {
-      // Use 3d to 3d matching
+          // Use 3d to 3d matching
 
-      // Cluster the matches per object ID
-      std::map<ObjectId, pcl::PointCloud<pcl::PointXYZ> > query_point_clouds;
-      std::map<ObjectId, pcl::PointCloud<pcl::PointXYZ> > training_point_clouds;
-      for (unsigned int matches_index = 0; matches_index < matches.size(); ++matches_index)
-      {
-        const std::vector<cv::DMatch> &local_matches = matches[matches_index];
-        const std::vector<cv::Point3f> &local_matches_3d = matches_3d[matches_index];
-        for (unsigned int match_index = 0; match_index < local_matches.size(); ++match_index)
-        {
-          pcl::PointXYZ query_point = point_cloud->at(size_t(local_matches[match_index].trainIdx),0);
+          // Cluster the matches per object ID
+          std::map<ObjectId, pcl::PointCloud<pcl::PointXYZ> > query_point_clouds;
+          std::map<ObjectId, pcl::PointCloud<pcl::PointXYZ> > training_point_clouds;
+          for (unsigned int descriptor_index = 0; descriptor_index < matches.size(); ++descriptor_index)
+          {
+            const cv::KeyPoint & keypoint = keypoints[descriptor_index];
+            pcl::PointXYZ query_point = point_cloud->at(keypoint.pt.x, keypoint.pt.y);
+            // Check if we have NaN's
+            if ((query_point.x != query_point.x) || (query_point.y != query_point.y)
+                || (query_point.z != query_point.z))
+              continue;
 
-          // TODO: replace this by doing 3d to 3d with an unknown depth for that point
-          if ((query_point.x != query_point.x) || (query_point.y != query_point.y) || (query_point.z != query_point.z))
-            continue;
+            const std::vector<cv::DMatch> &local_matches = matches[descriptor_index];
+            const std::vector<cv::Point3f> &local_matches_3d = matches_3d[descriptor_index];
+            // Get the matches for that point
+            for (unsigned int match_index = 0; match_index < local_matches.size(); ++match_index)
+            {
+              const cv::Point3f & training_point3f = local_matches_3d[match_index];
 
-          ObjectId object_id = local_matches[match_index].imgIdx;
-          // Fill in the training cloud
-          const cv::Point3d & training_point3f = local_matches_3d[match_index];
-          training_point_clouds[object_id].push_back(
-              pcl::PointXYZ(training_point3f.x, training_point3f.y, training_point3f.z));
-          // Fill in the query cloud
-          query_point_clouds[object_id].push_back(pcl::PointXYZ(query_point.x, query_point.y, query_point.z));
-        }
-      }
+              // Check if we have NaN's
+              if ((training_point3f.x != training_point3f.x) || (training_point3f.y != training_point3f.y)
+                  || (training_point3f.z != training_point3f.z))
+                continue;
+
+              // Check that the dimensions are correct
+              if ((std::abs(training_point3f.x) > 1e10) || (std::abs(training_point3f.y) > 1e10)
+                  || (std::abs(training_point3f.z) > 1e10))
+                continue;
+
+              // Fill in the clouds
+              ObjectId object_id = local_matches[match_index].imgIdx;
+              training_point_clouds[object_id].push_back(
+                  pcl::PointXYZ(training_point3f.x, training_point3f.y, training_point3f.z));
+              query_point_clouds[object_id].push_back(query_point);
+            }
+          }
 
       // For each object, perform 3d to 3d matching
       for (std::map<ObjectId, pcl::PointCloud<pcl::PointXYZ> >::const_iterator query_iterator = query_point_clouds.begin();
@@ -145,7 +162,7 @@ namespace object_recognition
           {
         ObjectId object_id = query_iterator->first;
         unsigned int n_points = query_iterator->second.size();
-        if ((n_points < min_inliers_) || (training_point_clouds[object_id].points.size() < 4))
+        if ((n_points < min_inliers_) || (training_point_clouds[object_id].points.size() < 5))
               continue;
 
         std::vector<int> good_indices;
@@ -155,15 +172,30 @@ namespace object_recognition
         pcl::SampleConsensusModelRegistration<pcl::PointXYZ>::Ptr model(
             new pcl::SampleConsensusModelRegistration<pcl::PointXYZ>(training_point_clouds[object_id].makeShared(),
                                                                      good_indices));
-        //pcl::RandomSampleConsensus<pcl::PointXYZ> sample_consensus(model);
-        pcl::ProgressiveSampleConsensus<pcl::PointXYZ> sample_consensus(model);
+        pcl::RandomSampleConsensus<pcl::PointXYZ> sample_consensus(model);
+        //pcl::ProgressiveSampleConsensus<pcl::PointXYZ> sample_consensus(model);
+            std::cout << "Object id " << object_id << " has " << query_point_clouds[object_id].points.size()
+                      << " possible matches with " << n_ransac_iterations_ << " iterations " << std::endl;
 
+            std::cout << "[ ";
+            BOOST_FOREACH(const pcl::PointXYZ &point, training_point_clouds[object_id].points)
+            {
+              std ::cout << point.x << " " << point.y << " " << point.z << ";";
+            }
+            std::cout << " ]" << std::endl;
+            std::cout << "[ ";
+            BOOST_FOREACH(const pcl::PointXYZ &point, query_point_clouds[object_id].points)
+            {
+              std ::cout << point.x << " " << point.y << " " << point.z << ";";
+            }
+            std::cout << " ]" << std::endl;
         model->setInputTarget(query_point_clouds[object_id].makeShared(), good_indices);
-        sample_consensus.setDistanceThreshold(0.01);
+        sample_consensus.setDistanceThreshold(0.1);
         sample_consensus.setMaxIterations(n_ransac_iterations_);
         sample_consensus.computeModel();
         std::vector<int> inliers;
         sample_consensus.getInliers(inliers);
+        std::cout << "n inliers " << inliers.size() << std::endl;
         if (inliers.size() >= min_inliers_)
         {
           // Create a pose object
@@ -198,5 +230,5 @@ private:
 }
 }
 
-ECTO_CELL(tod, object_recognition::tod::GuessGenerator, "GuessGenerator",
+ECTO_CELL(tod_detection, object_recognition::tod::GuessGenerator, "GuessGenerator",
           "Given descriptors and 3D positions, compute object guesses.");

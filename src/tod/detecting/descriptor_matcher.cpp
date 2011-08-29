@@ -113,6 +113,8 @@ namespace object_recognition
         db_future::ObjectDb db(params.get<std::string>("db_json_params"));
         collection_models_ = params.get<std::string>("collection_models");
         features_3d_.reserve(object_ids.size());
+        std::vector<cv::Mat> all_descriptors;
+
         BOOST_FOREACH(const std::string & object_id, object_ids)
             {
               db_future::DocumentView query;
@@ -125,10 +127,8 @@ namespace object_recognition
                 db_future::Document doc = *view;
                 cv::Mat descriptors;
                 doc.get_attachment<cv::Mat>(db, "descriptors", descriptors);
-
-                std::vector<cv::Mat> descriptors_tmp;
-                descriptors_tmp.push_back(descriptors);
-                matcher_->add(descriptors_tmp);
+                all_descriptors.push_back(descriptors);
+                std::cout << object_id << " " << descriptors.rows << std::endl;
 
                 // Deal with the 3d positions
                 cv::Mat_<float> points3d;
@@ -139,6 +139,7 @@ namespace object_recognition
                 features_3d_.push_back(points3d_vec);
               }
             }
+        matcher_->add(all_descriptors);
       }
 
       /** Get the 2d keypoints and figure out their 3D position from the depth map
@@ -197,5 +198,5 @@ namespace object_recognition
   }
 }
 
-ECTO_CELL(tod, object_recognition::tod::DescriptorMatcher, "DescriptorMatcher",
+ECTO_CELL(tod_detection, object_recognition::tod::DescriptorMatcher, "DescriptorMatcher",
           "Given descriptors, find matches, relating to objects.");
