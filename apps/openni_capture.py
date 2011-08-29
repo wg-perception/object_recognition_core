@@ -23,19 +23,19 @@ with registered rgb and depth. You may want to do the following before
 capturing data with this program:
 
     $ roslaunch openni_launch openni.launch
-    
+
     In a seperate terminal:
 
     $ rosrun dynamic_reconfigure dynparam set /camera/driver depth_registration True
-    
+
     To switch into high resolution mode:
 
     $ rosrun dynamic_reconfigure dynparam set /camera/driver image_mode 1
-    
+
     To switch to vga mode:
 
     $ rosrun dynamic_reconfigure dynparam set /camera/driver image_mode 2
-    ''')
+''')
                                      )
 
     parser.add_argument('-o', '--output', metavar='BAG_FILE', dest='bag', type=str,
