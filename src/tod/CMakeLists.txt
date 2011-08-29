@@ -30,9 +30,9 @@ install_ecto_module(tod)
 # deal with the detection TOD module
 ectomodule(tod_detection
   detecting/csv.cpp
-  detecting/descriptor_matcher.cpp
-  detecting/guess_csv_writer.cpp
-  detecting/guess_generator.cpp
+  detecting/DescriptorMatcher.cpp
+  detecting/GuessCsvWriter.cpp
+  detecting/GuessGenerator.cpp
   detecting/TodDetection.cpp
   )
 

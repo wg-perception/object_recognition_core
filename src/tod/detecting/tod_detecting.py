@@ -86,7 +86,7 @@ class TodDetectionBagReader(ecto.BlackBox):
 
 ########################################################################################################################
 
-class TodDetection(ecto.BlackBox):
+class TodDetector(ecto.BlackBox):
     def __init__(self, plasm, feature_descriptor_params, db_json_params, object_ids, search_json_params,
                  guess_json_params):
         ecto.BlackBox.__init__(self, plasm)
@@ -97,9 +97,9 @@ class TodDetection(ecto.BlackBox):
 
         # parse the JSON and load the appropriate feature descriptor module
         self.feature_descriptor = FeatureDescriptor(feature_descriptor_params)
-        self.descriptor_matcher = tod_detecting.DescriptorMatcher(db_json_params=db_json_params, object_ids=object_ids,
+        self.descriptor_matcher = tod_detection.DescriptorMatcher(db_json_params=db_json_params, object_ids=object_ids,
                                                         search_json_params=search_json_params)
-        self.guess_generator = tod_detecting.GuessGenerator(json_params=guess_json_params)
+        self.guess_generator = tod_detection.GuessGenerator(json_params=guess_json_params)
 
     def expose_inputs(self):
         return {'image':self.feature_descriptor['image'],
@@ -163,7 +163,7 @@ if __name__ == '__main__':
 
     # define the input
     plasm = ecto.Plasm()
-    tod_detection = TodDetection(plasm, feature_descriptor_params, db_json_params, object_ids, search_json_params,
+    tod_detector = TodDetector(plasm, feature_descriptor_params, db_json_params, object_ids, search_json_params,
                                  guess_json_params)
 
     if options.bag:
@@ -173,19 +173,19 @@ if __name__ == '__main__':
                            ), options.bag)
 
         # connect to the model computation
-        plasm.connect(bag_reader['image'] >> tod_detection['image'],
-                      bag_reader['point_cloud'] >> tod_detection['point_cloud_rgb'])
+        plasm.connect(bag_reader['image'] >> tod_detector['image'],
+                      bag_reader['point_cloud'] >> tod_detector['point_cloud_rgb'])
 
     elif options.do_kinect:
         ecto_ros.init(sys.argv, "ecto_node")
         kinect_reader = TodDetectionKinectReader(plasm)
-        plasm.connect(kinect_reader['image'] >> tod_detection['image'],
-                      kinect_reader['point_cloud'] >> tod_detection['point_cloud'])
+        plasm.connect(kinect_reader['image'] >> tod_detector['image'],
+                      kinect_reader['point_cloud'] >> tod_detector['point_cloud'])
 
     # write data back to a file
-    guess_writer = tod.GuessCsvWriter()
-    plasm.connect(tod_detection['object_ids'] >> guess_writer['object_ids'],
-                  tod_detection['poses'] >> guess_writer['poses'])
+    guess_writer = tod_detection.GuessCsvWriter()
+    plasm.connect(tod_detector['object_ids'] >> guess_writer['object_ids'],
+                  tod_detector['poses'] >> guess_writer['poses'])
 
     if DISPLAY:
         image_view = highgui.imshow(name="RGB", waitKey=1000, autoSize=True)
@@ -195,7 +195,7 @@ if __name__ == '__main__':
             plasm.connect(kinect_reader['image'] >> image_view['input'],
                        kinect_reader['image'] >> draw_keypoints['image']
                        )
-        plasm.connect(tod_detection['keypoints'] >> draw_keypoints['keypoints'],
+        plasm.connect(tod_detector['keypoints'] >> draw_keypoints['keypoints'],
                        draw_keypoints['image'] >> keypoints_view['input']
                        )
 
