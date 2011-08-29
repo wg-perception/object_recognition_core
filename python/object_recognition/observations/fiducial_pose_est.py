@@ -56,7 +56,6 @@ class OpposingDotPoseEstimator(ecto.BlackBox):
         self.gray_image = ecto.Passthrough('gray Input')
         self.rgb_image = ecto.Passthrough('rgb Input')
         self.camera_info = ecto.Passthrough('K')
-
         self.gather = calib.GatherPoints("gather", N=2)
         self.invert = imgproc.BitwiseNot()
         self.debug = debug
@@ -84,6 +83,8 @@ class OpposingDotPoseEstimator(ecto.BlackBox):
             self.circle_drawer2 = calib.PatternDrawer('Circle Draw',
                                                      rows=rows, cols=cols)
             self.pose_draw = calib.PoseDrawer('Pose Draw')
+            self.fps = highgui.FPSDrawer()
+
     def expose_outputs(self):
         outputs = {
                 'R':  self.pose_calc['R'],
@@ -93,7 +94,7 @@ class OpposingDotPoseEstimator(ecto.BlackBox):
                 'found': self.gather['found']
                }
         if self.debug:
-            outputs['debug_image'] = self.pose_draw['output']
+            outputs['debug_image'] = self.fps['image']
         return outputs
 
     def expose_inputs(self):
@@ -120,10 +121,14 @@ class OpposingDotPoseEstimator(ecto.BlackBox):
         if self.debug:
             graph += ([
                           self.rgb_image[:] >> self.circle_drawer['input'],
-                          self.circle_drawer['out'] >> self.pose_draw['image'],
+                          self.circle_drawer2['out'] >> self.pose_draw['image'],
                           self.pose_calc['R', 'T'] >> self.pose_draw['R', 'T'],
-                          self.gather['out', 'found'] >> self.circle_drawer['points', 'found'],
+                          self.invert[:] >> self.circle_drawer2['input'],
+                          self.cd_bw['out', 'found'] >> self.circle_drawer['points', 'found'],
+                          self.cd_wb['out', 'found'] >> self.circle_drawer2['points', 'found'],
+
                           self.gather['found'] >> self.pose_draw['trigger'],
                           self.camera_info[:] >> self.pose_draw['K'],
+                          self.pose_draw['output'] >> self.fps[:]
                          ])
         return graph
