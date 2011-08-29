@@ -10,15 +10,11 @@ include_directories(
                     ${pcl_INCLUDE_DIRS}
                     )
 
-# deal with the TOD module
+# deal with the common TOD module
 ectomodule(tod
   tod.cpp 
-  twoDToThreeD.cpp
-  cameraToWorld.cpp
-  detecting/csv.cpp
-  detecting/guess_generator.cpp
-  detecting/guess_csv_writer.cpp
-  detecting/descriptor_matcher.cpp
+  TwoDToThreeD.cpp
+  CameraToWorld.cpp
   )
 
 link_ecto(tod
@@ -31,7 +27,24 @@ link_ecto(tod
 
 install_ecto_module(tod)
 
-#deal with the db part of TOD
+# deal with the detection TOD module
+ectomodule(tod_detection
+  tod.cpp 
+  twoDToThreeD.cpp
+  cameraToWorld.cpp
+  )
+
+link_ecto(tod_detection
+  ${OpenCV_LIBS}
+  object_recognition_db
+  ${pcl_LIBRARIES}
+  ${Boost_LIBRARIES}
+  opencv_candidate
+  )
+
+install_ecto_module(tod_detection)
+
+# deal with the training TOD modules
 ectomodule(tod_training
     training/ModelInserter.cpp
     training/ModelStacker.cpp
@@ -41,4 +54,5 @@ link_ecto(tod_training
   object_recognition_db
   ${OpenCV_LIBS}
   )
+
 install_ecto_module(tod_training)

@@ -1,8 +1,36 @@
 /*
- * twoDToThreeD.cpp
+ * Software License Agreement (BSD License)
  *
- *  Created on: Jun 16, 2011
- *      Author: vrabaud
+ *  Copyright (c) 2009, Willow Garage, Inc.
+ *  All rights reserved.
+ *
+ *  Redistribution and use in source and binary forms, with or without
+ *  modification, are permitted provided that the following conditions
+ *  are met:
+ *
+ *   * Redistributions of source code must retain the above copyright
+ *     notice, this list of conditions and the following disclaimer.
+ *   * Redistributions in binary form must reproduce the above
+ *     copyright notice, this list of conditions and the following
+ *     disclaimer in the documentation and/or other materials provided
+ *     with the distribution.
+ *   * Neither the name of Willow Garage, Inc. nor the names of its
+ *     contributors may be used to endorse or promote products derived
+ *     from this software without specific prior written permission.
+ *
+ *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ *  "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ *  LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
+ *  FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
+ *  COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
+ *  INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
+ *  BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+ *  LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+ *  CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+ *  LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
+ *  ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ *  POSSIBILITY OF SUCH DAMAGE.
+ *
  */
 
 #include <boost/foreach.hpp>
@@ -16,12 +44,9 @@
 #include <pcl/point_cloud.h>
 #include <pcl/point_types.h>
 
-#include <iostream>
-
 using ecto::tendrils;
 
-/** Ecto implementation of a module that takes
- *
+/** Ecto implementation of a module that takes a depth image, K and points, and outputs the 3d points
  */
 struct TwoDToThreeD
 {
@@ -44,7 +69,7 @@ struct TwoDToThreeD
   }
 
   void
-  configure(const tendrils& params, const tendrils& inputs,const tendrils& outputs)
+  configure(const tendrils& params, const tendrils& inputs, const tendrils& outputs)
   {
     do_points_ = params.get<bool>("do_points");
     do_point_cloud_ = params.get<bool>("do_point_cloud");
@@ -56,7 +81,7 @@ struct TwoDToThreeD
    * @return
    */
   int
-  process(const tendrils& inputs,const tendrils& outputs)
+  process(const tendrils& inputs, const tendrils& outputs)
   {
     // We have lam (x,y,1) = K (X,Y,Z), hence lam=Z
     const cv::Mat & depth_image = inputs.get<cv::Mat>("depth");
@@ -152,4 +177,4 @@ private:
 };
 
 ECTO_CELL(tod, TwoDToThreeD, "TwoDToThreeD",
-          "An ORB detector. Takes a image and a mask, and computes keypoints and descriptors(32 byte binary).");
+          "Ecto implementation of a module that takes a depth image, K and points, and outputs the 3d points.");
