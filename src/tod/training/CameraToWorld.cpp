@@ -89,5 +89,5 @@ struct CameraToWorld
   }
 };
 
-ECTO_CELL(tod, CameraToWorld, "CameraToWorld",
+ECTO_CELL(tod_training, CameraToWorld, "CameraToWorld",
           "Given 3d points in the camera frame and the (R,T) of the camera in world frame, give world points.");

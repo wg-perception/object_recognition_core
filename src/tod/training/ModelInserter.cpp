@@ -59,7 +59,7 @@ namespace object_recognition
       {
         //if (inputs.get<int> ("trigger") != 'c')
         //  return 0;
-        std::vector<cv::Mat> input_descriptors = inputs.get<std::vector<cv::Mat> >("descriptors");
+        const std::vector<cv::Mat> & input_descriptors = inputs.get<std::vector<cv::Mat> >("descriptors");
         std::cout << "Inserting " << input_descriptors.size() << " images" << std::endl;
 
         object_recognition::db_future::Document doc;
@@ -81,12 +81,12 @@ namespace object_recognition
               }
 
           // Stack all the points
-          std::vector<cv::Mat> input_points = inputs.get<std::vector<cv::Mat> >("descriptors");
+          const std::vector<cv::Mat> & input_points = inputs.get<std::vector<cv::Mat> >("points");
           points = cv::Mat(n_rows, 3, input_points[0].type());
           row_begin = 0;
           BOOST_FOREACH(const cv::Mat& mat, inputs.get<std::vector<cv::Mat> >("points"))
               {
-                cv::Mat row_range = cv::Mat(descriptors.rowRange(row_begin, row_begin + mat.rows));
+                cv::Mat row_range = cv::Mat(points.rowRange(row_begin, row_begin + mat.rows));
                 mat.copyTo(row_range);
                 row_begin += mat.rows;
               }
@@ -104,7 +104,7 @@ namespace object_recognition
       object_recognition::db_future::ObjectDb db_;
       ecto::spore<DocumentId> object_id_;
       CollectionName collection_models_;
-      /** The JSON parameters used to compuet the model */
+      /** The JSON parameters used to compute the model */
       std::string params_;
     };
   }
