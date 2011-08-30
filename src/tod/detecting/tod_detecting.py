@@ -22,27 +22,30 @@ ImageSub = ecto_sensor_msgs.Subscriber_Image
 CameraInfoSub = ecto_sensor_msgs.Subscriber_CameraInfo
 
 class TodDetectionKinectReader(ecto.BlackBox):
+    """
+    Blackbox that reasd data from the Kinect, returns an image and a camera frame point cloud
+    """
     def __init__(self, plasm):
         ecto.BlackBox.__init__(self, plasm)
 
         subs = dict(image=ImageSub(topic_name='/camera/rgb/image_color', queue_size=0),
-                    depth=ImageSub(topic_name='/camera/depth/image', queue_size=0),
-                    depth_info=CameraInfoSub(topic_name='/camera/depth/camera_info', queue_size=0),
+                    depth=ImageSub(topic_name='/camera/depth_registered/image', queue_size=0),
+                    depth_info=CameraInfoSub(topic_name='/camera/depth_registered/camera_info', queue_size=0),
                     image_info=CameraInfoSub(topic_name='/camera/rgb/camera_info', queue_size=0),
                  )
 
-        self._sync = ecto_ros.Synchronizer('Synchronizator', subs=subs
-                                     )
+        self._sync = ecto_ros.Synchronizer('Synchronizator', subs=subs)
+        self._camera_info = ecto_ros.CameraInfo2Cv('camera_info -> cv::Mat')
         self._im2mat_rgb = ecto_ros.Image2Mat(swap_rgb = True)
         self._im2mat_depth = ecto_ros.Image2Mat()
-        self._depth_to_point_cloud = tod.TwoDToThreeD(do_points=False, do_point_cloud=True)
+        self._depth_to_3d = calib.DepthTo3d(do_organized = True)
 
     def expose_inputs(self):
         return {}
 
     def expose_outputs(self):
         return {'image': self._im2mat_rgb['image'],
-                'point_cloud': self._depth_to_point_cloud['point_cloud']}
+                'points3d': self._depth_to_3d['points3d']}
 
     def expose_parameters(self):
         return {}
@@ -50,7 +53,9 @@ class TodDetectionKinectReader(ecto.BlackBox):
     def connections(self):
         return (self._sync["image"] >> self._im2mat_rgb["image"],
                   self._sync["depth"] >> self._im2mat_depth["image"],
-                  self._im2mat_depth["image"] >> self._depth_to_point_cloud['depth']
+                  self._sync["image_info"] >> self._camera_info['camera_info'],
+                  self._camera_info['K'] >> self._depth_to_3d['K'],
+                  self._im2mat_depth['image'] >> self._depth_to_3d['depth']
                   )
 
 ########################################################################################################################
@@ -104,7 +109,7 @@ class TodDetector(ecto.BlackBox):
     def expose_inputs(self):
         return {'image':self.feature_descriptor['image'],
                 'mask':self.feature_descriptor['mask'],
-                'point_cloud':self.guess_generator['point_cloud'],
+                'points3d':self.guess_generator['points3d'],
                 'point_cloud_rgb':self.guess_generator['point_cloud_rgb']}
 
     def expose_outputs(self):
@@ -180,7 +185,7 @@ if __name__ == '__main__':
         ecto_ros.init(sys.argv, "ecto_node")
         kinect_reader = TodDetectionKinectReader(plasm)
         plasm.connect(kinect_reader['image'] >> tod_detector['image'],
-                      kinect_reader['point_cloud'] >> tod_detector['point_cloud'])
+                      kinect_reader['points3d'] >> tod_detector['points3d'])
 
     # write data back to a file
     guess_writer = tod_detection.GuessCsvWriter()
@@ -205,8 +210,5 @@ if __name__ == '__main__':
         ecto.view_plasm(plasm)
 
     # execute the pipeline
-    if options.bag:
-        plasm.execute()
-    else:
-        sched = ecto.schedulers.Singlethreaded(plasm)
-        sched.execute()
+    sched = ecto.schedulers.Singlethreaded(plasm)
+    sched.execute()
