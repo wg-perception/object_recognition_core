@@ -71,9 +71,8 @@ namespace object_recognition
       static void
       declare_params(tendrils& p)
       {
-        p.declare<std::string>(
-            "json_params", "The parameters, as a JSON string.\n\"min_inliers\": "
-            "Minimum number of inliers. \n\"n_ransac_iterations\": Number of RANSAC iterations.\n");
+        p.declare<std::string>("json_params", "The parameters, as a JSON string.\n\"min_inliers\": "
+                               "Minimum number of inliers. \n\"n_ransac_iterations\": Number of RANSAC iterations.\n");
       }
 
       static void
@@ -82,14 +81,13 @@ namespace object_recognition
         inputs.declare<cv::Mat>("points3d", "The height by width 3 channel point cloud");
         inputs.declare<std::vector<cv::KeyPoint> >("keypoints", "The interesting keypoints");
         inputs.declare<std::vector<std::vector<cv::DMatch> > >("matches", "The list of OpenCV DMatch");
-        inputs.declare<std::vector<cv::Mat> >("matches_3d",
-                                                                "The corresponding 3d position of those matches");
+        inputs.declare<std::vector<cv::Mat> >("matches_3d", "The corresponding 3d position of those matches");
         outputs.declare<std::vector<ObjectId> >("object_ids", "the id's of the found objects");
         outputs.declare<std::vector<opencv_candidate::Pose> >("poses", "The poses of the found objects");
       }
 
       void
-      configure(const tendrils& params, const tendrils& inputs,  const tendrils& outputs)
+      configure(const tendrils& params, const tendrils& inputs, const tendrils& outputs)
       {
         boost::property_tree::ptree param_tree;
         std::stringstream ssparams;
@@ -173,66 +171,66 @@ namespace object_recognition
             }
           }
 
-      // For each object, perform 3d to 3d matching
-      for (std::map<ObjectId, pcl::PointCloud<pcl::PointXYZ> >::const_iterator query_iterator = query_point_clouds.begin();
-          query_iterator != query_point_clouds.end(); ++query_iterator)
+          // For each object, perform 3d to 3d matching
+          for (std::map<ObjectId, pcl::PointCloud<pcl::PointXYZ> >::const_iterator query_iterator =
+              query_point_clouds.begin(); query_iterator != query_point_clouds.end(); ++query_iterator)
           {
-        ObjectId object_id = query_iterator->first;
-        unsigned int n_points = query_iterator->second.size();
-        if ((n_points < min_inliers_) || (training_point_clouds[object_id].points.size() < 5))
+            ObjectId object_id = query_iterator->first;
+            unsigned int n_points = query_iterator->second.size();
+            if ((n_points < min_inliers_) || (training_point_clouds[object_id].points.size() < 5))
               continue;
 
-        std::vector<int> good_indices;
-        for (unsigned int i = 0; i < n_points; ++i)
-          good_indices.push_back(i);
+            std::vector<int> good_indices;
+            for (unsigned int i = 0; i < n_points; ++i)
+              good_indices.push_back(i);
 
-        pcl::SampleConsensusModelRegistration<pcl::PointXYZ>::Ptr model(
-            new pcl::SampleConsensusModelRegistration<pcl::PointXYZ>(training_point_clouds[object_id].makeShared(),
-                                                                     good_indices));
-        pcl::RandomSampleConsensus<pcl::PointXYZ> sample_consensus(model);
-        //pcl::ProgressiveSampleConsensus<pcl::PointXYZ> sample_consensus(model);
+            pcl::SampleConsensusModelRegistration<pcl::PointXYZ>::Ptr model(
+                new pcl::SampleConsensusModelRegistration<pcl::PointXYZ>(training_point_clouds[object_id].makeShared(),
+                                                                         good_indices));
+            pcl::RandomSampleConsensus<pcl::PointXYZ> sample_consensus(model);
+            //pcl::ProgressiveSampleConsensus<pcl::PointXYZ> sample_consensus(model);
             std::cout << "Object id " << object_id << " has " << query_point_clouds[object_id].points.size()
                       << " possible matches with " << n_ransac_iterations_ << " iterations " << std::endl;
 
-        model->setInputTarget(query_point_clouds[object_id].makeShared(), good_indices);
-        sample_consensus.setDistanceThreshold(0.01);
-        sample_consensus.setMaxIterations(n_ransac_iterations_);
-        sample_consensus.computeModel();
-        std::vector<int> inliers;
-        sample_consensus.getInliers(inliers);
-        std::cout << "n inliers " << inliers.size() << std::endl;
-        if (inliers.size() >= min_inliers_)
-        {
-          // Create a pose object
-          Eigen::VectorXf coefficients;
-          sample_consensus.getModelCoefficients(coefficients);
+            model->setInputTarget(query_point_clouds[object_id].makeShared(), good_indices);
+            sample_consensus.setDistanceThreshold(0.01);
+            sample_consensus.setMaxIterations(n_ransac_iterations_);
+            sample_consensus.computeModel();
+            std::vector<int> inliers;
+            sample_consensus.getInliers(inliers);
+            std::cout << "n inliers " << inliers.size() << std::endl;
+            if (inliers.size() >= min_inliers_)
+            {
+              // Create a pose object
+              Eigen::VectorXf coefficients;
+              sample_consensus.getModelCoefficients(coefficients);
 
-          cv::Mat_<float> R_mat(3, 3), tvec(3, 1);
-          for (unsigned int j = 0; j < 3; ++j)
-          {
-            for (unsigned int i = 0; i < 3; ++i)
-              R_mat(j, i) = coefficients[4 * j + i];
-            tvec(j, 0) = coefficients[4 * j + 3];
+              cv::Mat_<float> R_mat(3, 3), tvec(3, 1);
+              for (unsigned int j = 0; j < 3; ++j)
+              {
+                for (unsigned int i = 0; i < 3; ++i)
+                  R_mat(j, i) = coefficients[4 * j + i];
+                tvec(j, 0) = coefficients[4 * j + 3];
+              }
+              opencv_candidate::Pose pose;
+              pose.setR(R_mat);
+              pose.setT(tvec);
+              // And store it in the outputs
+              poses.push_back(pose);
+              object_ids.push_back(object_id);
+            }
           }
-          opencv_candidate::Pose pose;
-          pose.setR(R_mat);
-          pose.setT(tvec);
-          // And store it in the outputs
-          poses.push_back(pose);
-          object_ids.push_back(object_id);
         }
-      }
-    }
 
-    return 0;
+        return 0;
+      }
+    private:
+      /** The minimum number of inliers in order to do pose matching */
+      unsigned int min_inliers_;
+      /** The number of RANSAC iterations to perform */
+      unsigned int n_ransac_iterations_;
+    };
   }
-private:
-  /** The minimum number of inliers in order to do pose matching */
-  unsigned int min_inliers_;
-  /** The number of RANSAC iterations to perform */
-  unsigned int n_ransac_iterations_;
-};
-}
 }
 
 ECTO_CELL(tod_detection, object_recognition::tod::GuessGenerator, "GuessGenerator",
