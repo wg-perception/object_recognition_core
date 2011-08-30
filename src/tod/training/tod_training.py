@@ -20,7 +20,7 @@ class TodModelComputation(ecto.BlackBox):
         self.feature_descriptor = FeatureDescriptor(feature_descriptor_params)
         self._depth_to_3d_sparse = calib.DepthTo3dSparse()
         self._keypoints_to_mat = tod_training.KeypointsToMat()
-        self._camera_to_world = tod.CameraToWorld()
+        self._camera_to_world = tod_training.CameraToWorld()
         self._model_stacker = tod_training.TodModelStacker()
 
     def expose_inputs(self):
