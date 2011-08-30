@@ -72,11 +72,12 @@ namespace object_recognition
       {
         inputs.declare<cv::Mat>("descriptors", "The descriptors to match to the database");
         outputs.declare<std::vector<std::vector<cv::DMatch> > >("matches", "The matches for the input descriptors");
-        outputs.declare<std::vector<std::vector<cv::Point3f> > >("matches_3d", "The 3d position of the matches");
+        outputs.declare<std::vector<cv::Mat> >("matches_3d",
+                                               "The 3d position of the matches, n by 3 matrix for each point");
       }
 
       void
-      configure(const ecto::tendrils& params,const ecto::tendrils& inputs, const ecto::tendrils& outputs)
+      configure(const ecto::tendrils& params, const ecto::tendrils& inputs, const ecto::tendrils& outputs)
       {
         // get some parameters
         {
@@ -131,12 +132,9 @@ namespace object_recognition
                 std::cout << object_id << " " << descriptors.rows << std::endl;
 
                 // Deal with the 3d positions
-                cv::Mat_<float> points3d;
+                cv::Mat points3d;
                 doc.get_attachment<cv::Mat>(db, "points", points3d);
-                std::vector<cv::Point3f> points3d_vec;
-                for (int i = 0; i < points3d.cols; ++i)
-                  points3d_vec.push_back(cv::Point3f(points3d(0, i), points3d(1, i), points3d(2, i)));
-                features_3d_.push_back(points3d_vec);
+                features_3d_.push_back(points3d);
               }
             }
         matcher_->add(all_descriptors);
@@ -148,7 +146,7 @@ namespace object_recognition
        * @return
        */
       int
-      process(const ecto::tendrils& inputs,const ecto::tendrils& outputs)
+      process(const ecto::tendrils& inputs, const ecto::tendrils& outputs)
       {
         std::vector<std::vector<cv::DMatch> > &matches = outputs.get<std::vector<std::vector<cv::DMatch> > >("matches");
         const cv::Mat & descriptors = inputs.get<cv::Mat>("descriptors");
@@ -169,16 +167,15 @@ namespace object_recognition
         // TODO remove matches that match the same (common descriptors)
 
         // Build the 3D positions of the matches
-        std::vector<std::vector<cv::Point3f> > &matches_3d = outputs.get<std::vector<std::vector<cv::Point3f> > >(
-            "matches_3d");
+        std::vector<cv::Mat> &matches_3d = outputs.get<std::vector<cv::Mat> >("matches_3d");
         matches_3d.clear();
         matches_3d.resize(descriptors.rows);
 
         for (int match_index = 0; match_index < descriptors.rows; ++match_index)
         {
-          std::vector<cv::Point3f> & local_matches_3d = matches_3d[match_index];
+          cv::Mat & local_matches_3d = matches_3d[match_index];
           BOOST_FOREACH(const cv::DMatch & match, matches[match_index])
-                local_matches_3d.push_back(features_3d_[match.imgIdx][match.trainIdx]);
+                local_matches_3d.push_back(features_3d_[match.imgIdx].row(match.trainIdx));
         }
 
         return 0;
@@ -193,7 +190,7 @@ namespace object_recognition
       /** The ratio used for k-nearest neighbors, if not using radius search */
       unsigned int ratio_;
       /** The 3d position of the loaded descriptors (the first index is on the object ID) */
-      std::vector<std::vector<cv::Point3f> > features_3d_;
+      std::vector<cv::Mat> features_3d_;
     };
   }
 }

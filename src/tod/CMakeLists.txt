@@ -13,7 +13,6 @@ include_directories(
 # deal with the common TOD module
 ectomodule(tod
   tod.cpp 
-  CameraToWorld.cpp
   )
 
 link_ecto(tod
@@ -32,6 +31,7 @@ ectomodule(tod_detection
   detecting/DescriptorMatcher.cpp
   detecting/GuessCsvWriter.cpp
   detecting/GuessGenerator.cpp
+  detecting/PointCloudToMat.cpp
   detecting/TodDetection.cpp
   )
 
@@ -50,6 +50,7 @@ ectomodule(tod_training
     training/ModelInserter.cpp
     training/ModelStacker.cpp
     training/KeypointsToMat.cpp
+    training/CameraToWorld.cpp
     )
 
 link_ecto(tod_training

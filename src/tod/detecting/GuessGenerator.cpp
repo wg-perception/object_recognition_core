@@ -1,8 +1,36 @@
 /*
- * twoDToThreeD.cpp
+ * Software License Agreement (BSD License)
  *
- *  Created on: Jun 16, 2011
- *      Author: vrabaud
+ *  Copyright (c) 2009, Willow Garage, Inc.
+ *  All rights reserved.
+ *
+ *  Redistribution and use in source and binary forms, with or without
+ *  modification, are permitted provided that the following conditions
+ *  are met:
+ *
+ *   * Redistributions of source code must retain the above copyright
+ *     notice, this list of conditions and the following disclaimer.
+ *   * Redistributions in binary form must reproduce the above
+ *     copyright notice, this list of conditions and the following
+ *     disclaimer in the documentation and/or other materials provided
+ *     with the distribution.
+ *   * Neither the name of Willow Garage, Inc. nor the names of its
+ *     contributors may be used to endorse or promote products derived
+ *     from this software without specific prior written permission.
+ *
+ *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ *  "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ *  LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
+ *  FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
+ *  COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
+ *  INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
+ *  BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+ *  LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+ *  CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+ *  LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
+ *  ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ *  POSSIBILITY OF SUCH DAMAGE.
+ *
  */
 
 #include <fstream>
@@ -51,11 +79,10 @@ namespace object_recognition
       static void
       declare_io(const tendrils& params, tendrils& inputs, tendrils& outputs)
       {
-        inputs.declare<boost::shared_ptr<pcl::PointCloud<pcl::PointXYZ> const> >("point_cloud", "The point cloud");
-        inputs.declare<boost::shared_ptr<pcl::PointCloud<pcl::PointXYZRGB> const> >("point_cloud_rgb", "The RGB point cloud");
-        inputs.declare<std::vector<cv::KeyPoint> >("keypoints", "The depth image");
+        inputs.declare<cv::Mat>("points3d", "The height by width 3 channel point cloud");
+        inputs.declare<std::vector<cv::KeyPoint> >("keypoints", "The interesting keypoints");
         inputs.declare<std::vector<std::vector<cv::DMatch> > >("matches", "The list of OpenCV DMatch");
-        inputs.declare<std::vector<std::vector<cv::Point3f> > >("matches_3d",
+        inputs.declare<std::vector<cv::Mat> >("matches_3d",
                                                                 "The corresponding 3d position of those matches");
         outputs.declare<std::vector<ObjectId> >("object_ids", "the id's of the found objects");
         outputs.declare<std::vector<opencv_candidate::Pose> >("poses", "The poses of the found objects");
@@ -84,39 +111,24 @@ namespace object_recognition
         // Get the different matches
         const std::vector<std::vector<cv::DMatch> > & matches = inputs.get<std::vector<std::vector<cv::DMatch> > >(
             "matches");
-        const std::vector<std::vector<cv::Point3f> > & matches_3d = inputs.get<std::vector<std::vector<cv::Point3f> > >(
-            "matches_3d");
+        const std::vector<cv::Mat> & matches_3d = inputs.get<std::vector<cv::Mat> >("matches_3d");
 
         // Get the original keypoints and point cloud
         const std::vector<cv::KeyPoint> & keypoints = inputs.get<std::vector<cv::KeyPoint> >("keypoints");
-        boost::shared_ptr<pcl::PointCloud<pcl::PointXYZ> const> point_cloud = inputs.get<
-            boost::shared_ptr<pcl::PointCloud<pcl::PointXYZ> const> >("point_cloud");
+        cv::Mat point_cloud = inputs.get<cv::Mat>("points3d");
 
-        if (point_cloud->points.empty())
+        // Get the outputs
+        std::vector<ObjectId> &object_ids = outputs.get<std::vector<ObjectId> >("object_ids");
+        std::vector<opencv_candidate::Pose> &poses = outputs.get<std::vector<opencv_candidate::Pose> >("poses");
+
+        if (point_cloud.empty())
         {
-          boost::shared_ptr<pcl::PointCloud<pcl::PointXYZ> > new_point_cloud = boost::shared_ptr<
-              pcl::PointCloud<pcl::PointXYZ> >(new pcl::PointCloud<pcl::PointXYZ>());
-
-          boost::shared_ptr<pcl::PointCloud<pcl::PointXYZRGB> const> point_cloud_rgb = inputs.get<
-              boost::shared_ptr<pcl::PointCloud<pcl::PointXYZRGB> const> >("point_cloud_rgb");
-          new_point_cloud->points.reserve(point_cloud_rgb->points.size());
-          BOOST_FOREACH(const pcl::PointXYZRGB & point, point_cloud_rgb->points)
-                new_point_cloud->points.push_back(pcl::PointXYZ(point.x, point.y, point.z));
-          point_cloud = new_point_cloud;
+          // Only use 2d to 3d matching
+          // TODO
+          //const std::vector<cv::KeyPoint> &keypoints = inputs.get<std::vector<cv::KeyPoint> >("keypoints");
         }
-
-    // Get the outputs
-    std::vector<ObjectId> &object_ids = outputs.get<std::vector<ObjectId> >("object_ids");
-    std::vector<opencv_candidate::Pose> &poses = outputs.get<std::vector<opencv_candidate::Pose> >("poses");
-
-    if (point_cloud->points.empty())
-    {
-      // Only use 2d to 3d matching
-      // TODO
-      //const std::vector<cv::KeyPoint> &keypoints = inputs.get<std::vector<cv::KeyPoint> >("keypoints");
-    }
-    else
-    {
+        else
+        {
           // Use 3d to 3d matching
 
           // Cluster the matches per object ID
@@ -125,33 +137,37 @@ namespace object_recognition
           for (unsigned int descriptor_index = 0; descriptor_index < matches.size(); ++descriptor_index)
           {
             const cv::KeyPoint & keypoint = keypoints[descriptor_index];
-            pcl::PointXYZ query_point = point_cloud->at(keypoint.pt.x, keypoint.pt.y);
+            cv::Vec3f point3f = point_cloud.at<cv::Vec3f>(keypoint.pt.x, keypoint.pt.y);
+            pcl::PointXYZ query_point = pcl::PointXYZ(point3f.val[0], point3f.val[1], point3f.val[2]);
+
             // Check if we have NaN's
             if ((query_point.x != query_point.x) || (query_point.y != query_point.y)
                 || (query_point.z != query_point.z))
               continue;
 
             const std::vector<cv::DMatch> &local_matches = matches[descriptor_index];
-            const std::vector<cv::Point3f> &local_matches_3d = matches_3d[descriptor_index];
+            const cv::Mat &local_matches_3d = matches_3d[descriptor_index];
             // Get the matches for that point
             for (unsigned int match_index = 0; match_index < local_matches.size(); ++match_index)
             {
-              const cv::Point3f & training_point3f = local_matches_3d[match_index];
+              pcl::PointXYZ training_point(local_matches_3d.at<float>(match_index, 0),
+                                           local_matches_3d.at<float>(match_index, 1),
+                                           local_matches_3d.at<float>(match_index, 2));
 
               // Check if we have NaN's
-              if ((training_point3f.x != training_point3f.x) || (training_point3f.y != training_point3f.y)
-                  || (training_point3f.z != training_point3f.z))
+              //std::cout << training_point.x << " " << training_point.y << " " << training_point.z << std::endl;
+              if ((training_point.x != training_point.x) || (training_point.y != training_point.y)
+                  || (training_point.z != training_point.z))
                 continue;
 
               // Check that the dimensions are correct
-              if ((std::abs(training_point3f.x) > 1e10) || (std::abs(training_point3f.y) > 1e10)
-                  || (std::abs(training_point3f.z) > 1e10))
+              if ((std::abs(training_point.x) > 1e10) || (std::abs(training_point.y) > 1e10)
+                  || (std::abs(training_point.z) > 1e10))
                 continue;
 
               // Fill in the clouds
               ObjectId object_id = local_matches[match_index].imgIdx;
-              training_point_clouds[object_id].push_back(
-                  pcl::PointXYZ(training_point3f.x, training_point3f.y, training_point3f.z));
+              training_point_clouds[object_id].push_back(training_point);
               query_point_clouds[object_id].push_back(query_point);
             }
           }
@@ -177,18 +193,6 @@ namespace object_recognition
             std::cout << "Object id " << object_id << " has " << query_point_clouds[object_id].points.size()
                       << " possible matches with " << n_ransac_iterations_ << " iterations " << std::endl;
 
-            std::cout << "[ ";
-            BOOST_FOREACH(const pcl::PointXYZ &point, training_point_clouds[object_id].points)
-            {
-              std ::cout << point.x << " " << point.y << " " << point.z << ";";
-            }
-            std::cout << " ]" << std::endl;
-            std::cout << "[ ";
-            BOOST_FOREACH(const pcl::PointXYZ &point, query_point_clouds[object_id].points)
-            {
-              std ::cout << point.x << " " << point.y << " " << point.z << ";";
-            }
-            std::cout << " ]" << std::endl;
         model->setInputTarget(query_point_clouds[object_id].makeShared(), good_indices);
         sample_consensus.setDistanceThreshold(0.1);
         sample_consensus.setMaxIterations(n_ransac_iterations_);
