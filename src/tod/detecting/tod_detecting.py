@@ -109,8 +109,7 @@ class TodDetector(ecto.BlackBox):
     def expose_inputs(self):
         return {'image':self.feature_descriptor['image'],
                 'mask':self.feature_descriptor['mask'],
-                'points3d':self.guess_generator['points3d'],
-                'point_cloud_rgb':self.guess_generator['point_cloud_rgb']}
+                'points3d':self.guess_generator['points3d']}
 
     def expose_outputs(self):
         return {'object_ids': self.guess_generator['object_ids'],
@@ -178,8 +177,10 @@ if __name__ == '__main__':
                            ), options.bag)
 
         # connect to the model computation
+        point_cloud_to_mat = tod_detection.PointCloudToMat()
         plasm.connect(bag_reader['image'] >> tod_detector['image'],
-                      bag_reader['point_cloud'] >> tod_detector['point_cloud_rgb'])
+                      bag_reader['point_cloud'] >> point_cloud_to_mat['point_cloud'],
+                      point_cloud_to_mat['points'] >> tod_detector['points'])
 
     elif options.do_kinect:
         ecto_ros.init(sys.argv, "ecto_node")
