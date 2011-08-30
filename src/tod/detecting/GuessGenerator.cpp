@@ -119,6 +119,7 @@ namespace object_recognition
 
         // Get the outputs
         std::vector<ObjectId> &object_ids = outputs.get<std::vector<ObjectId> >("object_ids");
+        object_ids.clear();
         std::vector<opencv_candidate::Pose> &poses = outputs.get<std::vector<opencv_candidate::Pose> >("poses");
 
         if (point_cloud.empty())
@@ -137,7 +138,7 @@ namespace object_recognition
           for (unsigned int descriptor_index = 0; descriptor_index < matches.size(); ++descriptor_index)
           {
             const cv::KeyPoint & keypoint = keypoints[descriptor_index];
-            cv::Vec3f point3f = point_cloud.at<cv::Vec3f>(keypoint.pt.x, keypoint.pt.y);
+            cv::Vec3f point3f = point_cloud.at<cv::Vec3f>(keypoint.pt.y, keypoint.pt.x);
             pcl::PointXYZ query_point = pcl::PointXYZ(point3f.val[0], point3f.val[1], point3f.val[2]);
 
             // Check if we have NaN's
@@ -194,7 +195,7 @@ namespace object_recognition
                       << " possible matches with " << n_ransac_iterations_ << " iterations " << std::endl;
 
         model->setInputTarget(query_point_clouds[object_id].makeShared(), good_indices);
-        sample_consensus.setDistanceThreshold(0.1);
+        sample_consensus.setDistanceThreshold(0.01);
         sample_consensus.setMaxIterations(n_ransac_iterations_);
         sample_consensus.computeModel();
         std::vector<int> inliers;
