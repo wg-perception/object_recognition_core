@@ -43,51 +43,49 @@
 
 using ecto::tendrils;
 
-/** Ecto module that transforms 3d points from camera coordinates to world coordinates
- */
-struct CameraToWorld
+namespace
 {
-  static void
-  declare_params(tendrils& p)
+  /** Ecto module that transforms 3d points from camera coordinates to world coordinates
+   */
+  struct KeypointsToMat
   {
-  }
+    static void
+    declare_params(tendrils& p)
+    {
+    }
 
-  static void
-  declare_io(const tendrils& params, tendrils& inputs, tendrils& outputs)
-  {
-    inputs.declare<cv::Mat>("points", "The points (n by 3 matrix)");
-    inputs.declare<cv::Mat>("R", "The rotation matrix");
-    inputs.declare<cv::Mat>("T", "The translation vector");
-    outputs.declare<cv::Mat>("points", "The points in the world frame");
-  }
+    static void
+    declare_io(const tendrils& params, tendrils& inputs, tendrils& outputs)
+    {
+      inputs.declare<std::vector<cv::KeyPoint> >("keypoints", "The keypoints");
+      outputs.declare<cv::Mat>("points", "The array of x,y coordinates");
+    }
 
-  void
-  configure(const tendrils& params, const tendrils& inputs, const tendrils& outputs)
-  {
-  }
+    void
+    configure(const tendrils& params, const tendrils& inputs, const tendrils& outputs)
+    {
+    }
 
-  int
-  process(const tendrils& inputs, const tendrils& outputs)
-  {
-    cv::Mat_<float> R, T, in_points;
-    inputs.get<cv::Mat>("R").convertTo(R,CV_32F);
-    inputs.get<cv::Mat>("T").convertTo(T,CV_32F);
-    inputs.get<cv::Mat>("points").convertTo(in_points,CV_32F);
+    int
+    process(const tendrils& inputs, const tendrils& outputs)
+    {
+      const std::vector<cv::KeyPoint> & keypoints = inputs.get<std::vector<cv::KeyPoint> >("keypoints");
+      cv::Mat_<float> points = cv::Mat_<float>(keypoints.size(), 2);
 
-    cv::Mat points;
-    if (T.rows == 3)
-      cv::repeat(T.t(), in_points.rows, 1, points);
-    else
-      cv::repeat(T, in_points.rows, 1, points);
+      // Copy the x,y only
+      float *data = reinterpret_cast<float*>(points.data);
+      BOOST_FOREACH(const cv::KeyPoint & keypoint, keypoints)
+          {
+            *(data++) = keypoint.pt.x;
+            *(data++) = keypoint.pt.y;
+          }
 
-    // Apply the inverse translation
-    points = (in_points - points) * R;
+      outputs.get<cv::Mat>("points") = points;
 
-    outputs.get<cv::Mat>("points") = points;
+      return 0;
+    }
+  };
+}
 
-    return 0;
-  }
-};
-
-ECTO_CELL(tod, CameraToWorld, "CameraToWorld",
-          "Given 3d points in the camera frame and the (R,T) of the camera in world frame, give world points.");
+ECTO_CELL(tod_training, KeypointsToMat, "KeypointsToMat",
+          "Take key points and return an array of the x,y coordinates.");

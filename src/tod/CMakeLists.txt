@@ -13,7 +13,6 @@ include_directories(
 # deal with the common TOD module
 ectomodule(tod
   tod.cpp 
-  TwoDToThreeD.cpp
   CameraToWorld.cpp
   )
 
@@ -50,6 +49,7 @@ install_ecto_module(tod_detection)
 ectomodule(tod_training
     training/ModelInserter.cpp
     training/ModelStacker.cpp
+    training/KeypointsToMat.cpp
     )
 
 link_ecto(tod_training

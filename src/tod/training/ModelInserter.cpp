@@ -24,7 +24,7 @@ namespace object_recognition
   {
     /** Class inserting the TOD models in the db
      */
-    struct TodModelInserter
+    struct ModelInserter
     {
       static void
       declare_params(tendrils& params)
@@ -46,21 +46,12 @@ namespace object_recognition
       }
 
       void
-      on_object_id_change(const std::string& id)
-      {
-        object_id_ = id;
-        std::cout << "object_id = " << id << std::endl;
-      }
-
-      void
       configure(const tendrils& params, const tendrils& inputs, const tendrils& outputs)
       {
-        ecto::spore<std::string> object_id = params["object_id"];
-        object_id.set_callback(boost::bind(&TodModelInserter::on_object_id_change, this, _1));
+        object_id_ = params["object_id"];
         db_.set_params(params.get<std::string>("db_json_params"));
         collection_models_ = params.get<std::string>("collection_models");
         params_ = params.get<std::string>("model_json_params");
-        on_object_id_change(params.get<std::string>("object_id"));
       }
 
       int
@@ -91,19 +82,19 @@ namespace object_recognition
 
           // Stack all the points
           std::vector<cv::Mat> input_points = inputs.get<std::vector<cv::Mat> >("descriptors");
-          points = cv::Mat(3, n_rows, input_points[0].type());
-          int col_begin = 0;
+          points = cv::Mat(n_rows, 3, input_points[0].type());
+          row_begin = 0;
           BOOST_FOREACH(const cv::Mat& mat, inputs.get<std::vector<cv::Mat> >("points"))
               {
-                cv::Mat col_range = cv::Mat(descriptors.colRange(col_begin, col_begin + mat.cols));
-                mat.copyTo(col_range);
-                col_begin += mat.cols;
+                cv::Mat row_range = cv::Mat(descriptors.rowRange(row_begin, row_begin + mat.rows));
+                mat.copyTo(row_range);
+                row_begin += mat.rows;
               }
         }
 
         doc.set_attachment<cv::Mat>("descriptors", descriptors);
         doc.set_attachment<cv::Mat>("points", points);
-        doc.set_value("object_id", object_id_);
+        doc.set_value("object_id", *object_id_);
         doc.set_value("model_params", params_);
         std::cout << "Persisting" << std::endl;
         doc.Persist(db_, collection_models_);
@@ -111,7 +102,7 @@ namespace object_recognition
         return 0;
       }
       object_recognition::db_future::ObjectDb db_;
-      DocumentId object_id_;
+      ecto::spore<DocumentId> object_id_;
       CollectionName collection_models_;
       /** The JSON parameters used to compuet the model */
       std::string params_;
@@ -119,7 +110,7 @@ namespace object_recognition
   }
 }
 
-ECTO_CELL(tod_training, object_recognition::tod::TodModelInserter, "TodModelInserter", "Insert a TOD model in the db")
+ECTO_CELL(tod_training, object_recognition::tod::ModelInserter, "ModelInserter", "Insert a TOD model in the db")
 
 ECTO_DEFINE_MODULE(tod_training)
 {

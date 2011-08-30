@@ -8,7 +8,7 @@ import string
 import sys
 import time
 from ecto_object_recognition import capture, tod, tod_training
-from object_recognition.tod import FeatureDescriptor
+from object_recognition.tod.feature_descriptor import FeatureDescriptor
 
 DEBUG = False
 DISPLAY = False
@@ -18,17 +18,18 @@ class TodModelComputation(ecto.BlackBox):
         ecto.BlackBox.__init__(self, plasm)
         self._feature_descriptor_params = feature_descriptor_params
         self.feature_descriptor = FeatureDescriptor(feature_descriptor_params)
-        self.twoDToThreeD = tod.TwoDToThreeD()
-        self.cameraToWorld = tod.CameraToWorld()
+        self._depth_to_3d_sparse = calib.DepthTo3dSparse()
+        self._keypoints_to_mat = tod_training.KeypointsToMat()
+        self._camera_to_world = tod.CameraToWorld()
         self._model_stacker = tod_training.TodModelStacker()
 
     def expose_inputs(self):
         return {'image':self.feature_descriptor['image'],
                 'mask':self.feature_descriptor['mask'],
-                'depth':self.twoDToThreeD['depth'],
-                'K':self.twoDToThreeD['K'],
-                'R':self.cameraToWorld['R'],
-                'T':self.cameraToWorld['T']}
+                'depth':self._depth_to_3d_sparse['depth'],
+                'K':self._depth_to_3d_sparse['K'],
+                'R':self._camera_to_world['R'],
+                'T':self._camera_to_world['T']}
 
     def expose_outputs(self):
         return {'points': self._model_stacker['points'],
@@ -38,9 +39,10 @@ class TodModelComputation(ecto.BlackBox):
         return {'feature_descriptor_params': self._feature_descriptor_params}
 
     def connections(self):
-        return (self.feature_descriptor['keypoints'] >> self.twoDToThreeD['keypoints'],
-                self.twoDToThreeD['points'] >> self.cameraToWorld['points'],
-                self.cameraToWorld['points'] >> self._model_stacker['points'],
+        return (self.feature_descriptor['keypoints'] >> self._keypoints_to_mat['keypoints'],
+                self._keypoints_to_mat['points'] >> self._depth_to_3d_sparse['points'],
+                self._depth_to_3d_sparse['points3d'] >> self._camera_to_world['points'],
+                self._camera_to_world['points'] >> self._model_stacker['points'],
                 self.feature_descriptor['descriptors'] >> self._model_stacker['descriptors'])
 
 ########################################################################################################################
@@ -95,7 +97,7 @@ if __name__ == '__main__':
 
         # persist to the DB
         db_json_params_str = str(json_params['db']).replace("'", '"').replace('u"', '"').replace('{u', '{')
-        _db_writer = tod_training.TodModelInserter("db_writer", collection_models='models',
+        _db_writer = tod_training.ModelInserter("db_writer", collection_models='models',
                                                   db_json_params=db_json_params_str, object_id=object_id,
                                                   model_json_params=feature_descriptor_json_params)
         orb_params = None
