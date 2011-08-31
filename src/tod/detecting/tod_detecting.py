@@ -45,7 +45,9 @@ class TodDetectionKinectReader(ecto.BlackBox):
 
     def expose_outputs(self):
         return {'image': self._im2mat_rgb['image'],
-                'points3d': self._depth_to_3d['points3d']}
+                'points3d': self._depth_to_3d['points3d'],
+                'K': self._camera_info['K']
+                }
 
     def expose_parameters(self):
         return {}
@@ -113,7 +115,8 @@ class TodDetector(ecto.BlackBox):
 
     def expose_outputs(self):
         return {'object_ids': self.guess_generator['object_ids'],
-                'poses': self.guess_generator['poses'],
+                'Rs': self.guess_generator['Rs'],
+                'Ts': self.guess_generator['Ts'],
                 'keypoints': self.feature_descriptor['keypoints']}
 
     def expose_parameters(self):
@@ -191,19 +194,29 @@ if __name__ == '__main__':
     # write data back to a file
     guess_writer = tod_detection.GuessCsvWriter()
     plasm.connect(tod_detector['object_ids'] >> guess_writer['object_ids'],
-                  tod_detector['poses'] >> guess_writer['poses'])
+                  tod_detector['Rs'] >> guess_writer['Rs'],
+                  tod_detector['Ts'] >> guess_writer['Ts'],
+                  )
 
     if DISPLAY:
         image_view = highgui.imshow(name="RGB", waitKey=1000, autoSize=True)
         keypoints_view = highgui.imshow(name="Keypoints", waitKey=1000, autoSize=True)
+        pose_view = highgui.imshow(name="Pose", waitKey=1000, autoSize=True)
         draw_keypoints = features2d.DrawKeypoints()
+        pose_drawer = calib.PosesDrawer()
         if options.do_kinect:
             plasm.connect(kinect_reader['image'] >> image_view['input'],
-                       kinect_reader['image'] >> draw_keypoints['image']
-                       )
-        plasm.connect(tod_detector['keypoints'] >> draw_keypoints['keypoints'],
+                       kinect_reader['image'] >> draw_keypoints['image'],
+                       tod_detector['keypoints'] >> draw_keypoints['keypoints'],
                        draw_keypoints['image'] >> keypoints_view['input']
                        )
+            # draw the poses
+            plasm.connect(kinect_reader['image'] >> pose_drawer['image'],
+                          kinect_reader['K'] >> pose_drawer['K'],
+                          tod_detector['Rs'] >> pose_drawer['Rs'],
+                          tod_detector['Ts'] >> pose_drawer['Ts'],
+                          pose_drawer['output'] >> pose_view['input']
+                          )
 
     # display DEBUG data if needed
     if DEBUG:

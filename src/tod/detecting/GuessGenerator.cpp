@@ -83,7 +83,8 @@ namespace object_recognition
         inputs.declare<std::vector<std::vector<cv::DMatch> > >("matches", "The list of OpenCV DMatch");
         inputs.declare<std::vector<cv::Mat> >("matches_3d", "The corresponding 3d position of those matches");
         outputs.declare<std::vector<ObjectId> >("object_ids", "the id's of the found objects");
-        outputs.declare<std::vector<opencv_candidate::Pose> >("poses", "The poses of the found objects");
+        outputs.declare<std::vector<cv::Mat> >("Rs", "The rotations of the poses of the found objects");
+        outputs.declare<std::vector<cv::Mat> >("Ts", "The translations of the poses of the found objects");
       }
 
       void
@@ -118,7 +119,10 @@ namespace object_recognition
         // Get the outputs
         std::vector<ObjectId> &object_ids = outputs.get<std::vector<ObjectId> >("object_ids");
         object_ids.clear();
-        std::vector<opencv_candidate::Pose> &poses = outputs.get<std::vector<opencv_candidate::Pose> >("poses");
+        std::vector<cv::Mat> &Rs = outputs.get<std::vector<cv::Mat> >("Rs");
+        std::vector<cv::Mat> &Ts = outputs.get<std::vector<cv::Mat> >("Ts");
+        Rs.clear();
+        Ts.clear();
 
         if (point_cloud.empty())
         {
@@ -212,11 +216,9 @@ namespace object_recognition
                   R_mat(j, i) = coefficients[4 * j + i];
                 tvec(j, 0) = coefficients[4 * j + 3];
               }
-              opencv_candidate::Pose pose;
-              pose.setR(R_mat);
-              pose.setT(tvec);
+              Rs.push_back(R_mat);
+              Ts.push_back(tvec);
               // And store it in the outputs
-              poses.push_back(pose);
               object_ids.push_back(object_id);
             }
           }

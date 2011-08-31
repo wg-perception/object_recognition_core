@@ -48,7 +48,8 @@ struct GuessCsvWriter
   static void declare_io(const tendrils& params, tendrils& inputs, tendrils& outputs)
   {
     inputs.declare<std::vector<ObjectId> >("object_ids", "the id's of the found objects");
-    inputs.declare<std::vector<opencv_candidate::Pose> >("poses", "The poses of the found objects");
+    inputs.declare<std::vector<cv::Mat> >("Rs", "The rotations of the poses of the found objects");
+    inputs.declare<std::vector<cv::Mat> >("Ts", "The translations of the poses of the found objects");
   }
 
   void configure(const tendrils& params, const tendrils& inputs,const tendrils& outputs)
@@ -66,7 +67,8 @@ struct GuessCsvWriter
   {
     // match to our objects
     const std::vector<ObjectId> &object_ids = inputs.get<std::vector<ObjectId> >("object_ids");
-    const std::vector<opencv_candidate::Pose> &poses = inputs.get<std::vector<opencv_candidate::Pose> >("poses");
+    const std::vector<cv::Mat> &Rs = inputs.get<std::vector<cv::Mat> >("Rs");
+    const std::vector<cv::Mat> &Ts = inputs.get<std::vector<cv::Mat> >("Ts");
 
     RunInfo run_info;
     run_info.ts.set();
@@ -77,23 +79,21 @@ struct GuessCsvWriter
     for (unsigned int i = 0; i < object_ids.size(); ++i)
     {
       const ObjectId & object_id = object_ids[i];
-      const opencv_candidate::Pose & pose = poses[i];
+          cv::Mat_<float> R, T;
+          Rs[i].convertTo(R, CV_32F);
+          Ts[i].convertTo(T, CV_32F);
 
-      tod::PoseInfo poseInfo;
-      cv::Mat R = pose.r<cv::Mat>();
-      cv::Mat T = pose.t<cv::Mat>();
-      for (int i = 0; i < 9; i++)
-      {
-        poseInfo.Rot[i] = R.at<double>(i % 3, i / 3);
-      }
+          tod::PoseInfo poseInfo;
+          for (int i = 0; i < 9; i++)
+            poseInfo.Rot[i] = R.at<float>(i % 3, i / 3);
 
-      poseInfo.Tx = T.at<double>(0);
-      poseInfo.Ty = T.at<double>(1);
-      poseInfo.Tz = T.at<double>(2);
+          poseInfo.Tx = T.at<float>(0);
+          poseInfo.Ty = T.at<float>(1);
+          poseInfo.Tz = T.at<float>(2);
       poseInfo.ts.set();
       //poseInfo.frame = point_cloud.header.seq;
       poseInfo.oID = object_id;
-      std::cout << "Found object " << object_id << std::endl;
+      std::cout << "Found object " << object_id << " with pose (R,t) = " << std::endl << R << " " << T << std::endl;
       poseInfo.dID = dID++; //training (only one detection per frame)
       writeCSV(csv_out, poseInfo);
     }
