@@ -6,6 +6,7 @@ ectomodule(capture
   ObservationReader.cpp
   ObservationWriter.cpp
   DeltaRT.cpp
+  RescaleRegisteredDepth.cpp
   )
 
 link_ecto(capture

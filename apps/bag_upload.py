@@ -37,5 +37,9 @@ if "__main__" == __name__:
                         author_name=args.author_name,
                         author_email=args.author_email,
                         )
-    bag_up = upload_bag(obj, bag, couchdb_url=args.db_root)
-    print "Uploaded bag has id =", bag_up.id
+    if args.commit:
+        bag_up = upload_bag(obj, bag, couchdb_url=args.db_root)
+        print "Uploaded bag has id =", bag_up.id
+    else:
+        print 'Did not upload. Please pass --commit to actually upload the bag.'
+

@@ -27,7 +27,7 @@ class CalcObservations(ecto.BlackBox):
                                         rows=5, cols=3,
                                         pattern_type=calib.ASYMMETRIC_CIRCLES_GRID,
                                         square_size=0.04, debug=False)
-        self.masker = calib.PlanarSegmentation(z_min=0.02, y_crop=0.10, x_crop=0.10)
+        self.masker = calib.PlanarSegmentation(z_min=0.01, y_crop=0.10, x_crop=0.10)
         self.delta_pose = capture.DeltaRT("delta R|T", angle_thresh=3.14 / 36) #5 degree increments.
 
     def expose_outputs(self):
@@ -42,7 +42,7 @@ class CalcObservations(ecto.BlackBox):
         return {
                 'image': self.gray_image[:],
                 'depth': self.depth_image[:],
-                'K': self.camera_info[:]
+                'K': self.camera_info[:],
                }
 
     def expose_parameters(self):
@@ -51,7 +51,7 @@ class CalcObservations(ecto.BlackBox):
     def connections(self):
         graph = [
                   self.gray_image[:] >> self.pose_calc['image'],
-                  self.camera_info[:] >> (self.pose_calc['K'], self.masker['K']),
+                  self.camera_info[:] >> (self.masker['K'], self.pose_calc['K'],),
                   self.depth_image[:] >> self.masker['depth'],
                   self.pose_calc['R', 'T', 'found'] >> self.delta_pose['R', 'T', 'found'],
                   self.pose_calc['R', 'T'] >> self.masker['R', 'T'],
@@ -78,10 +78,12 @@ def connect_observation_calc(sync, commit, object_id, session_id, debug=False):
     gray = imgproc.cvtColor('rgb -> gray', flag=imgproc.Conversion.RGB2GRAY)
 
     calc_observations = CalcObservations(plasm)
+    rescale_depth = capture.RescaledRegisteredDepth() #this is for SXGA mode scale handling.
     plasm.connect(image[:] >> (rgb[:], gray[:]),
-                  gray[:] >> calc_observations['image'],
-                  depth[:] >> calc_observations['depth'],
-                  image_ci['K'] >> calc_observations['K']
+                  gray[:] >> (calc_observations['image'], rescale_depth['image']),
+                  depth[:] >> rescale_depth['depth'],
+                  rescale_depth['depth'] >> calc_observations['depth'],
+                  image_ci['K'] >> calc_observations['K'],
                   )
     if debug:
         image_display = highgui.imshow('image display', name='image', waitKey=10, autoSize=True)

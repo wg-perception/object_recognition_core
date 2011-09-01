@@ -57,6 +57,7 @@ class OpposingDotPoseEstimator(ecto.BlackBox):
         self.rgb_image = ecto.Passthrough('rgb Input')
         self.camera_info = ecto.Passthrough('K')
         self.gather = calib.GatherPoints("gather", N=2)
+        self.q1 = imgproc.Quantize('scar face filter', factor=256) #abuse saturated Arithmetics http://opencv.itseez.com/modules/core/doc/intro.html?highlight=saturated.
         self.invert = imgproc.BitwiseNot()
         self.debug = debug
         offset_x = -.310 #TODO: FIXME hard coded
@@ -111,7 +112,8 @@ class OpposingDotPoseEstimator(ecto.BlackBox):
                 }
     def connections(self):
         graph = [
-                self.gray_image[:] >> (self.invert[:], self.cd_bw['input']),
+                self.gray_image[:] >> self.q1[:],
+                self.q1[:] >> (self.invert[:], self.cd_bw['input']),
                 self.cd_bw['found', 'ideal', 'out'] >> self.gather['found_0000', 'ideal_0000', 'points_0000'],
                 self.cd_wb['found', 'ideal', 'out'] >> self.gather['found_0001', 'ideal_0001', 'points_0001'],
                 self.invert[:] >> self.cd_wb['input'],
@@ -121,9 +123,9 @@ class OpposingDotPoseEstimator(ecto.BlackBox):
         if self.debug:
             graph += ([
                           self.rgb_image[:] >> self.circle_drawer['input'],
-                          self.circle_drawer2['out'] >> self.pose_draw['image'],
+                          self.circle_drawer2[:] >> self.pose_draw['image'],
                           self.pose_calc['R', 'T'] >> self.pose_draw['R', 'T'],
-                          self.invert[:] >> self.circle_drawer2['input'],
+                          self.circle_drawer[:] >> self.circle_drawer2['input'],
                           self.cd_bw['out', 'found'] >> self.circle_drawer['points', 'found'],
                           self.cd_wb['out', 'found'] >> self.circle_drawer2['points', 'found'],
 

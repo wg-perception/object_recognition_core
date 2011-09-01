@@ -95,7 +95,7 @@ namespace object_recognition
             boost::shared_ptr<pcl::PointCloud<PointType> const> >("point_cloud_rgb");
 
         cv::Mat points;
-        if (point_cloud->isOrganized())
+        if (point_cloud->height != 1) //isOrganized() is not const...
           points = cv::Mat(point_cloud->height, point_cloud->width, CV_32FC3);
         else
           points = cv::Mat(point_cloud->size(), 3, CV_32F);
