@@ -43,6 +43,7 @@
 
 #include <opencv2/core/core.hpp>
 #include <opencv2/features2d/features2d.hpp>
+//#include <opencv2/flann/flann.hpp>
 
 #include "object_recognition/db/db.h"
 #include "object_recognition/db/opencv.h"
@@ -93,9 +94,13 @@ namespace object_recognition
           std::string search_type = search_param_tree.get<std::string>("type", "none");
           if (search_type == "LSH")
           {
+            /*cv::flann::LshIndexParams lsh_params(search_param_tree.get<unsigned int>("n_tables"),
+             search_param_tree.get<unsigned int>("key_size"),
+             search_param_tree.get<unsigned int>("multi_probe_level"));
+             matcher_ = new cv::FlannBasedMatcher(&lsh_params);*/
             matcher_ = new lsh::LshMatcher(search_param_tree.get<unsigned int>("n_tables"),
-                                           search_param_tree.get<unsigned int>("key_size"),
-                                           search_param_tree.get<unsigned int>("multi_probe_level"));
+                                search_param_tree.get<unsigned int>("key_size"),
+                                search_param_tree.get<unsigned int>("multi_probe_level"));
           }
           else
           {

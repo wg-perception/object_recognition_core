@@ -5,21 +5,24 @@ import ecto_pcl
 import ecto_pcl_ros
 from ecto_opencv import highgui, cv_bp as opencv, calib, imgproc, features2d
 import ecto_sensor_msgs
+import ecto_geometry_msgs
 import json
 from optparse import OptionParser
 import os
 import sys
 import time
-from ecto_object_recognition import tod_detection
+from ecto_object_recognition import tod_detection, ros
 from object_recognition.tod.feature_descriptor import FeatureDescriptor
 
-DISPLAY = True
+CSV = False
 DEBUG = False
+DISPLAY = True
 
 ########################################################################################################################
 
 ImageSub = ecto_sensor_msgs.Subscriber_Image
 CameraInfoSub = ecto_sensor_msgs.Subscriber_CameraInfo
+PoseArrayPub = ecto_geometry_msgs.Publisher_PoseArray
 
 class TodDetectionKinectReader(ecto.BlackBox):
     """
@@ -46,7 +49,8 @@ class TodDetectionKinectReader(ecto.BlackBox):
     def expose_outputs(self):
         return {'image': self._im2mat_rgb['image'],
                 'points3d': self._depth_to_3d['points3d'],
-                'K': self._camera_info['K']
+                'K': self._camera_info['K'],
+                'image_message': self._sync["image"]
                 }
 
     def expose_parameters(self):
@@ -192,12 +196,23 @@ if __name__ == '__main__':
                       kinect_reader['points3d'] >> tod_detector['points3d'])
 
     # write data back to a file
-    guess_writer = tod_detection.GuessCsvWriter()
-    plasm.connect(tod_detector['object_ids'] >> guess_writer['object_ids'],
+    if CSV:
+        guess_writer = tod_detection.GuessCsvWriter()
+        plasm.connect(tod_detector['object_ids'] >> guess_writer['object_ids'],
                   tod_detector['Rs'] >> guess_writer['Rs'],
                   tod_detector['Ts'] >> guess_writer['Ts'],
                   )
+    #assemble a pose array message
+    pose_array_assembler = ros.PoseArrayAssembler()
+    #publish the poses over ROS.
+    #http://ecto.willowgarage.com/releases/amoeba-beta3/ros/geometry_msgs.html#Publisher_PoseArray
+    pose_pub = PoseArrayPub(topic_name='/or/poses', latched = True)
+    plasm.connect(tod_detector['object_ids','Rs','Ts'] >> pose_array_assembler['object_ids','Rs','Ts'],
+                  kinect_reader['image_message'] >> pose_array_assembler['image_message'],
+                  pose_array_assembler['pose_message'] >> pose_pub[:]
+                  )
 
+    # Display the different poses
     if DISPLAY:
         image_view = highgui.imshow(name="RGB", waitKey=1000, autoSize=True)
         keypoints_view = highgui.imshow(name="Keypoints", waitKey=1000, autoSize=True)
