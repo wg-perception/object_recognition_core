@@ -1,11 +1,9 @@
 #!/usr/bin/env python
 import ecto
-import ecto_ros
-import ecto_pcl
-import ecto_pcl_ros
-from ecto_opencv import highgui, cv_bp as opencv, calib, imgproc, features2d
-import ecto_sensor_msgs
 import ecto_geometry_msgs
+import ecto_pcl
+import ecto_ros
+from ecto_opencv import highgui, cv_bp as opencv, calib, imgproc, features2d
 import json
 from optparse import OptionParser
 import os
@@ -13,127 +11,14 @@ import sys
 import time
 from ecto_object_recognition import tod_detection, ros
 from object_recognition.tod.feature_descriptor import FeatureDescriptor
+from object_recognition.ros.source import KinectReader, BagReader
+from object_recognition.tod.detector import TodDetector
 
 CSV = False
 DEBUG = False
 DISPLAY = True
 
-########################################################################################################################
-
-ImageSub = ecto_sensor_msgs.Subscriber_Image
-CameraInfoSub = ecto_sensor_msgs.Subscriber_CameraInfo
 PoseArrayPub = ecto_geometry_msgs.Publisher_PoseArray
-
-class TodDetectionKinectReader(ecto.BlackBox):
-    """
-    Blackbox that reasd data from the Kinect, returns an image and a camera frame point cloud
-    """
-    def __init__(self, plasm):
-        ecto.BlackBox.__init__(self, plasm)
-
-        subs = dict(image=ImageSub(topic_name='/camera/rgb/image_color', queue_size=0),
-                    depth=ImageSub(topic_name='/camera/depth_registered/image', queue_size=0),
-                    depth_info=CameraInfoSub(topic_name='/camera/depth_registered/camera_info', queue_size=0),
-                    image_info=CameraInfoSub(topic_name='/camera/rgb/camera_info', queue_size=0),
-                 )
-
-        self._sync = ecto_ros.Synchronizer('Synchronizator', subs=subs)
-        self._camera_info = ecto_ros.CameraInfo2Cv('camera_info -> cv::Mat')
-        self._im2mat_rgb = ecto_ros.Image2Mat(swap_rgb = True)
-        self._im2mat_depth = ecto_ros.Image2Mat()
-        self._depth_to_3d = calib.DepthTo3d(do_organized = True)
-
-    def expose_inputs(self):
-        return {}
-
-    def expose_outputs(self):
-        return {'image': self._im2mat_rgb['image'],
-                'points3d': self._depth_to_3d['points3d'],
-                'K': self._camera_info['K'],
-                'image_message': self._sync["image"]
-                }
-
-    def expose_parameters(self):
-        return {}
-
-    def connections(self):
-        return (self._sync["image"] >> self._im2mat_rgb["image"],
-                  self._sync["depth"] >> self._im2mat_depth["image"],
-                  self._sync["image_info"] >> self._camera_info['camera_info'],
-                  self._camera_info['K'] >> self._depth_to_3d['K'],
-                  self._im2mat_depth['image'] >> self._depth_to_3d['depth']
-                  )
-
-########################################################################################################################
-
-class TodDetectionBagReader(ecto.BlackBox):
-    def __init__(self, plasm, baggers, bag):
-        ecto.BlackBox.__init__(self, plasm)
-
-        self._im2mat_rgb = ecto_ros.Image2Mat()
-        self._camera_info_conversion = ecto_ros.CameraInfo2Cv()
-        self._point_cloud_conversion = ecto_pcl_ros.Message2PointCloud(format=ecto_pcl.XYZRGB)
-        self._point_cloud_conversion2 = ecto_pcl.PointCloud2PointCloudT(format=ecto_pcl.XYZRGB)
-        self._bag_reader = ecto_ros.BagReader('Bag Reader',
-                                baggers=baggers,
-                                bag=options.bag,
-                              )
-
-    def expose_inputs(self):
-        return {}
-
-    def expose_outputs(self):
-        return {'image': self._im2mat_rgb['image'],
-                'point_cloud': self._point_cloud_conversion2['output']}
-
-    def expose_parameters(self):
-        return {}
-
-    def connections(self):
-        return (self._bag_reader['image'] >> self._im2mat_rgb['image'],
-                  self._bag_reader['camera_info'] >> self._camera_info_conversion['camera_info'],
-                  self._bag_reader['point_cloud'] >> self._point_cloud_conversion['input'],
-                  self._point_cloud_conversion['output'] >> self._point_cloud_conversion2['input'])
-
-########################################################################################################################
-
-class TodDetector(ecto.BlackBox):
-    def __init__(self, plasm, feature_descriptor_params, db_json_params, object_ids, search_json_params,
-                 guess_json_params):
-        ecto.BlackBox.__init__(self, plasm)
-
-        self._db_json_params = db_json_params
-        self._object_ids = object_ids
-        self._guess_json_params = guess_json_params
-
-        # parse the JSON and load the appropriate feature descriptor module
-        self.feature_descriptor = FeatureDescriptor(feature_descriptor_params)
-        self.descriptor_matcher = tod_detection.DescriptorMatcher(db_json_params=db_json_params, object_ids=object_ids,
-                                                        search_json_params=search_json_params)
-        self.guess_generator = tod_detection.GuessGenerator(json_params=guess_json_params)
-
-    def expose_inputs(self):
-        return {'image':self.feature_descriptor['image'],
-                'mask':self.feature_descriptor['mask'],
-                'points3d':self.guess_generator['points3d']}
-
-    def expose_outputs(self):
-        return {'object_ids': self.guess_generator['object_ids'],
-                'Rs': self.guess_generator['Rs'],
-                'Ts': self.guess_generator['Ts'],
-                'keypoints': self.feature_descriptor['keypoints']}
-
-    def expose_parameters(self):
-        return {'db_json_params': self._db_json_params,
-                'guess_json_params': self._guess_json_params,
-                'object_ids': self._object_ids
-                }
-
-    def connections(self):
-        return (self.feature_descriptor['keypoints'] >> self.guess_generator['keypoints'],
-                self.feature_descriptor['descriptors'] >> self.descriptor_matcher['descriptors'],
-                self.descriptor_matcher['matches'] >> self.guess_generator['matches'],
-                self.descriptor_matcher['matches_3d'] >> self.guess_generator['matches_3d'])
 
 ########################################################################################################################
 
@@ -178,7 +63,7 @@ if __name__ == '__main__':
                                  guess_json_params)
 
     if options.bag:
-        bag_reader = TodDetectionBagReader(plasm, dict(image=ecto_sensor_msgs.Bagger_Image(topic_name='image_mono'),
+        bag_reader = BagReader(plasm, dict(image=ecto_sensor_msgs.Bagger_Image(topic_name='image_mono'),
                            camera_info=ecto_sensor_msgs.Bagger_CameraInfo(topic_name='camera_info'),
                            point_cloud=ecto_sensor_msgs.Bagger_PointCloud2(topic_name='points'),
                            ), options.bag)
@@ -191,7 +76,7 @@ if __name__ == '__main__':
 
     elif options.do_kinect:
         ecto_ros.init(sys.argv, "ecto_node")
-        kinect_reader = TodDetectionKinectReader(plasm)
+        kinect_reader = KinectReader(plasm)
         plasm.connect(kinect_reader['image'] >> tod_detector['image'],
                       kinect_reader['points3d'] >> tod_detector['points3d'])
 
@@ -206,7 +91,7 @@ if __name__ == '__main__':
     pose_array_assembler = ros.PoseArrayAssembler()
     #publish the poses over ROS.
     #http://ecto.willowgarage.com/releases/amoeba-beta3/ros/geometry_msgs.html#Publisher_PoseArray
-    pose_pub = PoseArrayPub(topic_name='/or/poses', latched = True)
+    pose_pub = PoseArrayPub(topic_name='/object_recognition/poses', latched = True)
     plasm.connect(tod_detector['object_ids','Rs','Ts'] >> pose_array_assembler['object_ids','Rs','Ts'],
                   kinect_reader['image_message'] >> pose_array_assembler['image_message'],
                   pose_array_assembler['pose_message'] >> pose_pub[:]
