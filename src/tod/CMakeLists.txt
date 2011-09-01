@@ -10,21 +10,6 @@ include_directories(
                     ${pcl_INCLUDE_DIRS}
                     )
 
-# deal with the common TOD module
-ectomodule(tod
-  tod.cpp 
-  )
-
-link_ecto(tod
-  ${OpenCV_LIBS}
-  object_recognition_db
-  ${pcl_LIBRARIES}
-  ${Boost_LIBRARIES}
-  opencv_candidate
-  )
-
-install_ecto_module(tod)
-
 # deal with the detection TOD module
 ectomodule(tod_detection
   detecting/csv.cpp

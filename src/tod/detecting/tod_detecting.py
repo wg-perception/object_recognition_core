@@ -10,7 +10,7 @@ from optparse import OptionParser
 import os
 import sys
 import time
-from ecto_object_recognition import tod, tod_detection
+from ecto_object_recognition import tod_detection
 from object_recognition.tod.feature_descriptor import FeatureDescriptor
 
 DISPLAY = True

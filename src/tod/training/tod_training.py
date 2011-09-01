@@ -7,7 +7,7 @@ import os
 import string
 import sys
 import time
-from ecto_object_recognition import capture, tod, tod_training
+from ecto_object_recognition import capture, tod_training
 from object_recognition.tod.feature_descriptor import FeatureDescriptor
 
 DEBUG = False
