@@ -1,5 +1,5 @@
 #include <ecto/ecto.hpp>
 
-ECTO_DEFINE_MODULE(ros)
+ECTO_DEFINE_MODULE(io_ros)
 {
 }

@@ -3,15 +3,15 @@
 find_ros_package(geometry_msgs)
 find_ros_package(sensor_msgs)
 
-ectomodule(ros
+ectomodule(io_ros
     module.cpp
     PoseArrayAssembler.cpp
     )
 
-link_ecto(ros
+link_ecto(io_ros
     ${geometry_msgs_LIBRARIES}
     ${sensor_msgs_LIBRARIES}
     ${OpenCV_LIBS}
     )
 
-install_ecto_module(ros)
+install_ecto_module(io_ros)

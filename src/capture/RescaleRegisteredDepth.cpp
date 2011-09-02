@@ -16,8 +16,8 @@ namespace object_recognition
     static void
     declare_io(const tendrils& params, tendrils& in, tendrils& out)
     {
-      in.declare<cv::Mat>("depth", "The depth image to rescale.");
-      in.declare<cv::Mat>("image", "The rgb image.");
+      in.declare<cv::Mat>("depth", "The depth image to rescale.").required(true);
+      in.declare<cv::Mat>("image", "The rgb image.").required(true);
       out.declare<cv::Mat>("depth", "The rescaled depth image.");
     }
     void

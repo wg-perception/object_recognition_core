@@ -1,7 +1,7 @@
 /*
  * Software License Agreement (BSD License)
  *
- *  Copyright (c) 2011, Willow Garage, Inc.
+ *  Copyright (c) 2009, Willow Garage, Inc.
  *  All rights reserved.
  *
  *  Redistribution and use in source and binary forms, with or without
@@ -33,81 +33,8 @@
  *
  */
 
-#include <vector>
-#include <iostream>
+#include <ecto/ecto.hpp>
 
-#include <cxxabi.h>
-#include <string>
-#include <cstdlib>
-
-#include <boost/format.hpp>
-
-#include "object_recognition/db/utils.h"
-
-namespace object_recognition
+ECTO_DEFINE_MODULE(io)
 {
-  std::string
-  name_of(const std::type_info &ti)
-  {
-    const static std::string typename_notavailable = "N/A";
-
-    const char* mangled = ti.name();
-
-    if (!mangled)
-    {
-      return typename_notavailable;
-    }
-
-    int status;
-
-    char* demangled = abi::__cxa_demangle(mangled, 0, 0, &status);
-
-    std::string rv;
-
-    if (status != 0)
-      rv = mangled;
-    else
-      rv = demangled ? demangled : typename_notavailable;
-
-    std::free(demangled);
-    return rv;
-  }
-}
-
-namespace object_recognition
-{
-  namespace db_future
-  {
-    namespace couch
-    {
-      // Utilities for creating queries for CouchDB
-#define STRINGYFY(A) #A
-      std::string
-      WhereDocId(const std::string & object_id)
-      {
-        return boost::str(boost::format(STRINGYFY(
-            function(doc)
-            {
-              if(doc.object_id == "%s")
-                emit(null,doc);
-            }
-        ))
-                % object_id);
-      }
-
-      std::string
-      WhereSessionId(const std::string& session_id)
-      {
-        return boost::str(boost::format(STRINGYFY(
-            function(doc)
-            {
-              if(doc.session_id == "%s")
-              emit("frame_number",doc.frame_number);
-            }
-        ))
-                % session_id);
-      }
-
-    }
-  }
 }

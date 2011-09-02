@@ -76,7 +76,7 @@ if __name__ == '__main__':
 
     elif options.do_kinect:
         ecto_ros.init(sys.argv, "ecto_node")
-        kinect_reader = KinectReader(plasm)
+        kinect_reader = KinectReader(plasm, DISPLAY)
         plasm.connect(kinect_reader['image'] >> tod_detector['image'],
                       kinect_reader['points3d'] >> tod_detector['points3d'])
 
@@ -99,9 +99,9 @@ if __name__ == '__main__':
 
     # Display the different poses
     if DISPLAY:
-        image_view = highgui.imshow(name="RGB", waitKey=1000, autoSize=True)
-        keypoints_view = highgui.imshow(name="Keypoints", waitKey=1000, autoSize=True)
-        pose_view = highgui.imshow(name="Pose", waitKey=1000, autoSize=True)
+        image_view = highgui.imshow(name="RGB", waitKey=1, autoSize=True)
+        keypoints_view = highgui.imshow(name="Keypoints", waitKey=1, autoSize=True)
+        pose_view = highgui.imshow(name="Pose", waitKey=1, autoSize=True)
         draw_keypoints = features2d.DrawKeypoints()
         pose_drawer = calib.PosesDrawer()
         if options.do_kinect:

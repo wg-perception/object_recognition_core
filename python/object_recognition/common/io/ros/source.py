@@ -6,7 +6,7 @@ Module defining several inputs for the object recognition pipeline
 import ecto
 import ecto_ros
 import ecto_sensor_msgs
-from ecto_opencv import calib
+from ecto_opencv import calib, highgui
 
 ImageSub = ecto_sensor_msgs.Subscriber_Image
 CameraInfoSub = ecto_sensor_msgs.Subscriber_CameraInfo
@@ -17,7 +17,7 @@ class KinectReader(ecto.BlackBox):
     """
     Blackbox that reasd data from the Kinect, returns an image and a camera frame point cloud
     """
-    def __init__(self, plasm):
+    def __init__(self, plasm, debug = False):
         ecto.BlackBox.__init__(self, plasm)
 
         subs = dict(image=ImageSub(topic_name='/camera/rgb/image_color', queue_size=0),
@@ -31,6 +31,7 @@ class KinectReader(ecto.BlackBox):
         self._im2mat_rgb = ecto_ros.Image2Mat(swap_rgb = True)
         self._im2mat_depth = ecto_ros.Image2Mat()
         self._depth_to_3d = calib.DepthTo3d(do_organized = True)
+        self._debug = debug
 
     def expose_inputs(self):
         return {}
@@ -46,12 +47,15 @@ class KinectReader(ecto.BlackBox):
         return {}
 
     def connections(self):
-        return (self._sync["image"] >> self._im2mat_rgb["image"],
+        connections = [self._sync["image"] >> self._im2mat_rgb["image"],
                   self._sync["depth"] >> self._im2mat_depth["image"],
                   self._sync["image_info"] >> self._camera_info['camera_info'],
                   self._camera_info['K'] >> self._depth_to_3d['K'],
                   self._im2mat_depth['image'] >> self._depth_to_3d['depth']
-                  )
+                  ]
+        if self._debug:
+            connections += [self._im2mat_depth[:] >> highgui.imshow(name='kinect depth',waitKey=10)[:]]
+        return connections
 
 ########################################################################################################################
 
