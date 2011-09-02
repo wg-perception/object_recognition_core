@@ -89,7 +89,7 @@ namespace object_recognition
             function(doc)
             {
               if(doc.object_id == "%s")
-              emit("frame_number",doc.frame_number);
+                emit(null,doc);
             }
         ))
                 % object_id);

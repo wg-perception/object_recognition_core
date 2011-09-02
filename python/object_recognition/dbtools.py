@@ -17,6 +17,7 @@ def init_object_databases(couch):
                objects=create_db('objects', couch),
                sessions=create_db('sessions', couch),
                observations=create_db('observations', couch),
+               models=create_db('models', couch),
                )
     return dbs
 
