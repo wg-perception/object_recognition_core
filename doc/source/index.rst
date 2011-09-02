@@ -8,5 +8,6 @@ that utilize said classifiers.
 .. toctree::
    :maxdepth: 2
    
-   capture/index.rst
+   capture/capture.rst
+   db/couch.rst
 
