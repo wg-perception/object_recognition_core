@@ -10,9 +10,6 @@ endif()
 
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/ecto_object_recognition)
 
-#use the cmake cache, to -DOpenCV_dir=<path_to_build_of_opencv>
-#  svn co https://code.ros.org/svn/opencv/trunk
-#  and cmake that baby
 find_package(Boost COMPONENTS system filesystem serialization REQUIRED)
 find_package(ecto 0.1.0 REQUIRED)
 find_package(OpenCV 2.3.1 EXACT REQUIRED)
