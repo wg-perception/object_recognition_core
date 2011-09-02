@@ -20,9 +20,9 @@ class TodDetector(ecto.BlackBox):
 
         # parse the JSON and load the appropriate feature descriptor module
         self.feature_descriptor = FeatureDescriptor(feature_descriptor_params)
-        self.descriptor_matcher = tod_detection.DescriptorMatcher(db_json_params=db_json_params, object_ids=object_ids,
+        self.descriptor_matcher = tod_detection.DescriptorMatcher("Matcher", db_json_params=db_json_params, object_ids=object_ids,
                                                         search_json_params=search_json_params)
-        self.guess_generator = tod_detection.GuessGenerator(json_params=guess_json_params)
+        self.guess_generator = tod_detection.GuessGenerator("Guess Gen",json_params=guess_json_params)
 
     def expose_inputs(self):
         return {'image':self.feature_descriptor['image'],
