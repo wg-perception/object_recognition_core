@@ -12,9 +12,7 @@ include_directories(
 
 # deal with the detection TOD module
 ectomodule(tod_detection
-  detecting/csv.cpp
   detecting/DescriptorMatcher.cpp
-  detecting/GuessCsvWriter.cpp
   detecting/GuessGenerator.cpp
   detecting/PointCloudToMat.cpp
   detecting/TodDetection.cpp
