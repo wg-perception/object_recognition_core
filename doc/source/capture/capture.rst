@@ -21,8 +21,7 @@ The setup also assumes that you have an RGB Depth device, such as the Kinect.
 The fiducial currently used for object capture is available for
 download here: :download:`capture_board_big_5x3.svg`
 
-.. image:: capture_board_big_5x3.svg.png
-  :alt: The fiducial board used for pose estimation during capture.
+.. figure:: capture_board_big_5x3.svg.png
 
   The default capture board uses circle pattern based fiducial markers,
   one black on white, the other inverted, so that two may be detected in
