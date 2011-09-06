@@ -5,13 +5,14 @@ import ecto_pcl
 import ecto_ros
 from ecto_opencv import highgui, cv_bp as opencv, calib, imgproc, features2d
 import json
-from optparse import OptionParser
+from argparse import ArgumentParser
 import os
 import sys
 import time
 from ecto_object_recognition import tod_detection, ros
 from object_recognition.tod.feature_descriptor import FeatureDescriptor
-from object_recognition.ros.source import KinectReader, BagReader
+from object_recognition.common.io.ros.source import KinectReader, BagReader
+from object_recognition.common.io.sink import Sink
 from object_recognition.tod.detector import TodDetector
 
 CSV = False
@@ -22,10 +23,17 @@ PoseArrayPub = ecto_geometry_msgs.Publisher_PoseArray
 
 ########################################################################################################################
 
-def parse_options():
-    parser = OptionParser()
-    parser.add_option("-b", "--bag", dest="bag", help="The bag to analyze")
-    parser.add_option("-c", "--config_file", dest="config_file",
+
+if __name__ == '__main__':
+    plasm = ecto.Plasm()
+    sink = Sink(plasm)
+
+    parser = ArgumentParser()
+    # add arguments for the sink
+    sink.add_arguments(parser)
+
+    parser.add_argument("-b", "--bag", dest="bag", help="The bag to analyze")
+    parser.add_argument("-c", "--config_file", dest="config_file",
                       help='the file containing the configuration as JSON. It should contain the following fields.\n'
                       '"feature_descriptor": with parameters for "combination", "feature" and "descriptor".\n'
                       '"db": parameters about the db: "type", "url".\n'
@@ -33,16 +41,9 @@ def parse_options():
                       '"band_aid_plastic_strips"]\n'
                       '"search": the "type" of the search structure, the "radius" and/or "ratio" for the ratio test.\n'
                       )
-    parser.add_option("-k", "--kinect", dest="do_kinect", help="if set to something, it will read data from the kinect")
+    parser.add_argument("-k", "--kinect", dest="do_kinect", help="if set to something, it will read data from the kinect")
 
-    (options, args) = parser.parse_args()
-    return options
-
-########################################################################################################################
-
-
-if __name__ == '__main__':
-    options = parse_options()
+    options = parser.parse_args()
 
     # define the input
     if options.config_file is None or not os.path.exists(options.config_file):
@@ -58,7 +59,6 @@ if __name__ == '__main__':
     search_json_params = str(json_params['search']).replace("'", '"').replace('u"', '"').replace('{u', '{')
 
     # define the input
-    plasm = ecto.Plasm()
     tod_detector = TodDetector(plasm, feature_descriptor_params, db_json_params, object_ids, search_json_params,
                                  guess_json_params)
 
