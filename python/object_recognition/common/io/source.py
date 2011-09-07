@@ -36,7 +36,8 @@ class Source(ecto.BlackBox):
 
         # add the different possible outputs
         self._cell_factory = {}
-        self._outputs = []
+        self._cells = []
+        self._outputs = {}
 
     # common ecto implementation
     def expose_inputs(self):
@@ -68,6 +69,11 @@ class Source(ecto.BlackBox):
     def parse_arguments(self, parser):
         args = parser.parse_args()
         if args.do_ros_bag:
-            self._outputs.append(self._cell_factory[ROS_BAG](parser))
+            cell = self._cell_factory[Source.ROS_BAG](parser)
+            self._cells.append(cell)
+            self._outputs.update({'image': cell['image'], 'point_cloud': cell['point_cloud']})
         if args.do_ros_kinect:
-            self._outputs.append(self._cell_factory[ROS_KINECT](parser))
+            cell = self._cell_factory[Source.ROS_KINECT](parser)
+            self._cells.append(cell)
+            self._outputs.update({'image': cell['image'], 'points3d': cell['points3d'], 'K': cell['K'],
+                                  'image_message': cell['image_message']})

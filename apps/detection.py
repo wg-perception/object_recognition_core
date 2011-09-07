@@ -48,6 +48,9 @@ if __name__ == '__main__':
                       '"search": the "type" of the search structure, the "radius" and/or "ratio" for the ratio test.\n'
                       )
 
+    # parse the arguments
+    source.parse_arguments(parser)
+    sink.parse_arguments(parser)
     options = parser.parse_args()
 
     # define the input
@@ -80,7 +83,7 @@ if __name__ == '__main__':
                       bag_reader['point_cloud'] >> point_cloud_to_mat['point_cloud'],
                       point_cloud_to_mat['points'] >> tod_detector['points'])
 
-    plasm.connect(sink['image','points3d','points'] >> tod_detector['image','points3d','points'])
+    plasm.connect(source['image','points3d','points'] >> tod_detector['image','points3d','points'])
 
     # define the different outputs
     plasm.connect(tod_detector['object_ids','Rs','Ts'] >> sink['object_ids','Rs','Ts'])
