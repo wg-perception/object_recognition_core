@@ -83,7 +83,16 @@ if __name__ == '__main__':
                       bag_reader['point_cloud'] >> point_cloud_to_mat['point_cloud'],
                       point_cloud_to_mat['points'] >> tod_detector['points'])
 
-    plasm.connect(source['image','points3d','points'] >> tod_detector['image','points3d','points'])
+    
+    #plasm.connect(source['image','points3d','points'] >> tod_detector['image','points3d','points'])
+    #for key in source.expose_outputs().iterkeys():
+    #    if key in tod_detector.expose_outputs().keys():
+    #        plasm.connect(source[key] >> tod_detector[key])
+    ecto_ros.init(sys.argv, "ecto_node")
+    kinect_reader = KinectReader(plasm, DISPLAY)
+    plasm.connect(kinect_reader['image'] >> tod_detector['image'],
+                      kinect_reader['points3d'] >> tod_detector['points3d'])
+    source = kinect_reader
 
     # define the different outputs
     plasm.connect(tod_detector['object_ids','Rs','Ts'] >> sink['object_ids','Rs','Ts'])
@@ -94,7 +103,7 @@ if __name__ == '__main__':
     #http://ecto.willowgarage.com/releases/amoeba-beta3/ros/geometry_msgs.html#Publisher_PoseArray
     pose_pub = PoseArrayPub(topic_name='/object_recognition/poses', latched = True)
     plasm.connect(tod_detector['object_ids','Rs','Ts'] >> pose_array_assembler['object_ids','Rs','Ts'],
-                  kinect_reader['image_message'] >> pose_array_assembler['image_message'],
+                  source['image_message'] >> pose_array_assembler['image_message'],
                   pose_array_assembler['pose_message'] >> pose_pub[:]
                   )
 
@@ -105,15 +114,15 @@ if __name__ == '__main__':
         pose_view = highgui.imshow(name="Pose", waitKey=1, autoSize=True)
         draw_keypoints = features2d.DrawKeypoints()
         pose_drawer = calib.PosesDrawer()
-        if options.do_kinect:
-            plasm.connect(kinect_reader['image'] >> image_view['input'],
-                       kinect_reader['image'] >> draw_keypoints['image'],
+        
+        plasm.connect(source['image'] >> image_view['input'],
+                       source['image'] >> draw_keypoints['image'],
                        tod_detector['keypoints'] >> draw_keypoints['keypoints'],
                        draw_keypoints['image'] >> keypoints_view['input']
                        )
-            # draw the poses
-            plasm.connect(kinect_reader['image'] >> pose_drawer['image'],
-                          kinect_reader['K'] >> pose_drawer['K'],
+        # draw the poses
+        plasm.connect(source['image'] >> pose_drawer['image'],
+                          source['K'] >> pose_drawer['K'],
                           tod_detector['Rs'] >> pose_drawer['Rs'],
                           tod_detector['Ts'] >> pose_drawer['Ts'],
                           pose_drawer['output'] >> pose_view['input']

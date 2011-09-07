@@ -26,6 +26,8 @@ class Source(ecto.BlackBox):
 
         # try to import ecto_ros
         self._do_use_ros = True
+        # TODO remove the following line when Blackbox is fully supported
+        self._plasm = plasm
         try:
             __import__('ecto_ros')
         except:
@@ -59,12 +61,13 @@ class Source(ecto.BlackBox):
             parser.add_argument('--ros_bag', dest='do_ros_bag', action='store_true', default = False,
                                 help='If set, read from a Kinect controlled by ROS.')
             # TODO
-            #self._cell_factory[ROS_BAG] = ecto.opts.cell_options(parser, BagReader, 'ros_bag')
+            #self._cell_factory[Source.ROS_BAG] = ecto.opts.cell_options(parser, BagReader, 'ros_bag')
 
             parser.add_argument('--ros_kinect', dest='do_ros_kinect', action='store_true', default = False,
                                 help='If set, read from a ROS bag.')
             # TODO
             #self._cell_factory[ROS_KINECT] = ecto.opts.cell_options(parser, KinectReader, 'ros_kinect')
+            self._cell_factory[Source.ROS_KINECT] = KinectReader(self._plasm)
 
     def parse_arguments(self, parser):
         args = parser.parse_args()
@@ -73,7 +76,9 @@ class Source(ecto.BlackBox):
             self._cells.append(cell)
             self._outputs.update({'image': cell['image'], 'point_cloud': cell['point_cloud']})
         if args.do_ros_kinect:
-            cell = self._cell_factory[Source.ROS_KINECT](parser)
+            #TODO fix the following
+            #cell = self._cell_factory[Source.ROS_KINECT](parser)
+            cell = self._cell_factory[Source.ROS_KINECT]
             self._cells.append(cell)
             self._outputs.update({'image': cell['image'], 'points3d': cell['points3d'], 'K': cell['K'],
                                   'image_message': cell['image_message']})
