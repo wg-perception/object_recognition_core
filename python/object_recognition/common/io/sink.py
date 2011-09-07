@@ -6,6 +6,7 @@ Module defining several outputs for the object recognition pipeline
 import ecto
 import ecto.opts
 from ecto_object_recognition.io import GuessCsvWriter
+import sys
 
 ########################################################################################################################
 
@@ -36,6 +37,8 @@ class Sink(ecto.BlackBox):
             self._do_use_ros = False
 
         if self._do_use_ros:
+            import ecto_ros
+            ecto_ros.init(sys.argv, "ecto_node")
             self._image_message_splitter = ecto.Passthrough()
 
         # add the different possible outputs
@@ -69,27 +72,27 @@ class Sink(ecto.BlackBox):
 
     # Functions to help with the argument parsing
     def add_arguments(self, parser):
-        parser.add_argument(dest='--do_csv', action='store_true', default = False,
+        parser.add_argument('--csv', dest='do_csv', action='store_true', default = False,
                             help='If set, output to a CSV NIST file')
-        self._cell_factory['CSV_WRITER'] = ecto.opts.cell_options(parser, GuessCsvWriter, 'csv')
+        self._cell_factory[Sink.CSV_WRITER] = ecto.opts.cell_options(parser, GuessCsvWriter, 'csv')
 
         if self._do_use_ros:
             from ros.sink import Publisher, TabletopPublisher
-            parser.add_argument(dest='--do_ros', action='store_true', default = False,
+            parser.add_argument('--ros', dest='do_ros', action='store_true', default = False,
                                 help='If set, publish to a ROS topic')
             # TODO
-            #self._cell_factory['ROS'] = ecto.opts.cell_options(parser, Publisher, 'ros')
+            #self._cell_factory[Sink.ROS] = ecto.opts.cell_options(parser, Publisher, 'ros')
     
-            parser.add_argument(dest='--do_ros_tabletop', action='store_true', default = False,
+            parser.add_argument('--ros_tabletop', dest='do_ros_tabletop', action='store_true', default = False,
                                 help='If set, publish to a ROS topic in the tabletop format')
             # TODO
-            #self._cell_factory['ROS_TABLETOP'] = ecto.opts.cell_options(parser, TabletopPublisher, 'ros tabletop')
+            #self._cell_factory[Sink.ROS_TABLETOP] = ecto.opts.cell_options(parser, TabletopPublisher, 'ros tabletop')
 
     def parse_arguments(self, parser):
         args = parser.parse_args()
         if args.do_csv:
-            self._cells.append(self._cell_factory['CSV_WRITER'](parser))
+            self._cells.append(self._cell_factory[Sink.CSV_WRITER](parser))
         if args.do_ros:
-            self._cells.append(self._cell_factory['ROS'](parser))
+            self._cells.append(self._cell_factory[Sink.ROS](parser))
         if args.do_ros_tabletop:
-            self._cells.append(self._cell_factory['ROS_TABLETOP'](parser))
+            self._cells.append(self._cell_factory[Sink.ROS_TABLETOP](parser))

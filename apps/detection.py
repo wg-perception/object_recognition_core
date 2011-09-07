@@ -12,10 +12,11 @@ import time
 from ecto_object_recognition import tod_detection, ros
 from object_recognition.tod.feature_descriptor import FeatureDescriptor
 from object_recognition.common.io.ros.source import KinectReader, BagReader
+#from object_recognition.common.filters.masker import Masker
 from object_recognition.common.io.sink import Sink
+from object_recognition.common.io.source import Source
 from object_recognition.tod.detector import TodDetector
 
-CSV = False
 DEBUG = False
 DISPLAY = True
 
@@ -26,9 +27,14 @@ PoseArrayPub = ecto_geometry_msgs.Publisher_PoseArray
 
 if __name__ == '__main__':
     plasm = ecto.Plasm()
+    source = Source(plasm)
+    #masker = Masker(plasm)
     sink = Sink(plasm)
 
     parser = ArgumentParser()
+    # add arguments for the source
+    source.add_arguments(parser)
+
     # add arguments for the sink
     sink.add_arguments(parser)
 
@@ -41,7 +47,6 @@ if __name__ == '__main__':
                       '"band_aid_plastic_strips"]\n'
                       '"search": the "type" of the search structure, the "radius" and/or "ratio" for the ratio test.\n'
                       )
-    parser.add_argument("-k", "--kinect", dest="do_kinect", help="if set to something, it will read data from the kinect")
 
     options = parser.parse_args()
 
@@ -58,10 +63,11 @@ if __name__ == '__main__':
     guess_json_params = str(json_params['guess']).replace("'", '"').replace('u"', '"').replace('{u', '{')
     search_json_params = str(json_params['search']).replace("'", '"').replace('u"', '"').replace('{u', '{')
 
-    # define the input
+    # define the main cell
     tod_detector = TodDetector(plasm, feature_descriptor_params, db_json_params, object_ids, search_json_params,
                                  guess_json_params)
 
+    # define the input
     if options.bag:
         bag_reader = BagReader(plasm, dict(image=ecto_sensor_msgs.Bagger_Image(topic_name='image_mono'),
                            camera_info=ecto_sensor_msgs.Bagger_CameraInfo(topic_name='camera_info'),
@@ -74,19 +80,11 @@ if __name__ == '__main__':
                       bag_reader['point_cloud'] >> point_cloud_to_mat['point_cloud'],
                       point_cloud_to_mat['points'] >> tod_detector['points'])
 
-    elif options.do_kinect:
-        ecto_ros.init(sys.argv, "ecto_node")
-        kinect_reader = KinectReader(plasm, DISPLAY)
-        plasm.connect(kinect_reader['image'] >> tod_detector['image'],
-                      kinect_reader['points3d'] >> tod_detector['points3d'])
+    plasm.connect(sink['image','points3d','points'] >> tod_detector['image','points3d','points'])
 
-    # write data back to a file
-    if CSV:
-        guess_writer = tod_detection.GuessCsvWriter()
-        plasm.connect(tod_detector['object_ids'] >> guess_writer['object_ids'],
-                  tod_detector['Rs'] >> guess_writer['Rs'],
-                  tod_detector['Ts'] >> guess_writer['Ts'],
-                  )
+    # define the different outputs
+    plasm.connect(tod_detector['object_ids','Rs','Ts'] >> sink['object_ids','Rs','Ts'])
+
     #assemble a pose array message
     pose_array_assembler = ros.PoseArrayAssembler()
     #publish the poses over ROS.
