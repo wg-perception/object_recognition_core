@@ -12,7 +12,7 @@ import time
 from ecto_object_recognition import tod_detection, ros
 from object_recognition.tod.feature_descriptor import FeatureDescriptor
 from object_recognition.common.io.ros.source import KinectReader, BagReader
-#from object_recognition.common.filters.masker import Masker
+from object_recognition.common.filters.masker import Masker
 from object_recognition.common.io.sink import Sink
 from object_recognition.common.io.source import Source
 from object_recognition.tod.detector import TodDetector
@@ -28,7 +28,7 @@ PoseArrayPub = ecto_geometry_msgs.Publisher_PoseArray
 if __name__ == '__main__':
     plasm = ecto.Plasm()
     source = Source(plasm)
-    #masker = Masker(plasm)
+    masker = Masker(plasm)
     sink = Sink(plasm)
 
     parser = ArgumentParser()
