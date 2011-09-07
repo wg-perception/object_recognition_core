@@ -6,6 +6,7 @@ Module defining several outputs for the object recognition pipeline
 import ecto
 import ecto_geometry_msgs
 import ecto_ros
+from ecto_object_recognition import ros
 
 PoseArrayPub = ecto_geometry_msgs.Publisher_PoseArray
 
@@ -14,6 +15,7 @@ PoseArrayPub = ecto_geometry_msgs.Publisher_PoseArray
 class Publisher(ecto.BlackBox):
     """
     Class publishing the different results of object recognition as ROS topics
+    http://ecto.willowgarage.com/releases/amoeba-beta3/ros/geometry_msgs.html#Publisher_PoseArray
     """
     def __init__(self, plasm, topic_name, latched = False):
         ecto.BlackBox.__init__(self, plasm)
@@ -34,7 +36,7 @@ class Publisher(ecto.BlackBox):
         return {}
 
     def connections(self):
-        return [pose_array_assembler['pose_message'] >> self._pose_pub[:]]
+        return [self._pose_array_assembler['pose_message'] >> self._pose_pub[:]]
 
 ########################################################################################################################
 

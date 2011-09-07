@@ -7,6 +7,7 @@ import ecto
 import ecto_ros
 import ecto_sensor_msgs
 from ecto_opencv import calib, highgui
+import sys
 
 ImageSub = ecto_sensor_msgs.Subscriber_Image
 CameraInfoSub = ecto_sensor_msgs.Subscriber_CameraInfo
@@ -47,14 +48,18 @@ class KinectReader(ecto.BlackBox):
         return {}
 
     def connections(self):
+        # not sure on where to put this but that has to be done whenever the cell is used (and not necessarily created)
+        ecto_ros.init(sys.argv, "ecto_node")
+
         connections = [self._sync["image"] >> self._im2mat_rgb["image"],
                   self._sync["depth"] >> self._im2mat_depth["image"],
                   self._sync["image_info"] >> self._camera_info['camera_info'],
                   self._camera_info['K'] >> self._depth_to_3d['K'],
                   self._im2mat_depth['image'] >> self._depth_to_3d['depth']
                   ]
-        if self._debug:
-            connections += [self._im2mat_depth[:] >> highgui.imshow(name='kinect depth',waitKey=10)[:]]
+        # TODO : reset that to DEBUG
+        #if self._debug:
+        connections += [self._im2mat_depth[:] >> highgui.imshow(name='kinect depth',waitKey=1)[:]]
         return connections
 
 ########################################################################################################################

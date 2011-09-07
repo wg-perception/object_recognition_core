@@ -40,6 +40,7 @@ class Source(ecto.BlackBox):
         self._cell_factory = {}
         self._cells = []
         self._outputs = {}
+        self._connections = []
 
     # common ecto implementation
     def expose_inputs(self):
@@ -52,16 +53,15 @@ class Source(ecto.BlackBox):
         return {}
 
     def connections(self):
-        return []
+        return self._connections
 
     # Functions to help with the argument parsing
     def add_arguments(self, parser):
         if self._do_use_ros:
             from ros.source import BagReader, KinectReader
-            parser.add_argument('--ros_bag', dest='do_ros_bag', action='store_true', default = False,
-                                help='If set, read from a Kinect controlled by ROS.')
-            # TODO
+            # TODO only use the following line
             #self._cell_factory[Source.ROS_BAG] = ecto.opts.cell_options(parser, BagReader, 'ros_bag')
+            parser.add_argument('--ros_bag', dest='ros_bag', help='The path of a ROS bag to analyze.')
 
             parser.add_argument('--ros_kinect', dest='do_ros_kinect', action='store_true', default = False,
                                 help='If set, read from a ROS bag.')
@@ -71,10 +71,20 @@ class Source(ecto.BlackBox):
 
     def parse_arguments(self, parser):
         args = parser.parse_args()
-        if args.do_ros_bag:
-            cell = self._cell_factory[Source.ROS_BAG](parser)
-            self._cells.append(cell)
-            self._outputs.update({'image': cell['image'], 'point_cloud': cell['point_cloud']})
+        if args.ros_bag:
+            #cell = self._cell_factory[Source.ROS_BAG](parser)
+            #self._cells.append(cell)
+            #self._outputs.update({'image': cell['image'], 'point_cloud': cell['point_cloud']})
+            #TODO fix the following
+            #self._cell_factory[Source.ROS_KINECT] = KinectReader(self._plasm)
+            bag_reader = BagReader(self._plasm, dict(image=ecto_sensor_msgs.Bagger_Image(topic_name='image_mono'),
+                           camera_info=ecto_sensor_msgs.Bagger_CameraInfo(topic_name='camera_info'),
+                           point_cloud=ecto_sensor_msgs.Bagger_PointCloud2(topic_name='points'),
+                           ), args.ros_bag)
+            self._cells.apend(bag_reader)
+            self._connections.extend([bag_reader['point_cloud'] >> point_cloud_to_mat['point_cloud']])
+            point_cloud_to_mat = tod_detection.PointCloudToMat()
+            self._outputs({'image': bag_reader['image'], 'points': point_cloud_to_mat['points']})
         if args.do_ros_kinect:
             #TODO fix the following
             #cell = self._cell_factory[Source.ROS_KINECT](parser)
