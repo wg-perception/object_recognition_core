@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# abstract the input.
 import ecto
 from object_recognition import capture
 from object_recognition.capture import openni_capture
