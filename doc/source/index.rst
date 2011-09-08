@@ -10,4 +10,5 @@ that utilize said classifiers.
    
    capture/capture.rst
    db/couch.rst
+   detection/detection.rst
 
