@@ -1,4 +1,5 @@
-# deal with the detection TOD module
+add_subdirectory(ros)
+
 ectomodule(conversion
   PointCloudToMat.cpp
   module.cpp
