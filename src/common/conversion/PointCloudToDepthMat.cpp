@@ -33,6 +33,8 @@
  *
  */
 
+#include <stdio.h>
+#include <string.h>
 #include <fstream>
 #include <iostream>
 
@@ -56,38 +58,65 @@ namespace object_recognition
      * - if the point cloud is organized, the return a matrix is width by height with 3 channels (for x, y and z)
      * - if the point cloud is unorganized, the return a matrix is n_point by 1 with 3 channels (for x, y and z)
      */
-    struct PointCloudToMat
+    struct PointCloudToDepthMat
     {
       static void
       declare_io(const tendrils& params, tendrils& inputs, tendrils& outputs)
       {
+        inputs.declare<boost::shared_ptr<pcl::PointCloud<pcl::PointXYZ> const> >("point_cloud", "The point cloud");
         inputs.declare<boost::shared_ptr<pcl::PointCloud<pcl::PointXYZRGB> const> >("point_cloud_rgb",
                                                                                     "The RGB point cloud");
-        outputs.declare<cv::Mat>("points", "The width by height by 3 channels (x, y and z)");
+        outputs.declare<cv::Mat>("depth", "The depth image");
       }
 
       int
       process(const tendrils& inputs, const tendrils& outputs)
       {
-        // Get the original keypoints and point cloud
-        typedef pcl::PointXYZRGB PointType;
-        boost::shared_ptr<pcl::PointCloud<PointType> const> point_cloud = inputs.get<
-            boost::shared_ptr<pcl::PointCloud<PointType> const> >("point_cloud_rgb");
+        // In DepthTo3 we get the 3d point of a (u,v) point this way:
+        // float fx = K.at<float>(0, 0);
+        // float fy = K.at<float>(1, 1);
+        // float cx = K.at<float>(0, 2);
+        // float cy = K.at<float>(1, 2);
+        // *(sp_begin++) = (u - cx) * z / fx;
+        // *(sp_begin++) = (v - cy) * z / fy;
+        // *(sp_begin++) = z;
+        // So we just need to recover the z
 
-        cv::Mat points = cv::Mat(point_cloud->height, point_cloud->width, CV_32FC3);
+        // Convert the point cloud to a width by height 3 channel matrix
+        cv::Mat depth;
+        {
+          boost::shared_ptr<pcl::PointCloud<pcl::PointXYZRGB> const> point_cloud_rgb = inputs.get<
+              boost::shared_ptr<pcl::PointCloud<pcl::PointXYZRGB> const> >("point_cloud_rgb");
+          if (!point_cloud_rgb->points.empty())
+          {
+            depth = cv::Mat_<float>(point_cloud_rgb->height, point_cloud_rgb->width);
+            float * data_points = reinterpret_cast<float*>(depth.data);
+            const float * data_pcd = reinterpret_cast<const float*>(point_cloud_rgb->points.data()) + 2;
+            for (unsigned int i = 0; i < point_cloud_rgb->size(); ++i, data_pcd += 3, ++data_points)
+              *data_points = *data_pcd;
+          }
+        }
+        {
+          boost::shared_ptr<pcl::PointCloud<pcl::PointXYZ>const> point_cloud = inputs.get<
+              boost::shared_ptr<pcl::PointCloud<pcl::PointXYZ> const> >("point_cloud");
+          if (!point_cloud->points.empty())
+          {
+            depth = cv::Mat_<float>(point_cloud->height, point_cloud->width);
+            float * data_points = reinterpret_cast<float*>(depth.data);
+            const float * data_pcd = reinterpret_cast<const float*>(point_cloud->points.data()) + 2;
+            for (unsigned int i = 0; i < point_cloud->size(); ++i, data_pcd += 3, ++data_points)
+              *data_points = *data_pcd;
+          }
+        }
 
-        std::memcpy(reinterpret_cast<void*>(points.data), reinterpret_cast<const void*>(point_cloud->points.data()), sizeof(pcl::PointCloud<PointType>) * point_cloud->size());
+        outputs.get<cv::Mat>("depth") = depth;
 
-        outputs["points"] << points;
-
-        return 0;
+        return ecto::OK;
       }
-    };
+    }
+    ;
   }
 }
 
-ECTO_CELL(
-    conversion,
-    object_recognition::conversion::PointCloudToMat,
-    "PointCloudToMat",
-    "Given a point cloud, stack it to a matrix of floats:\n- if the point cloud is organized, the return a matrix is width by height with 3 channels (for x, y and z)\n- if the point cloud is unorganized, the return a matrix is n_point by 1 with 3 channels (for x, y and z)");
+ECTO_CELL(conversion, object_recognition::conversion::PointCloudToDepthMat, "PointCloudToDepthMat",
+          "Given a point cloud returns a depth cv::Mat (just the z of the points)");

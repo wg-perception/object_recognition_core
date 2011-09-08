@@ -1,8 +1,7 @@
-add_subdirectory(ros)
-
 ectomodule(conversion
-  PointCloudToMat.cpp
   module.cpp
+  PointCloudToDepthMat.cpp
+  PointCloudToMat.cpp
   )
 
 link_ecto(conversion
