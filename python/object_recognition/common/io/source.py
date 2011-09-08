@@ -7,6 +7,7 @@ import ecto
 import ecto.opts
 from ecto_object_recognition.io import GuessCsvWriter
 import sys
+import object_recognition.common.conversion
 
 ########################################################################################################################
 
@@ -83,7 +84,7 @@ class Source(ecto.BlackBox):
                            ), args.ros_bag)
             self._cells.apend(bag_reader)
             self._connections.extend([bag_reader['point_cloud'] >> point_cloud_to_mat['point_cloud']])
-            point_cloud_to_mat = tod_detection.PointCloudToMat()
+            point_cloud_to_mat = conversion.PointCloudToMat()
             self._outputs({'image': bag_reader['image'], 'points': point_cloud_to_mat['points']})
         if args.do_ros_kinect:
             #TODO fix the following
