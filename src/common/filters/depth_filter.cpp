@@ -33,29 +33,57 @@
  *
  */
 
+#include <limits>
+
 #include <ecto/ecto.hpp>
 
 #include <opencv2/core/core.hpp>
 
 namespace object_recognition
 {
-  struct DepthFilter
+  namespace filters
   {
-    static void
-    declare_io(const ecto::tendrils& params, ecto::tendrils& inputs, ecto::tendrils& outputs)
+    struct DepthFilter
     {
-      inputs.declare<cv::Mat>("points3d", "The 3d points: width by height by 3 channels");
-      outputs.declare<cv::Mat>("mask", "The mask of what is within the depth range in the image");
-    }
+      static void
+      declare_params(ecto::tendrils& params)
+      {
+        params.declare<float>("d_min", "The minimal distance at which object become interesting (in meters)",
+                              std::numeric_limits<float>::min());
+        params.declare<float>("d_max", "The maximal distance at which object become interesting (in meters)",
+                              std::numeric_limits<float>::max());
+      }
 
-    int
-    process(const ecto::tendrils& inputs, const ecto::tendrils& outputs)
-    {
+      void
+      configure(const ecto::tendrils& params, const ecto::tendrils& inputs, const ecto::tendrils& outputs)
+      {
+        d_min_ = params.get<float>("d_min");
+      }
 
-      return ecto::OK;
-    }
-  };
+      static void
+      declare_io(const ecto::tendrils& params, ecto::tendrils& inputs, ecto::tendrils& outputs)
+      {
+        inputs.declare<cv::Mat>("points3d", "The 3d points: width by height by 3 channels");
+        outputs.declare<cv::Mat>("mask", "The mask of what is within the depth range in the image");
+      }
+
+      int
+      process(const ecto::tendrils& inputs, const ecto::tendrils& outputs)
+      {
+        // Get the depth
+        std::vector<cv::Mat> channels(3);
+        cv::split(inputs.get<cv::Mat>("points3d"), channels);
+
+        cv::Mat output = ((d_min_ < channels[2]) & (channels[2] < d_max_));
+
+        outputs["mask"] << output;
+        return ecto::OK;
+      }
+    private:
+      float d_min_, d_max_;
+    };
+  }
 }
 
-ECTO_CELL(filters, object_recognition::DepthFilter, "object_recognition",
+ECTO_CELL(filters, object_recognition::filters::DepthFilter, "depth_filter",
           "Given a depth image, return the mask of what is between two depths.");

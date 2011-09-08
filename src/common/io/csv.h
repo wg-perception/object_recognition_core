@@ -44,8 +44,8 @@
 
 namespace object_recognition
 {
-namespace tod
-{
+  namespace io
+  {
 //! @brief Timestamp descriptor object
 //!
 struct TimeStamp

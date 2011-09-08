@@ -29,8 +29,8 @@ using ecto::tendrils;
 
 namespace object_recognition
 {
-namespace tod
-{
+  namespace io
+  {
 
 /** Ecto implementation of a module that takes
  *
@@ -39,8 +39,6 @@ struct GuessCsvWriter
 {
   static void declare_params(tendrils& p)
   {
-    p.declare<std::string>("base_directory", "Base directory");
-    p.declare<std::string>("config_file", "Configuration file");
     p.declare<std::string>("team_name", "The name of the team to consider");
     p.declare<int>("run_number", "The run number");
   }
@@ -74,7 +72,7 @@ struct GuessCsvWriter
     run_info.ts.set();
     run_info.runID = run_number_;
     run_info.name = team_name_;
-    tod::CSVOutput csv_out = openCSV(run_info);
+    CSVOutput csv_out = openCSV(run_info);
     int dID = 0; //detection id
     for (unsigned int i = 0; i < object_ids.size(); ++i)
     {
@@ -83,7 +81,7 @@ struct GuessCsvWriter
           Rs[i].convertTo(R, CV_32F);
           Ts[i].convertTo(T, CV_32F);
 
-          tod::PoseInfo poseInfo;
+          PoseInfo poseInfo;
           for (int i = 0; i < 9; i++)
             poseInfo.Rot[i] = R.at<float>(i % 3, i / 3);
 
@@ -107,5 +105,5 @@ private:
 }
 }
 
-ECTO_CELL(tod_detection, object_recognition::tod::GuessCsvWriter, "GuessCsvWriter",
-          "Given guesses, writes them to a CSV.");
+ECTO_CELL(io, object_recognition::io::GuessCsvWriter, "GuessCsvWriter",
+          "Given guesses, writes them to a CSV in the NIST format.");

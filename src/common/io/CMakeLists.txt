@@ -1,3 +1,10 @@
+find_ros_package(pcl) #find the ros version of pcl for now.
+
+if(NOT pcl_FOUND)
+message(STATUS "pcl could not be found, so not building tod.")
+return()
+endif()
+
 add_subdirectory(ros)
 
 # deal with the detection TOD module

@@ -69,21 +69,11 @@ namespace object_recognition
     struct PointCloudToMat
     {
       static void
-      declare_params(tendrils& p)
-      {
-      }
-
-      static void
       declare_io(const tendrils& params, tendrils& inputs, tendrils& outputs)
       {
         inputs.declare<boost::shared_ptr<pcl::PointCloud<pcl::PointXYZRGB> const> >("point_cloud_rgb",
                                                                                     "The RGB point cloud");
-        outputs.declare<cv::Mat>("points", "the id's of the found objects");
-      }
-
-      void
-      configure(const tendrils& params, const tendrils& inputs, const tendrils& outputs)
-      {
+        outputs.declare<cv::Mat>("points", "The width by height by 3 channels (x, y and z)");
       }
 
       int
@@ -114,4 +104,4 @@ namespace object_recognition
 }
 
 ECTO_CELL(tod_detection, object_recognition::tod::PointCloudToMat, "PointCloudToMat",
-          "Given descriptors and 3D positions, compute object guesses.");
+          "Given a point cloud, convert it to a width by height matrix with 3 channels (x,y and z).");

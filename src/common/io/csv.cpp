@@ -39,8 +39,8 @@
 
 namespace object_recognition
 {
-namespace tod
-{
+  namespace io
+  {
 
 void TimeStamp::set()
 {
