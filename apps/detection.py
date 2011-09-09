@@ -51,6 +51,9 @@ if __name__ == '__main__':
     source.parse_arguments(parser)
     sink.parse_arguments(parser)
     args = parser.parse_args()
+    
+    #todo handle this properly...
+    ecto_ros.init(sys.argv, "ecto_node")
 
     if not source.expose_outputs():
         raise 'no input specified'

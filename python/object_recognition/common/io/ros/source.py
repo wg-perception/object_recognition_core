@@ -49,8 +49,6 @@ class KinectReader(ecto.BlackBox):
 
     def connections(self):
         # not sure on where to put this but that has to be done whenever the cell is used (and not necessarily created)
-        ecto_ros.init(sys.argv, "ecto_node")
-
         connections = [self._sync["image"] >> self._im2mat_rgb["image"],
                   self._sync["depth"] >> self._im2mat_depth["image"],
                   self._sync["image_info"] >> self._camera_info['camera_info'],

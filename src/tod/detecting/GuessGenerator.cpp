@@ -197,7 +197,7 @@ namespace object_recognition
                       << " possible matches with " << n_ransac_iterations_ << " iterations " << std::endl;
 
             model->setInputTarget(query_point_clouds[object_id].makeShared(), good_indices);
-            sample_consensus.setDistanceThreshold(0.01);
+            sample_consensus.setDistanceThreshold(0.04);
             sample_consensus.setMaxIterations(n_ransac_iterations_);
             sample_consensus.computeModel();
             std::vector<int> inliers;

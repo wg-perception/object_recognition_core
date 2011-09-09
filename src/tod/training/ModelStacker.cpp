@@ -72,8 +72,13 @@ namespace object_recognition
       int
       process(const tendrils& inputs, const tendrils& outputs)
       {
-        points_.push_back(inputs.get<cv::Mat>("points"));
-        descriptors_.push_back(inputs.get<cv::Mat>("descriptors"));
+        cv::Mat points;
+        inputs["points"] >> points;
+        if (!points.empty())
+        {
+          points_.push_back(points);
+          descriptors_.push_back(inputs.get<cv::Mat>("descriptors"));
+        }
         outputs.get<std::vector<cv::Mat> >("points") = points_;
         outputs.get<std::vector<cv::Mat> >("descriptors") = descriptors_;
         return ecto::OK;

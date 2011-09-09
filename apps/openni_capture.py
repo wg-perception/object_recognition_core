@@ -66,12 +66,13 @@ if "__main__" == __name__:
     argv = sys.argv[:]
     ecto_ros.strip_ros_args(sys.argv)
     options = parse_args()
-    #ecto_ros.init(argv, "openni_capture", False)
+    ecto_ros.init(argv, "openni_capture", False)
     
     plasm =None
     if options.preview:
         plasm = openni_capture.create_preview_capture_standalone(options.camera_file)
     else:
-        plasm = openni_capture.create_capture_plasm_standalone(options.bag, options.angle_thresh,options.camera_file)
+        #plasm = openni_capture.create_capture_plasm_standalone(options.bag, options.angle_thresh,options.camera_file)
+        plasm = openni_capture.create_capture_plasm(options.bag, options.angle_thresh)
     from ecto.opts import run_plasm
     run_plasm(options, plasm)
