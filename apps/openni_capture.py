@@ -46,7 +46,10 @@ object sparsely, depending on the delta setting.'''),
                        help='''The delta angular threshold in pose. Default is pi/36 radians.
                             Frames will not be recorded unless they are not closer to any other pose by this amount.
                             ''')
-
+    parser.add_argument('-c', '--camera_file', metavar='CAMERA_YML', dest='camera_file', type=str,
+                       default='camera.yml',
+                       help='''A yaml file that contains opencv matrices for camera_matrix, distortion_coefficients, and floats for image_width, image_height
+                            ''')
     from ecto.opts import scheduler_options
     #add ecto scheduler args.
     group = parser.add_argument_group('ecto scheduler options')
@@ -61,7 +64,7 @@ if "__main__" == __name__:
     argv = sys.argv[:]
     ecto_ros.strip_ros_args(sys.argv)
     options = parse_args()
-    ecto_ros.init(argv, "openni_capture", False)
-    plasm = openni_capture.create_capture_plasm(options.bag, options.angle_thresh)
+    #ecto_ros.init(argv, "openni_capture", False)
+    plasm = openni_capture.create_capture_plasm_standalone(options.bag, options.angle_thresh,options.camera_file)
     from ecto.opts import run_plasm
     run_plasm(options, plasm)

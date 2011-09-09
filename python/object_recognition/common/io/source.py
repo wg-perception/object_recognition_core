@@ -63,6 +63,7 @@ class Source(ecto.BlackBox):
 
             parser.add_argument('--ros_kinect', dest='do_ros_kinect', action='store_true', default = False,
                                 help='If set, read from a ROS bag.')
+            
             # TODO
             #self._cell_factory[ROS_KINECT] = ecto.opts.cell_options(parser, KinectReader, 'ros_kinect')
 
