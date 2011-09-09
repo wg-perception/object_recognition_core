@@ -9,7 +9,7 @@ from argparse import ArgumentParser
 import os
 import sys
 import time
-from ecto_object_recognition import tod_detection, ros
+from ecto_object_recognition import tod_detection
 from object_recognition.tod.feature_descriptor import FeatureDescriptor
 from object_recognition.common.io.ros.source import KinectReader, BagReader
 from object_recognition.common.filters.masker import Masker
@@ -99,9 +99,9 @@ if __name__ == '__main__':
 
     # Display the different poses
     if DISPLAY:
-        image_view = highgui.imshow(name="RGB", waitKey=1, autoSize=True)
-        keypoints_view = highgui.imshow(name="Keypoints", waitKey=1, autoSize=True)
-        pose_view = highgui.imshow(name="Pose", waitKey=1, autoSize=True)
+        image_view = highgui.imshow(name="RGB", waitKey=10, autoSize=True)
+        keypoints_view = highgui.imshow(name="Keypoints", waitKey=10, autoSize=True)
+        pose_view = highgui.imshow(name="Pose", waitKey=10, autoSize=True)
         draw_keypoints = features2d.DrawKeypoints()
         pose_drawer = calib.PosesDrawer()
 
@@ -122,6 +122,6 @@ if __name__ == '__main__':
         ecto.view_plasm(plasm)
 
     # execute the pipeline
-    #sched = ecto.schedulers.Singlethreaded(plasm)
-    sched = ecto.schedulers.Threadpool(plasm)
+    sched = ecto.schedulers.Singlethreaded(plasm)
+    #sched = ecto.schedulers.Threadpool(plasm)
     sched.execute()
