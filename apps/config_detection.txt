@@ -15,11 +15,20 @@
 		"type": "CouchDB",
 		"url": "http://localhost:5984"
 	},
-	"object_ids": ["72e4498e4ac140ca8ae049fdfd19ee9f","72e4498e4ac140ca8ae049fdfd2bfc6d"],
+	"object_ids": 
+	[
+	"72e4498e4ac140ca8ae049fdfd19ee9f",
+	"72e4498e4ac140ca8ae049fdfd31be29",
+	"72e4498e4ac140ca8ae049fdfd31e476",
+	"72e4498e4ac140ca8ae049fdfd31cd1c",
+	"72e4498e4ac140ca8ae049fdfd31d5cf",
+	"72e4498e4ac140ca8ae049fdfd2bfc6d"
+	]
+	,
 	"guess":
 	{
-		"min_inliers": 20,
-		"n_ransac_iterations": 200
+		"min_inliers": 30,
+		"n_ransac_iterations": 300
 	},
 	"search":
 	{
@@ -28,6 +37,6 @@
 		"key_size": 18,
 		"multi_probe_level": 2,
 		"ratio": 0.8,
-		"radius": 40
+		"radius": 50
 	}
 }

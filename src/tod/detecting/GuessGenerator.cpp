@@ -113,7 +113,7 @@ namespace object_recognition
                     pcl::PointCloud<pcl::PointXYZ> & query_point_cloud)
       {
         pcl::PointCloud<pcl::PointXYZ> training, query;
-        float max_dist = 0.01;
+        float max_dist = 0.005;
         for (unsigned int i = 0; i < training_point_cloud.size(); ++i)
         {
           pcl::PointXYZ & training_point_1 = training_point_cloud.points[i];
@@ -157,13 +157,15 @@ namespace object_recognition
         pcl::RandomSampleConsensus<pcl::PointXYZ> sample_consensus(model);
         Eigen::VectorXf coefficients;
         model->setInputTarget(query_point_cloud, good_indices);
-        sample_consensus.setDistanceThreshold(0.0125);
+        sample_consensus.setDistanceThreshold(0.01);
         sample_consensus.setMaxIterations(n_ransac_iterations_);
-        if(sample_consensus.computeModel())
+        if (sample_consensus.computeModel())
         {
           sample_consensus.getInliers(inliers);
+          std::sort(inliers.begin(), inliers.end());
           sample_consensus.getModelCoefficients(coefficients);
-        }else
+        }
+        else
         {
           inliers.clear();
         }
@@ -176,9 +178,11 @@ namespace object_recognition
       {
         pcl::PointCloud<pcl::PointXYZ> training, query;
         std::vector<std::vector<int> > clusters(training_point_cloud.size());
-        std::vector<std::pair<int, int> > count_clusteridx;
-        count_clusteridx.reserve(clusters.size());
-        float max_dist = 0.02;
+        float max_dist = 0.005;
+        float min_span = 0.05;
+        float span_query = 0;
+        float span_training = 0;
+        std::cout << "training_point_cloud size " << training_point_cloud.size() << std::endl;
         for (unsigned int i = 0; i < training_point_cloud.size(); ++i)
         {
           const pcl::PointXYZ & training_point_1 = training_point_cloud.points[i];
@@ -193,17 +197,21 @@ namespace object_recognition
             const pcl::PointXYZ & training_point_2 = training_point_cloud.points[j];
             const pcl::PointXYZ & query_point_2 = query_point_cloud.points[j];
 
-            float distsq_1 = pcl::euclideanDistance(training_point_1, training_point_2);
-            float distsq_2 = pcl::euclideanDistance(query_point_1, query_point_2);
-            if (std::abs(distsq_1 - distsq_2) < max_dist)
+            float dist1 = pcl::euclideanDistance(training_point_1, training_point_2);
+            float dist2 = pcl::euclideanDistance(query_point_1, query_point_2);
+            if (std::abs(dist1 - dist2) < max_dist)
             {
               cluster.push_back(j);
+              span_training = std::max(span_training, dist1);
+              span_query = std::max(span_query, dist2);
             }
           }
           //sort the small cluster before exiting. for the set difference.
+          if ((span_query < min_span) && (span_training < min_span))
+            cluster.clear();
           std::sort(cluster.begin(), cluster.end());
-          count_clusteridx.push_back(std::make_pair(cluster.size(), i));
         }
+
         pcl::PointCloud<pcl::PointXYZ>::Ptr
             training_cloud_ptr(new pcl::PointCloud<pcl::PointXYZ>(training_point_cloud));
         pcl::PointCloud<pcl::PointXYZ>::Ptr query_cloud_ptr(new pcl::PointCloud<pcl::PointXYZ>(query_point_cloud));
@@ -211,20 +219,28 @@ namespace object_recognition
         bool is_done = false;
         while (!is_done)
         {
+          std::vector<std::pair<int, int> > count_clusteridx;
+          count_clusteridx.reserve(clusters.size());
+
+          count_clusteridx.clear();
+          for (unsigned int i = 0; i < clusters.size(); ++i)
+            count_clusteridx.push_back(std::make_pair(clusters[i].size(), i));
           std::sort(count_clusteridx.begin(), count_clusteridx.end(), compare_first);
 
           is_done = true;
           for (int i = count_clusteridx.size() - 1; i >= 0; i--)
           {
-            std::vector<int>& cluster = clusters[count_clusteridx[i].second];
-            if (cluster.size() < int(min_inliers_))
+            int count_i, index_i;
+            boost::tie(count_i, index_i) = count_clusteridx[i];
+            const std::vector<int>& cluster_i = clusters[index_i];
+            if (cluster_i.size() < int(min_inliers_))
               break;
             //largest cluster
-            Eigen::VectorXf coefficients = ransacy(training_cloud_ptr, query_cloud_ptr, cluster, inliers);
+            inliers.clear();
+            Eigen::VectorXf coefficients = ransacy(training_cloud_ptr, query_cloud_ptr, cluster_i, inliers);
             if (inliers.size() >= min_inliers_)
             {
               // Create a pose object
-
               cv::Mat_<float> R_mat(3, 3), tvec(3, 1);
               for (unsigned int j = 0; j < 3; ++j)
               {
@@ -237,27 +253,34 @@ namespace object_recognition
 
               std::vector<int> temp_cluster;
               // remove inliers from all clusters
-              for (int j = count_clusteridx.size() - 1; j >= 0; j--)
+              for (unsigned int index = 0; index < clusters.size(); ++index)
               {
-                int count, index;
-                boost::tie(count,index) = count_clusteridx[j];
+
                 temp_cluster = clusters[index];
+                int size = temp_cluster.size();
                 clusters[index].resize(temp_cluster.size() + inliers.size());
                 std::vector<int>::iterator it;
                 it = std::set_difference(temp_cluster.begin(), temp_cluster.end(), inliers.begin(), inliers.end(),
                                          clusters[index].begin());
                 //be sure to resize here.
                 clusters[index].resize(it - clusters[index].begin());
-                count_clusteridx[j].first = clusters[index].size();
+                std::sort(clusters[index].begin(), clusters[index].end());
+                std::cout << "post diff : " << clusters[index].size() << " pre: " << size << std::endl;
               }
-              clusters[i].clear();
+              for (unsigned int j = 0; j < inliers.size(); ++j)
+              {
+                clusters[inliers[j]].clear();
+              }
+              cluster_i.clear();
               is_done = false;
               break;
-            }else
+            }
+            else
             {
-              std::cout << "bump" << std::endl;
+              cluster_i.clear();
             }
           }
+          //break;//one cluster per object.
         }
       }
 
