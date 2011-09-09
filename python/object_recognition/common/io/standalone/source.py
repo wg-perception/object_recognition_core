@@ -56,11 +56,10 @@ class KinectReader(ecto.BlackBox):
     """
     def __init__(self, plasm, camera_file, debug=False):
         ecto.BlackBox.__init__(self, plasm)
-
-        self._openni = xtion_highres(0)
+        self._openni = ecto.If('Xtion PRO Live',cell=xtion_highres(0))
+        self._openni.inputs.__test__ = True
         self._camera_info = calib.CameraIntrinsics(camera_file=camera_file)
-        self._converters = highgui.NiConverter(rescale=False)
-#        self._depth_to_3d = calib.DepthTo3d(do_organized=True)
+        self._converters = highgui.NiConverter(rescale=True)
         self._debug = debug
 
     def expose_inputs(self):
@@ -69,10 +68,10 @@ class KinectReader(ecto.BlackBox):
     def expose_outputs(self):
         return {'image': self._converters['image'],
                 'depth': self._converters['depth'],
- #               'points3d': self._depth_to_3d['points3d'],
                 'K': self._camera_info['K'],
                 'D': self._camera_info['D'],
-                'image_size': self._camera_info['image_size']
+                'image_size': self._camera_info['image_size'],
+                '__test__': self._openni['__test__']
                 }
 
     def expose_parameters(self):
@@ -80,8 +79,6 @@ class KinectReader(ecto.BlackBox):
 
     def connections(self):
         connections = [self._openni[:] >> self._converters[:],
-  #                self._converters["depth"] >> self._depth_to_3d['depth'],
-  #                self._camera_info['K'] >> self._depth_to_3d['K'],
                   ]
         return connections
 

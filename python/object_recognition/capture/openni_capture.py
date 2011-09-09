@@ -86,6 +86,106 @@ def xtion_highres(device_n):
                    device=Device.ASUS_XTION_PRO_LIVE
                    )
 
+from arbotix import *
+import math
+import time
+from ecto_opencv import imgproc, calib, highgui
+
+def find_diff(prev, current):
+  max_val = 0xFFFF #16bit max_val
+  min_val = 0x0
+  if current - prev >= 0:
+    return current - prev
+  else:
+    return (max_val - prev) + current
+
+def rotate(a,MY_SERVO,degrees,speed):
+  a.enableWheelMode(MY_SERVO)
+  prev = pos = a.getPosition(MY_SERVO)
+  ticks_per_degree = 16
+  total_ticks = ticks_per_degree * degrees
+  # set speed for rotation in joint mode
+  a.setSpeed(MY_SERVO, speed)    # half speed, values between 0 and 1023
+  diff = 0
+  while diff < total_ticks:
+      pos = a.getPosition(MY_SERVO)
+      diff = find_diff(prev, pos)
+      time.sleep(0.001)
+  a.setSpeed(MY_SERVO, 0)
+  time.sleep(0.025)
+
+class TurnTable(ecto.Module):
+    """ A python module that does not much."""
+    def __init__(self, *args, **kwargs):
+        ecto.Module.__init__(self, **kwargs)
+    @staticmethod
+    def declare_params(params):
+        params.declare("text", "a param.","hello there")
+
+    @staticmethod
+    def declare_io(params, inputs, outputs):
+        outputs.declare("trigger", "Capture", True)
+
+    def configure(self,params):
+        self.text = params.text
+        self.MY_SERVO = 0xE9
+        self.a = ArbotiX("/dev/ttyUSB0",baud=1e6) #1 meg for e
+        self.a.disableTorque(self.MY_SERVO)
+        self.a.disableWheelMode(self.MY_SERVO,resolution=12)
+        pos = self.a.getPosition(self.MY_SERVO)
+        print 'initial position', pos
+        assert pos != -1
+        self.a.setSpeed(self.MY_SERVO,100)
+        self.a.setPosition(self.MY_SERVO,0)
+        while self.a.getPosition(self.MY_SERVO) > 5:
+            time.sleep(0.1)
+        print "At position: ", self.a.setPosition(self.MY_SERVO,0)
+        self.settle_count = 0 #use to alternate movement
+        self.total = 0
+        self.delta_angle = 5
+        
+    def process(self,inputs, outputs):
+        if self.settle_count == 0:
+            self.settle_count += 1
+            self.total += 1
+            rotate(self.a, self.MY_SERVO, self.delta_angle, 25)
+            outputs.trigger = False
+        elif self.settle_count >= 1:
+            outputs.trigger = True
+            self.settle_count = 0
+        else:
+            self.settle_count += 1
+            time.sleep(0.25)
+    def __del__(self):
+        print "Stopping servo...."
+        a = ArbotiX("/dev/ttyUSB0",baud=1e6)
+        MY_SERVO = 0xE9
+        a.disableTorque(MY_SERVO)
+
+def create_preview_capture_standalone(camera_file):
+    from object_recognition.common.io.standalone.source import KinectReader
+    from ecto_ros import Mat2Image, Cv2CameraInfo
+    plasm = ecto.Plasm()
+    
+    kinect = KinectReader(plasm,camera_file)
+
+    poser = OpposingDotPoseEstimator(plasm,
+                                     rows=5, cols=3,
+                                     pattern_type=calib.ASYMMETRIC_CIRCLES_GRID,
+                                     square_size=0.04, debug=True)
+
+    bgr2rgb = imgproc.cvtColor('rgb -> bgr', flag=imgproc.Conversion.RGB2BGR)
+    rgb2gray = imgproc.cvtColor('rgb -> gray', flag=imgproc.Conversion.RGB2GRAY)
+    display = highgui.imshow(name='Poses', waitKey=5, autoSize=True)
+                                   
+    graph = [kinect['image']  >> (rgb2gray[:], poser['color_image']),
+              rgb2gray[:] >> poser['image'],
+              poser['debug_image'] >> display['input'],
+              kinect['K'] >> poser['K'],
+              ]
+    plasm.connect(graph)
+    return plasm
+
 def create_capture_plasm_standalone(bag_name, angle_thresh,camera_file):
     from object_recognition.common.io.standalone.source import KinectReader
     from ecto_ros import Mat2Image, Cv2CameraInfo
@@ -96,7 +196,7 @@ def create_capture_plasm_standalone(bag_name, angle_thresh,camera_file):
                    image_ci=CameraInfoBagger(topic_name='/camera/rgb/camera_info'),
                    depth_ci=CameraInfoBagger(topic_name='/camera/depth/camera_info'),
                    )
-
+    table = TurnTable()
     bagwriter = ecto.If('Bag Writer if R|T',
                         cell=ecto_ros.BagWriter(baggers=baggers, bag=bag_name)
                         )
@@ -123,18 +223,23 @@ def create_capture_plasm_standalone(bag_name, angle_thresh,camera_file):
 
     bgr2rgb = imgproc.cvtColor('rgb -> bgr', flag=imgproc.Conversion.RGB2BGR)
     rgb2gray = imgproc.cvtColor('rgb -> gray', flag=imgproc.Conversion.RGB2GRAY)
-    delta_pose = capture.DeltaRT("delta R|T", angle_thresh=angle_thresh)
-    display = highgui.imshow('Poses', name='Poses', waitKey=5, autoSize=True, triggers=dict(save=ord('s')))
-    saver = ecto.If(cell=highgui.ImageSaver("saver", filename_format='ecto_image_%05d.jpg',
+    delta_pose = ecto.If("delta R|T",cell=capture.DeltaRT(angle_thresh=angle_thresh))
+    display = ecto.If('Display',
+        cell=highgui.imshow(name='Poses', waitKey=5, autoSize=True))
+    display.inputs.__test__ = True
+    saver = ecto.If('Saver',cell=highgui.ImageSaver("saver", filename_format='image_%05d.jpg',
                                    start=1))
+                                   
+    ander = ecto.And()
 
-    graph += [kinect['image'] >> (rgb2gray[:], poser['color_image']),
+    graph += [kinect['image']  >> (rgb2gray[:], poser['color_image']),
               rgb2gray[:] >> poser['image'],
               poser['debug_image'] >> (display['input'], saver['image']),
-              display['save'] >> saver['__test__'],
               kinect['K'] >> poser['K'],
               poser['R', 'T', 'found'] >> delta_pose['R', 'T', 'found'],
-              delta_pose['novel'] >> bagwriter['__test__'],
+              table['trigger'] >> (delta_pose['__test__'],ander['in2']),
+              delta_pose['novel'] >> ander['in1'],
+              ander['out'] >> (bagwriter['__test__'], saver['__test__'])
               ]
     plasm.connect(graph)
     return plasm

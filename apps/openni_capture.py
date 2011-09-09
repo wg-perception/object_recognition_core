@@ -50,10 +50,12 @@ object sparsely, depending on the delta setting.'''),
                        default='camera.yml',
                        help='''A yaml file that contains opencv matrices for camera_matrix, distortion_coefficients, and floats for image_width, image_height
                             ''')
+    parser.add_argument('--preview', dest='preview', action='store_true',
+                        default=False, help='Preview the pose estimator.')
     from ecto.opts import scheduler_options
     #add ecto scheduler args.
     group = parser.add_argument_group('ecto scheduler options')
-    scheduler_options(group, default_scheduler='Threadpool')
+    scheduler_options(group, default_scheduler='Singlethreaded')
     args = parser.parse_args()
     if len(args.bag) < 1:
       print parser.print_help()
@@ -65,6 +67,11 @@ if "__main__" == __name__:
     ecto_ros.strip_ros_args(sys.argv)
     options = parse_args()
     #ecto_ros.init(argv, "openni_capture", False)
-    plasm = openni_capture.create_capture_plasm_standalone(options.bag, options.angle_thresh,options.camera_file)
+    
+    plasm =None
+    if options.preview:
+        plasm = openni_capture.create_preview_capture_standalone(options.camera_file)
+    else:
+        plasm = openni_capture.create_capture_plasm_standalone(options.bag, options.angle_thresh,options.camera_file)
     from ecto.opts import run_plasm
     run_plasm(options, plasm)

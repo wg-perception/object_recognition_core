@@ -68,6 +68,7 @@ namespace object_recognition
         }
         if (min_delta > *angle_thresh_)
         {
+          std::cout << "Novel" << std::endl;
           *novel_ = true;
           observations_.push_back(std::make_pair(R, T));
         }

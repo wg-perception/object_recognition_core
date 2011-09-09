@@ -27,7 +27,7 @@ class CalcObservations(ecto.BlackBox):
                                         rows=5, cols=3,
                                         pattern_type=calib.ASYMMETRIC_CIRCLES_GRID,
                                         square_size=0.04, debug=False)
-        self.masker = calib.PlanarSegmentation(z_min=0.01, y_crop=0.10, x_crop=0.10)
+        self.masker = calib.PlanarSegmentation(z_min=0.05, y_crop=0.10, x_crop=0.10)
         self.delta_pose = capture.DeltaRT("delta R|T", angle_thresh=3.14 / 36) #5 degree increments.
 
     def expose_outputs(self):
