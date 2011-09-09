@@ -36,25 +36,15 @@
 #include <fstream>
 #include <iostream>
 
-#include <boost/filesystem.hpp>
 #include <boost/foreach.hpp>
-#include <boost/property_tree/json_parser.hpp>
-#include <boost/property_tree/ptree.hpp>
 #include <boost/shared_ptr.hpp>
 
 #include <ecto/ecto.hpp>
 
 #include <opencv2/core/core.hpp>
-#include <opencv2/imgproc/imgproc.hpp>
-#include <opencv2/features2d/features2d.hpp>
 
-#include <pcl/sample_consensus/prosac.h>
-#include <pcl/sample_consensus/ransac.h>
-#include <pcl/sample_consensus/sac_model_registration.h>
-
-#include "opencv_candidate/PoseRT.h"
-
-typedef unsigned int ObjectId;
+#include <pcl/point_cloud.h>
+#include <pcl/point_types.h>
 
 using ecto::tendrils;
 
@@ -62,28 +52,18 @@ namespace object_recognition
 {
   namespace tod
   {
-
-    /** Ecto implementation of a module that takes
-     *
+    /** Ecto implementation of a module that takes a point cloud as an input and stacks it in a matrix of floats:
+     * - if the point cloud is organized, the return a matrix is width by height with 3 channels (for x, y and z)
+     * - if the point cloud is unorganized, the return a matrix is n_point by 1 with 3 channels (for x, y and z)
      */
-    struct PointCloudToMat
+    struct PointCloudMessageToDepthMessage
     {
-      static void
-      declare_params(tendrils& p)
-      {
-      }
-
       static void
       declare_io(const tendrils& params, tendrils& inputs, tendrils& outputs)
       {
         inputs.declare<boost::shared_ptr<pcl::PointCloud<pcl::PointXYZRGB> const> >("point_cloud_rgb",
                                                                                     "The RGB point cloud");
-        outputs.declare<cv::Mat>("points", "the id's of the found objects");
-      }
-
-      void
-      configure(const tendrils& params, const tendrils& inputs, const tendrils& outputs)
-      {
+        outputs.declare<cv::Mat>("points", "The width by height by 3 channels (x, y and z)");
       }
 
       int
@@ -98,12 +78,14 @@ namespace object_recognition
         if (point_cloud->height != 1) //isOrganized() is not const...
           points = cv::Mat(point_cloud->height, point_cloud->width, CV_32FC3);
         else
-          points = cv::Mat(point_cloud->size(), 3, CV_32F);
+          points = cv::Mat(point_cloud->size(), 1, CV_32FC3);
 
         float * data = reinterpret_cast<float*>(points.data);
         BOOST_FOREACH(const PointType & point, point_cloud->points)
             {
               *(data++) = point.x;
+              *(data++) = point.y;
+              *(data++) = point.z;
             }
         outputs.get<cv::Mat>("points") = points;
 
@@ -113,5 +95,8 @@ namespace object_recognition
   }
 }
 
-ECTO_CELL(tod_detection, object_recognition::tod::PointCloudToMat, "PointCloudToMat",
-          "Given descriptors and 3D positions, compute object guesses.");
+ECTO_CELL(
+    tod_detection,
+    object_recognition::tod::PointCloudMessageToDepthMessage,
+    "PointCloudToMat",
+    "Given a point cloud, stack it to a matrix of floats:\n- if the point cloud is organized, the return a matrix is width by height with 3 channels (for x, y and z)\n- if the point cloud is unorganized, the return a matrix is n_point by 1 with 3 channels (for x, y and z)");

@@ -24,7 +24,6 @@ PoseArrayPub = ecto_geometry_msgs.Publisher_PoseArray
 
 ########################################################################################################################
 
-
 if __name__ == '__main__':
     plasm = ecto.Plasm()
     source = Source(plasm)
@@ -51,14 +50,17 @@ if __name__ == '__main__':
     # parse the arguments
     source.parse_arguments(parser)
     sink.parse_arguments(parser)
-    options = parser.parse_args()
+    args = parser.parse_args()
+
+    if not source.expose_outputs():
+        raise 'no input specified'
 
     # define the input
-    if options.config_file is None or not os.path.exists(options.config_file):
+    if args.config_file is None or not os.path.exists(args.config_file):
         raise 'option file does not exist'
 
     # Get the parameters from the file
-    json_params = json.loads(str(open(options.config_file).read()))
+    json_params = json.loads(str(open(args.config_file).read()))
     feature_descriptor_params = eval(str(json_params['feature_descriptor']).replace("'", '"').replace('u"', '"').\
                                      replace('{u', '{'))
     db_json_params = str(json_params['db']).replace("'", '"').replace('u"', '"').replace('{u', '{')
@@ -71,7 +73,7 @@ if __name__ == '__main__':
                                  guess_json_params)
 
     # define the input
-    if options.bag:
+    if 0:
         bag_reader = BagReader(plasm, dict(image=ecto_sensor_msgs.Bagger_Image(topic_name='image_mono'),
                            camera_info=ecto_sensor_msgs.Bagger_CameraInfo(topic_name='camera_info'),
                            point_cloud=ecto_sensor_msgs.Bagger_PointCloud2(topic_name='points'),
@@ -83,20 +85,17 @@ if __name__ == '__main__':
                       bag_reader['point_cloud'] >> point_cloud_to_mat['point_cloud'],
                       point_cloud_to_mat['points'] >> tod_detector['points'])
 
-    plasm.connect(source['image','points3d','points'] >> tod_detector['image','points3d','points'])
+    # Define the source
+    for key in source.expose_outputs().iterkeys():
+        if key in tod_detector.expose_inputs().keys():
+            plasm.connect(source[key] >> tod_detector[key])
 
     # define the different outputs
     plasm.connect(tod_detector['object_ids','Rs','Ts'] >> sink['object_ids','Rs','Ts'])
 
-    #assemble a pose array message
-    pose_array_assembler = ros.PoseArrayAssembler()
-    #publish the poses over ROS.
-    #http://ecto.willowgarage.com/releases/amoeba-beta3/ros/geometry_msgs.html#Publisher_PoseArray
-    pose_pub = PoseArrayPub(topic_name='/object_recognition/poses', latched = True)
-    plasm.connect(tod_detector['object_ids','Rs','Ts'] >> pose_array_assembler['object_ids','Rs','Ts'],
-                  kinect_reader['image_message'] >> pose_array_assembler['image_message'],
-                  pose_array_assembler['pose_message'] >> pose_pub[:]
-                  )
+    # make sure that we also give the image_message, in case we want to publish a topic
+    if 'image_message' in sink.expose_inputs() and 'image_message' in source.expose_outputs():
+        plasm.connect(source['image_message'] >> sink['image_message'])
 
     # Display the different poses
     if DISPLAY:
@@ -105,17 +104,15 @@ if __name__ == '__main__':
         pose_view = highgui.imshow(name="Pose", waitKey=1, autoSize=True)
         draw_keypoints = features2d.DrawKeypoints()
         pose_drawer = calib.PosesDrawer()
-        if options.do_kinect:
-            plasm.connect(kinect_reader['image'] >> image_view['input'],
-                       kinect_reader['image'] >> draw_keypoints['image'],
+
+        plasm.connect(source['image'] >> image_view['input'],
+                       source['image'] >> draw_keypoints['image'],
                        tod_detector['keypoints'] >> draw_keypoints['keypoints'],
                        draw_keypoints['image'] >> keypoints_view['input']
                        )
-            # draw the poses
-            plasm.connect(kinect_reader['image'] >> pose_drawer['image'],
-                          kinect_reader['K'] >> pose_drawer['K'],
-                          tod_detector['Rs'] >> pose_drawer['Rs'],
-                          tod_detector['Ts'] >> pose_drawer['Ts'],
+        # draw the poses
+        plasm.connect(source['image', 'K'] >> pose_drawer['image', 'K'],
+                          tod_detector['Rs', 'Ts'] >> pose_drawer['Rs', 'Ts'],
                           pose_drawer['output'] >> pose_view['input']
                           )
 
@@ -125,5 +122,6 @@ if __name__ == '__main__':
         ecto.view_plasm(plasm)
 
     # execute the pipeline
-    sched = ecto.schedulers.Singlethreaded(plasm)
+    #sched = ecto.schedulers.Singlethreaded(plasm)
+    sched = ecto.schedulers.Threadpool(plasm)
     sched.execute()

@@ -7,7 +7,6 @@ include_directories(
 ectomodule(tod_detection
   detecting/DescriptorMatcher.cpp
   detecting/GuessGenerator.cpp
-  detecting/PointCloudToMat.cpp
   detecting/TodDetection.cpp
   )
 

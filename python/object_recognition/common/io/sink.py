@@ -25,6 +25,8 @@ class Sink(ecto.BlackBox):
         """
         ecto.BlackBox.__init__(self, plasm)
 
+        self._plasm = plasm
+
         self._object_ids_splitter = ecto.Passthrough()
         self._Rs_splitter = ecto.Passthrough()
         self._Ts_splitter = ecto.Passthrough()
@@ -78,13 +80,12 @@ class Sink(ecto.BlackBox):
 
         if self._do_use_ros:
             from ros.sink import Publisher, TabletopPublisher
-            parser.add_argument('--ros', dest='do_ros', action='store_true', default = False,
-                                help='If set, publish to a ROS topic')
+            parser.add_argument('--ros_topic', dest='ros_topic', help='If set, publish to a ROS topic')
             # TODO
             #self._cell_factory[Sink.ROS] = ecto.opts.cell_options(parser, Publisher, 'ros')
     
-            parser.add_argument('--ros_tabletop', dest='do_ros_tabletop', action='store_true', default = False,
-                                help='If set, publish to a ROS topic in the tabletop format')
+            parser.add_argument('--ros_tabletop_topic', dest='ros_tabletop_topic',
+                                help='If set, publish to this ROS topic in the tabletop format')
             # TODO
             #self._cell_factory[Sink.ROS_TABLETOP] = ecto.opts.cell_options(parser, TabletopPublisher, 'ros tabletop')
 
@@ -92,7 +93,11 @@ class Sink(ecto.BlackBox):
         args = parser.parse_args()
         if args.do_csv:
             self._cells.append(self._cell_factory[Sink.CSV_WRITER](parser))
-        if args.do_ros:
-            self._cells.append(self._cell_factory[Sink.ROS](parser))
-        if args.do_ros_tabletop:
-            self._cells.append(self._cell_factory[Sink.ROS_TABLETOP](parser))
+        if self._do_use_ros:
+            if args.ros_topic:
+                #TODO, use the following when working
+                #self._cells.append(self._cell_factory[Sink.ROS](parser))
+                from ros.sink import Publisher
+                self._cells.append(Publisher(self._plasm, args.ros_topic, True))
+            if args.ros_tabletop_topic:
+                self._cells.append(self._cell_factory[Sink.ROS_TABLETOP](parser))
