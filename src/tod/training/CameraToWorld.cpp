@@ -48,42 +48,31 @@ using ecto::tendrils;
 struct CameraToWorld
 {
   static void
-  declare_params(tendrils& p)
-  {
-  }
-
-  static void
   declare_io(const tendrils& params, tendrils& inputs, tendrils& outputs)
   {
-    inputs.declare<cv::Mat>("points", "The points (n by 3 matrix)");
-    inputs.declare<cv::Mat>("R", "The rotation matrix");
-    inputs.declare<cv::Mat>("T", "The translation vector");
-    outputs.declare<cv::Mat>("points", "The points in the world frame");
-  }
-
-  void
-  configure(const tendrils& params, const tendrils& inputs, const tendrils& outputs)
-  {
+    inputs.declare<cv::Mat>("points", "The points (matrix with 3 channels, for x, y and z)").required(true);
+    inputs.declare<cv::Mat>("R", "The rotation matrix").required(true);
+    inputs.declare<cv::Mat>("T", "The translation vector").required(true);
+    outputs.declare<cv::Mat>("points", "The points in the world frame (matrix with the same dimensions as the input)");
   }
 
   int
   process(const tendrils& inputs, const tendrils& outputs)
   {
     cv::Mat_<float> R, T, in_points;
-    inputs.get<cv::Mat>("R").convertTo(R,CV_32F);
-    inputs.get<cv::Mat>("T").convertTo(T,CV_32F);
-    inputs.get<cv::Mat>("points").convertTo(in_points,CV_32F);
+    inputs.get<cv::Mat>("R").convertTo(R, CV_32F);
+    inputs.get<cv::Mat>("T").reshape(1, 1).convertTo(T, CV_32F);
+    const cv::Mat & in_points_ori = inputs.get<cv::Mat>("points");
+    in_points_ori.reshape(1, in_points_ori.size().area()).convertTo(in_points, CV_32F);
 
-    cv::Mat points;
-    if (T.rows == 3)
-      cv::repeat(T.t(), in_points.rows, 1, points);
-    else
-      cv::repeat(T, in_points.rows, 1, points);
+    cv::Mat_<float> T_repeat;
+    cv::repeat(T, in_points.rows, 1, T_repeat);
 
-    // Apply the inverse translation
-    points = (in_points - points) * R;
+    // Apply the inverse translation/rotation
+    cv::Mat points = (in_points - T_repeat) * R;
 
-    outputs.get<cv::Mat>("points") = points;
+    // Reshape to the original size
+    outputs["points"] << points.reshape(3, in_points_ori.rows);
 
     return 0;
   }

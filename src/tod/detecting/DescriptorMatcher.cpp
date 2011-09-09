@@ -73,8 +73,9 @@ namespace object_recognition
       {
         inputs.declare<cv::Mat>("descriptors", "The descriptors to match to the database");
         outputs.declare<std::vector<std::vector<cv::DMatch> > >("matches", "The matches for the input descriptors");
-        outputs.declare<std::vector<cv::Mat> >("matches_3d",
-                                               "The 3d position of the matches, n by 3 matrix for each point");
+        outputs.declare<std::vector<cv::Mat> >(
+            "matches_3d",
+            "For each point, the 3d position of the matches, 1 by n matrix with 3 channels for, x, y, and z.");
       }
 
       void
@@ -99,8 +100,8 @@ namespace object_recognition
              search_param_tree.get<unsigned int>("multi_probe_level"));
              matcher_ = new cv::FlannBasedMatcher(&lsh_params);*/
             matcher_ = new lsh::LshMatcher(search_param_tree.get<unsigned int>("n_tables"),
-                                search_param_tree.get<unsigned int>("key_size"),
-                                search_param_tree.get<unsigned int>("multi_probe_level"));
+                                           search_param_tree.get<unsigned int>("key_size"),
+                                           search_param_tree.get<unsigned int>("multi_probe_level"));
           }
           else
           {
@@ -127,6 +128,8 @@ namespace object_recognition
               query.set_db(db);
               query.set_collection(collection_models_);
               query.AddView("CouchDB", db_future::couch::WhereDocId(object_id));
+              std::cout << "object_id: " << object_id << std::endl;
+              // TODO be robust to missing entries
               for (db_future::DocumentView view = query.begin(), view_end = db_future::DocumentView::end();
                   view != view_end; ++view)
                   {
@@ -134,7 +137,6 @@ namespace object_recognition
                 cv::Mat descriptors;
                 doc.get_attachment<cv::Mat>(db, "descriptors", descriptors);
                 all_descriptors.push_back(descriptors);
-                std::cout << object_id << " " << descriptors.rows << std::endl;
 
                 // Deal with the 3d positions
                 cv::Mat points3d;
@@ -173,14 +175,18 @@ namespace object_recognition
 
         // Build the 3D positions of the matches
         std::vector<cv::Mat> &matches_3d = outputs.get<std::vector<cv::Mat> >("matches_3d");
-        matches_3d.clear();
         matches_3d.resize(descriptors.rows);
 
         for (int match_index = 0; match_index < descriptors.rows; ++match_index)
         {
           cv::Mat & local_matches_3d = matches_3d[match_index];
+          local_matches_3d = cv::Mat(1, matches[match_index].size(), CV_32FC3);
+          unsigned int i = 0;
           BOOST_FOREACH(const cv::DMatch & match, matches[match_index])
-                local_matches_3d.push_back(features_3d_[match.imgIdx].row(match.trainIdx));
+              {
+                local_matches_3d.at<cv::Vec3f>(0, i) = features_3d_[match.imgIdx].at<cv::Vec3f>(0, match.trainIdx);
+                ++i;
+              }
         }
 
         return 0;
