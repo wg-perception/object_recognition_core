@@ -74,63 +74,67 @@ def create_capture_plasm(bag_name, angle_thresh):
     plasm.connect(graph)
     return plasm
 
-#
-#def create_capture_plasm_standalone(bag_name, angle_thresh):
-#    '''
-#    Creates a plasm that will capture openni data into a bag, using a dot pattern to sparsify views.
-#    
-#    keyword arguments:
-#    bag_name -- A filename for the bag, will write to this file.
-#    angle_thresh --- The angle threshhold in radians to sparsify the views with.
-#    '''
-#    from ecto_openni import Capture, ResolutionMode
-#
-#    plasm = ecto.Plasm()
-#
-#
-#    baggers = dict(image=ImageBagger(topic_name='/camera/rgb/image_color'),
-#                   depth=ImageBagger(topic_name='/camera/depth/image'),
-#                   image_ci=CameraInfoBagger(topic_name='/camera/rgb/camera_info'),
-#                   depth_ci=CameraInfoBagger(topic_name='/camera/depth/camera_info'),
-#                   )
-#
-#    bagwriter = ecto.If('Bag Writer if R|T',
-#                        cell=ecto_ros.BagWriter(baggers=baggers, bag=bag_name)
-#                        )
-#    capture = Capture('ni device', rgb_resolution=ResolutionMode.VGA_RES)
-#    verter = highgui.NiConverter('verter', rescale=True)
-#    fps = highgui.FPSDrawer('fps')
-#    main_display = highgui.imshow("main display", name="rgb", waitKey=5, triggers=dict(plane=ord('p')))
-#
-#    graph = [capture[:] >> verter[:],
-#             verter['image'] >> fps[:],
-#             fps[:] >> main_display["input"]
-#             ]
-#    graph = [
-#                sync[:] >> bagwriter[keys],
-#            ]
-#
-#    im2mat_rgb = ecto_ros.Image2Mat('rgb -> cv::Mat')
-#    camera_info = ecto_ros.CameraInfo2Cv('camera_info -> cv::Mat')
-#    poser = OpposingDotPoseEstimator(plasm,
-#                                     rows=5, cols=3,
-#                                     pattern_type=calib.ASYMMETRIC_CIRCLES_GRID,
-#                                     square_size=0.04, debug=True)
-#
-#    bgr2rgb = imgproc.cvtColor('rgb -> bgr', flag=imgproc.Conversion.RGB2BGR)
-#    rgb2gray = imgproc.cvtColor('rgb -> gray', flag=imgproc.Conversion.RGB2GRAY)
-#    delta_pose = capture.DeltaRT("delta R|T", angle_thresh=angle_thresh)
-#    display = highgui.imshow('Poses', name='Poses', waitKey=5, autoSize=True)
-#    graph += [sync['image'] >> im2mat_rgb[:],
-#              im2mat_rgb[:] >> (rgb2gray[:], bgr2rgb[:]),
-#              bgr2rgb[:] >> poser['color_image'],
-#              rgb2gray[:] >> poser['image'],
-#              poser['debug_image'] >> display['input'],
-#              sync['image_ci'] >> camera_info['camera_info'],
-#              camera_info['K'] >> poser['K'],
-#              poser['R', 'T', 'found'] >> delta_pose['R', 'T', 'found'],
-#              delta_pose['novel'] >> bagwriter['__test__'],
-#              ]
-#    plasm.connect(graph)
-#    return plasm
 
+def xtion_highres(device_n):
+    from ecto_openni import Capture, ResolutionMode, Device
+    return Capture('ni device', rgb_resolution=ResolutionMode.SXGA_RES,
+                   depth_resolution=ResolutionMode.VGA_RES,
+                   rgb_fps=30, depth_fps=30,
+                   device_number=device_n,
+                   registration=True,
+                   synchronize=True,
+                   device=Device.ASUS_XTION_PRO_LIVE
+                   )
+
+def create_capture_plasm_standalone(bag_name, angle_thresh,camera_file):
+    from object_recognition.common.io.standalone.source import KinectReader
+    from ecto_ros import Mat2Image, Cv2CameraInfo
+    plasm = ecto.Plasm()
+    
+    baggers = dict(image=ImageBagger(topic_name='/camera/rgb/image_color'),
+                   depth=ImageBagger(topic_name='/camera/depth/image'),
+                   image_ci=CameraInfoBagger(topic_name='/camera/rgb/camera_info'),
+                   depth_ci=CameraInfoBagger(topic_name='/camera/depth/camera_info'),
+                   )
+
+    bagwriter = ecto.If('Bag Writer if R|T',
+                        cell=ecto_ros.BagWriter(baggers=baggers, bag=bag_name)
+                        )
+    
+    kinect = KinectReader(plasm,camera_file)
+    depthMsg = Mat2Image(frame_id='/camera_rgb_optical_frame')
+    imageMsg = Mat2Image(frame_id='/camera_rgb_optical_frame')
+    cameraInfoMsg = Cv2CameraInfo(frame_id='/camera_rgb_optical_frame')
+    graph = [
+                kinect['image'] >> imageMsg[:],
+                kinect['depth'] >> depthMsg[:],
+                kinect['K','D','image_size'] >> cameraInfoMsg['K','D', 'image_size'],
+            ]
+    graph += [
+              imageMsg[:] >> bagwriter['image'],
+              depthMsg[:] >> bagwriter['depth'],
+              cameraInfoMsg[:] >> (bagwriter['image_ci'], bagwriter['depth_ci']),
+              ]
+
+    poser = OpposingDotPoseEstimator(plasm,
+                                     rows=5, cols=3,
+                                     pattern_type=calib.ASYMMETRIC_CIRCLES_GRID,
+                                     square_size=0.04, debug=True)
+
+    bgr2rgb = imgproc.cvtColor('rgb -> bgr', flag=imgproc.Conversion.RGB2BGR)
+    rgb2gray = imgproc.cvtColor('rgb -> gray', flag=imgproc.Conversion.RGB2GRAY)
+    delta_pose = capture.DeltaRT("delta R|T", angle_thresh=angle_thresh)
+    display = highgui.imshow('Poses', name='Poses', waitKey=5, autoSize=True, triggers=dict(save=ord('s')))
+    saver = ecto.If(cell=highgui.ImageSaver("saver", filename_format='ecto_image_%05d.jpg',
+                                   start=1))
+
+    graph += [kinect['image'] >> (rgb2gray[:], poser['color_image']),
+              rgb2gray[:] >> poser['image'],
+              poser['debug_image'] >> (display['input'], saver['image']),
+              display['save'] >> saver['__test__'],
+              kinect['K'] >> poser['K'],
+              poser['R', 'T', 'found'] >> delta_pose['R', 'T', 'found'],
+              delta_pose['novel'] >> bagwriter['__test__'],
+              ]
+    plasm.connect(graph)
+    return plasm
