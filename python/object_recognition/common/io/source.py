@@ -7,7 +7,9 @@ import ecto
 import ecto.opts
 from ecto_object_recognition.io import GuessCsvWriter
 import sys
-import ecto_object_recognition.conversion as conversion
+import ecto_object_recognition.conversion
+import object_recognition.capture as capture
+from ecto_opencv import calib
 
 ########################################################################################################################
 
@@ -90,7 +92,13 @@ class Source(ecto.BlackBox):
         if args.do_ros_kinect:
             #TODO fix the following
             #cell = self._cell_factory[Source.ROS_KINECT](parser)
-            cell = self._cell_factory[Source.ROS_KINECT]
-            self._cells.append(cell)
-            self._outputs.update({'image': cell['image'], 'depth': cell['depth'], 'K': cell['K'],
-                                  'image_message': cell['image_message']})
+            kinect_reader = self._cell_factory[Source.ROS_KINECT]
+            self._cells.append(kinect_reader)
+            depth_to_3d = calib.DepthTo3d()
+            rescale_depth = capture.RescaledRegisteredDepth()
+            self._cells.append([depth_to_3d, rescale_depth])
+            self._connections.extend([kinect_reader['depth','image'] >> rescale_depth['depth','image'],
+                                      rescale_depth['depth'] >> depth_to_3d['depth'],
+                                      kinect_reader['K'] >> depth_to_3d['K']])
+            self._outputs.update({'image': kinect_reader['image'], 'points3d': depth_to_3d['points3d'],
+                                  'K': kinect_reader['K'], 'image_message': kinect_reader['image_message']})

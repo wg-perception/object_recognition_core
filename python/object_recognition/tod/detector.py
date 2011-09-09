@@ -5,8 +5,7 @@ Module defining the TOD detector to find objects in a scene
 
 import ecto
 from feature_descriptor import FeatureDescriptor
-from ecto_object_recognition import capture, tod_detection
-from ecto_opencv import calib
+from ecto_object_recognition import tod_detection
 
 ########################################################################################################################
 
@@ -24,15 +23,11 @@ class TodDetector(ecto.BlackBox):
         self.descriptor_matcher = tod_detection.DescriptorMatcher("Matcher", db_json_params=db_json_params, object_ids=object_ids,
                                                         search_json_params=search_json_params)
         self.guess_generator = tod_detection.GuessGenerator("Guess Gen",json_params=guess_json_params)
-        self._rescale_depth = capture.RescaledRegisteredDepth()
-        self._image_duplicator = ecto.Passthrough()
-        self._depth_to_3d = calib.DepthTo3d()
 
     def expose_inputs(self):
-        return {'image': self._image_duplicator['in'],
-                'mask': self.feature_descriptor['mask'],
-                'K': self._depth_to_3d['K'],
-                'depth': self._rescale_depth['depth']}
+        return {'image':self.feature_descriptor['image'],
+                'mask':self.feature_descriptor['mask'],
+                'points3d':self.guess_generator['points3d']}
 
     def expose_outputs(self):
         return {'object_ids': self.guess_generator['object_ids'],
@@ -47,12 +42,7 @@ class TodDetector(ecto.BlackBox):
                 }
 
     def connections(self):
-        connections = [self._image_duplicator[:] >> self.feature_descriptor['image'],
-                       self._image_duplicator[:] >> self._rescale_depth['image']]
-        connections += [self._rescale_depth['depth'] >> self._depth_to_3d['depth']]
-        connections += [self.feature_descriptor['keypoints'] >> self.guess_generator['keypoints'],
+        return (self.feature_descriptor['keypoints'] >> self.guess_generator['keypoints'],
                 self.feature_descriptor['descriptors'] >> self.descriptor_matcher['descriptors'],
                 self.descriptor_matcher['matches'] >> self.guess_generator['matches'],
-                self.descriptor_matcher['matches_3d'] >> self.guess_generator['matches_3d'],
-                self._depth_to_3d['points3d'] >> self.guess_generator['points3d']]
-        return connections
+                self.descriptor_matcher['matches_3d'] >> self.guess_generator['matches_3d'])
