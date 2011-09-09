@@ -92,5 +92,5 @@ class Source(ecto.BlackBox):
             #cell = self._cell_factory[Source.ROS_KINECT](parser)
             cell = self._cell_factory[Source.ROS_KINECT]
             self._cells.append(cell)
-            self._outputs.update({'image': cell['image'], 'points3d': cell['points3d'], 'K': cell['K'],
+            self._outputs.update({'image': cell['image'], 'depth': cell['depth'], 'K': cell['K'],
                                   'image_message': cell['image_message']})

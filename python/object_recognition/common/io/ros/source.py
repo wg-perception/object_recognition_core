@@ -31,7 +31,6 @@ class KinectReader(ecto.BlackBox):
         self._camera_info = ecto_ros.CameraInfo2Cv('camera_info -> cv::Mat')
         self._im2mat_rgb = ecto_ros.Image2Mat(swap_rgb = True)
         self._im2mat_depth = ecto_ros.Image2Mat()
-        self._depth_to_3d = calib.DepthTo3d()
         self._debug = debug
 
     def expose_inputs(self):
@@ -39,7 +38,7 @@ class KinectReader(ecto.BlackBox):
 
     def expose_outputs(self):
         return {'image': self._im2mat_rgb['image'],
-                'points3d': self._depth_to_3d['points3d'],
+                'depth': self._im2mat_depth['image'],
                 'K': self._camera_info['K'],
                 'image_message': self._sync["image"]
                 }
@@ -51,9 +50,7 @@ class KinectReader(ecto.BlackBox):
         # not sure on where to put this but that has to be done whenever the cell is used (and not necessarily created)
         connections = [self._sync["image"] >> self._im2mat_rgb["image"],
                   self._sync["depth"] >> self._im2mat_depth["image"],
-                  self._sync["image_info"] >> self._camera_info['camera_info'],
-                  self._camera_info['K'] >> self._depth_to_3d['K'],
-                  self._im2mat_depth['image'] >> self._depth_to_3d['depth']
+                  self._sync["image_info"] >> self._camera_info['camera_info']
                   ]
         # TODO : reset that to DEBUG
         #if self._debug:
