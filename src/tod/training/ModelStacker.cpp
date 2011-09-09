@@ -76,9 +76,32 @@ namespace object_recognition
         inputs["points"] >> points;
         if (!points.empty())
         {
-          points_.push_back(points);
-          descriptors_.push_back(inputs.get<cv::Mat>("descriptors"));
+          cv::Mat_<cv::Vec3f> points_filtered(1,points.cols);
+          cv::Mat descriptors;
+          inputs["descriptors"] >> descriptors;
+          cv::Mat descriptors_filtered(descriptors.rows, descriptors.cols, descriptors.type());
+          
+          cv::Mat_<cv::Vec3f>::iterator iter = points.begin<cv::Vec3f>(), end = points.end<cv::Vec3f>();
+          cv::Mat_<cv::Vec3f>::iterator iter_filtered = points_filtered.begin();
+          unsigned int row = 0, row_filtered = 0;
+          for(; iter != end; ++iter, ++row)
+          {
+            const cv::Vec3f & point = *iter;
+            if ((point.val[0] == point.val[0]) && (point.val[1] == point.val[1]) && (point.val[2] == point.val[2]))
+            {
+              *(iter_filtered++) = point;
+              cv::Mat row_filtered_mat = descriptors_filtered.row(row_filtered++);
+              descriptors.row(row).copyTo(row_filtered_mat);
+            }
+          }
+
+          cv::Mat final_points, final_descriptors;
+          points_filtered.colRange(0,row_filtered).copyTo(final_points);
+          descriptors_filtered.rowRange(0,row_filtered).copyTo(final_descriptors);
+          points_.push_back(final_points);
+          descriptors_.push_back(final_descriptors);
         }
+        
         outputs.get<std::vector<cv::Mat> >("points") = points_;
         outputs.get<std::vector<cv::Mat> >("descriptors") = descriptors_;
         return ecto::OK;

@@ -27,7 +27,6 @@ def add_db_options(parser):
     commit will contain a bool, that indicates whether anything should be changed in the database.
     '''
     parser.add_argument('--db_root', metavar='DB_ROOT_URL', dest='db_root', type=str, default=DEFAULT_SERVER_URL,
-                       help='The database root URL to connect to. e.g. %s or http://foo:5984' % DEFAULT_SERVER_URL,
-                       required=True)
+                       help='The database root URL to connect to. e.g. %s or http://foo:5984' % DEFAULT_SERVER_URL)
     parser.add_argument('--commit', dest='commit', action='store_true',
                         default=False, help='Commit the data to the database.')

@@ -139,16 +139,12 @@ namespace object_recognition
           // Cluster the matches per object ID
           std::map<ObjectId, pcl::PointCloud<pcl::PointXYZ> > query_point_clouds;
           std::map<ObjectId, pcl::PointCloud<pcl::PointXYZ> > training_point_clouds;
+          std::vector<int> histo_count;
           for (unsigned int descriptor_index = 0; descriptor_index < matches.size(); ++descriptor_index)
           {
             const cv::KeyPoint & keypoint = keypoints[descriptor_index];
             cv::Vec3f point3f = point_cloud.at<cv::Vec3f>(keypoint.pt.y, keypoint.pt.x);
             pcl::PointXYZ query_point = pcl::PointXYZ(point3f.val[0], point3f.val[1], point3f.val[2]);
-
-            // Check if we have NaN's
-            if ((query_point.x != query_point.x) || (query_point.y != query_point.y)
-                || (query_point.z != query_point.z))
-              continue;
 
             const std::vector<cv::DMatch> &local_matches = matches[descriptor_index];
             const cv::Mat &local_matches_3d = matches_3d[descriptor_index];
@@ -158,20 +154,11 @@ namespace object_recognition
               const cv::Vec3f & val = local_matches_3d.at<cv::Vec3f>(0, match_index);
               pcl::PointXYZ training_point(val[0], val[1], val[2]);
 
-              // Check if we have NaN's
-              if ((training_point.x != training_point.x) || (training_point.y != training_point.y)
-                  || (training_point.z != training_point.z))
-                continue;
-
-              // Check that the dimensions are correct
-              if ((std::abs(training_point.x) > 1e10) || (std::abs(training_point.y) > 1e10)
-                  || (std::abs(training_point.z) > 1e10))
-                continue;
-
               // Fill in the clouds
               ObjectId object_id = local_matches[match_index].imgIdx;
               training_point_clouds[object_id].push_back(training_point);
               query_point_clouds[object_id].push_back(query_point);
+              break;
             }
           }
 
@@ -180,6 +167,7 @@ namespace object_recognition
               query_point_clouds.begin(); query_iterator != query_point_clouds.end(); ++query_iterator)
           {
             ObjectId object_id = query_iterator->first;
+
             unsigned int n_points = query_iterator->second.size();
             if ((n_points < min_inliers_) || (training_point_clouds[object_id].points.size() < 5))
               continue;
@@ -193,15 +181,16 @@ namespace object_recognition
                                                                          good_indices));
             pcl::RandomSampleConsensus<pcl::PointXYZ> sample_consensus(model);
             //pcl::ProgressiveSampleConsensus<pcl::PointXYZ> sample_consensus(model);
-            std::cout << "Object id " << object_id << " has " << query_point_clouds[object_id].points.size()
+            std::cout << "Object id " << object_id << " has " << query_iterator->second.points.size()
                       << " possible matches with " << n_ransac_iterations_ << " iterations " << std::endl;
 
             model->setInputTarget(query_point_clouds[object_id].makeShared(), good_indices);
             sample_consensus.setDistanceThreshold(0.01);
             sample_consensus.setMaxIterations(n_ransac_iterations_);
-            sample_consensus.computeModel();
+            bool success = sample_consensus.computeModel();
             std::vector<int> inliers;
             sample_consensus.getInliers(inliers);
+            std::cout << "Success ? " << success << " Above inlier thresh: " << ( inliers.size() >= min_inliers_ ) << std::endl;
             std::cout << "n inliers " << inliers.size() << std::endl;
             if (inliers.size() >= min_inliers_)
             {

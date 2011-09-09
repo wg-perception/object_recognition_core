@@ -15,5 +15,5 @@
 		"type": "CouchDB",
 		"url": "http://localhost:5984"
 	},
-	"object_ids": ["amys_country_cheddar_bowl","band_aid_plastic_strips","delmonte_peas_carrots","goodearth_original_tea","jello_strawberry","paneer_tikka_masala_spinach_trader_joes","spaghettios_meatballs","tazo_organic_chai_box"]
+	"object_ids": ["72e4498e4ac140ca8ae049fdfd30e9bd"]
 }
