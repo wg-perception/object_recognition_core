@@ -14,7 +14,7 @@ import sys
 import time
 
 DEBUG = False
-DISPLAY = False
+DISPLAY = True
 
 ########################################################################################################################
 
@@ -59,7 +59,7 @@ if __name__ == '__main__':
         # connect the visualization
         plasm = ecto.Plasm()
         if DISPLAY:
-            image_view = highgui.imshow(name="RGB", waitKey=1000, autoSize=True)
+            image_view = highgui.imshow(name="RGB", waitKey=1, autoSize=True)
             mask_view = highgui.imshow(name="mask", waitKey= -1, autoSize=True)
             depth_view = highgui.imshow(name="Depth", waitKey= -1, autoSize=True);
             plasm.connect(db_reader['image'] >> image_view['input'],
@@ -89,11 +89,7 @@ if __name__ == '__main__':
             print plasm.viz()
             ecto.view_plasm(plasm)
 
-        if DISPLAY:
-            while(image_view.outputs.out not in (27, ord('q'))):
-                if(plasm.execute(1) != 0): break
-        else:
-            sched = ecto.schedulers.Singlethreaded(plasm)
-            sched.execute()
+        sched = ecto.schedulers.Singlethreaded(plasm)
+        sched.execute()
 
         _db_writer.process()

@@ -6,7 +6,7 @@ Module defining several outputs for the object recognition pipeline
 import ecto
 import ecto_geometry_msgs
 import ecto_ros
-from ecto_object_recognition import ros
+import ecto_object_recognition.io_ros as io_ros
 
 PoseArrayPub = ecto_geometry_msgs.Publisher_PoseArray
 
@@ -20,7 +20,7 @@ class Publisher(ecto.BlackBox):
     def __init__(self, plasm, topic_name, latched = False):
         ecto.BlackBox.__init__(self, plasm)
 
-        self._pose_array_assembler = ros.PoseArrayAssembler()
+        self._pose_array_assembler = io_ros.PoseArrayAssembler()
         self._pose_pub = PoseArrayPub(topic_name=topic_name, latched = latched)
 
     def expose_inputs(self):
@@ -47,7 +47,7 @@ class TabletopPublisher(ecto.BlackBox):
     def __init__(self, plasm, topic_name, latched = False):
         ecto.BlackBox.__init__(self, plasm)
 
-        self._pose_array_assembler = ros.PoseArrayAssembler()
+        self._pose_array_assembler = io_ros.PoseArrayAssembler()
         self._pose_pub = PoseArrayPub(topic_name=topic_name, latched = latched)
 
     def expose_inputs(self):

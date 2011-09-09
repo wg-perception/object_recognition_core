@@ -35,6 +35,6 @@
 
 #include <ecto/ecto.hpp>
 
-ECTO_DEFINE_MODULE(conversion_ros)
+ECTO_DEFINE_MODULE(tod_training)
 {
 }

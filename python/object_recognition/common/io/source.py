@@ -7,7 +7,7 @@ import ecto
 import ecto.opts
 from ecto_object_recognition.io import GuessCsvWriter
 import sys
-import object_recognition.common.conversion
+import ecto_object_recognition.conversion as conversion
 
 ########################################################################################################################
 

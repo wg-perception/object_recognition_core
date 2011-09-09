@@ -81,7 +81,9 @@ namespace object_recognition
         inputs.declare<cv::Mat>("points3d", "The height by width 3 channel point cloud");
         inputs.declare<std::vector<cv::KeyPoint> >("keypoints", "The interesting keypoints");
         inputs.declare<std::vector<std::vector<cv::DMatch> > >("matches", "The list of OpenCV DMatch");
-        inputs.declare<std::vector<cv::Mat> >("matches_3d", "The corresponding 3d position of those matches");
+        inputs.declare<std::vector<cv::Mat> >(
+            "matches_3d",
+            "The corresponding 3d position of those matches. For each point, a 1 by n 3 channel matrix (for x,y and z)");
         outputs.declare<std::vector<ObjectId> >("object_ids", "the id's of the found objects");
         outputs.declare<std::vector<cv::Mat> >("Rs", "The rotations of the poses of the found objects");
         outputs.declare<std::vector<cv::Mat> >("Ts", "The translations of the poses of the found objects");
@@ -153,12 +155,10 @@ namespace object_recognition
             // Get the matches for that point
             for (unsigned int match_index = 0; match_index < local_matches.size(); ++match_index)
             {
-              pcl::PointXYZ training_point(local_matches_3d.at<float>(match_index, 0),
-                                           local_matches_3d.at<float>(match_index, 1),
-                                           local_matches_3d.at<float>(match_index, 2));
+              const cv::Vec3f & val = local_matches_3d.at<cv::Vec3f>(0, match_index);
+              pcl::PointXYZ training_point(val[0], val[1], val[2]);
 
               // Check if we have NaN's
-              //std::cout << training_point.x << " " << training_point.y << " " << training_point.z << std::endl;
               if ((training_point.x != training_point.x) || (training_point.y != training_point.y)
                   || (training_point.z != training_point.z))
                 continue;

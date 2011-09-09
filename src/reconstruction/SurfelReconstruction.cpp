@@ -36,10 +36,10 @@ namespace object_recognition
     {
       const int width = cloud.width;
       const int height = cloud.height;
-      cv::Mat_<float>::const_iterator begin = points3d.begin();
 
       for (int v = 0; v < height; ++v)
       {
+        const float * begin = reinterpret_cast<const float*>(points3d.ptr(v));
         for (int u = 0; u < width; ++u)
         {
           PointT& p = cloud(u, v);

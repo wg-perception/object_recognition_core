@@ -21,7 +21,6 @@ add_library(object_recognition_db SHARED
   couch.cpp
   db.cpp
   db_couch.cpp
-  serialization_opencv.cpp
   opencv.cpp
   utils.cpp
   )

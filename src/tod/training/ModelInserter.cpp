@@ -72,24 +72,28 @@ namespace object_recognition
         if (n_rows != 0)
         {
           descriptors = cv::Mat(n_rows, input_descriptors[0].cols, input_descriptors[0].type());
-          int row_begin = 0;
-          BOOST_FOREACH(const cv::Mat& mat, input_descriptors)
-              {
-                cv::Mat row_range = cv::Mat(descriptors.rowRange(row_begin, row_begin + mat.rows));
-                mat.copyTo(row_range);
-                row_begin += mat.rows;
-              }
+          {
+            int row_begin = 0;
+            BOOST_FOREACH(const cv::Mat& mat, input_descriptors)
+                {
+                  cv::Mat row_range = cv::Mat(descriptors.rowRange(row_begin, row_begin + mat.rows));
+                  mat.copyTo(row_range);
+                  row_begin += mat.rows;
+                }
+          }
 
           // Stack all the points
           const std::vector<cv::Mat> & input_points = inputs.get<std::vector<cv::Mat> >("points");
-          points = cv::Mat(n_rows, 3, input_points[0].type());
-          row_begin = 0;
-          BOOST_FOREACH(const cv::Mat& mat, inputs.get<std::vector<cv::Mat> >("points"))
-              {
-                cv::Mat row_range = cv::Mat(points.rowRange(row_begin, row_begin + mat.rows));
-                mat.copyTo(row_range);
-                row_begin += mat.rows;
-              }
+          points = cv::Mat(1, n_rows, input_points[0].type());
+          {
+            int col_begin = 0;
+            BOOST_FOREACH(const cv::Mat& mat, input_points)
+                {
+                  cv::Mat col_range = cv::Mat(points.colRange(col_begin, col_begin + mat.cols));
+                  mat.copyTo(col_range);
+                  col_begin += mat.cols;
+                }
+          }
         }
 
         doc.set_attachment<cv::Mat>("descriptors", descriptors);
@@ -99,7 +103,7 @@ namespace object_recognition
         std::cout << "Persisting" << std::endl;
         doc.Persist(db_, collection_models_);
 
-        return 0;
+        return ecto::OK;
       }
       object_recognition::db_future::ObjectDb db_;
       ecto::spore<DocumentId> object_id_;
@@ -111,7 +115,3 @@ namespace object_recognition
 }
 
 ECTO_CELL(tod_training, object_recognition::tod::ModelInserter, "ModelInserter", "Insert a TOD model in the db")
-
-ECTO_DEFINE_MODULE(tod_training)
-{
-}

@@ -23,7 +23,9 @@ namespace object_recognition
       bool
       operator()(const couch::View::result& lhs, const couch::View::result& rhs)
       {
-        return boost::lexical_cast<int>(lhs.value) < boost::lexical_cast<int>(rhs.value);
+        return lhs.value < rhs.value;
+        // TODO use that instead
+        //return boost::lexical_cast<int>(lhs.value) < boost::lexical_cast<int>(rhs.value);
       }
     };
 
@@ -95,6 +97,10 @@ namespace object_recognition
       int
       process(const tendrils& inputs,const tendrils& outputs)
       {
+        if (docs.empty()) {
+          std::cerr << "No object found with id " << object_id << std::endl;
+          return ecto::QUIT;
+        }
         couch::Document doc = docs[current_frame];
         doc.update();
         obs << doc; //read the observation from the doc.

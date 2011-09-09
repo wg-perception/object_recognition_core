@@ -53,6 +53,7 @@ namespace boost
       ar & rows;
       ar & cols;
       ar & type;
+
       if (rows > 0 && cols > 0)
       {
         m.create(rows, cols, type);
@@ -61,7 +62,7 @@ namespace boost
       }
       else
       {
-        std::cout << "bad matrix" << std::endl;
+        std::cout << "bad matrix rows: " << rows << " cols: " << cols << " type: " << type << std::endl;
       }
     }
   } // namespace serialization

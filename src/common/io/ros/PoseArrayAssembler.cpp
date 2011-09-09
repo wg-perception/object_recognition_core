@@ -120,4 +120,4 @@ namespace object_recognition
 }
 
 ECTO_CELL(ros, object_recognition::PoseArrayAssembler, "PoseArrayAssembler",
-          "Given object ids and poses, publish ROS messages.");
+          "Given object ids and poses, create PoseArray message.");

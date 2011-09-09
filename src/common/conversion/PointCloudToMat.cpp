@@ -50,7 +50,7 @@ using ecto::tendrils;
 
 namespace object_recognition
 {
-  namespace tod
+  namespace conversion
   {
     /** Ecto implementation of a module that takes a point cloud as an input and stacks it in a matrix of floats:
      * - if the point cloud is organized, the return a matrix is width by height with 3 channels (for x, y and z)
@@ -74,20 +74,11 @@ namespace object_recognition
         boost::shared_ptr<pcl::PointCloud<PointType> const> point_cloud = inputs.get<
             boost::shared_ptr<pcl::PointCloud<PointType> const> >("point_cloud_rgb");
 
-        cv::Mat points;
-        if (point_cloud->height != 1) //isOrganized() is not const...
-          points = cv::Mat(point_cloud->height, point_cloud->width, CV_32FC3);
-        else
-          points = cv::Mat(point_cloud->size(), 1, CV_32FC3);
+        cv::Mat points = cv::Mat(point_cloud->height, point_cloud->width, CV_32FC3);
 
-        float * data = reinterpret_cast<float*>(points.data);
-        BOOST_FOREACH(const PointType & point, point_cloud->points)
-            {
-              *(data++) = point.x;
-              *(data++) = point.y;
-              *(data++) = point.z;
-            }
-        outputs.get<cv::Mat>("points") = points;
+        std::memcpy(reinterpret_cast<void*>(points.data), reinterpret_cast<const void*>(point_cloud->points.data()), sizeof(pcl::PointCloud<PointType>) * point_cloud->size());
+
+        outputs["points"] << points;
 
         return 0;
       }
@@ -96,7 +87,7 @@ namespace object_recognition
 }
 
 ECTO_CELL(
-    tod_detection,
-    object_recognition::tod::PointCloudToMat,
+    conversion,
+    object_recognition::conversion::PointCloudToMat,
     "PointCloudToMat",
     "Given a point cloud, stack it to a matrix of floats:\n- if the point cloud is organized, the return a matrix is width by height with 3 channels (for x, y and z)\n- if the point cloud is unorganized, the return a matrix is n_point by 1 with 3 channels (for x, y and z)");
