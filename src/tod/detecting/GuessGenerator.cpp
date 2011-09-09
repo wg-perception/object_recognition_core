@@ -172,8 +172,6 @@ namespace object_recognition
               ObjectId object_id = local_matches[match_index].imgIdx;
               training_point_clouds[object_id].push_back(training_point);
               query_point_clouds[object_id].push_back(query_point);
-              std::cout << training_point.x << " " << training_point.y << " " << training_point.z << " - "
-                        << query_point.x << " " << query_point.y << " " << query_point.z << std::endl;
             }
           }
 
