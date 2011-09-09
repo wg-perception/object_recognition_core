@@ -31,7 +31,7 @@ class KinectReader(ecto.BlackBox):
         self._camera_info = ecto_ros.CameraInfo2Cv('camera_info -> cv::Mat')
         self._im2mat_rgb = ecto_ros.Image2Mat(swap_rgb = True)
         self._im2mat_depth = ecto_ros.Image2Mat()
-        self._depth_to_3d = calib.DepthTo3d(do_organized = True)
+        self._depth_to_3d = calib.DepthTo3d()
         self._debug = debug
 
     def expose_inputs(self):
