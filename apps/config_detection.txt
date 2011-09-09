@@ -15,11 +15,11 @@
 		"type": "CouchDB",
 		"url": "http://localhost:5984"
 	},
-	"object_ids": ["72e4498e4ac140ca8ae049fdfd30e9bd"],
+	"object_ids": ["72e4498e4ac140ca8ae049fdfd19ee9f","72e4498e4ac140ca8ae049fdfd2bfc6d"],
 	"guess":
 	{
-		"min_inliers": 15,
-		"n_ransac_iterations": 1000
+		"min_inliers": 20,
+		"n_ransac_iterations": 200
 	},
 	"search":
 	{
@@ -28,6 +28,6 @@
 		"key_size": 18,
 		"multi_probe_level": 2,
 		"ratio": 0.8,
-		"radius": 50
+		"radius": 40
 	}
 }

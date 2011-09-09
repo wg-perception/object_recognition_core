@@ -15,5 +15,5 @@
 		"type": "CouchDB",
 		"url": "http://localhost:5984"
 	},
-	"object_ids": ["72e4498e4ac140ca8ae049fdfd30e9bd"]
+	"object_ids": ["72e4498e4ac140ca8ae049fdfd19ee9f"]
 }
