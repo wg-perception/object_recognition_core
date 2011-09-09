@@ -147,7 +147,10 @@ def compute_for_bag(bag, bags, args):
         if args.commit:
             session.store(sessions)
         print "running graph"
-        plasm = connect_observation_calc(sync, args.commit, str(session.object_id), str(session.id), args.visualize)
+        plasm = connect_observation_calc(sync, args.commit,
+                                         str(session.object_id),
+                                         str(session.id),
+                                         args.visualize)
         sched = ecto.schedulers.Threadpool(plasm)
         sched.execute()
         return session

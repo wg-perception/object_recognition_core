@@ -102,7 +102,7 @@ def find_diff(prev, current):
 def rotate(a,MY_SERVO,degrees,speed):
   a.enableWheelMode(MY_SERVO)
   prev = pos = a.getPosition(MY_SERVO)
-  ticks_per_degree = 16
+  ticks_per_degree = 15.170
   total_ticks = ticks_per_degree * degrees
   # set speed for rotation in joint mode
   a.setSpeed(MY_SERVO, speed)    # half speed, values between 0 and 1023
@@ -120,42 +120,49 @@ class TurnTable(ecto.Module):
         ecto.Module.__init__(self, **kwargs)
     @staticmethod
     def declare_params(params):
-        params.declare("text", "a param.","hello there")
-
+        params.declare("angle_thresh", "Angular threshold",math.pi/36)
     @staticmethod
     def declare_io(params, inputs, outputs):
         outputs.declare("trigger", "Capture", True)
 
     def configure(self,params):
-        self.text = params.text
-        self.MY_SERVO = 0xE9
-        self.a = ArbotiX("/dev/ttyUSB0",baud=1e6) #1 meg for e
-        self.a.disableTorque(self.MY_SERVO)
-        self.a.disableWheelMode(self.MY_SERVO,resolution=12)
-        pos = self.a.getPosition(self.MY_SERVO)
-        print 'initial position', pos
-        assert pos != -1
-        self.a.setSpeed(self.MY_SERVO,100)
-        self.a.setPosition(self.MY_SERVO,0)
-        while self.a.getPosition(self.MY_SERVO) > 5:
-            time.sleep(0.1)
-        print "At position: ", self.a.setPosition(self.MY_SERVO,0)
-        self.settle_count = 0 #use to alternate movement
-        self.total = 0
-        self.delta_angle = 5
+        try:
+            self.MY_SERVO = 0xE9
+            self.a = ArbotiX("/dev/ttyUSB0",baud=1e6) #1 meg for e
+            self.a.disableTorque(self.MY_SERVO)
+            self.a.disableWheelMode(self.MY_SERVO,resolution=12)
+            pos = self.a.getPosition(self.MY_SERVO)
+            self.a.setSpeed(self.MY_SERVO,100)
+            self.a.setPosition(self.MY_SERVO,0)
+            while self.a.getPosition(self.MY_SERVO) > 5:
+                time.sleep(0.1)
+            print "At position: ", self.a.setPosition(self.MY_SERVO,0)
+            self.settle_count = -1 #use to alternate movement
+            self.total = 0
+            #print params
+            self.delta_angle = params.angle_thresh * 180/math.pi
+            self.max_angle = 720
+            print self.delta_angle, 'delta angle.'
+        except Exception, e:
+            print e
         
     def process(self,inputs, outputs):
         if self.settle_count == 0:
             self.settle_count += 1
             self.total += 1
             rotate(self.a, self.MY_SERVO, self.delta_angle, 25)
+            print "Total angular travel :",self.total * self.delta_angle
             outputs.trigger = False
-        elif self.settle_count >= 1:
+        elif self.settle_count >= 2:
             outputs.trigger = True
             self.settle_count = 0
         else:
             self.settle_count += 1
             time.sleep(0.25)
+        if self.total * self.delta_angle > self.max_angle:
+            return 1
+        return 0
+        
     def __del__(self):
         print "Stopping servo...."
         a = ArbotiX("/dev/ttyUSB0",baud=1e6)
@@ -177,11 +184,12 @@ def create_preview_capture_standalone(camera_file):
     bgr2rgb = imgproc.cvtColor('rgb -> bgr', flag=imgproc.Conversion.RGB2BGR)
     rgb2gray = imgproc.cvtColor('rgb -> gray', flag=imgproc.Conversion.RGB2GRAY)
     display = highgui.imshow(name='Poses', waitKey=5, autoSize=True)
-                                   
+    depth_display = highgui.imshow(name='Depth')                              
     graph = [kinect['image']  >> (rgb2gray[:], poser['color_image']),
               rgb2gray[:] >> poser['image'],
               poser['debug_image'] >> display['input'],
               kinect['K'] >> poser['K'],
+              kinect['depth'] >> depth_display[:],
               ]
     plasm.connect(graph)
     return plasm
@@ -196,7 +204,7 @@ def create_capture_plasm_standalone(bag_name, angle_thresh,camera_file):
                    image_ci=CameraInfoBagger(topic_name='/camera/rgb/camera_info'),
                    depth_ci=CameraInfoBagger(topic_name='/camera/depth/camera_info'),
                    )
-    table = TurnTable()
+    table = TurnTable(angle_thresh=angle_thresh)
     bagwriter = ecto.If('Bag Writer if R|T',
                         cell=ecto_ros.BagWriter(baggers=baggers, bag=bag_name)
                         )
@@ -223,23 +231,20 @@ def create_capture_plasm_standalone(bag_name, angle_thresh,camera_file):
 
     bgr2rgb = imgproc.cvtColor('rgb -> bgr', flag=imgproc.Conversion.RGB2BGR)
     rgb2gray = imgproc.cvtColor('rgb -> gray', flag=imgproc.Conversion.RGB2GRAY)
-    delta_pose = ecto.If("delta R|T",cell=capture.DeltaRT(angle_thresh=angle_thresh))
-    display = ecto.If('Display',
-        cell=highgui.imshow(name='Poses', waitKey=5, autoSize=True))
-    display.inputs.__test__ = True
-    saver = ecto.If('Saver',cell=highgui.ImageSaver("saver", filename_format='image_%05d.jpg',
-                                   start=1))
-                                   
+    delta_pose = ecto.If("delta R|T",cell=capture.DeltaRT(angle_thresh=angle_thresh,
+                                                          n_desired=72))
+    display = highgui.imshow(name='Poses', waitKey=5, autoSize=True)
     ander = ecto.And()
 
     graph += [kinect['image']  >> (rgb2gray[:], poser['color_image']),
+              kinect['depth'] >> highgui.imshow('Depth',name='Depth')[:],
               rgb2gray[:] >> poser['image'],
-              poser['debug_image'] >> (display['input'], saver['image']),
+              poser['debug_image'] >> display['input'],
               kinect['K'] >> poser['K'],
               poser['R', 'T', 'found'] >> delta_pose['R', 'T', 'found'],
               table['trigger'] >> (delta_pose['__test__'],ander['in2']),
               delta_pose['novel'] >> ander['in1'],
-              ander['out'] >> (bagwriter['__test__'], saver['__test__'])
+              ander['out'] >> bagwriter['__test__']
               ]
     plasm.connect(graph)
     return plasm

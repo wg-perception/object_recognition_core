@@ -57,7 +57,7 @@ object sparsely, depending on the delta setting.'''),
     group = parser.add_argument_group('ecto scheduler options')
     scheduler_options(group, default_scheduler='Singlethreaded')
     args = parser.parse_args()
-    if len(args.bag) < 1:
+    if not args.preview and len(args.bag) < 1:
       print parser.print_help()
       sys.exit(1)
     return args
