@@ -1,6 +1,12 @@
 cmake_minimum_required(VERSION 2.8)
-set(CMAKE_BUILD_TYPE "Release" CACHE STRING "The build type.")
 project(object_recognition)
+
+if(NOT CMAKE_BUILD_TYPE)
+  set(CMAKE_BUILD_TYPE RelWithDebInfo CACHE STRING
+      "Choose the type of build, options are: None Debug Release RelWithDebInfo MinSizeRel."
+      FORCE)
+endif()
+
 add_definitions("-Wno-pragmas -fno-strict-aliasing -Wall -Wl,--no-undefined")
 
 #set the default path for built libraries to the "ecto_opencv" directory
@@ -31,3 +37,8 @@ ecto_python_env_gen(${CMAKE_BINARY_DIR}/lib ${CMAKE_CURRENT_SOURCE_DIR}/python)
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
 add_subdirectory(src)
+option(BUILD_TEST "Build tests" ON)
+if(BUILD_TEST)
+  enable_testing()
+  add_subdirectory(test)
+endif()
