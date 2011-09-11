@@ -31,7 +31,7 @@ poser = OpposingDotPoseEstimator(plasm,
 
 bgr2rgb = imgproc.cvtColor('rgb -> bgr', flag=imgproc.Conversion.RGB2BGR)
 rgb2gray = imgproc.cvtColor('rgb -> gray', flag=imgproc.Conversion.RGB2GRAY)
-display = highgui.imshow('Poses', name='Poses', waitKey=5, autoSize=True)
+display = highgui.imshow('Poses', name='Poses')
 
 graph = [sync['image'] >> im2mat_rgb[:],
           im2mat_rgb[:] >> (rgb2gray[:], bgr2rgb[:]),

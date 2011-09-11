@@ -8,10 +8,10 @@ debug = True
 while True:
     plasm = ecto.Plasm()
     
-    image_view = highgui.imshow(name="RGB", waitKey=10, autoSize=True)
-    mask_view = highgui.imshow(name="mask", waitKey= -1, autoSize=True)
-    depth_view = highgui.imshow(name="Depth", waitKey= -1, autoSize=True);
-    db_reader = capture.ObservationReader("db_reader", db_url='http://10.0.11.37:5984',object_id="6ea81529b747a2e8148389481200de19")
+    image_view = highgui.imshow(name="RGB")
+    mask_view = highgui.imshow(name="mask")
+    depth_view = highgui.imshow(name="Depth")
+    db_reader = capture.ObservationReader("db_reader", db_url='http://10.0.11.37:5984', object_id="6ea81529b747a2e8148389481200de19")
     
     plasm.connect(db_reader, "image", image_view, "input")
     plasm.connect(db_reader, "mask", mask_view, "input")

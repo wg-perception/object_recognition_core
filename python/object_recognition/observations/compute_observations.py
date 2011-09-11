@@ -86,8 +86,8 @@ def connect_observation_calc(sync, commit, object_id, session_id, debug=False):
                   image_ci['K'] >> calc_observations['K'],
                   )
     if debug:
-        image_display = highgui.imshow('image display', name='image', waitKey=10, autoSize=True)
-        mask_display = highgui.imshow('mask display', name='mask', waitKey= -1, autoSize=True)
+        image_display = highgui.imshow('image display', name='image')
+        mask_display = highgui.imshow('mask display', name='mask')
         plasm.connect(rgb[:] >> image_display[:])
         plasm.connect(calc_observations['mask'] >> mask_display[:])
 

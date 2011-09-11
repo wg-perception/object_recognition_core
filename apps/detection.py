@@ -102,9 +102,9 @@ if __name__ == '__main__':
 
     # Display the different poses
     if DISPLAY:
-        image_view = highgui.imshow(name="RGB", waitKey=10, autoSize=True)
-        keypoints_view = highgui.imshow(name="Keypoints", waitKey=10, autoSize=True)
-        pose_view = highgui.imshow(name="Pose", waitKey=10, autoSize=True)
+        image_view = highgui.imshow(name="RGB")
+        keypoints_view = highgui.imshow(name="Keypoints")
+        pose_view = highgui.imshow(name="Pose")
         draw_keypoints = features2d.DrawKeypoints()
         pose_drawer = calib.PosesDrawer()
 

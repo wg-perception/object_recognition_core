@@ -62,7 +62,7 @@ def create_capture_plasm(bag_name):
 
     #use opencv highgui to display an image.
     im2mat_rgb = ecto_ros.Image2Mat('rgb -> cv::Mat')
-    display = highgui.imshow('Image Display', name='/camera/rgb/image_color', waitKey=5, autoSize=True, triggers=dict(save=ord('s')))
+    display = highgui.imshow('Image Display', name='/camera/rgb/image_color',triggers=dict(save=ord('s')))
     bgr2rgb = imgproc.cvtColor('rgb -> bgr', flag=imgproc.Conversion.RGB2BGR)
     graph += [
         sync['image'] >> im2mat_rgb[:],

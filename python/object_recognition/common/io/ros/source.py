@@ -54,7 +54,7 @@ class KinectReader(ecto.BlackBox):
                   ]
         # TODO : reset that to DEBUG
         #if self._debug:
-        connections += [self._im2mat_depth[:] >> highgui.imshow(name='kinect depth',waitKey=1)[:]]
+        connections += [self._im2mat_depth[:] >> highgui.imshow(name='kinect depth')[:]]
         return connections
 
 ########################################################################################################################

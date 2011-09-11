@@ -22,9 +22,9 @@ def do_ecto():
     
     graph = [
                 bagreader["image"] >> im2mat_rgb["image"],
-                im2mat_rgb["image"] >> highgui.imshow("rgb show", name="rgb", waitKey=5)[:],
+                im2mat_rgb["image"] >> highgui.imshow("rgb show", name="rgb")[:],
                 bagreader["depth"] >> im2mat_depth["image"],
-                im2mat_depth["image"] >> highgui.imshow("depth show", name="depth", waitKey= -1)[:]
+                im2mat_depth["image"] >> highgui.imshow("depth show", name="depth")[:]
             ]
     
     plasm = ecto.Plasm()

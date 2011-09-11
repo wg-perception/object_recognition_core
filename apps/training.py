@@ -59,9 +59,9 @@ if __name__ == '__main__':
         # connect the visualization
         plasm = ecto.Plasm()
         if DISPLAY:
-            image_view = highgui.imshow(name="RGB", waitKey=1, autoSize=True)
-            mask_view = highgui.imshow(name="mask", waitKey= -1, autoSize=True)
-            depth_view = highgui.imshow(name="Depth", waitKey= -1, autoSize=True);
+            image_view = highgui.imshow(name="RGB")
+            mask_view = highgui.imshow(name="mask")
+            depth_view = highgui.imshow(name="Depth");
             plasm.connect(db_reader['image'] >> image_view['input'],
                           db_reader['mask'] >> mask_view['input'],
                           db_reader['depth'] >> depth_view['input'])

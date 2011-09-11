@@ -117,8 +117,8 @@ plasm = ecto.Plasm()
 plasm.connect(table['trigger'] >> capture['__test__'],
               capture[:] >> verter[:],
               verter['image'] >> fps[:],
-              fps[:] >> highgui.imshow('image display', name='image', waitKey=10)[:],
-              verter['depth'] >> highgui.imshow('depth display', name='depth', waitKey= -1)[:],
+              fps[:] >> highgui.imshow('image display', name='image')[:],
+              verter['depth'] >> highgui.imshow('depth display', name='depth')[:],
               #fps[:] >> saver['image']
               )
 

@@ -51,9 +51,9 @@ def mesh_session(session, args):
                       )
         if args.visualize:
             plasm.connect(
-                      db_reader['image'] >> highgui.imshow('image', name='image', waitKey=10, autoSize=True)[:],
-                      db_reader['depth'] >> highgui.imshow('depth', name='depth', waitKey= -1, autoSize=True)[:],
-                      db_reader['mask'] >> highgui.imshow('mask', name='mask', waitKey= -1, autoSize=True)[:],
+                      db_reader['image'] >> highgui.imshow('image', name='image')[:],
+                      db_reader['depth'] >> highgui.imshow('depth', name='depth')[:],
+                      db_reader['mask'] >> highgui.imshow('mask', name='mask')[:],
                       )
         sched = ecto.schedulers.Singlethreaded(plasm)
         sched.execute()
