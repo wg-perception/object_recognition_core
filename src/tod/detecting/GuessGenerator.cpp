@@ -233,7 +233,7 @@ namespace object_recognition
             int count_i, index_i;
             boost::tie(count_i, index_i) = count_clusteridx[i];
             std::vector<int>& cluster_i = clusters[index_i];
-            if (cluster_i.size() < int(min_inliers_))
+            if (cluster_i.size() < min_inliers_)
               break;
             //largest cluster
             inliers.clear();
