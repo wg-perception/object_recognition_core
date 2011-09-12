@@ -1,15 +1,32 @@
 {
-	"feature_descriptor":
-	{
-		"combination":
-		{
-			"type": "ORB"
-		},
-		"feature":
-		{
-			"n_features": 1000
-		}
-	},
+    "tod":
+    {
+        "guess":
+        {
+            "min_inliers": 30,
+            "n_ransac_iterations": 300
+        },
+        "search":
+        {
+            "type": "LSH",
+            "n_tables": 16,
+            "key_size": 18,
+            "multi_probe_level": 2,
+            "ratio": 0.8,
+            "radius": 50
+        },
+        "feature_descriptor":
+        {
+            "combination":
+            {
+                "type": "ORB"
+            },
+            "feature":
+            {
+                "n_features": 1000
+            }
+        }
+    },
 	"db":
 	{
 		"type": "CouchDB",
@@ -24,19 +41,4 @@
 	"72e4498e4ac140ca8ae049fdfd31d5cf",
 	"72e4498e4ac140ca8ae049fdfd2bfc6d"
 	]
-	,
-	"guess":
-	{
-		"min_inliers": 30,
-		"n_ransac_iterations": 300
-	},
-	"search":
-	{
-		"type": "LSH",
-		"n_tables": 16,
-		"key_size": 18,
-		"multi_probe_level": 2,
-		"ratio": 0.8,
-		"radius": 50
-	}
 }

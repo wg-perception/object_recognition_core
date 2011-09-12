@@ -1,13 +1,16 @@
 {
-	"feature_descriptor":
+	"tod":
 	{
-       "combination":
-        {
-                "type": "ORB" 
-        },
-		"feature":
+		"feature_descriptor":
 		{
-			"n_features": 1000
+	       "combination":
+	        {
+	                "type": "ORB" 
+	        },
+			"feature":
+			{
+				"n_features": 1000
+			}
 		}
 	},
 	"db":
