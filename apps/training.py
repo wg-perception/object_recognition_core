@@ -5,7 +5,7 @@ from ecto_object_recognition import capture, tod_training
 from ecto_opencv import highgui, cv_bp as opencv, calib, imgproc, features2d
 from object_recognition.tod.feature_descriptor import FeatureDescriptor
 from object_recognition.tod.trainer import Trainer as TodTrainer
-from optparse import OptionParser
+from argparse import ArgumentParser
 import ecto
 import os
 import string
@@ -19,8 +19,8 @@ DISPLAY = True
 ########################################################################################################################
 
 def parse_options():
-    parser = OptionParser()
-    parser.add_option("-c", "--config_file", dest="config_file",
+    parser = ArgumentParser()
+    parser.add_argument("-c", "--config_file", dest="config_file",
                       help='the file containing the configuration as JSON. It should contain the following fields.\n'
                       '"feature_descriptor": with parameters for "combination", "feature" and "descriptor".\n'
                       '"db": parameters about the db: "type", "url".\n'
@@ -28,17 +28,16 @@ def parse_options():
                       '"band_aid_plastic_strips"]\n'
                       )
 
-    (options, args) = parser.parse_args()
-    return options
+    return parser.parse_args()
 
 ########################################################################################################################
 
 if __name__ == '__main__':
 
-    options = parse_options()
+    args = parse_options()
 
     # define the input
-    if options.config_file is None or not os.path.exists(options.config_file):
+    if args.config_file is None or not os.path.exists(args.config_file):
         raise 'option file does not exist'
 
     json_params = json_helper.file_to_json(args.config_file)
