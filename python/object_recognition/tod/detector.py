@@ -42,7 +42,8 @@ class TodDetector(ecto.BlackBox):
                 }
 
     def connections(self):
-        return (self.feature_descriptor['keypoints'] >> self.guess_generator['keypoints'],
+        return [self.feature_descriptor['keypoints'] >> self.guess_generator['keypoints'],
                 self.feature_descriptor['descriptors'] >> self.descriptor_matcher['descriptors'],
-                self.descriptor_matcher['matches'] >> self.guess_generator['matches'],
-                self.descriptor_matcher['matches_3d'] >> self.guess_generator['matches_3d'])
+                self.descriptor_matcher['matches', 'matches_3d', 'spans', 'id_correspondences'] >> 
+                self.guess_generator['matches', 'matches_3d', 'spans', 'id_correspondences']]
+

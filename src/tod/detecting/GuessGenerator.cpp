@@ -52,9 +52,8 @@
 #include <pcl/sample_consensus/ransac.h>
 #include <pcl/sample_consensus/sac_model_registration.h>
 
+#include "object_recognition/common/types.h"
 #include "opencv_candidate/PoseRT.h"
-
-typedef unsigned int ObjectId;
 
 using ecto::tendrils;
 
@@ -62,7 +61,6 @@ namespace object_recognition
 {
   namespace tod
   {
-
     namespace
     {
       bool
@@ -91,6 +89,10 @@ namespace object_recognition
         inputs.declare<std::vector<std::vector<cv::DMatch> > > ("matches", "The list of OpenCV DMatch");
         inputs.declare<std::vector<cv::Mat> > ("matches_3d",
                                                "The corresponding 3d position of those matches. For each point, a 1 by n 3 channel matrix (for x,y and z)");
+        inputs.declare<std::map<ObjectId, float> >("spans", "For each found object, its span based on known features.");
+        inputs.declare<std::map<ObjectId, ObjectOpenCVId> >(
+            "id_correspondences", "Correspondences from OpenCV integer id to the JSON object ids");
+
         outputs.declare<std::vector<ObjectId> > ("object_ids", "the id's of the found objects");
         outputs.declare<std::vector<cv::Mat> > ("Rs", "The rotations of the poses of the found objects");
         outputs.declare<std::vector<cv::Mat> > ("Ts", "The translations of the poses of the found objects");
@@ -300,6 +302,8 @@ namespace object_recognition
         // Get the original keypoints and point cloud
         const std::vector<cv::KeyPoint> & keypoints = inputs.get<std::vector<cv::KeyPoint> > ("keypoints");
         cv::Mat point_cloud = inputs.get<cv::Mat> ("points3d");
+        std::map<ObjectOpenCVId, ObjectId> id_correspondences = inputs.get<std::map<ObjectOpenCVId, ObjectId> >(
+            "id_correspondences");
 
         // Get the outputs
         std::vector<ObjectId> &object_ids = outputs.get<std::vector<ObjectId> > ("object_ids");
@@ -320,8 +324,8 @@ namespace object_recognition
           // Use 3d to 3d matching
 
           // Cluster the matches per object ID
-          std::map<ObjectId, pcl::PointCloud<pcl::PointXYZ> > query_point_clouds;
-          std::map<ObjectId, pcl::PointCloud<pcl::PointXYZ> > training_point_clouds;
+          std::map<ObjectOpenCVId, pcl::PointCloud<pcl::PointXYZ> > query_point_clouds;
+          std::map<ObjectOpenCVId, pcl::PointCloud<pcl::PointXYZ> > training_point_clouds;
           std::vector<int> histo_count;
           for (unsigned int descriptor_index = 0; descriptor_index < matches.size(); ++descriptor_index)
           {
@@ -338,19 +342,19 @@ namespace object_recognition
               pcl::PointXYZ training_point(val[0], val[1], val[2]);
 
               // Fill in the clouds
-              ObjectId object_id = local_matches[match_index].imgIdx;
+              ObjectOpenCVId object_id = local_matches[match_index].imgIdx;
               training_point_clouds[object_id].push_back(training_point);
               query_point_clouds[object_id].push_back(query_point);
             }
           }
 
           // For each object, perform 3d to 3d matching
-          for (std::map<ObjectId, pcl::PointCloud<pcl::PointXYZ> >::const_iterator query_iterator =
+          for (std::map<ObjectOpenCVId, pcl::PointCloud<pcl::PointXYZ> >::const_iterator query_iterator =
               query_point_clouds.begin(); query_iterator != query_point_clouds.end(); ++query_iterator)
           {
-            ObjectId object_id = query_iterator->first;
-            cluster_clouds(training_point_clouds[object_id], query_point_clouds[object_id], Rs, Ts);
-            object_ids.resize(Rs.size(), object_id); //fill in an object id for every new R and T found.
+            ObjectOpenCVId object_opencv_id = query_iterator->first;
+            cluster_clouds(training_point_clouds[object_opencv_id], query_point_clouds[object_opencv_id], Rs, Ts);
+            object_ids.resize(Rs.size(), id_correspondences[object_opencv_id]); //fill in an object id for every new R and T found.
           }
         }
 
