@@ -557,6 +557,8 @@ void LshMatcher::match_impl(const cv::Mat& query_descriptors, std::vector<std::v
 
   //set the static checked_average
   const cv::Mat & descriptors = mergedDescriptors.getDescriptors();
+  if (descriptors.empty())
+    return;
 
   for (int queryIndex = 0; queryIndex < query_descriptors.rows; ++queryIndex)
   {
