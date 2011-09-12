@@ -21,6 +21,10 @@
 #include <vtkRendererCollection.h>
 #include <vtkMatrix4x4.h>
 #include <vtkPerspectiveTransform.h>
+#include <vtkAppendPolyData.h>
+
+#include <vtk3DSImporter.h>
+#include <vtkOBJReader.h>
 
 #include <boost/format.hpp>
 #include <boost/thread.hpp>
@@ -28,6 +32,7 @@
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
+#define SP(X) vtkSmartPointer< X >
 
 namespace object_recognition
 {
@@ -40,13 +45,16 @@ namespace object_recognition
   void
   grab_frame_callback(vtkObject* caller, long unsigned int eventId, void* clientData, void* callData);
 
+  void
+  quit_callback(vtkObject* caller, long unsigned int eventId, void* clientData, void* callData);
   struct SimRunner
   {
 
     SimRunner(const std::string image_name, double width, double height, int window_width, int window_height)
         :
           data_ready(false),
-          has_quit(false)
+          has_quit(false),
+          quit(false)
     {
       // Read the image which will be the texture
       vtkSmartPointer<vtkPNGReader> pngReader = vtkSmartPointer<vtkPNGReader>::New();
@@ -76,20 +84,36 @@ namespace object_recognition
       // Visualize the textured plane
       renderer = vtkSmartPointer<vtkRenderer>::New();
       renderer->AddActor(texturedPlane);
+
+      renderer->SetAmbient(1,1,1);
       renderer->SetBackground(0.2, 0.2, 0.2); // Background color
       renderer->ResetCamera();
 
       renderWindow = vtkSmartPointer<vtkRenderWindow>::New();
       renderWindow->SetSize(window_width, window_height);
       renderWindow->AddRenderer(renderer);
+//
+//      {
+//        vtkSmartPointer<vtkOBJReader> obj_reader = vtkSmartPointer<vtkOBJReader>::New();
+//        obj_reader->SetFileName("soup.obj");
+//        obj_reader->Update();
+//
+//        vtkSmartPointer<vtkPolyDataMapper> objMapper = vtkSmartPointer<vtkPolyDataMapper>::New();
+//        objMapper->SetInput(obj_reader->GetOutput());
+//        objMapper->SetScalarMaterialModeToAmbient();
+//        vtkSmartPointer<vtkPNGReader> pngReader = vtkSmartPointer<vtkPNGReader>::New();
+//        pngReader->SetFileName("soup.png");
+//        vtkSmartPointer<vtkTexture> texture = vtkSmartPointer<vtkTexture>::New();
+//        texture->SetInput(pngReader->GetOutput());
+//
+//        vtkSmartPointer<vtkActor> objActor = vtkSmartPointer<vtkActor>::New();
+//        objActor->SetMapper(objMapper);
+//        objActor->SetTexture(texture);
+//        renderer->AddActor(objActor);
+//      }
 
       renderWindowInteractor = vtkSmartPointer<vtkRenderWindowInteractor>::New();
       renderWindowInteractor->SetRenderWindow(renderWindow);
-
-      cb = vtkSmartPointer<vtkCallbackCommand>::New();
-      cb->SetCallback(grab_frame_callback);
-      cb->SetClientData(this);
-      renderWindowInteractor->AddObserver(vtkCommand::RenderEvent, cb);
 
       //track ball interaction
       style = vtkSmartPointer<vtkInteractorStyleTrackballCamera>::New();
@@ -100,6 +124,18 @@ namespace object_recognition
     void
     operator()()
     {
+      renderWindowInteractor->Initialize();
+      vtkSmartPointer<vtkCallbackCommand> quitcb = vtkSmartPointer<vtkCallbackCommand>::New();
+      quitcb->SetCallback(quit_callback);
+      quitcb->SetClientData(this);
+      renderWindowInteractor->CreateRepeatingTimer(100);
+      renderWindowInteractor->AddObserver(vtkCommand::TimerEvent, quitcb);
+
+      cb = vtkSmartPointer<vtkCallbackCommand>::New();
+      cb->SetCallback(grab_frame_callback);
+      cb->SetClientData(this);
+      renderWindowInteractor->AddObserver(vtkCommand::RenderEvent, cb);
+      renderWindowInteractor->Render();
       renderWindowInteractor->Start();
       has_quit = true;
     }
@@ -121,21 +157,24 @@ namespace object_recognition
       condition.notify_one();
     }
     bool
-    get_data(cv::Mat& image, cv::Mat& depth, cv::Mat& mask, cv::Mat&K, cv::Mat& R, cv::Mat& T)
+    get_data(cv::Mat& image, cv::Mat& depth, cv::Mat& mask, cv::Mat&K, cv::Mat& R, cv::Mat& T, bool& new_data)
     {
       boost::unique_lock<boost::mutex> lock(mtx);
       while (!data_ready)
       {
-        condition.timed_wait(lock, boost::posix_time::milliseconds(10));
-        if (has_quit)
-          break;
+        condition.timed_wait(lock, boost::posix_time::milliseconds(33));
+        break;
       }
-      image = this->image;
-      depth = this->depth;
-      mask = this->mask;
-      K = this->K;
-      R = this->R;
-      T = this->T;
+      new_data = data_ready;
+      if (new_data)
+      {
+        image = this->image;
+        depth = this->depth;
+        mask = this->mask;
+        K = this->K;
+        R = this->R;
+        T = this->T;
+      }
       data_ready = false;
       return has_quit;
     }
@@ -154,7 +193,20 @@ namespace object_recognition
     vtkSmartPointer<vtkCallbackCommand> cb;
     //track ball interaction
     vtkSmartPointer<vtkInteractorStyleTrackballCamera> style;
+
+    bool quit;
   };
+
+  void
+  quit_callback(vtkObject* caller, long unsigned int eventId, void* clientData, void* callData)
+  {
+    vtkRenderWindowInteractor *iren = static_cast<vtkRenderWindowInteractor*>(caller);
+    if (static_cast<SimRunner*>(clientData)->quit)
+    {
+      iren->InvokeEvent(vtkCommand::ExitEvent);
+    }
+  }
+
   void
   grab_frame_callback(vtkObject* caller, long unsigned int eventId, void* clientData, void* callData)
   {
@@ -169,8 +221,8 @@ namespace object_recognition
   {
 
     K = cv::Mat::eye(3, 3, CV_64F);
-    double imgH = sz.width;
-    double imgW = sz.height;
+    double imgW = sz.width;
+    double imgH = sz.height;
     double fovx, fovy;
     if (cam->GetUseHorizontalViewAngle())
     {
@@ -182,8 +234,8 @@ namespace object_recognition
       fovy = cam->GetViewAngle();
       fovx = fovy * imgW / imgH;
     }
-    double alphax = imgW / (2 * tan((fovx / 2.0) * CV_PI / 180.0)); // (imgW / 2.0) / tan(fovx / 2.0 * CV_PI / 180.0);
-    double alphay = imgH / (2 * tan((fovy / 2.0) * CV_PI / 180.0)); //(imgH / 2.0) / tan(fovy / 2.0 * CV_PI / 180.0);
+    double alphax = imgW / (2 * tan((fovx / 2.0) * CV_PI / 180.0));
+    double alphay = imgH / (2 * tan((fovy / 2.0) * CV_PI / 180.0));
 
     K.at<double>(0, 0) = alphax;
     K.at<double>(0, 2) = (imgW - 1.0) / 2.0;
@@ -191,16 +243,27 @@ namespace object_recognition
     K.at<double>(1, 2) = (imgH - 1.0) / 2.0;
 
     double x, y, z;
+    // construct a rotation matrix around x.
+    cv::Mat Rx = cv::Mat::eye(3, 3, CV_64F);
+    Rx.at<double>(1, 1) = -1;
+    Rx.at<double>(2, 2) = -1;
+    cv::Mat Rz = cv::Mat::eye(3, 3, CV_64F);
+    Rz.at<double>(0, 0) = 0;
+    Rz.at<double>(1, 1) = 0;
+    Rz.at<double>(0, 1) = 1;
+    Rz.at<double>(1, 0) = -1;
     cam->GetPosition(x, y, z);
     vtkMatrix4x4* vm = cam->GetViewTransformMatrix();
     cv::Mat tR(4, 4, CV_64F, vm->Element);
     {
       cv::Mat sub(tR(cv::Range(0, 3), cv::Range(0, 3)));
       sub.copyTo(R);
+      R = Rx * R;
     }
     {
       cv::Mat sub(tR(cv::Range(0, 3), cv::Range(3, 4)));
       sub.copyTo(T);
+      T = Rx * T;
     }
   }
 
@@ -231,6 +294,10 @@ namespace object_recognition
     }
     cv::flip(image, image, 0); //vertical flip.
     cv::flip(depth, depth, 0); //vertical flip.
+
+    //
+//    std::cout << "********** ground truth begin *******\nK = " << K << "\nR = " << R << "\nT = " << T
+//              << "\n******** ground truth end *********" << std::endl;
   }
 }
 #if DO_ECTO
@@ -279,7 +346,6 @@ namespace object_recognition
       image = o["image"];
       depth = o["depth"];
       mask = o["mask"];
-
       R = o["R"];
       K = o["K"];
       T = o["T"];
@@ -288,7 +354,8 @@ namespace object_recognition
     int
     process(const tendrils& i, const tendrils& o)
     {
-      if (sm->get_data(*image, *depth, *mask, *K, *R, *T))
+      bool new_data;
+      if (sm->get_data(*image, *depth, *mask, *K, *R, *T, new_data))
       {
         t->join();
         return ecto::QUIT;
@@ -299,7 +366,7 @@ namespace object_recognition
     {
       if (sm)
       {
-        sm->renderWindowInteractor->TerminateApp();
+        sm->quit = true;
       }
       if (t)
       {
@@ -331,12 +398,19 @@ main(int argc, char *argv[])
   boost::shared_ptr<SimRunner> sm(new SimRunner(inputFilename, 0.4, 0.8, 640, 480));
   boost::thread t(boost::ref(*sm));
   cv::Mat image, depth, mask, R, T, K;
-  while (!sm->get_data(image, depth, mask, K, R, T))
+  bool new_data;
+  while (!sm->get_data(image, depth, mask, K, R, T, new_data))
   {
-    cv::imshow("Render", image);
-    cv::waitKey(10);
-    std::cout << "K = " << K << "\nR = " << R << "\nT = " << T << std::endl;
-
+    if (new_data)
+    {
+      cv::imshow("Render", image);
+      std::cout << "K = " << K << "\nR = " << R << "\nT = " << T << std::endl;
+    }
+    int key = 0xFF & cv::waitKey(10);
+    if (key == 'q')
+    {
+      sm->quit = true;
+    }
     boost::this_thread::sleep(boost::posix_time::milliseconds(10));
   }
   t.join();

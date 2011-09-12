@@ -5,8 +5,8 @@ ENDIF(NOT VTK_USE_RENDERING)
 
 INCLUDE(${VTK_USE_FILE})
 
-#ADD_EXECUTABLE(Cone Cone.cxx)
-#TARGET_LINK_LIBRARIES(Cone vtkRendering vtkWidgets)
+ADD_EXECUTABLE(Cone Cone.cxx)
+TARGET_LINK_LIBRARIES(Cone vtkRendering vtkWidgets)
 
 set( VTK_REQUIRED_LIBS vtkRendering  vtkGraphics vtkHybrid  vtkWidgets 
                      vtkImaging vtkIO vtkFiltering vtkCommon vtkVolumeRendering)

@@ -12,21 +12,27 @@ if len(sys.argv) > 1:
     board = sys.argv[1]
 
 plasm = ecto.Plasm()
-kinect = sim.PlanarSim(image_name=board, width=0.4, height=0.8)
+
+simulator = sim.PlanarSim(image_name=board, width=0.8, height=0.4)
+
 poser = OpposingDotPoseEstimator(plasm,
                                  rows=5, cols=3,
                                  pattern_type=calib.ASYMMETRIC_CIRCLES_GRID,
                                  square_size=0.04, debug=True)
 
+gt_pose_drawer = calib.PoseDrawer('Ground Truth Pose')
+
 rgb2gray = imgproc.cvtColor('rgb -> gray', flag=imgproc.Conversion.RGB2GRAY)
 display = highgui.imshow(name='Pose')
 depth_display = highgui.imshow(name='Depth')
-graph = [kinect['image'] >> (rgb2gray[:], poser['color_image']),
-          rgb2gray[:] >> poser['image'],
-          poser['debug_image'] >> display['image'],
-          kinect['K'] >> poser['K'],
-          kinect['depth'] >> depth_display[:],
-          ]
+graph = [simulator['image'] >> (rgb2gray[:], poser['color_image'], gt_pose_drawer['image']),
+         simulator['R', 'T', 'K'] >> gt_pose_drawer['R', 'T', 'K'],
+         gt_pose_drawer['output'] >> highgui.imshow(name="Ground Truth")['image'],
+         rgb2gray[:] >> poser['image'],
+         poser['debug_image'] >> display['image'],
+         simulator['K'] >> poser['K'],
+         simulator['depth'] >> depth_display[:],
+         ]
 plasm.connect(graph)
 
 sched = ecto.schedulers.Singlethreaded(plasm)

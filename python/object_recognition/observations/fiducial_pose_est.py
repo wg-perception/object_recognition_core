@@ -58,11 +58,11 @@ class OpposingDotPoseEstimator(ecto.BlackBox):
         self.rgb_image = ecto.Passthrough('rgb Input')
         self.camera_info = ecto.Passthrough('K')
         self.gather = calib.GatherPoints("gather", N=2)
-        self.q1 = imgproc.Quantize('scar face filter', factor=256) #abuse saturated Arithmetics http://opencv.itseez.com/modules/core/doc/intro.html?highlight=saturated.
+        self.quantizer = imgproc.Quantize('Quantizer', alpha=256, beta=20) #abuse saturated Arithmetics http://opencv.itseez.com/modules/core/doc/intro.html?highlight=saturated.
         self.invert = imgproc.BitwiseNot()
         self.debug = debug
-        offset_x = -.310 #TODO: FIXME hard coded
-        offset_y = -.100
+        offset_x = -.3095 #TODO: FIXME hard coded
+        offset_y = -.1005
         self.cd_bw = calib.PatternDetector('Dot Detector, B/W',
                                                 rows=rows, cols=cols,
                                                 pattern_type=pattern_type,
@@ -70,7 +70,7 @@ class OpposingDotPoseEstimator(ecto.BlackBox):
                                                 offset_x=offset_x,
                                                 offset_y=offset_y,
                                                 )
-        offset_x = .150 #TODO: FIXME hard coded
+        offset_x = .1505 #TODO: FIXME hard coded
         self.cd_wb = calib.PatternDetector('Dot Detector, W/B',
                                                 rows=rows, cols=cols,
                                                 pattern_type=pattern_type,
@@ -114,9 +114,10 @@ class OpposingDotPoseEstimator(ecto.BlackBox):
     def connections(self):
         graph = [
                 self.gray_image[:] >>
-                #>> self.q1[:],
-                #self.q1[:] >>
-                 (self.invert[:], self.cd_bw['input'], highgui.imshow(name='q1')[:]),
+                self.quantizer[:],
+                self.quantizer[:] >> highgui.imshow(name='Quantized')[:],
+                self.quantizer[:] >> #TODO IS THIS NECESSARY
+                 (self.invert[:], self.cd_bw['input']), # highgui.imshow(name='Quantized')[:]
                 self.cd_bw['found', 'ideal', 'out'] >> self.gather['found_0000', 'ideal_0000', 'points_0000'],
                 self.cd_wb['found', 'ideal', 'out'] >> self.gather['found_0001', 'ideal_0001', 'points_0001'],
                 self.invert[:] >> self.cd_wb['input'],
