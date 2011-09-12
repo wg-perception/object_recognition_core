@@ -7,11 +7,11 @@ from object_recognition.tod.feature_descriptor import FeatureDescriptor
 from object_recognition.tod.trainer import Trainer as TodTrainer
 from optparse import OptionParser
 import ecto
-import json
 import os
 import string
 import sys
 import time
+from object_recognition.common.utils import json_helper
 
 DEBUG = False
 DISPLAY = True
@@ -41,8 +41,7 @@ if __name__ == '__main__':
     if options.config_file is None or not os.path.exists(options.config_file):
         raise 'option file does not exist'
 
-    json_params = json.loads(str(open(options.config_file).read()))
-    json_params = eval(str(json_params).replace("'", '"').replace('u"', '"').replace('{u', '{'))
+    json_params = json_helper.file_to_json(args.config_file)
     db_url = str(json_params['db']['url'])
 
     # initialize the DB
@@ -62,10 +61,9 @@ if __name__ == '__main__':
         plasm.connect(db_reader['image', 'mask', 'depth', 'K', 'R', 'T'] >> tod_model['image', 'mask', 'depth', 'K', 'R', 'T'])
 
         # persist to the DB
-        db_json_params_str = str(json_params['db']).replace("'", '"').replace('u"', '"').replace('{u', '{')
         _db_writer = tod_training.ModelInserter("db_writer", collection_models='models',
-                                                  db_json_params=db_json_params_str, object_id=object_id,
-                                                  model_json_params=str(json_params['tod']))
+                                    db_json_params=json_helper.dict_to_cpp_json_str(json_params['db']), object_id=object_id,
+                                    model_json_params=json_helper.dict_to_cpp_json_str(json_params['tod']))
         orb_params = None
         # TODO
         #db_writer.add_misc(orb_params)

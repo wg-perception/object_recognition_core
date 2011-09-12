@@ -4,7 +4,6 @@ import ecto_geometry_msgs
 import ecto_pcl
 import ecto_ros
 from ecto_opencv import highgui, cv_bp as opencv, calib, imgproc, features2d
-import json
 from argparse import ArgumentParser
 import os
 import sys
@@ -15,6 +14,7 @@ from object_recognition.common.io.ros.source import KinectReader, BagReader
 from object_recognition.common.filters.masker import Masker
 from object_recognition.common.io.sink import Sink
 from object_recognition.common.io.source import Source
+from object_recognition.common.utils import json_helper
 from object_recognition.tod.detector import TodDetector
 
 DEBUG = False
@@ -63,12 +63,11 @@ if __name__ == '__main__':
         raise 'option file does not exist'
 
     # Get the parameters from the file
-    json_params = json.loads(str(open(args.config_file).read()))
-    json_params = eval(str(json_params['feature_descriptor']).replace("'", '"').replace('u"', '"').\
-                                     replace('{u', '{'))
+    json_params = json_helper.file_to_json(args.config_file)
+    object_ids = json_params['object_ids']
 
     # define the main cell
-    tod_detector = TodDetector(plasm, json_params['tod'], object_ids)
+    tod_detector = TodDetector(plasm, json_params['db'], json_params['tod'], object_ids, display = DISPLAY)
 
     # define the input
     if 0:
@@ -97,21 +96,13 @@ if __name__ == '__main__':
 
     # Display the different poses
     if DISPLAY:
-        image_view = highgui.imshow(name="RGB")
-        keypoints_view = highgui.imshow(name="Keypoints")
         pose_view = highgui.imshow(name="Pose")
-        draw_keypoints = features2d.DrawKeypoints()
         pose_drawer = calib.PosesDrawer()
 
-        plasm.connect(source['image'] >> image_view['input'],
-                       source['image'] >> draw_keypoints['image'],
-                       tod_detector['keypoints'] >> draw_keypoints['keypoints'],
-                       draw_keypoints['image'] >> keypoints_view['input']
-                       )
         # draw the poses
         plasm.connect(source['image', 'K'] >> pose_drawer['image', 'K'],
                           tod_detector['Rs', 'Ts'] >> pose_drawer['Rs', 'Ts'],
-                          pose_drawer['output'] >> pose_view['input']
+                          pose_drawer['output'] >> pose_view['image']
                           )
 
     # display DEBUG data if needed

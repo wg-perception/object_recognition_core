@@ -77,25 +77,26 @@ namespace object_recognition
       static void
       declare_params(tendrils& p)
       {
-        p.declare<std::string> ("json_params", "The parameters, as a JSON string.\n\"min_inliers\": "
-          "Minimum number of inliers. \n\"n_ransac_iterations\": Number of RANSAC iterations.\n");
+        p.declare<std::string>("json_params", "The parameters, as a JSON string.\n\"min_inliers\": "
+                               "Minimum number of inliers. \n\"n_ransac_iterations\": Number of RANSAC iterations.\n");
       }
 
       static void
       declare_io(const tendrils& params, tendrils& inputs, tendrils& outputs)
       {
-        inputs.declare<cv::Mat> ("points3d", "The height by width 3 channel point cloud");
-        inputs.declare<std::vector<cv::KeyPoint> > ("keypoints", "The interesting keypoints");
-        inputs.declare<std::vector<std::vector<cv::DMatch> > > ("matches", "The list of OpenCV DMatch");
-        inputs.declare<std::vector<cv::Mat> > ("matches_3d",
-                                               "The corresponding 3d position of those matches. For each point, a 1 by n 3 channel matrix (for x,y and z)");
+        inputs.declare<cv::Mat>("points3d", "The height by width 3 channel point cloud");
+        inputs.declare<std::vector<cv::KeyPoint> >("keypoints", "The interesting keypoints");
+        inputs.declare<std::vector<std::vector<cv::DMatch> > >("matches", "The list of OpenCV DMatch");
+        inputs.declare<std::vector<cv::Mat> >(
+            "matches_3d",
+            "The corresponding 3d position of those matches. For each point, a 1 by n 3 channel matrix (for x,y and z)");
         inputs.declare<std::map<ObjectId, float> >("spans", "For each found object, its span based on known features.");
-        inputs.declare<std::map<ObjectId, ObjectOpenCVId> >(
+        inputs.declare<std::map<ObjectOpenCVId, ObjectId> >(
             "id_correspondences", "Correspondences from OpenCV integer id to the JSON object ids");
 
-        outputs.declare<std::vector<ObjectId> > ("object_ids", "the id's of the found objects");
-        outputs.declare<std::vector<cv::Mat> > ("Rs", "The rotations of the poses of the found objects");
-        outputs.declare<std::vector<cv::Mat> > ("Ts", "The translations of the poses of the found objects");
+        outputs.declare<std::vector<ObjectId> >("object_ids", "the id's of the found objects");
+        outputs.declare<std::vector<cv::Mat> >("Rs", "The rotations of the poses of the found objects");
+        outputs.declare<std::vector<cv::Mat> >("Ts", "The translations of the poses of the found objects");
       }
 
       void
