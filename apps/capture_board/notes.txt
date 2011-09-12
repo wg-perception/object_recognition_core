@@ -1,0 +1,13 @@
+width 0.4 meters
+height 0.8 meters
+
+hmmm... rotated on side
+
+black dots on white:
+        offset_x = -.310 meters
+        offset_y = -.10
+
+white dots on black:
+        offset_x = .150 #TODO: FIXME hard coded
+        offset_y = -.10
+        

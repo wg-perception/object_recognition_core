@@ -2,6 +2,7 @@
 # abstract the input.
 import ecto
 from ecto_opencv import highgui, calib, imgproc
+import ecto_opencv
 
 class PoseFromFiducial(ecto.BlackBox):
     def __init__(self, plasm, rows, cols, pattern_type, square_size, offset_x=0, offset_y=0, offset_z=0, debug=True):
@@ -61,7 +62,7 @@ class OpposingDotPoseEstimator(ecto.BlackBox):
         self.invert = imgproc.BitwiseNot()
         self.debug = debug
         offset_x = -.310 #TODO: FIXME hard coded
-        offset_y = -.101099
+        offset_y = -.100
         self.cd_bw = calib.PatternDetector('Dot Detector, B/W',
                                                 rows=rows, cols=cols,
                                                 pattern_type=pattern_type,
@@ -112,8 +113,10 @@ class OpposingDotPoseEstimator(ecto.BlackBox):
                 }
     def connections(self):
         graph = [
-                self.gray_image[:] >> self.q1[:],
-                self.q1[:] >> (self.invert[:], self.cd_bw['input']),
+                self.gray_image[:] >>
+                #>> self.q1[:],
+                #self.q1[:] >>
+                 (self.invert[:], self.cd_bw['input'], highgui.imshow(name='q1')[:]),
                 self.cd_bw['found', 'ideal', 'out'] >> self.gather['found_0000', 'ideal_0000', 'points_0000'],
                 self.cd_wb['found', 'ideal', 'out'] >> self.gather['found_0001', 'ideal_0001', 'points_0001'],
                 self.invert[:] >> self.cd_wb['input'],
