@@ -1,3 +1,4 @@
+
 find_package(Eigen REQUIRED)
 include_directories(${EIGEN_INCLUDE_DIRS})
 find_ros_package(pcl) #find the ros version of pcl for now.
@@ -11,3 +12,4 @@ add_subdirectory(db)
 add_subdirectory(tod)
 add_subdirectory(reconstruction)
 add_subdirectory(easy_capture)
+add_subdirectory(sim)
