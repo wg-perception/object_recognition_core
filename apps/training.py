@@ -42,9 +42,7 @@ if __name__ == '__main__':
         raise 'option file does not exist'
 
     json_params = json.loads(str(open(options.config_file).read()))
-    feature_descriptor_json_params = str(json_params['feature_descriptor']).replace("'", '"').\
-                                       replace('u"', '"').replace('{u', '{')
-    feature_descriptor_params = eval(feature_descriptor_json_params)
+    json_params = eval(str(json_params).replace("'", '"').replace('u"', '"').replace('{u', '{'))
     db_url = str(json_params['db']['url'])
 
     # initialize the DB
@@ -58,23 +56,16 @@ if __name__ == '__main__':
 
         # connect the visualization
         plasm = ecto.Plasm()
-        if DISPLAY:
-            image_view = highgui.imshow(name="RGB")
-            mask_view = highgui.imshow(name="mask")
-            depth_view = highgui.imshow(name="Depth");
-            plasm.connect(db_reader['image'] >> image_view['input'],
-                          db_reader['mask'] >> mask_view['input'],
-                          db_reader['depth'] >> depth_view['input'])
 
         # connect to the model computation
-        tod_model = TodTrainer(plasm, feature_descriptor_params)
+        tod_model = TodTrainer(plasm, json_params['tod'], DISPLAY)
         plasm.connect(db_reader['image', 'mask', 'depth', 'K', 'R', 'T'] >> tod_model['image', 'mask', 'depth', 'K', 'R', 'T'])
 
         # persist to the DB
         db_json_params_str = str(json_params['db']).replace("'", '"').replace('u"', '"').replace('{u', '{')
         _db_writer = tod_training.ModelInserter("db_writer", collection_models='models',
                                                   db_json_params=db_json_params_str, object_id=object_id,
-                                                  model_json_params=feature_descriptor_json_params)
+                                                  model_json_params=str(json_params['tod']))
         orb_params = None
         # TODO
         #db_writer.add_misc(orb_params)
