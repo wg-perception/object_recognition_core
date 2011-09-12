@@ -34,6 +34,8 @@
  */
 
 #include <string>
+#include <map>
+#include <vector>
 
 #include <boost/foreach.hpp>
 #include <boost/python.hpp>
@@ -45,6 +47,7 @@
 #include <opencv2/features2d/features2d.hpp>
 //#include <opencv2/flann/flann.hpp>
 
+#include "object_recognition/common/types.h"
 #include "object_recognition/db/db.h"
 #include "object_recognition/db/opencv.h"
 #include "opencv_candidate/lsh.hpp"
@@ -76,6 +79,10 @@ namespace object_recognition
         outputs.declare<std::vector<cv::Mat> >(
             "matches_3d",
             "For each point, the 3d position of the matches, 1 by n matrix with 3 channels for, x, y, and z.");
+        outputs.declare<std::map<ObjectId, float> >("spans",
+                                                    "For each found object, its span based on known features.");
+        outputs.declare<std::map<ObjectOpenCVId, ObjectId> >(
+            "id_correspondences", "Correspondences from OpenCV integer id to the JSON object ids");
       }
 
       void
@@ -113,7 +120,7 @@ namespace object_recognition
         // Load the list of Object to study
         const boost::python::object & python_object_ids = params.get<boost::python::object>("object_ids");
         boost::python::stl_input_iterator<std::string> begin(python_object_ids), end;
-        std::vector<std::string> object_ids;
+        std::vector<ObjectId> object_ids;
         std::copy(begin, end, std::back_inserter(object_ids));
 
         // load the descriptors from the DB
@@ -122,7 +129,8 @@ namespace object_recognition
         features_3d_.reserve(object_ids.size());
         std::vector<cv::Mat> all_descriptors;
 
-        BOOST_FOREACH(const std::string & object_id, object_ids)
+        unsigned int object_opencv_id = 0;
+        BOOST_FOREACH(const ObjectId & object_id, object_ids)
             {
               db_future::DocumentView query;
               query.set_db(db);
@@ -138,10 +146,33 @@ namespace object_recognition
                 doc.get_attachment<cv::Mat>(db, "descriptors", descriptors);
                 all_descriptors.push_back(descriptors);
 
-                // Deal with the 3d positions
+                // Store the id conversion
+                id_correspondences_.insert(std::pair<ObjectOpenCVId, ObjectId>(object_opencv_id, object_id));
+                ++object_opencv_id;
+
+                // Store the 3d positions
                 cv::Mat points3d;
                 doc.get_attachment<cv::Mat>(db, "points", points3d);
+                if (points3d.rows != 0)
+                  points3d = points3d.t();
                 features_3d_.push_back(points3d);
+
+                // Compute the span of the object
+                float max_span_sq = 0;
+                for (int i = 0; i < points3d.cols; ++i)
+                {
+                  const cv::Vec3f & vec_i = points3d.at<cv::Vec3f>(0, i);
+                  for (int j = i + 1; j < points3d.cols; ++j)
+                  {
+                    const cv::Vec3f & vec_j = points3d.at<cv::Vec3f>(0, j);
+                    cv::Vec3f vec = vec_i - vec_j;
+                    float tmp_span_sq = vec.val[0] * vec.val[0] + vec.val[1] * vec.val[1] + vec.val[2] * vec.val[2];
+
+                    if (tmp_span_sq > max_span_sq)
+                      max_span_sq = tmp_span_sq;
+                  }
+                }
+                spans_[object_id] = std::sqrt(max_span_sq);
               }
             }
         matcher_->add(all_descriptors);
@@ -189,6 +220,9 @@ namespace object_recognition
               }
         }
 
+        outputs["spans"] << spans_;
+        outputs["id_correspondences"] << id_correspondences_;
+
         return 0;
       }
     private:
@@ -202,6 +236,10 @@ namespace object_recognition
       unsigned int ratio_;
       /** The 3d position of the loaded descriptors (the first index is on the object ID) */
       std::vector<cv::Mat> features_3d_;
+      /** For each object id, the maximum distance between the known descriptors (span) */
+      std::map<ObjectId, float> spans_;
+      /** Matching between an OpenCV integer ID and the ids found in the JSON */
+      std::map<ObjectOpenCVId, ObjectId> id_correspondences_;
     };
   }
 }

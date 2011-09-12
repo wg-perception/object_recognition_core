@@ -52,9 +52,8 @@
 #include <pcl/sample_consensus/ransac.h>
 #include <pcl/sample_consensus/sac_model_registration.h>
 
+#include "object_recognition/common/types.h"
 #include "opencv_candidate/PoseRT.h"
-
-typedef unsigned int ObjectId;
 
 using ecto::tendrils;
 
@@ -62,7 +61,6 @@ namespace object_recognition
 {
   namespace tod
   {
-
     namespace
     {
       bool
@@ -91,6 +89,10 @@ namespace object_recognition
         inputs.declare<std::vector<std::vector<cv::DMatch> > > ("matches", "The list of OpenCV DMatch");
         inputs.declare<std::vector<cv::Mat> > ("matches_3d",
                                                "The corresponding 3d position of those matches. For each point, a 1 by n 3 channel matrix (for x,y and z)");
+        inputs.declare<std::map<ObjectId, float> >("spans", "For each found object, its span based on known features.");
+        inputs.declare<std::map<ObjectId, ObjectOpenCVId> >(
+            "id_correspondences", "Correspondences from OpenCV integer id to the JSON object ids");
+
         outputs.declare<std::vector<ObjectId> > ("object_ids", "the id's of the found objects");
         outputs.declare<std::vector<cv::Mat> > ("Rs", "The rotations of the poses of the found objects");
         outputs.declare<std::vector<cv::Mat> > ("Ts", "The translations of the poses of the found objects");
@@ -173,45 +175,49 @@ namespace object_recognition
       }
       void
       cluster_clouds(const pcl::PointCloud<pcl::PointXYZ> & training_point_cloud,
-                     const pcl::PointCloud<pcl::PointXYZ> & query_point_cloud, std::vector<cv::Mat> &Rs,
+                     const pcl::PointCloud<pcl::PointXYZ> & query_point_cloud, float span, std::vector<cv::Mat> &Rs,
                      std::vector<cv::Mat> &Ts)
       {
         pcl::PointCloud<pcl::PointXYZ> training, query;
         std::vector<std::vector<int> > clusters(training_point_cloud.size());
-        float max_dist = 0.005;
-        float min_span = 0.05;
-        float span_query = 0;
-        float span_training = 0;
+        // The error the 3d sensor makes, distance wise
+        float sensor_error = 0.02;
+        // The minimal span of a point cluster to consider
+        float min_span = 0.02;
         std::cout << "training_point_cloud size " << training_point_cloud.size() << std::endl;
         for (unsigned int i = 0; i < training_point_cloud.size(); ++i)
         {
-          const pcl::PointXYZ & training_point_1 = training_point_cloud.points[i];
-          const pcl::PointXYZ & query_point_1 = query_point_cloud.points[i];
+          float span_query = 0, span_training = 0;
+          const pcl::PointXYZ & training_point_1 = training_point_cloud.points[i], query_point_1 =
+              query_point_cloud.points[i];
           std::vector<int>& cluster = clusters[i];
           cluster.push_back(i);
-          for (unsigned int j = 0; j < training_point_cloud.size(); ++j)
+          for (unsigned int j = i + 1; j < training_point_cloud.size(); ++j)
           {
-            if (j == i)
+            const pcl::PointXYZ & query_point_2 = query_point_cloud.points[j];
+            float dist2 = pcl::euclideanDistance(query_point_1, query_point_2);
+            // Make sure that two points are within the span of the object
+            if (dist2 > (span + 2 * sensor_error))
               continue;
 
             const pcl::PointXYZ & training_point_2 = training_point_cloud.points[j];
-            const pcl::PointXYZ & query_point_2 = query_point_cloud.points[j];
-
             float dist1 = pcl::euclideanDistance(training_point_1, training_point_2);
-            float dist2 = pcl::euclideanDistance(query_point_1, query_point_2);
-            if (std::abs(dist1 - dist2) < max_dist)
+            // Make sure the distance between two points is somewhat conserved
+            if (std::abs(dist1 - dist2) < 2 * sensor_error)
             {
               cluster.push_back(j);
+              clusters[j].push_back(i);
               span_training = std::max(span_training, dist1);
               span_query = std::max(span_query, dist2);
             }
           }
-          //sort the small cluster before exiting. for the set difference.
-          if ((span_query < min_span) && (span_training < min_span))
+          // make sure the clusters are physically big enough
+          if ((span_query < (min_span + 2 * sensor_error)) || (span_training < (min_span + 2 * sensor_error)))
             cluster.clear();
           std::sort(cluster.begin(), cluster.end());
         }
 
+        // For each cluster of matches, compute a 3d model
         pcl::PointCloud<pcl::PointXYZ>::Ptr
             training_cloud_ptr(new pcl::PointCloud<pcl::PointXYZ>(training_point_cloud));
         pcl::PointCloud<pcl::PointXYZ>::Ptr query_cloud_ptr(new pcl::PointCloud<pcl::PointXYZ>(query_point_cloud));
@@ -221,8 +227,6 @@ namespace object_recognition
         {
           std::vector<std::pair<int, int> > count_clusteridx;
           count_clusteridx.reserve(clusters.size());
-
-          count_clusteridx.clear();
           for (unsigned int i = 0; i < clusters.size(); ++i)
             count_clusteridx.push_back(std::make_pair(clusters[i].size(), i));
           std::sort(count_clusteridx.begin(), count_clusteridx.end(), compare_first);
@@ -300,6 +304,9 @@ namespace object_recognition
         // Get the original keypoints and point cloud
         const std::vector<cv::KeyPoint> & keypoints = inputs.get<std::vector<cv::KeyPoint> > ("keypoints");
         cv::Mat point_cloud = inputs.get<cv::Mat> ("points3d");
+        std::map<ObjectOpenCVId, ObjectId> id_correspondences = inputs.get<std::map<ObjectOpenCVId, ObjectId> >(
+            "id_correspondences");
+        std::map<ObjectId, float> spans = inputs.get<std::map<ObjectId, float> >("spans");
 
         // Get the outputs
         std::vector<ObjectId> &object_ids = outputs.get<std::vector<ObjectId> > ("object_ids");
@@ -320,8 +327,8 @@ namespace object_recognition
           // Use 3d to 3d matching
 
           // Cluster the matches per object ID
-          std::map<ObjectId, pcl::PointCloud<pcl::PointXYZ> > query_point_clouds;
-          std::map<ObjectId, pcl::PointCloud<pcl::PointXYZ> > training_point_clouds;
+          std::map<ObjectOpenCVId, pcl::PointCloud<pcl::PointXYZ> > query_point_clouds;
+          std::map<ObjectOpenCVId, pcl::PointCloud<pcl::PointXYZ> > training_point_clouds;
           std::vector<int> histo_count;
           for (unsigned int descriptor_index = 0; descriptor_index < matches.size(); ++descriptor_index)
           {
@@ -338,18 +345,20 @@ namespace object_recognition
               pcl::PointXYZ training_point(val[0], val[1], val[2]);
 
               // Fill in the clouds
-              ObjectId object_id = local_matches[match_index].imgIdx;
+              ObjectOpenCVId object_id = local_matches[match_index].imgIdx;
               training_point_clouds[object_id].push_back(training_point);
               query_point_clouds[object_id].push_back(query_point);
             }
           }
 
           // For each object, perform 3d to 3d matching
-          for (std::map<ObjectId, pcl::PointCloud<pcl::PointXYZ> >::const_iterator query_iterator =
+          for (std::map<ObjectOpenCVId, pcl::PointCloud<pcl::PointXYZ> >::const_iterator query_iterator =
               query_point_clouds.begin(); query_iterator != query_point_clouds.end(); ++query_iterator)
           {
-            ObjectId object_id = query_iterator->first;
-            cluster_clouds(training_point_clouds[object_id], query_point_clouds[object_id], Rs, Ts);
+            ObjectOpenCVId object_opencv_id = query_iterator->first;
+            ObjectId object_id = id_correspondences[object_opencv_id];
+            cluster_clouds(training_point_clouds[object_opencv_id], query_point_clouds[object_opencv_id],
+                           spans[object_id], Rs, Ts);
             object_ids.resize(Rs.size(), object_id); //fill in an object id for every new R and T found.
           }
         }
