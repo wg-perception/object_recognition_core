@@ -64,16 +64,11 @@ if __name__ == '__main__':
 
     # Get the parameters from the file
     json_params = json.loads(str(open(args.config_file).read()))
-    feature_descriptor_params = eval(str(json_params['feature_descriptor']).replace("'", '"').replace('u"', '"').\
+    json_params = eval(str(json_params['feature_descriptor']).replace("'", '"').replace('u"', '"').\
                                      replace('{u', '{'))
-    db_json_params = str(json_params['db']).replace("'", '"').replace('u"', '"').replace('{u', '{')
-    object_ids = eval(str(json_params['object_ids']).replace("'", '"').replace('u"', '"').replace('{u', '{'))
-    guess_json_params = str(json_params['guess']).replace("'", '"').replace('u"', '"').replace('{u', '{')
-    search_json_params = str(json_params['search']).replace("'", '"').replace('u"', '"').replace('{u', '{')
 
     # define the main cell
-    tod_detector = TodDetector(plasm, feature_descriptor_params, db_json_params, object_ids, search_json_params,
-                                 guess_json_params)
+    tod_detector = TodDetector(plasm, json_params['tod'], object_ids)
 
     # define the input
     if 0:

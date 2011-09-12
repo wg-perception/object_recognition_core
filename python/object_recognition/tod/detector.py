@@ -10,19 +10,17 @@ from ecto_object_recognition import tod_detection
 ########################################################################################################################
 
 class TodDetector(ecto.BlackBox):
-    def __init__(self, plasm, feature_descriptor_params, db_json_params, object_ids, search_json_params,
-                 guess_json_params):
+    def __init__(self, plasm, json_params, object_ids):
         ecto.BlackBox.__init__(self, plasm)
 
-        self._db_json_params = db_json_params
+        self._json_params = json_params
         self._object_ids = object_ids
-        self._guess_json_params = guess_json_params
 
         # parse the JSON and load the appropriate feature descriptor module
-        self.feature_descriptor = FeatureDescriptor(feature_descriptor_params)
-        self.descriptor_matcher = tod_detection.DescriptorMatcher("Matcher", db_json_params=db_json_params, object_ids=object_ids,
-                                                        search_json_params=search_json_params)
-        self.guess_generator = tod_detection.GuessGenerator("Guess Gen",json_params=guess_json_params)
+        self.feature_descriptor = FeatureDescriptor(json_params['feature_descriptor'])
+        self.descriptor_matcher = tod_detection.DescriptorMatcher("Matcher", db_json_params=json_params['db'],
+                                                object_ids=object_ids, search_json_params=json_params['search'])
+        self.guess_generator = tod_detection.GuessGenerator("Guess Gen", json_params=json_params['guess'])
 
     def expose_inputs(self):
         return {'image':self.feature_descriptor['image'],
