@@ -37,11 +37,25 @@ namespace object_recognition
         *depth_out = *depth_in;
         return ecto::OK;
       }
+      cv::Mat depth;
+      if (depth_in->type() == CV_16UC1)
+      {
+        depth_in->convertTo(depth, CV_32F, 1 / 1000.0); //convert to float so that we can work with NANs
+      }
+      else
+      {
+        depth_in->convertTo(depth, CV_32F);
+      }
+      float factor = float(isize.width) / dsize.width; //scaling factor.
+      cv::Mat output(isize, depth.type(), NAN); //output is same size as image.
 
-      float factor = float(isize.width) / dsize.width;
-      cv::Mat output(isize, depth_in->type(), NAN);
+      cv::Mat valid_mask = *depth_in == 0;
+      depth.setTo(NAN, valid_mask); //set all non valid points in the depth to NAN.
+
+      //resize into the subregion of the correct aspect ratio
       cv::Mat subregion(output.rowRange(0, dsize.height * factor));
-      cv::resize(*depth_in, subregion, subregion.size());
+      //use cubic or better interpolation
+      cv::resize(depth, subregion, subregion.size(), CV_INTER_CUBIC);
       *depth_out = output;
       return ecto::OK;
     }

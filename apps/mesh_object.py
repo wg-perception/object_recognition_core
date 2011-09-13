@@ -23,7 +23,7 @@ def parse_args():
                        help='The session id to reconstruct.')
     parser.add_argument('--all', dest='compute_all', action='store_const',
                         const=True, default=False,
-                        help='Compute all observations possible given all bags in the system.')
+                        help='Compute meshes for all possible sessions.')
     parser.add_argument('--visualize', dest='visualize', action='store_const',
                         const=True, default=False,
                         help='Turn on visiualization')
@@ -37,15 +37,21 @@ def parse_args():
 def mesh_session(session, args):
     db_reader = capture.ObservationReader('db_reader', session_id=session.id)
     depthTo3d = calib.DepthTo3d()
-    surfel_reconstruction = reconstruction.SurfelReconstruction(corrDistForUpdate=0.02,
-                                                                maxInterpolationDist=0.04,
-                                                                starvationConfidence=2,
-                                                                timeDiffForRemoval=25,
-                                                                maxNormalAngle=90 * math.pi / 180)
+    rescale_depth = capture.RescaledRegisteredDepth() #this is for SXGA mode scale handling.
+    surfel_reconstruction = reconstruction.SimpleReconstruction()#SurfelReconstruction(corrDistForUpdate=0.02,
+#                                                                maxInterpolationDist=0.04,
+#                                                                starvationConfidence=2,
+#                                                                timeDiffForRemoval=25,
+#                                                                maxNormalAngle=90 * math.pi / 180)
     if True:
         plasm = ecto.Plasm()
         plasm.connect(
-                      db_reader['K', 'depth'] >> depthTo3d['K', 'depth'],
+                      db_reader['K'] >> depthTo3d['K'],
+                      db_reader['image'] >> rescale_depth['image'],
+                      db_reader['depth'] >>
+                      rescale_depth['depth'],
+                      rescale_depth[:] >>
+                      (depthTo3d['depth'], highgui.imshow(name='rdepth')[:]),
                       depthTo3d['points3d'] >> surfel_reconstruction['points3d'],
                       db_reader['K', 'R', 'T', 'image', 'mask'] >> surfel_reconstruction['K', 'R', 'T', 'image', 'mask'],
                       )
@@ -60,6 +66,10 @@ def mesh_session(session, args):
 
     if True:
         location = '/tmp/object_recognition/'
+        try:
+            os.makedirs(location)
+        except Exception, e:
+            pass
         mesh_script_txt = '''<!DOCTYPE FilterScript>
 <FilterScript>
  <filter name="Surface Reconstruction: Poisson">
@@ -73,10 +83,6 @@ def mesh_session(session, args):
         mesh_file_name = os.path.join(location, 'meshing.mlx')
         with open(mesh_file_name, 'w') as mesh_script:
             mesh_script.write(mesh_script_txt)
-        try:
-            os.makedirs(location)
-        except Exception, e:
-            pass
         name_base = str(session.id)
         surfel_ply = os.path.join(location, name_base + '.ply')
         print "Saving to :", surfel_ply
@@ -88,14 +94,15 @@ def mesh_session(session, args):
         surfel_saver.configure()
         surfel_saver.process() #manually thunk the cell's process function
 
-#        mesh_args = ["meshlabserver", "-i", surfel_ply, "-o", meshed_ply, "-s", mesh_file_name, "-om", "vn", "fn", "vc", "fc"]
-#        p = subprocess.Popen(mesh_args, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-#        o, e = p.communicate()
-#        if p.returncode :
-#            raise (o, e, p.returncode)
-#
-#        db_url = 'http://localhost:5984'
-#        reconstruction.insert_mesh(db_url, str(session.object_id), session.id, meshed_ply, surfel_ply)
+        meshed_ply = os.path.join(location, name_base + '_meshed.ply')
+        mesh_args = ["meshlabserver", "-i", surfel_ply, "-o", meshed_ply, "-s", mesh_file_name, "-om", "vn", "fn", "vc", "fc"]
+        p = subprocess.Popen(mesh_args, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        o, e = p.communicate()
+        if p.returncode :
+            raise (o, e, p.returncode)
+
+        print "attempting : ", session.object_id
+        reconstruction.insert_mesh(args.db_root, str(session.object_id), session.id, meshed_ply, surfel_ply)
 
 if "__main__" == __name__:
     args = parse_args()
@@ -103,17 +110,10 @@ if "__main__" == __name__:
     dbs = dbtools.init_object_databases(couch)
     sessions = dbs['sessions']
     if args.compute_all:
-        pass
-#        models.sync_models(dbs)
-#        results = models.Bag.all(bags)
-#        for bag in results:
-#            existing_sessions = models.Session.by_bag_id(dbs['sessions'], key=bag.id)
-#            if(len(existing_sessions) == 0):
-#                obj = models.Object.load(dbs['objects'], bag.object_id)
-#                print "Computing session for:", obj.object_name, "\ndescription:", obj.description
-#                compute_for_bag(bag, bags, args)
-#            else:
-#                print "Skipping bag:", bag.id, "Already computed %d sessions" % len(existing_sessions)
+        models.sync_models(dbs)
+        results = models.Session.all(sessions)
+        for session in results:
+            mesh_session(session, args)
     else:
         session = models.Session.load(sessions, args.session_id)
         if session == None or session.id == None:

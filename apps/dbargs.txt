@@ -1,0 +1,2 @@
+--db_root
+http://localhost:5984

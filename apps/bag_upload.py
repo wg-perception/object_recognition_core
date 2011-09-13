@@ -6,8 +6,8 @@ import argparse
 from object_recognition.dbtools import add_db_options
 
 def parse_args():
-    parser = argparse.ArgumentParser(description='''Uploads a bag, with an object description to the db.
-    ''')
+    parser = argparse.ArgumentParser(description='''Uploads a bag, with an object description to the db.''',
+                                      fromfile_prefix_chars='@')
     parser.add_argument('-i', '--input', metavar='BAG_FILE', dest='bag', type=str,
                        default='',
                        help='A bagfile to upload.')

@@ -17,7 +17,7 @@ def parse_args():
 Assumes an opposing dot pattern, (black dots on white background, white
 dots on black background), is the scene, and captures views of the 
 object sparsely, depending on the delta setting.'''),
-                                     )
+                                    fromfile_prefix_chars='@')
 
     parser.add_argument('-o', '--output', metavar='BAG_FILE', dest='bag', type=str,
                        default='',
