@@ -1,4 +1,3 @@
-# abstract the input.
 import ecto
 from ecto_opencv import highgui, calib, imgproc, cv_bp as cv
 from object_recognition.observations import *
@@ -51,20 +50,20 @@ def rotate(a, MY_SERVO, degrees, speed):
   time.sleep(0.025)
 
 class TurnTable(ecto.Module):
-    """ A python module that does not much."""
+    ''' A python module that does not much.'''
     def __init__(self, *args, **kwargs):
         ecto.Module.__init__(self, **kwargs)
     @staticmethod
     def declare_params(params):
-        params.declare("angle_thresh", "Angular threshold", math.pi / 36)
+        params.declare('angle_thresh', 'Angular threshold', math.pi / 36)
     @staticmethod
     def declare_io(params, inputs, outputs):
-        outputs.declare("trigger", "Capture", True)
+        outputs.declare('trigger', 'Capture', True)
 
     def configure(self, params):
         try:
             self.MY_SERVO = 0xE9
-            self.a = ArbotiX("/dev/ttyUSB0", baud=1e6) #1 meg for e
+            self.a = ArbotiX('/dev/ttyUSB0', baud=1e6) #1 meg for e
             self.a.disableTorque(self.MY_SERVO)
             self.a.disableWheelMode(self.MY_SERVO, resolution=12)
             pos = self.a.getPosition(self.MY_SERVO)
@@ -72,7 +71,7 @@ class TurnTable(ecto.Module):
             self.a.setPosition(self.MY_SERVO, 0)
             while self.a.getPosition(self.MY_SERVO) > 5:
                 time.sleep(0.1)
-            print "At position: ", self.a.setPosition(self.MY_SERVO, 0)
+            print 'At position: ', self.a.setPosition(self.MY_SERVO, 0)
             self.settle_count = -1 #use to alternate movement
             self.total = 0
             #print params
@@ -87,7 +86,7 @@ class TurnTable(ecto.Module):
             self.settle_count += 1
             self.total += 1
             rotate(self.a, self.MY_SERVO, self.delta_angle, 25)
-            print "Total angular travel :", self.total * self.delta_angle
+            print 'Total angular travel :', self.total * self.delta_angle
             outputs.trigger = False
         elif self.settle_count >= 2:
             outputs.trigger = True
@@ -100,8 +99,8 @@ class TurnTable(ecto.Module):
         return 0
 
     def __del__(self):
-        print "Stopping servo...."
-        a = ArbotiX("/dev/ttyUSB0", baud=1e6)
+        print 'Stopping servo....'
+        a = ArbotiX('/dev/ttyUSB0', baud=1e6)
         MY_SERVO = 0xE9
         a.disableTorque(MY_SERVO)
 
@@ -123,7 +122,7 @@ def create_preview_capture_standalone(camera_file):
     depth_display = highgui.imshow(name='Depth')
     graph = [kinect['image'] >> (rgb2gray[:], poser['color_image']),
               rgb2gray[:] >> poser['image'],
-              poser['debug_image'] >> display['input'],
+              poser['debug_image'] >> display['image'],
               kinect['K'] >> poser['K'],
               kinect['depth'] >> depth_display[:],
               ]
@@ -167,7 +166,7 @@ def create_capture_plasm_standalone(bag_name, angle_thresh, camera_file):
 
     bgr2rgb = imgproc.cvtColor('rgb -> bgr', flag=imgproc.Conversion.RGB2BGR)
     rgb2gray = imgproc.cvtColor('rgb -> gray', flag=imgproc.Conversion.RGB2GRAY)
-    delta_pose = ecto.If("delta R|T", cell=capture.DeltaRT(angle_thresh=angle_thresh,
+    delta_pose = ecto.If('delta R|T', cell=capture.DeltaRT(angle_thresh=angle_thresh,
                                                           n_desired=72))
     display = highgui.imshow(name='Poses')
     ander = ecto.And()
@@ -175,7 +174,7 @@ def create_capture_plasm_standalone(bag_name, angle_thresh, camera_file):
     graph += [kinect['image'] >> (rgb2gray[:], poser['color_image']),
               kinect['depth'] >> highgui.imshow('Depth', name='Depth')[:],
               rgb2gray[:] >> poser['image'],
-              poser['debug_image'] >> display['input'],
+              poser['debug_image'] >> display['image'],
               kinect['K'] >> poser['K'],
               poser['R', 'T', 'found'] >> delta_pose['R', 'T', 'found'],
               table['trigger'] >> (delta_pose['__test__'], ander['in2']),
@@ -189,7 +188,7 @@ def create_capture_plasm_standalone(bag_name, angle_thresh, camera_file):
 
 
 
-def create_capture_plasm(bag_name, angle_thresh, z_min=0.02, y_crop=0.10, x_crop=0.10, n_desired=72, preview=False, use_turn_table=True):
+def create_capture_plasm(bag_name, angle_thresh, z_min=0.01, y_crop=0.10, x_crop=0.10,z_crop=1.0, n_desired=72, preview=False, use_turn_table=True):
     '''
     Creates a plasm that will capture openni data into a bag, using a dot pattern to sparsify views.
     
@@ -220,7 +219,7 @@ def create_capture_plasm(bag_name, angle_thresh, z_min=0.02, y_crop=0.10, x_crop
     bgr2rgb = imgproc.cvtColor('rgb -> bgr', flag=imgproc.Conversion.RGB2BGR)
     rgb2gray = imgproc.cvtColor('rgb -> gray', flag=imgproc.Conversion.RGB2GRAY)
 
-    delta_pose = ecto.If("delta R|T", cell=capture.DeltaRT(angle_thresh=angle_thresh,
+    delta_pose = ecto.If('delta R|T', cell=capture.DeltaRT(angle_thresh=angle_thresh,
                                                           n_desired=n_desired))
 
     display = highgui.imshow(name='Poses')
@@ -231,7 +230,7 @@ def create_capture_plasm(bag_name, angle_thresh, z_min=0.02, y_crop=0.10, x_crop
               image[:] >> (rgb2gray[:], bgr2rgb[:]),
               bgr2rgb[:] >> poser['color_image'],
               rgb2gray[:] >> poser['image'],
-              poser['debug_image'] >> (display['input'],),
+              poser['debug_image'] >> (display['image'],),
               sync['image_ci'] >> camera_info['camera_info'],
               camera_info['K'] >> poser['K'],
               poser['R', 'T', 'found'] >> delta_pose['R', 'T', 'found'],
@@ -240,8 +239,9 @@ def create_capture_plasm(bag_name, angle_thresh, z_min=0.02, y_crop=0.10, x_crop
 
     depth = ecto_ros.Image2Mat()
     rescale_depth = capture.RescaledRegisteredDepth() #this is for SXGA mode scale handling.
-    segmentation = calib.PlanarSegmentation(z_min=z_min, y_crop=y_crop, x_crop=x_crop) #do NOT add this to the plasm
-    masker = ecto.If("Planar Segmentation", cell=segmentation)
+    segmentation = calib.PlanarSegmentation(z_min=z_min, y_crop=y_crop, x_crop=x_crop, z_crop=z_crop) #do NOT add this to the plasm
+    masker = ecto.If('Planar Segmentation', cell=segmentation)
+    masker.inputs.__test__ = True
     maskMsg = Mat2Image(frame_id='/camera_rgb_optical_frame')
 
     graph += [
@@ -254,6 +254,15 @@ def create_capture_plasm(bag_name, angle_thresh, z_min=0.02, y_crop=0.10, x_crop
               masker['mask'] >> maskMsg[:],
               ]
 
+    #display the mask
+    mask_and = imgproc.BitwiseAnd()
+    mask2rgb = imgproc.cvtColor('mask -> rgb', flag=imgproc.Conversion.GRAY2RGB)
+    graph += [
+              masker['mask'] >> mask2rgb['image'],
+              mask2rgb['image'] >> mask_and['a'],
+              image[:] >> mask_and['b'],
+              mask_and[:] >> highgui.imshow(name='mask')[:],
+            ]
     if not preview:
         baggers = dict(image=ImageBagger(topic_name='/camera/rgb/image_color'),
                    depth=ImageBagger(topic_name='/camera/depth/image'),
