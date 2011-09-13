@@ -35,14 +35,19 @@ object sparsely, depending on the delta setting.'''),
                         default=False, help='Preview the pose estimator.')
     parser.add_argument('--use_turn_table', dest='use_turn_table', action='store_true',
                         default=False, help='Use an E106 servo based turntable.')
-    from ecto.opts import scheduler_options
+    from ecto.opts import scheduler_options,cell_options
+    from ecto_opencv.calib import PlanarSegmentation
+    segmentation_factory = cell_options(parser,PlanarSegmentation,'seg')
+  
     #add ecto scheduler args.
     group = parser.add_argument_group('ecto scheduler options')
     scheduler_options(group, default_scheduler='Singlethreaded')
     args = parser.parse_args()
     if not args.preview and len(args.bag) < 1:
-      print parser.print_help()
+      parser.print_help()
+      print '\nYou must suply a bag name, or run in --preview mode'
       sys.exit(1)
+    args.segmentation_factory = segmentation_factory
     return args
 
 if "__main__" == __name__:
@@ -50,16 +55,17 @@ if "__main__" == __name__:
     ecto_ros.strip_ros_args(sys.argv)
     options = parse_args()
     ecto_ros.init(argv, "openni_capture", False)
-
+    _seg = options.segmentation_factory(options)
     plasm = None
-    if options.preview:
-        plasm = openni_capture.create_preview_capture_standalone(options.camera_file)
-    else:
-        (plasm, segmentation) = openni_capture.create_capture_plasm(bag_name=options.bag,
-                                                                    angle_thresh=options.angle_thresh,
-                                                                    z_min=0.02, y_crop=0.10, x_crop=0.10,
-                                                                    n_desired=72,
-                                                                    preview=options.preview,
-                                                                    use_turn_table=options.use_turn_table)
+    segmentation = None
+    (plasm, segmentation) = openni_capture.create_capture_plasm(bag_name=options.bag,
+                                            angle_thresh=options.angle_thresh,
+                                            #segmentation_factory=options.segmentation_factory,
+                                            z_min=_seg.params.z_min,
+                                            y_crop=_seg.params.y_crop,
+                                            x_crop=_seg.params.x_crop,
+                                            n_desired=72,
+                                            preview=options.preview,
+                                            use_turn_table=options.use_turn_table)
     from ecto.opts import run_plasm
     run_plasm(options, plasm, locals=dict(plasm=plasm, segmentation=segmentation))
