@@ -1,5 +1,6 @@
 ectomodule(conversion
   module.cpp
+  KeypointValidator.cpp
   PointCloudToDepthMat.cpp
   PointCloudToMat.cpp
   )

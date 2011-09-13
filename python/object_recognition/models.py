@@ -71,6 +71,11 @@ class Session(Document):
     bag_id = TextField()
     added = DateTimeField(default=datetime.now)
 
+    all = ViewField('sessions', '''\
+        function(doc) {
+            emit(null,doc)
+        }
+    ''')
     by_object_id = ViewField('sessions', '''\
         function(doc) {
             emit(doc.object_id,doc)
@@ -85,6 +90,7 @@ class Session(Document):
 
     @classmethod
     def sync(cls, db):
+        cls.all.sync(db)
         cls.by_object_id.sync(db)
         cls.by_bag_id.sync(db)
 
@@ -115,6 +121,7 @@ def sync_models(dbs):
     Object.sync(dbs['objects'])
     Session.sync(dbs['sessions'])
     Observation.sync(dbs['observations'])
+
 if __name__ == "__main__":
     couch = couchdb.Server(DEFAULT_SERVER_URL)
     dbs = init_object_databases(couch)

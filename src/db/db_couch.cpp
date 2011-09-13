@@ -53,7 +53,9 @@ void
 ObjectDbCouch::insert_object(const CollectionName &collection, const boost::property_tree::ptree &fields,
                              DocumentId & document_id, RevisionId & revision_id)
 {
-  upload_json(fields, url_id(collection, ""), "POST");
+  std::string url = url_id(collection, "");
+  std::cout << " POST to " << url << std::endl;
+  upload_json(fields,url , "POST");
   GetObjectRevisionId(document_id, revision_id);
 }
 
@@ -127,11 +129,12 @@ void
 ObjectDbCouch::GetObjectRevisionId(DocumentId& document_id, RevisionId & revision_id)
 {
   boost::property_tree::ptree params;
+  std::cout << json_writer_stream_.str() << std::endl;
   boost::property_tree::read_json(json_writer_stream_, params);
   document_id = params.get<std::string>("id", "");
   revision_id = params.get<std::string>("rev", "");
   if (document_id.empty())
-    throw std::runtime_error("Could not find the object id");
+    throw std::runtime_error("Could not find the document id");
   if (revision_id.empty())
     throw std::runtime_error("Could not find the revision number");
 }

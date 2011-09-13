@@ -14,6 +14,7 @@ ectomodule(reconstruction
   surfels.cpp
   SurfelReconstruction.cpp
   reconstruction_db.cpp
+  SimpleReconstruction.cpp
   )
 
 set_target_properties(reconstruction_ectomodule
