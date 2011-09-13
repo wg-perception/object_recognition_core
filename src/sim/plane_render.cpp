@@ -85,7 +85,7 @@ namespace object_recognition
       renderer = vtkSmartPointer<vtkRenderer>::New();
       renderer->AddActor(texturedPlane);
 
-      renderer->SetAmbient(1,1,1);
+      renderer->SetAmbient(1, 1, 1);
       renderer->SetBackground(0.2, 0.2, 0.2); // Background color
       renderer->ResetCamera();
 

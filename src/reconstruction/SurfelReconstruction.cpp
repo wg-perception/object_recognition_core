@@ -32,15 +32,14 @@ namespace object_recognition
     typedef pcl::PointCloud<surfels::surfelPt> SurfelCloud;
     template<typename PointT>
     void
-    cvToCloudXYZ(const cv::Mat_<float>& points3d, pcl::PointCloud<PointT>& cloud)
+    cvToCloudXYZ(const cv::Mat_<cv::Point3f>& points3d, pcl::PointCloud<PointT>& cloud)
     {
       const int width = cloud.width;
       const int height = cloud.height;
 
       for (int v = 0; v < height; ++v)
       {
-        const float * begin = reinterpret_cast<const float*>(points3d.ptr(v));
-        for (int u = 0; u < width; ++u)
+        const float * begin = reinterpret_cast<const float*>(points3d.ptr(v));for (int u = 0; u < width; ++u)
         {
           PointT& p = cloud(u, v);
           p.x = *(begin++);
@@ -82,7 +81,7 @@ namespace object_recognition
       }
 
       void
-      configure(const tendrils&p,const tendrils&i,const tendrils&o)
+      configure(const tendrils&p, const tendrils&i, const tendrils&o)
       {
         model = o["model"];
         params = o["params"];
@@ -240,7 +239,7 @@ namespace object_recognition
       }
 
       void
-      configure(const tendrils&p,const tendrils&i,const tendrils&o)
+      configure(const tendrils&p, const tendrils&i, const tendrils&o)
       {
         model = i["model"];
         params = i["params"];
@@ -268,7 +267,7 @@ namespace object_recognition
 //        pass.filter(*tmpCloud);
 //        surfelCloud.swap(tmpCloud);
 
-        //statistical outlier filter
+//statistical outlier filter
         pcl::StatisticalOutlierRemoval<surfels::surfelPt> sor;
         sor.setInputCloud(surfelCloud);
         sor.setMeanK(50);

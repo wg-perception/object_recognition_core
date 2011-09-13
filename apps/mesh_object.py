@@ -23,7 +23,7 @@ def parse_args():
                        help='The session id to reconstruct.')
     parser.add_argument('--all', dest='compute_all', action='store_const',
                         const=True, default=False,
-                        help='Compute all observations possible given all bags in the system.')
+                        help='Compute meshes for all possible sessions.')
     parser.add_argument('--visualize', dest='visualize', action='store_const',
                         const=True, default=False,
                         help='Turn on visiualization')
@@ -37,6 +37,7 @@ def parse_args():
 def mesh_session(session, args):
     db_reader = capture.ObservationReader('db_reader', session_id=session.id)
     depthTo3d = calib.DepthTo3d()
+    rescale_depth = capture.RescaledRegisteredDepth() #this is for SXGA mode scale handling.
     surfel_reconstruction = reconstruction.SurfelReconstruction(corrDistForUpdate=0.02,
                                                                 maxInterpolationDist=0.04,
                                                                 starvationConfidence=2,
@@ -45,7 +46,10 @@ def mesh_session(session, args):
     if True:
         plasm = ecto.Plasm()
         plasm.connect(
-                      db_reader['K', 'depth'] >> depthTo3d['K', 'depth'],
+                      db_reader['K'] >> depthTo3d['K'],
+                      db_reader['image'] >> rescale_depth['image'],
+                      db_reader['depth'] >> rescale_depth['depth'],
+                      rescale_depth[:] >> depthTo3d['depth'],
                       depthTo3d['points3d'] >> surfel_reconstruction['points3d'],
                       db_reader['K', 'R', 'T', 'image', 'mask'] >> surfel_reconstruction['K', 'R', 'T', 'image', 'mask'],
                       )
@@ -55,6 +59,7 @@ def mesh_session(session, args):
                       db_reader['depth'] >> highgui.imshow('depth', name='depth')[:],
                       db_reader['mask'] >> highgui.imshow('mask', name='mask')[:],
                       )
+        ecto.view_plasm(plasm)
         sched = ecto.schedulers.Singlethreaded(plasm)
         sched.execute()
 
@@ -103,17 +108,10 @@ if "__main__" == __name__:
     dbs = dbtools.init_object_databases(couch)
     sessions = dbs['sessions']
     if args.compute_all:
-        pass
-#        models.sync_models(dbs)
-#        results = models.Bag.all(bags)
-#        for bag in results:
-#            existing_sessions = models.Session.by_bag_id(dbs['sessions'], key=bag.id)
-#            if(len(existing_sessions) == 0):
-#                obj = models.Object.load(dbs['objects'], bag.object_id)
-#                print "Computing session for:", obj.object_name, "\ndescription:", obj.description
-#                compute_for_bag(bag, bags, args)
-#            else:
-#                print "Skipping bag:", bag.id, "Already computed %d sessions" % len(existing_sessions)
+        models.sync_models(dbs)
+        results = models.Session.all(sessions)
+        for session in results:
+            mesh_session(session, args)
     else:
         session = models.Session.load(sessions, args.session_id)
         if session == None or session.id == None:
