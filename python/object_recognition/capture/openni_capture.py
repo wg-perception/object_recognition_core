@@ -2,13 +2,14 @@
 import ecto
 from ecto_opencv import highgui, calib, imgproc, cv_bp as cv
 from object_recognition.observations import *
-import ecto_ros, ecto_sensor_msgs
+import ecto_ros, ecto_sensor_msgs, ecto_geometry_msgs
 from ecto_object_recognition import capture
 ImageSub = ecto_sensor_msgs.Subscriber_Image
+
 CameraInfoSub = ecto_sensor_msgs.Subscriber_CameraInfo
 ImageBagger = ecto_sensor_msgs.Bagger_Image
 CameraInfoBagger = ecto_sensor_msgs.Bagger_CameraInfo
-
+PoseBagger = ecto_geometry_msgs.Bagger_PoseStamped
 
 def xtion_highres(device_n):
     from ecto_openni import Capture, ResolutionMode, Device
@@ -80,7 +81,7 @@ class TurnTable(ecto.Module):
             print self.delta_angle, 'delta angle.'
         except Exception, e:
             print e
-        
+
     def process(self, inputs, outputs):
         if self.settle_count == 0:
             self.settle_count += 1
@@ -97,7 +98,7 @@ class TurnTable(ecto.Module):
         if self.total * self.delta_angle > self.max_angle:
             return 1
         return 0
-        
+
     def __del__(self):
         print "Stopping servo...."
         a = ArbotiX("/dev/ttyUSB0", baud=1e6)
@@ -108,7 +109,7 @@ def create_preview_capture_standalone(camera_file):
     from object_recognition.common.io.standalone.source import KinectReader
     from ecto_ros import Mat2Image, Cv2CameraInfo
     plasm = ecto.Plasm()
-    
+
     kinect = KinectReader(plasm, camera_file)
 
     poser = OpposingDotPoseEstimator(plasm,
@@ -133,7 +134,7 @@ def create_capture_plasm_standalone(bag_name, angle_thresh, camera_file):
     from object_recognition.common.io.standalone.source import KinectReader
     from ecto_ros import Mat2Image, Cv2CameraInfo
     plasm = ecto.Plasm()
-    
+
     baggers = dict(image=ImageBagger(topic_name='/camera/rgb/image_color'),
                    depth=ImageBagger(topic_name='/camera/depth/image'),
                    image_ci=CameraInfoBagger(topic_name='/camera/rgb/camera_info'),
@@ -143,7 +144,7 @@ def create_capture_plasm_standalone(bag_name, angle_thresh, camera_file):
     bagwriter = ecto.If('Bag Writer if R|T',
                         cell=ecto_ros.BagWriter(baggers=baggers, bag=bag_name)
                         )
-    
+
     kinect = KinectReader(plasm, camera_file)
     depthMsg = Mat2Image(frame_id='/camera_rgb_optical_frame')
     imageMsg = Mat2Image(frame_id='/camera_rgb_optical_frame')
@@ -183,31 +184,22 @@ def create_capture_plasm_standalone(bag_name, angle_thresh, camera_file):
               ]
     plasm.connect(graph)
     return plasm
-    
 
 
-def create_capture_plasm(bag_name, angle_thresh):
+
+
+
+def create_capture_plasm(bag_name, angle_thresh, z_min=0.02, y_crop=0.10, x_crop=0.10, n_desired=72, preview=False, use_turn_table=True):
     '''
     Creates a plasm that will capture openni data into a bag, using a dot pattern to sparsify views.
     
     @param bag_name: A filename for the bag, will write to this file.
     @param angle_thresh: The angle threshhold in radians to sparsify the views with.  
     '''
+    from ecto_ros import Mat2Image, Cv2CameraInfo, RT2PoseStamped
 
     plasm = ecto.Plasm()
-
-
-
-    baggers = dict(image=ImageBagger(topic_name='/camera/rgb/image_color'),
-                   depth=ImageBagger(topic_name='/camera/depth/image'),
-                   image_ci=CameraInfoBagger(topic_name='/camera/rgb/camera_info'),
-                   depth_ci=CameraInfoBagger(topic_name='/camera/depth/camera_info'),
-                   )
-
-    bagwriter = ecto.If('Bag Writer if R|T',
-                        cell=ecto_ros.BagWriter(baggers=baggers, bag=bag_name)
-                        )
-
+    graph = []
     subs = dict(image=ImageSub(topic_name='/camera/rgb/image_color', queue_size=0),
                 depth=ImageSub(topic_name='/camera/depth_registered/image', queue_size=0),
                 image_ci=CameraInfoSub(topic_name='/camera/rgb/camera_info', queue_size=0),
@@ -216,14 +208,10 @@ def create_capture_plasm(bag_name, angle_thresh):
 
     sync = ecto_ros.Synchronizer('Synchronizator', subs=subs
                                  )
-    keys = subs.keys()
 
-    graph = [
-                sync[:] >> bagwriter[keys],
-            ]
-
-    im2mat_rgb = ecto_ros.Image2Mat('rgb -> cv::Mat')
+    image = ecto_ros.Image2Mat('rgb -> cv::Mat')
     camera_info = ecto_ros.CameraInfo2Cv('camera_info -> cv::Mat')
+
     poser = OpposingDotPoseEstimator(plasm,
                                      rows=5, cols=3,
                                      pattern_type=calib.ASYMMETRIC_CIRCLES_GRID,
@@ -231,26 +219,70 @@ def create_capture_plasm(bag_name, angle_thresh):
 
     bgr2rgb = imgproc.cvtColor('rgb -> bgr', flag=imgproc.Conversion.RGB2BGR)
     rgb2gray = imgproc.cvtColor('rgb -> gray', flag=imgproc.Conversion.RGB2GRAY)
-    delta_pose = ecto.If("delta R|T", cell=capture.DeltaRT(angle_thresh=angle_thresh,
-                                                          n_desired=72))
-    display = highgui.imshow(name='Poses')
-    table = TurnTable(angle_thresh=angle_thresh)
-    ander = ecto.And()
 
-    
-    graph += [sync['image'] >> im2mat_rgb[:],
-              im2mat_rgb[:] >> (rgb2gray[:], bgr2rgb[:]),
+    delta_pose = ecto.If("delta R|T", cell=capture.DeltaRT(angle_thresh=angle_thresh,
+                                                          n_desired=n_desired))
+
+    display = highgui.imshow(name='Poses')
+
+    poseMsg = RT2PoseStamped(frame_id='/camera_rgb_optical_frame')
+
+    graph += [sync['image'] >> image[:],
+              image[:] >> (rgb2gray[:], bgr2rgb[:]),
               bgr2rgb[:] >> poser['color_image'],
               rgb2gray[:] >> poser['image'],
               poser['debug_image'] >> (display['input'],),
               sync['image_ci'] >> camera_info['camera_info'],
               camera_info['K'] >> poser['K'],
               poser['R', 'T', 'found'] >> delta_pose['R', 'T', 'found'],
+              poser['R', 'T'] >> poseMsg['R', 'T'],
               ]
+
+    depth = ecto_ros.Image2Mat()
+    rescale_depth = capture.RescaledRegisteredDepth() #this is for SXGA mode scale handling.
+    segmentation = calib.PlanarSegmentation(z_min=z_min, y_crop=y_crop, x_crop=x_crop) #do NOT add this to the plasm
+    masker = ecto.If("Planar Segmentation", cell=segmentation)
+    maskMsg = Mat2Image(frame_id='/camera_rgb_optical_frame')
+
     graph += [
-              table['trigger'] >> (delta_pose['__test__'], ander['in2']),
-              delta_pose['novel'] >> ander['in1'],
-              ander['out'] >> bagwriter['__test__']
+              sync['depth'] >> depth['image'],
+              depth['image'] >> rescale_depth['depth'],
+              image[:] >> rescale_depth['image'], #grabs the size from image
+              rescale_depth['depth'] >> masker['depth'],
+              camera_info['K'] >> masker['K'],
+              poser['R', 'T'] >> masker['R', 'T'],
+              masker['mask'] >> maskMsg[:],
               ]
+
+    if not preview:
+        baggers = dict(image=ImageBagger(topic_name='/camera/rgb/image_color'),
+                   depth=ImageBagger(topic_name='/camera/depth/image'),
+                   mask=ImageBagger(topic_name='/camera/mask'),
+                   pose=PoseBagger(topic_name='/camera/pose'),
+                   image_ci=CameraInfoBagger(topic_name='/camera/rgb/camera_info'),
+                   depth_ci=CameraInfoBagger(topic_name='/camera/depth/camera_info'),
+                   )
+        bagwriter = ecto.If('Bag Writer if R|T',
+                            cell=ecto_ros.BagWriter(baggers=baggers, bag=bag_name)
+                            )
+        keys = subs.keys()
+        graph += [sync[:] >> bagwriter[keys],
+                  poseMsg['pose'] >> bagwriter['pose'],
+                  maskMsg[:] >> bagwriter['mask'],
+                  ]
+        if use_turn_table:
+            table = TurnTable(angle_thresh=angle_thresh)
+            ander = ecto.And()
+            graph += [
+                  table['trigger'] >> (delta_pose['__test__'], ander['in2']),
+                  delta_pose['novel'] >> ander['in1'],
+                  ander['out'] >> bagwriter['__test__']
+                  ]
+        else:
+            #TODO add still filter:
+            delta_pose.inputs.__test__ = True
+            graph += [
+                  delta_pose['novel'] >> bagwriter['__test__']
+                  ]
     plasm.connect(graph)
-    return plasm
+    return (plasm, segmentation) # return segmentation for tuning of parameters.

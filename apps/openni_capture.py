@@ -11,25 +11,6 @@ import textwrap
 
 
 def parse_args():
-    epilog=textwrap.dedent('''Capturing requires a ROS openni device (http://ros.org/wiki/openni),
-with registered rgb and depth. You may want to do the following before 
-capturing data with this program:
-
-    $ roslaunch openni_launch openni.launch
-
-    In a seperate terminal:
-
-    $ rosrun dynamic_reconfigure dynparam set /camera/driver depth_registration True
-
-    To switch into high resolution mode:
-
-    $ rosrun dynamic_reconfigure dynparam set /camera/driver image_mode 1
-
-    To switch to vga mode:
-
-    $ rosrun dynamic_reconfigure dynparam set /camera/driver image_mode 2
-''')
-
     parser = argparse.ArgumentParser(formatter_class=argparse.RawDescriptionHelpFormatter,
                                     description=textwrap.dedent(
 '''Captures data appropriate for training object recognition pipelines.
@@ -52,6 +33,8 @@ object sparsely, depending on the delta setting.'''),
                             ''')
     parser.add_argument('--preview', dest='preview', action='store_true',
                         default=False, help='Preview the pose estimator.')
+    parser.add_argument('--use_turn_table', dest='use_turn_table', action='store_true',
+                        default=False, help='Use an E106 servo based turntable.')
     from ecto.opts import scheduler_options
     #add ecto scheduler args.
     group = parser.add_argument_group('ecto scheduler options')
@@ -67,12 +50,16 @@ if "__main__" == __name__:
     ecto_ros.strip_ros_args(sys.argv)
     options = parse_args()
     ecto_ros.init(argv, "openni_capture", False)
-    
-    plasm =None
+
+    plasm = None
     if options.preview:
         plasm = openni_capture.create_preview_capture_standalone(options.camera_file)
     else:
-        #plasm = openni_capture.create_capture_plasm_standalone(options.bag, options.angle_thresh,options.camera_file)
-        plasm = openni_capture.create_capture_plasm(options.bag, options.angle_thresh)
+        (plasm, segmentation) = openni_capture.create_capture_plasm(bag_name=options.bag,
+                                                                    angle_thresh=options.angle_thresh,
+                                                                    z_min=0.02, y_crop=0.10, x_crop=0.10,
+                                                                    n_desired=72,
+                                                                    preview=options.preview,
+                                                                    use_turn_table=options.use_turn_table)
     from ecto.opts import run_plasm
-    run_plasm(options, plasm)
+    run_plasm(options, plasm, locals=dict(plasm=plasm, segmentation=segmentation))

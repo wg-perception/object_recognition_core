@@ -92,26 +92,26 @@ namespace object_recognition
       renderWindow = vtkSmartPointer<vtkRenderWindow>::New();
       renderWindow->SetSize(window_width, window_height);
       renderWindow->AddRenderer(renderer);
-//
-//      {
-//        vtkSmartPointer<vtkOBJReader> obj_reader = vtkSmartPointer<vtkOBJReader>::New();
-//        obj_reader->SetFileName("soup.obj");
-//        obj_reader->Update();
-//
-//        vtkSmartPointer<vtkPolyDataMapper> objMapper = vtkSmartPointer<vtkPolyDataMapper>::New();
-//        objMapper->SetInput(obj_reader->GetOutput());
-//        objMapper->SetScalarMaterialModeToAmbient();
-//        vtkSmartPointer<vtkPNGReader> pngReader = vtkSmartPointer<vtkPNGReader>::New();
-//        pngReader->SetFileName("soup.png");
-//        vtkSmartPointer<vtkTexture> texture = vtkSmartPointer<vtkTexture>::New();
-//        texture->SetInput(pngReader->GetOutput());
-//
-//        vtkSmartPointer<vtkActor> objActor = vtkSmartPointer<vtkActor>::New();
-//        objActor->SetMapper(objMapper);
-//        objActor->SetTexture(texture);
-//        renderer->AddActor(objActor);
-//      }
+#if 0
+      {
+        vtkSmartPointer<vtkOBJReader> obj_reader = vtkSmartPointer<vtkOBJReader>::New();
+        obj_reader->SetFileName("soup.obj");
+        obj_reader->Update();
 
+        vtkSmartPointer<vtkPolyDataMapper> objMapper = vtkSmartPointer<vtkPolyDataMapper>::New();
+        objMapper->SetInput(obj_reader->GetOutput());
+        objMapper->SetScalarMaterialModeToAmbient();
+        vtkSmartPointer<vtkPNGReader> pngReader = vtkSmartPointer<vtkPNGReader>::New();
+        pngReader->SetFileName("soup.png");
+        vtkSmartPointer<vtkTexture> texture = vtkSmartPointer<vtkTexture>::New();
+        texture->SetInput(pngReader->GetOutput());
+
+        vtkSmartPointer<vtkActor> objActor = vtkSmartPointer<vtkActor>::New();
+        objActor->SetMapper(objMapper);
+        objActor->SetTexture(texture);
+        renderer->AddActor(objActor);
+      }
+#endif
       renderWindowInteractor = vtkSmartPointer<vtkRenderWindowInteractor>::New();
       renderWindowInteractor->SetRenderWindow(renderWindow);
 
