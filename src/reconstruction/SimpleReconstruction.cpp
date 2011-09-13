@@ -18,6 +18,7 @@
 #include <pcl/features/integral_image_normal.h>
 #include <pcl/features/normal_3d.h>
 #include <pcl/registration/transforms.h>
+#include <pcl/filters/voxel_grid.h>
 #include "opencv2/core/core.hpp"
 #include "opencv2/imgproc/imgproc.hpp"
 #include "opencv2/highgui/highgui.hpp"
@@ -25,74 +26,13 @@
 #include <opencv2/core/eigen.hpp>
 #include <fstream>
 
+#include <object_recognition/common/conversions.hpp>
+
 using ecto::tendrils;
 namespace object_recognition
 {
   namespace reconstruction
   {
-    struct rgb
-    {
-      union
-      {
-        unsigned char color[sizeof(float)];
-        float data;
-      };
-    };
-
-    void
-    cvToCloudXYZRGB(const cv::Mat_<cv::Point3f>& points3d, pcl::PointCloud<pcl::PointXYZRGB>& cloud, const cv::Mat& rgb,
-                    const cv::Mat& mask)
-    {
-      cv::Mat_<cv::Point3f>::const_iterator point_it = points3d.begin(), point_end = points3d.end();
-      cv::Mat_<cv::Vec3b>::const_iterator rgb_it = rgb.begin<cv::Vec3b>();
-      cv::Mat_<uchar>::const_iterator mask_it = mask.begin<uchar>();
-      for (; point_it != point_end; ++point_it, ++mask_it, ++rgb_it)
-      {
-        if (!*mask_it)
-          continue;
-        cv::Point3f p = *point_it;
-        if (p.x != p.x && p.y != p.y && p.z != p.z) //throw out NANs
-          continue;
-        pcl::PointXYZRGB cp;
-        cp.x = p.x;
-        cp.y = p.y;
-        cp.z = p.z;
-        cp.r = (*rgb_it)[2];
-        cp.g = (*rgb_it)[1];
-        cp.b = (*rgb_it)[0];
-        cloud.push_back(cp);
-      }
-    }
-
-    template<typename PointT>
-    void
-    writePLY(const pcl::PointCloud<PointT>& cloud_m, const std::string& mesh_file_name)
-    {
-      std::ofstream mesh_file(std::string(mesh_file_name).c_str());
-      mesh_file << "ply\n"
-                "format ascii 1.0\n"
-                "element vertex "
-                << cloud_m.points.size() << "\n"
-                "property float x\n"
-                "property float y\n"
-                "property float z\n"
-                "property uchar red\n"
-                "property uchar green\n"
-                "property uchar blue\n"
-//                "property float nx\n"
-//                "property float ny\n"
-//                "property float nz\n"
-          "end_header\n";
-      //<x> <y> <z> <r> <g> <b>
-      for (size_t i = 0; i < cloud_m.points.size(); i++)
-      {
-        const PointT& p = cloud_m.points[i];
-        mesh_file << p.x << " " << p.y << " " << p.z << " " << int(p.r) << " " << int(p.g) << " " << int(p.b)
-        //<< " " << p.normal_x << " " << p.normal_y << " " << p.normal_z
-                  << "\n";
-      }
-    }
-
     struct SimpleReconstruction
     {
       static void
@@ -126,38 +66,106 @@ namespace object_recognition
       int
       process(const tendrils& i, const tendrils& o)
       {
-        cv::Mat mask = *this->mask;
-
-        //convert the tranform from our fiducial markers to
-        //the Eigen
-        Eigen::Matrix<float, 3, 3> eR;
-        Eigen::Vector3f eT;
-        cv::cv2eigen(*R, eR);
-        cv::cv2eigen(*T, eT);
-
-        Eigen::Affine3f transform;
-        transform = Eigen::Translation3f(-eT);
-        transform.prerotate(eR.transpose());
-        std::cout << "R = " << eR << "\n T= " << eT << std::endl;
         //extract the cloud
-        pcl::PointCloud<pcl::PointXYZRGB>::Ptr transformed(new pcl::PointCloud<pcl::PointXYZRGB>());
-        pcl::PointCloud<pcl::PointXYZRGB> cloud;
-        cvToCloudXYZRGB(*points3d, cloud, *image, mask);
-        pcl::transformPointCloud(cloud, *transformed, transform);
+        pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud(new pcl::PointCloud<pcl::PointXYZRGB>()), tempRGB(
+            new pcl::PointCloud<pcl::PointXYZRGB>());
+        cvToCloudXYZRGB(*points3d, *cloud, *image, *mask);
+        std::cout << " cvToCloudXYZRGB " << cloud->points.size() << " points on object." << std::endl;
+////
+////        // Create the filtering object
+////        pcl::VoxelGrid<pcl::PointXYZRGB> vox;
+////        vox.setInputCloud(cloud);
+////        vox.setLeafSize(0.01, 0.01, 0.01);
+////        vox.filter(*tempRGB);
+////        cloud.swap(tempRGB);
+////        std::cout << "  voxeled " << cloud->points.size() << " points on object." << std::endl;
+//        {
+//          // Create the filtering object
+//          pcl::VoxelGrid<pcl::PointXYZRGB> vox;
+//          vox.setInputCloud(full_cloud);
+//          vox.setLeafSize(0.0025, 0.0025, 0.0025);
+//          vox.filter(*tempRGB);
+//          full_cloud.swap(tempRGB);
+//          std::cout << "  voxeled " << full_cloud->points.size() << " points on object." << std::endl;
+//        }
+//        pcl::PointCloud<pcl::PointXYZRGBNormal>::Ptr cloud_normals(new pcl::PointCloud<pcl::PointXYZRGBNormal>), temp(
+//            new pcl::PointCloud<pcl::PointXYZRGBNormal>);
+//        {
+//          // Create the normal estimation class, and pass the input dataset to it
+//          pcl::NormalEstimation<pcl::PointXYZRGB, pcl::PointXYZRGBNormal> ne;
+//          ne.setInputCloud(cloud);
+//
+////          // Create an empty kdtree representation, and pass it to the normal estimation object.
+////          // Its content will be filled inside the object, based on the given input dataset (as no other search surface is given).
+////          pcl::KdTreeFLANN<pcl::PointXYZRGB>::Ptr tree(new pcl::KdTreeFLANN<pcl::PointXYZRGB>());
+////          ne.setSearchMethod(tree);
+//
+//          // Output datasets
+//
+//          // Use all neighbors in a sphere of radius 3cm
+//          ne.setRadiusSearch(0.01);
+//
+//          // Compute the features
+//          ne.compute(*cloud_normals);
+//        }
+//        std::cout << " normals " << std::endl;
+////
+////        {
+////          bool inverse = true;
+////          Eigen::Affine3f transform = RT2Transform(*R, *T, inverse); //compute the inverse transform
+////          pcl::transformPointCloud(*cloud_normals, *temp, transform);
+////          cloud_normals.swap(temp);
+////        }
 
-
+        {
+          bool inverse = true;
+          Eigen::Affine3f transform = RT2Transform(*R, *T, inverse); //compute the inverse transform
+          pcl::transformPointCloud(*cloud, *tempRGB, transform);
+          cloud.swap(tempRGB);
+        }
+        std::cout << " transformed " << std::endl;
         if (!full_cloud)
         {
-          full_cloud = transformed;
+          full_cloud = cloud;
         }
         else
         {
-          *full_cloud += *transformed;
+          *full_cloud += *cloud;
         }
-        static int count = 0;
-        writePLY(*transformed, boost::str(boost::format("view%04d.ply") % count++));
+
+//        {
+//          // Create the filtering object
+//          pcl::VoxelGrid<pcl::PointXYZRGB> vox;
+//          vox.setInputCloud(full_cloud);
+//          vox.setLeafSize(0.0025, 0.0025, 0.0025);
+//          vox.filter(*tempRGB);
+//          full_cloud.swap(tempRGB);
+//          std::cout << "  voxeled " << full_cloud->points.size() << " points on object." << std::endl;
+//        }
+//        {
+//          pcl::StatisticalOutlierRemoval<pcl::PointXYZRGB> sor;
+//          sor.setInputCloud(full_cloud);
+//          sor.setMeanK(5);
+//          sor.setStddevMulThresh(2.0);
+//          sor.filter(*tempRGB);
+//          full_cloud.swap(tempRGB);
+//          std::cout << "  filtered " << full_cloud->points.size() << std::endl;
+//        }
+
+//        {
+//          // Create the filtering object
+//          pcl::VoxelGrid<pcl::PointXYZRGB> vox;
+//          vox.setInputCloud(full_cloud);
+//          vox.setLeafSize(0.01, 0.01, 0.01);
+//          vox.filter(*tempRGB);
+//          std::cout << "  voxeled final " << tempRGB->points.size() << " points on object." << std::endl;
+//          writePLY(*tempRGB, "model.ply");
+//
+//        }
         writePLY(*full_cloud, "model.ply");
 
+        //static int count = 0;
+        //writePLY(*transformed, boost::str(boost::format("view%04d.ply") % count++));
         return ecto::OK;
       }
       ecto::spore<cv::Mat> R, T, K, mask, image, points3d;

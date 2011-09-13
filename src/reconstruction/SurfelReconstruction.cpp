@@ -24,31 +24,14 @@
 #include <opencv2/calib3d/calib3d.hpp>
 #include <fstream>
 
+#include <object_recognition/common/conversions.hpp>
+
 using ecto::tendrils;
 namespace object_recognition
 {
   namespace reconstruction
   {
-    typedef pcl::PointCloud<surfels::surfelPt> SurfelCloud;
-    template<typename PointT>
-    void
-    cvToCloudXYZ(const cv::Mat_<cv::Point3f>& points3d, pcl::PointCloud<PointT>& cloud)
-    {
-      const int width = cloud.width;
-      const int height = cloud.height;
 
-      for (int v = 0; v < height; ++v)
-      {
-        const float * begin = reinterpret_cast<const float*>(points3d.ptr(v));for (int u = 0; u < width; ++u)
-        {
-          PointT& p = cloud(u, v);
-          p.x = *(begin++);
-          p.y = *(begin++);
-          p.z = *(begin++);
-        }
-      }
-
-    }
     struct SurfelReconstruction
     {
       static void
@@ -102,7 +85,7 @@ namespace object_recognition
       int
       process(const tendrils& i, const tendrils& o)
       {
-        cv::Mat mask_resized = *mask;
+        cv::Mat mask = *this->mask;
         cv::Mat rvec, tvec, K;
         this->K->convertTo(K, CV_32F);
         R->convertTo(rvec, CV_32F);
@@ -110,8 +93,8 @@ namespace object_recognition
         T->convertTo(tvec, CV_32F);
         cam_params->centerX = K.at<float>(0, 2);
         cam_params->centerY = K.at<float>(1, 2);
-        cam_params->xRes = mask_resized.size().width;
-        cam_params->yRes = mask_resized.size().height;
+        cam_params->xRes = mask.size().width;
+        cam_params->yRes = mask.size().height;
         cam_params->focalLength = K.at<float>(0, 0);
 
         //get the camera pose
@@ -121,10 +104,8 @@ namespace object_recognition
         surfels::Transform3f camPose = objPose.inverse(Eigen::Isometry);
         //extract the cloud
         pcl::PointCloud<pcl::PointXYZ>::Ptr cloud(new pcl::PointCloud<pcl::PointXYZ>());
-        cloud->resize(mask_resized.size().width * mask_resized.size().height);
-        cloud->width = mask_resized.size().width;
-        cloud->height = mask_resized.size().height;
-        cvToCloudXYZ(*points3d, *cloud);
+        cvToCloudOrganized(*points3d, *cloud, mask.size().width, mask.size().height);
+
         //compute normals
 
         // Estimate normals
@@ -135,6 +116,10 @@ namespace object_recognition
         ne.setNormalSmoothingSize(10.0f);
         ne.setInputCloud(cloud);
         ne.compute(result);
+
+        static int count_n = 0;
+        std::cout << " n estimated " << count_n++ << std::endl;
+
         //copy into required structures
         boost::shared_ptr<boost::multi_array<Eigen::Vector3f, 2> > points(new boost::multi_array<Eigen::Vector3f, 2>());
         boost::shared_ptr<boost::multi_array<Eigen::Vector3f, 2> > normals(
@@ -151,7 +136,7 @@ namespace object_recognition
         {
           for (unsigned int y = 0; y < cloud->height; y++)
           {
-            bool mask_value = mask_resized.at<unsigned char>(y, x) > 0;
+            bool mask_value = mask.at<unsigned char>(y, x) > 0;
             pcl::Normal n = result(x, y);
             pcl::PointXYZ p = (*cloud)(x, y);
             (*points)[x][y] = Eigen::Vector3f(p.x, p.y, p.z);
@@ -183,45 +168,6 @@ namespace object_recognition
       ecto::spore<surfels::CameraParams> cam_params;
       size_t time;
     };
-    struct rgb
-    {
-      union
-      {
-        unsigned char color[sizeof(float)];
-        float data;
-      };
-    };
-
-    template<typename PointT>
-    void
-    writePLY(const pcl::PointCloud<PointT>& cloud_m, const std::string& mesh_file_name)
-    {
-      std::ofstream mesh_file(std::string(mesh_file_name).c_str());
-      mesh_file << "ply\n"
-                "format ascii 1.0\n"
-                "element vertex "
-                << cloud_m.points.size() << "\n"
-                "property float x\n"
-                "property float y\n"
-                "property float z\n"
-                "property uchar red\n"
-                "property uchar green\n"
-                "property uchar blue\n"
-                "property float nx\n"
-                "property float ny\n"
-                "property float nz\n"
-                "end_header\n";
-      //<x> <y> <z> <r> <g> <b>
-      for (size_t i = 0; i < cloud_m.points.size(); i++)
-      {
-        rgb color;
-        const PointT& p = cloud_m.points[i];
-        color.data = p.rgb;
-        mesh_file << p.x << " " << p.y << " " << p.z << " " << int(color.color[2]) << " " << int(color.color[1]) << " "
-                  << int(color.color[0]) << " " << p.normal_x << " " << p.normal_y << " " << p.normal_z << "\n";
-      }
-    }
-
     struct SurfelToPly
     {
       static void
@@ -270,7 +216,7 @@ namespace object_recognition
 //statistical outlier filter
         pcl::StatisticalOutlierRemoval<surfels::surfelPt> sor;
         sor.setInputCloud(surfelCloud);
-        sor.setMeanK(50);
+        sor.setMeanK(10);
         sor.setStddevMulThresh(2.0);
         sor.filter(*tmpCloud);
         surfelCloud.swap(tmpCloud);

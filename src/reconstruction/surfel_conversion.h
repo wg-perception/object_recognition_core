@@ -23,7 +23,11 @@ namespace surfels{
 extern struct surfelPt
 {
         PCL_ADD_POINT4D;    // This adds the members x,y,z which can also be accessed using the point (which is float[4])
-        float rgb; //packed
+        union
+        {
+          unsigned char r,g,b;
+          float rgb;
+        };
         PCL_ADD_NORMAL4D;   // This adds the member normal[3] which can also be accessed using the point (which is float[4])
         float curvature;
         float radius;
