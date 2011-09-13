@@ -64,6 +64,7 @@ namespace object_recognition
         inputs.declare<boost::shared_ptr<pcl::PointCloud<pcl::PointXYZRGB> const> >("point_cloud_rgb",
                                                                                     "The RGB point cloud");
         outputs.declare<cv::Mat>("points", "The width by height by 3 channels (x, y and z)");
+        outputs.declare<cv::Mat>("image", "The corresponding colors of the points (R, G, and B)");
       }
 
       int
@@ -75,10 +76,21 @@ namespace object_recognition
             boost::shared_ptr<pcl::PointCloud<PointType> const> >("point_cloud_rgb");
 
         cv::Mat points = cv::Mat(point_cloud->height, point_cloud->width, CV_32FC3);
-
-        std::memcpy(reinterpret_cast<void*>(points.data), reinterpret_cast<const void*>(point_cloud->points.data()), sizeof(pcl::PointCloud<PointType>) * point_cloud->size());
+        cv::Mat colors = cv::Mat(point_cloud->height, point_cloud->width, CV_8UC3);
+        float *point_data = reinterpret_cast<float *>(points.data);
+        uchar *color_data = reinterpret_cast<uchar *>(colors.data);
+        BOOST_FOREACH(const PointType & point, point_cloud->points)
+            {
+              *(point_data++) = point.x;
+              *(point_data++) = point.y;
+              *(point_data++) = point.z;
+              *(color_data++) = point.r;
+              *(color_data++) = point.g;
+              *(color_data++) = point.b;
+            }
 
         outputs["points"] << points;
+        outputs["image"] << colors;
 
         return 0;
       }
