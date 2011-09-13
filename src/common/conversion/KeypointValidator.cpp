@@ -63,8 +63,8 @@ namespace
     static void
     declare_io(const tendrils& params, tendrils& inputs, tendrils& outputs)
     {
-      inputs.declare<std::vector<cv::KeyPoint> >("keypoints", "The keypoints");
-      inputs.declare<cv::Mat>("image", "The mask keypoint have to belong to");
+      inputs.declare<std::vector<cv::KeyPoint> >("keypoints", "The keypoints").required(true);
+      inputs.declare<cv::Mat>("image", "The mask keypoint have to belong to").required(true);
       outputs.declare<std::vector<cv::KeyPoint> >("keypoints", "The adjusted keypoints");
     }
 
@@ -123,5 +123,5 @@ namespace
   };
 }
 
-ECTO_CELL(tod_training, KeypointsValidator, "KeypointsValidator",
+ECTO_CELL(conversion, KeypointsValidator, "KeypointsValidator",
           "Given keypoints and a mask, make sure they belong to the mask by rounding their coordinates.");
