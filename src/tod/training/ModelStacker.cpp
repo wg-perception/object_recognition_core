@@ -45,28 +45,18 @@ namespace object_recognition
 {
   namespace tod
   {
-    /** Class inserting the TOD models in the db
+    /** cell storing the 3d points and descriptors while a model is being computed
      */
     struct TodModelStacker
     {
     public:
       static void
-      declare_params(tendrils& params)
-      {
-      }
-
-      static void
       declare_io(const tendrils& params, tendrils& inputs, tendrils& outputs)
       {
-        inputs.declare<cv::Mat>("points", "The 3d position of the points.");
-        inputs.declare<cv::Mat>("descriptors", "The descriptors.");
+        inputs.declare<cv::Mat>("points", "The 3d position of the points.").required(true);
+        inputs.declare<cv::Mat>("descriptors", "The descriptors.").required(true);
         outputs.declare<std::vector<cv::Mat> >("points", "The stacked 3d position of the points.");
         outputs.declare<std::vector<cv::Mat> >("descriptors", "The stacked descriptors.");
-      }
-
-      void
-      configure(const tendrils& params, const tendrils& inputs, const tendrils& outputs)
-      {
       }
 
       int
@@ -76,15 +66,15 @@ namespace object_recognition
         inputs["points"] >> points;
         if (!points.empty())
         {
-          cv::Mat_<cv::Vec3f> points_filtered(1,points.cols);
+          cv::Mat_<cv::Vec3f> points_filtered(1, points.cols);
           cv::Mat descriptors;
           inputs["descriptors"] >> descriptors;
           cv::Mat descriptors_filtered(descriptors.rows, descriptors.cols, descriptors.type());
-          
+
           cv::Mat_<cv::Vec3f>::iterator iter = points.begin<cv::Vec3f>(), end = points.end<cv::Vec3f>();
           cv::Mat_<cv::Vec3f>::iterator iter_filtered = points_filtered.begin();
           unsigned int row = 0, row_filtered = 0;
-          for(; iter != end; ++iter, ++row)
+          for (; iter != end; ++iter, ++row)
           {
             const cv::Vec3f & point = *iter;
             if ((point.val[0] == point.val[0]) && (point.val[1] == point.val[1]) && (point.val[2] == point.val[2]))
@@ -96,12 +86,12 @@ namespace object_recognition
           }
 
           cv::Mat final_points, final_descriptors;
-          points_filtered.colRange(0,row_filtered).copyTo(final_points);
-          descriptors_filtered.rowRange(0,row_filtered).copyTo(final_descriptors);
+          points_filtered.colRange(0, row_filtered).copyTo(final_points);
+          descriptors_filtered.rowRange(0, row_filtered).copyTo(final_descriptors);
           points_.push_back(final_points);
           descriptors_.push_back(final_descriptors);
         }
-        
+
         outputs.get<std::vector<cv::Mat> >("points") = points_;
         outputs.get<std::vector<cv::Mat> >("descriptors") = descriptors_;
         return ecto::OK;

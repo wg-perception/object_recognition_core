@@ -45,25 +45,15 @@ using ecto::tendrils;
 
 namespace
 {
-  /** Ecto module that transforms 3d points from camera coordinates to world coordinates
+  /** Ecto module that conerts the coordinates of keypoints to a matrix
    */
   struct KeypointsToMat
   {
-    static void
-    declare_params(tendrils& p)
-    {
-    }
-
     static void
     declare_io(const tendrils& params, tendrils& inputs, tendrils& outputs)
     {
       inputs.declare<std::vector<cv::KeyPoint> >("keypoints", "The keypoints");
       outputs.declare<cv::Mat>("points", "The array of x,y coordinates");
-    }
-
-    void
-    configure(const tendrils& params, const tendrils& inputs, const tendrils& outputs)
-    {
     }
 
     int

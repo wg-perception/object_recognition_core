@@ -153,26 +153,45 @@ namespace object_recognition
                 // Store the 3d positions
                 cv::Mat points3d;
                 doc.get_attachment<cv::Mat>(db, "points", points3d);
-                if (points3d.rows != 0)
+                if (points3d.rows != 1)
                   points3d = points3d.t();
                 features_3d_.push_back(points3d);
 
                 // Compute the span of the object
                 float max_span_sq = 0;
-                for (int i = 0; i < points3d.cols; ++i)
+                cv::MatConstIterator_<cv::Vec3f> i = points3d.begin<cv::Vec3f>(), end = points3d.end<cv::Vec3f>(), j;
+                if (0)
                 {
-                  const cv::Vec3f & vec_i = points3d.at<cv::Vec3f>(0, i);
-                  for (int j = i + 1; j < points3d.cols; ++j)
+                  // Too slow
+                  for (; i != end; ++i)
                   {
-                    const cv::Vec3f & vec_j = points3d.at<cv::Vec3f>(0, j);
-                    cv::Vec3f vec = vec_i - vec_j;
-                    float tmp_span_sq = vec.val[0] * vec.val[0] + vec.val[1] * vec.val[1] + vec.val[2] * vec.val[2];
-
-                    if (tmp_span_sq > max_span_sq)
-                      max_span_sq = tmp_span_sq;
+                    for (j = i + 1; j != end; ++j)
+                    {
+                      cv::Vec3f vec = *i - *j;
+                      max_span_sq = std::max(
+                          vec.val[0] * vec.val[0] + vec.val[1] * vec.val[1] + vec.val[2] * vec.val[2], max_span_sq);
+                    }
                   }
                 }
+                else
+                {
+                  float min_x = std::numeric_limits<float>::max(), max_x = std::numeric_limits<float>::min(), min_y =
+                      std::numeric_limits<float>::max(), max_y = std::numeric_limits<float>::min(), min_z =
+                      std::numeric_limits<float>::max(), max_z = std::numeric_limits<float>::min();
+                  for (; i != end; ++i)
+                  {
+                    min_x = std::min(min_x, (*i).val[0]);
+                    max_x = std::max(max_x, (*i).val[0]);
+                    min_y = std::min(min_y, (*i).val[1]);
+                    max_y = std::max(max_y, (*i).val[1]);
+                    min_z = std::min(min_z, (*i).val[2]);
+                    max_z = std::max(max_z, (*i).val[2]);
+                  }
+                  max_span_sq = (max_x - min_x) * (max_x - min_x) + (max_y - min_y) * (max_y - min_y)
+                                + (max_z - min_z) * (max_z - min_z);
+                }
                 spans_[object_id] = std::sqrt(max_span_sq);
+                std::cout << "span" << spans_[object_id] << std::endl;
               }
             }
         matcher_->add(all_descriptors);

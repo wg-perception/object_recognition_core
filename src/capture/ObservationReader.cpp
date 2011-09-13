@@ -98,7 +98,7 @@ namespace object_recognition
       process(const tendrils& inputs,const tendrils& outputs)
       {
         if (docs.empty()) {
-          std::cerr << "No object found with id " << object_id << std::endl;
+          std::cerr << "No object found with id " << *object_id << std::endl;
           return ecto::QUIT;
         }
         couch::Document doc = docs[current_frame];
