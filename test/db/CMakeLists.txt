@@ -9,7 +9,7 @@ include_directories(${GTEST_INCLUDE_DIRS})
 
 add_executable(or-db-test
   main.cpp
-  db.cpp
+  db_test.cpp
   )
 
 target_link_libraries(or-db-test

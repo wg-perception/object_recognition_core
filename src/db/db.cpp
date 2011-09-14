@@ -137,6 +137,30 @@ namespace object_recognition
       db_->Query(queries, collection_name, limit_rows, start_offset, total_rows, offset, document_ids);
     }
 
+    void
+    ObjectDb::Status(std::string& status)
+    {
+      db_->Status(status);
+    }
+
+    void
+    ObjectDb::Status(const CollectionName& collection, std::string& status)
+    {
+      db_->Status(collection, status);
+
+    }
+    void
+    ObjectDb::CreateCollection(const CollectionName &collection)
+    {
+      db_->CreateCollection(collection);
+    }
+
+    void
+    ObjectDb::DeleteCollection(const CollectionName &collection)
+    {
+      db_->DeleteCollection(collection);
+    }
+
     DbType
     ObjectDb::type()
     {
@@ -145,19 +169,44 @@ namespace object_recognition
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+    Document::Document()
+    {
+
+    }
+    Document::~Document()
+    {
+
+    }
+
+    Document::Document(const ObjectDb& db, const CollectionName & collection)
+        :
+          db_(db),
+          collection_(collection)
+    {
+
+    }
+    Document::Document(const ObjectDb & db, const CollectionName & collection, const DocumentId &document_id)
+        :
+          db_(db),
+          collection_(collection),
+          document_id_(document_id)
+    {
+      // Load all fields from the DB (not the attachments)
+      db.load_fields(document_id_, collection_, fields_);
+    }
+
     /** Persist your object to a given DB
      * @param db the DB to persist to
      * @param collection the collection/schema where it should be saved
      */
     void
-    Document::Persist(ObjectDb & db, const CollectionName & collection)
+    Document::Persist()
     {
-      collection_ = collection;
       // Persist the object if it does not exist in the DB
       if (document_id_.empty())
-        db.insert_object(collection_, fields_, document_id_, revision_id_);
+        db_.insert_object(collection_, fields_, document_id_, revision_id_);
       else
-        db.persist_fields(document_id_, collection_, fields_, revision_id_);
+        db_.persist_fields(document_id_, collection_, fields_, revision_id_);
 
       // Persist the attachments
       boost::any nothing_any;
@@ -165,24 +214,9 @@ namespace object_recognition
           attachment != attachment_end; ++attachment)
           {
         // Persist the attachment
-        db.set_attachment_stream(document_id_, collection_, attachment->first, attachment->second->type_,
-                                 attachment->second->stream_, revision_id_);
+        db_.set_attachment_stream(document_id_, collection_, attachment->first, attachment->second->type_,
+                                  attachment->second->stream_, revision_id_);
       }
-    }
-
-    /** Extract the stream of a specific attachment from the pre-loaded Document
-     * @param attachment_name the name of the attachment
-     * @param stream the string of data to write to
-     * @param mime_type the MIME type as stored in the DB
-     */
-    void
-    Document::get_attachment_stream(const AttachmentName &attachment_name, std::ostream& stream,
-                                    MimeType mime_type) const
-    {
-      // check if it is loaded
-      AttachmentMap::const_iterator val = attachments_.find(attachment_name);
-      if (val != attachments_.end())
-        stream << val->second->stream_.rdbuf();
     }
 
     /** Extract the stream of a specific attachment for a Document from the DB
@@ -194,8 +228,8 @@ namespace object_recognition
      * @param do_use_cache if true, try to load and store data in the object itself
      */
     void
-    Document::get_attachment_stream(ObjectDb & db, const AttachmentName &attachment_name, std::ostream& stream,
-                                    MimeType mime_type, bool do_use_cache) const
+    Document::get_attachment_stream(const AttachmentName &attachment_name, std::ostream& stream, MimeType mime_type,
+                                    bool do_use_cache)
     {
       // check if it is loaded
       if (do_use_cache)
@@ -210,8 +244,8 @@ namespace object_recognition
 
       StreamAttachment::ptr stream_attachment(new StreamAttachment(mime_type));
       // Otherwise, load it from the DB
-      db.get_attachment_stream(document_id_, collection_, attachment_name, mime_type, stream_attachment->stream_,
-                               revision_id_);
+      db_.get_attachment_stream(document_id_, collection_, attachment_name, mime_type, stream_attachment->stream_,
+                                revision_id_);
       stream << stream_attachment->stream_.rdbuf();
       if (do_use_cache)
       {

@@ -53,7 +53,7 @@ void
 ObjectDbCouch::insert_object(const CollectionName &collection, const boost::property_tree::ptree &fields,
                              DocumentId & document_id, RevisionId & revision_id)
 {
-  create_db(collection);
+  CreateCollection(collection);
   std::string url = url_id(collection, "");
   upload_json(fields, url, "POST");
   GetObjectRevisionId(document_id, revision_id);
@@ -191,19 +191,13 @@ ObjectDbCouch::Query(const std::vector<std::string> & queries, const CollectionN
 }
 
 void
-ObjectDbCouch::create_db(const CollectionName &collection_name)
+ObjectDbCouch::CreateCollection(const CollectionName &collection)
 {
-  curl_.reset();
-  json_writer_stream_.str("");
-  json_reader_stream_.str("");
-  curl_.setWriter(&json_writer_);
-  curl_.setReader(&json_reader_);
-  //couch db post to the db
-  curl_.setURL(url_ + "/" + collection_name);
-  curl_.setCustomRequest("GET");
-  curl_.perform();
   boost::property_tree::ptree params;
-  boost::property_tree::read_json(json_writer_stream_, params);
+  std::string status;
+  Status(collection,status);
+  std::stringstream ss(status);
+  boost::property_tree::read_json(ss, params);
   if(params.count("error") && params.count("reason") && params.get<std::string>("reason") == "no_db_file")
   {
     json_writer_stream_.str("");
@@ -221,14 +215,63 @@ ObjectDbCouch::create_db(const CollectionName &collection_name)
     }
     return;
   }
-  if(!params.count("db_name") || params.get<std::string>("db_name") != collection_name)
+  if(!params.count("db_name") || params.get<std::string>("db_name") != collection)
   {
     std::stringstream ss;
     boost::property_tree::write_json(ss, params);
     throw std::runtime_error("Could not connect to database.\n" + ss.str());
   }
+}
 
+void
+ObjectDbCouch::Status(std::string& status)
+{
+  json_writer_stream_.str("");
+  json_reader_stream_.str("");
+  curl_.setWriter(&json_writer_);
+  curl_.setReader(&json_reader_);
+  //couch db post to the db
+  curl_.setURL(url_);
+  curl_.setCustomRequest("GET");
+  curl_.perform();
+  if(curl_.get_response_code() == 0)
+  {
+    throw std::runtime_error( curl_.get_response_reason_phrase() + " : " + url_);
+  }
+  status = json_writer_stream_.str();
+}
 
+void
+ObjectDbCouch::Status(const CollectionName& collection, std::string& status)
+{
+  json_writer_stream_.str("");
+  json_reader_stream_.str("");
+  curl_.setWriter(&json_writer_);
+  curl_.setReader(&json_reader_);
+  //couch db post to the db
+  curl_.setURL(url_ + "/" + collection);
+  curl_.setCustomRequest("GET");
+  curl_.perform();
+  if(curl_.get_response_code() == 0)
+  {
+    throw std::runtime_error( curl_.get_response_reason_phrase() + " : " + url_);
+  }
+  status = json_writer_stream_.str();
+}
+
+void
+ObjectDbCouch::DeleteCollection(const CollectionName &collection)
+{
+  boost::property_tree::ptree params;
+  std::string status;
+  Status(collection,status);
+  std::stringstream ss(status);
+  boost::property_tree::read_json(ss, params);
+  if(params.count("db_name") && params.get<std::string>("db_name") == collection)
+  {
+    curl_.setCustomRequest("DELETE");
+    curl_.perform();
+  }
 }
 void
 ObjectDbCouch::upload_json(const boost::property_tree::ptree &ptree, const std::string& url, const std::string& request)

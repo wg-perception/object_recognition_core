@@ -193,18 +193,29 @@ namespace curl
     void
     parse_response_header()
     {
+      header_response_values.clear();
+      long code;
+      curl_easy_getinfo(curl_,CURLINFO_RESPONSE_CODE,&code);
+      if(code == 0)
+      {
+        response_status_code_ = 0;
+        response_reason_phrase_ = "No response from server.";
+        return;
+      }
       //parse codes
       std::string _, reason, x;
       do
       {
         header_writer_stream_ >> _ /*used to eatup the http version.*/
         >> response_status_code_;
+        header_writer_stream_.ignore(1, ' '); //eatup the space.
+
         std::getline(header_writer_stream_, response_reason_phrase_, '\n');
         if (!response_reason_phrase_.empty())
           response_reason_phrase_.resize(response_reason_phrase_.size() - 1);
+
       } while (response_status_code_ == Continue); //handle continuecontinue
 
-      header_response_values.clear();
       while (true)
       {
         std::string headerX, line;

@@ -142,7 +142,7 @@ namespace object_recognition
                   {
                 db_future::Document doc = *view;
                 cv::Mat descriptors;
-                doc.get_attachment<cv::Mat>(db, "descriptors", descriptors);
+                doc.get_attachment<cv::Mat>("descriptors", descriptors);
                 all_descriptors.push_back(descriptors);
 
                 // Store the id conversion
@@ -151,7 +151,7 @@ namespace object_recognition
 
                 // Store the 3d positions
                 cv::Mat points3d;
-                doc.get_attachment<cv::Mat>(db, "points", points3d);
+                doc.get_attachment<cv::Mat>("points", points3d);
                 if (points3d.rows != 1)
                   points3d = points3d.t();
                 features_3d_.push_back(points3d);
