@@ -22,7 +22,11 @@ add_library(object_recognition_db SHARED
   )
 
 target_link_libraries(object_recognition_db
-  ${Boost_LIBRARIES}
+  boost_system
+  boost_serialization
+  boost_thread
+  boost_filesystem
+  boost_regex
   ${CURL_LIBRARIES}
   ${OpenCV_LIBS}
   )

@@ -116,6 +116,11 @@ private:
   }
 
   void
+  create_db(const CollectionName &collection_name);
+//  void
+//  delete_db(const CollectionName &collection_name);
+
+  void
   GetObjectRevisionId(DocumentId& document_id, RevisionId & revision_id);
 
   void

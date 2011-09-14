@@ -37,6 +37,7 @@
 #define DB_H_
 
 #include <sstream>
+#include <map>
 
 #include <boost/archive/binary_iarchive.hpp>
 #include <boost/archive/binary_oarchive.hpp>
@@ -235,20 +236,12 @@ namespace object_recognition
       /** Get a specific value */
       template<typename T>
       T
-      get_value(const std::string& key) const
-      {
-        std::cerr << "Document::get_value<T> not implemented for that type";
-        throw;
-      }
+      get_value(const std::string& key) const;
 
       /** Set a specific value */
       template<typename T>
       void
-      set_value(const std::string& key, const T& val)
-      {
-        std::cerr << "Document::set_value<T> not implemented for that type";
-        throw;
-      }
+      set_value(const std::string& key, const T& val);
 
       /** Clear all the fields, there are no fields left after */
       void
@@ -352,6 +345,7 @@ namespace object_recognition
     {
       fields_.put<std::string>(key, val);
     }
+
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 

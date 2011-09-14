@@ -16,6 +16,4 @@ macro(data_download PATH_VAR DATA_FILE)
 endmacro()
 
 pytest(test_import)
-#pytest(doc_opencv)
-#pytest(test_image_saver)
-#add_subdirectory(cells)
+add_subdirectory(db)
