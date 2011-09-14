@@ -106,6 +106,14 @@ namespace curl
       curl_easy_setopt(curl_, CURLOPT_URL, url.c_str());
     }
 
+    std::string
+    getURL()
+    {
+      char * url;
+      curl_easy_getinfo(curl_,CURLINFO_EFFECTIVE_URL,&url);
+      return std::string(url);
+    }
+
     void
     setHeader(const std::string& header)
     {
