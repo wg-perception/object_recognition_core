@@ -24,8 +24,8 @@ namespace object_recognition
     cv::Mat_<uchar>::const_iterator mask_it = mask.begin<uchar>();
     for (; point_it != point_end; ++point_it, ++mask_it, ++rgb_it)
     {
-//      if (!*mask_it)
-//        continue;
+      if (!*mask_it)
+        continue;
       cv::Point3f p = *point_it;
       if (p.x != p.x && p.y != p.y && p.z != p.z) //throw out NANs
         continue;
@@ -86,34 +86,6 @@ namespace object_recognition
       }
     }
   }
-
-//  template<typename PointT>
-//  void
-//  writePLY(const pcl::PointCloud<PointT>& cloud_m, const std::string& mesh_file_name);
-//
-//  template<>
-//  inline void
-//  writePLY<pcl::PointXYZRGB>(const pcl::PointCloud<pcl::PointXYZRGB>& cloud_m, const std::string& mesh_file_name)
-//  {
-//    std::ofstream mesh_file(std::string(mesh_file_name).c_str());
-//    mesh_file << "ply\n"
-//              "format ascii 1.0\n"
-//              "element vertex "
-//              << cloud_m.points.size() << "\n"
-//              "property float x\n"
-//              "property float y\n"
-//              "property float z\n"
-//              "property uchar red\n"
-//              "property uchar green\n"
-//              "property uchar blue\n"
-//              "end_header\n";
-//    //<x> <y> <z> <r> <g> <b>
-//    for (size_t i = 0; i < cloud_m.points.size(); i++)
-//    {
-//      const pcl::PointXYZRGB& p = cloud_m.points[i];
-//      mesh_file << p.x << " " << p.y << " " << p.z << " " << int(p.r) << " " << int(p.g) << " " << int(p.b) << "\n";
-//    }
-//  }
 
   template<typename PointT>
   inline void

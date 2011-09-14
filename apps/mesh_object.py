@@ -15,6 +15,7 @@ from ecto_opencv import calib, highgui, imgproc
 import object_recognition
 from object_recognition import dbtools, models, capture, observations
 from ecto_object_recognition import reconstruction
+import ecto_pcl
 
 
 def parse_args():
@@ -40,67 +41,46 @@ def simple_mesh_session(session, args):
     depthTo3d = calib.DepthTo3d()
     erode = imgproc.Erode(kernel=3) #-> 7x7
     rescale_depth = capture.RescaledRegisteredDepth() #this is for SXGA mode scale handling.
-    simple_reconstruction = reconstruction.SimpleReconstruction()
-    if True:
-        plasm = ecto.Plasm()
+    point_cloud_transform = reconstruction.PointCloudTransform()
+    plasm = ecto.Plasm()
+    plasm.connect(
+      db_reader['K'] >> depthTo3d['K'],
+      db_reader['image'] >> rescale_depth['image'],
+      db_reader['depth'] >> rescale_depth['depth'],
+      rescale_depth[:] >> depthTo3d['depth'],
+      depthTo3d['points3d'] >> point_cloud_transform['points3d'],
+      db_reader['mask'] >> erode['image'],
+      db_reader['R', 'T', 'image'] >> point_cloud_transform['R', 'T', 'image'],
+      erode['image'] >> point_cloud_transform['mask'],
+      )
+
+
+    accum = reconstruction.PointCloudAccumulator()
+    viewer = ecto_pcl.CloudViewer("viewer", window_name="PCD Viewer")
+    voxel_grid = ecto_pcl.VoxelGrid("voxel_grid", leaf_size=0.0075)
+    outlier_removal = ecto_pcl.StatisticalOutlierRemoval('Outlier Removal', mean_k=2, stddev=2)
+    source, sink = ecto.EntangledPair(value=accum.inputs.at('view'), source_name='Feedback Cloud', sink_name='Feedback Cloud')
+    #normals = ecto_pcl.NormalEstimation("normals", k_search=0, radius_search=0.02)
+    ply_writer = ecto_pcl.PLYWriter()
+    
+    plasm.connect(source[:] >> accum['previous'],
+                  point_cloud_transform['view'] >> accum['view'],
+                          accum[:] >> voxel_grid[:],
+                          voxel_grid[:] >> outlier_removal[:],
+                         # outlier_removal[:] >> normals[:],
+                          outlier_removal[:] >> (sink[:], viewer[:], ply_writer[:]),
+    )
+
+    if args.visualize:
         plasm.connect(
-          db_reader['K'] >> depthTo3d['K'],
-          db_reader['image'] >> rescale_depth['image'],
-          db_reader['depth'] >> rescale_depth['depth'],
-          rescale_depth[:] >> depthTo3d['depth'],
-          depthTo3d['points3d'] >> simple_reconstruction['points3d'],
-          db_reader['mask'] >> erode['image'],
-          db_reader['K', 'R', 'T', 'image'] >> simple_reconstruction['K', 'R', 'T', 'image'],
-          erode['image'] >> simple_reconstruction['mask'],
+          db_reader['image'] >> highgui.imshow('image', name='image')[:],
+          db_reader['depth'] >> highgui.imshow('depth', name='depth')[:],
+          erode['image'] >> highgui.imshow('mask', name='mask')[:],
           )
-        if args.visualize:
-            plasm.connect(
-              db_reader['image'] >> highgui.imshow('image', name='image')[:],
-              db_reader['depth'] >> highgui.imshow('depth', name='depth')[:],
-              erode['image'] >> highgui.imshow('mask', name='mask')[:],
-              )
-        sched = ecto.schedulers.Singlethreaded(plasm)
-        sched.execute()
+    sched = ecto.schedulers.Singlethreaded(plasm)
+    sched.execute()
 
-    if True:
-        location = '/tmp/object_recognition/'
-        try:
-            os.makedirs(location)
-        except Exception, e:
-            pass
-#        mesh_script_txt = '''<!DOCTYPE FilterScript>
-#<FilterScript>
-# <filter name="Surface Reconstruction: Poisson">
-#  <Param type="RichInt" value="8" name="OctDepth"/>
-#  <Param type="RichInt" value="8" name="SolverDivide"/>
-#  <Param type="RichFloat" value="2" name="SamplesPerNode"/>
-#  <Param type="RichFloat" value="1" name="Offset"/>
-# </filter>
-#</FilterScript>     
-#        '''
-#        mesh_file_name = os.path.join(location, 'meshing.mlx')
-#        with open(mesh_file_name, 'w') as mesh_script:
-#            mesh_script.write(mesh_script_txt)
-#        name_base = str(session.id)
-#        surfel_ply = os.path.join(location, name_base + '.ply')
-#        print "Saving to :", surfel_ply
-#        surfel_saver = reconstruction.SurfelToPly(filename=surfel_ply)
-#        surfel_saver.inputs.at('model').copy_value(surfel_reconstruction.outputs.at('model'))
-#        surfel_saver.inputs.at('params').copy_value(surfel_reconstruction.outputs.at('params'))
-#        surfel_saver.inputs.at('camera_params').copy_value(surfel_reconstruction.outputs.at('camera_params'))
-#
-#        surfel_saver.configure()
-#        surfel_saver.process() #manually thunk the cell's process function
-#
-#        meshed_ply = os.path.join(location, name_base + '_meshed.ply')
-#        mesh_args = ["meshlabserver", "-i", surfel_ply, "-o", meshed_ply, "-s", mesh_file_name, "-om", "vn", "fn", "vc", "fc"]
-#        p = subprocess.Popen(mesh_args, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-#        o, e = p.communicate()
-#        if p.returncode :
-#            raise (o, e, p.returncode)
 
-        print "attempting : ", session.object_id
-        reconstruction.insert_mesh(args.db_root, str(session.object_id), session.id, 'model.ply', 'model.ply')
 def mesh_session(session, args):
     db_reader = capture.ObservationReader('db_reader', session_id=session.id)
     depthTo3d = calib.DepthTo3d()
