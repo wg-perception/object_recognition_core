@@ -53,7 +53,6 @@
 #include <pcl/sample_consensus/sac_model_registration.h>
 
 #include "object_recognition/common/types.h"
-#include "opencv_candidate/PoseRT.h"
 
 using ecto::tendrils;
 

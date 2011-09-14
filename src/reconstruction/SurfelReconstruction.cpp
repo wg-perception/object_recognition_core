@@ -271,7 +271,7 @@ namespace object_recognition
 
         //save as ply
         //rgbd::write_ply_file(*surfelCloud,out_file);
-        writePLY(*surfelCloud, *filename);
+//        writePLY(*surfelCloud, *filename);
         return ecto::OK;
       }
       ecto::spore<std::string> filename;

@@ -1,15 +1,8 @@
 #include <ecto/ecto.hpp>
 #include <opencv2/core/core.hpp>
 #include <opencv2/calib3d/calib3d.hpp>
-#include <opencv2/highgui/highgui.hpp>
-#include <boost/python/stl_iterator.hpp>
-#include <boost/format.hpp>
 #include <string>
 #include <numeric>
-
-#include "object_recognition/capture/capture.hpp"
-#include "object_recognition/db/couch.hpp"
-#include "object_recognition/db/opencv.h"
 
 using ecto::tendrils;
 namespace object_recognition
@@ -23,8 +16,7 @@ namespace object_recognition
       {
         params.declare<double>("angle_thresh", "The angle thresh hold.", CV_PI / 36);
         params.declare<bool>("reset", "Reset observations.", false);
-        params.declare<unsigned>("n_desired", "The number of desired views",
-                                              std::numeric_limits<unsigned>::max());
+        params.declare<unsigned>("n_desired", "The number of desired views", std::numeric_limits<unsigned>::max());
       }
       static void
       declare_io(const tendrils& params, tendrils& inputs, tendrils& outputs)
@@ -35,7 +27,7 @@ namespace object_recognition
         outputs.declare<bool>("novel", "Whether or not the R|T is novel relative to previous novel R|T poses.", false);
       }
       void
-      configure(const tendrils& params, const tendrils& inputs,const tendrils& outputs)
+      configure(const tendrils& params, const tendrils& inputs, const tendrils& outputs)
       {
         reset_ = params["reset"];
         angle_thresh_ = params["angle_thresh"];
@@ -46,7 +38,7 @@ namespace object_recognition
         n_desired_ = params["n_desired"];
       }
       int
-      process(const tendrils& inputs,const tendrils& outputs)
+      process(const tendrils& inputs, const tendrils& outputs)
       {
         *novel_ = false;
         if (*found_ == false)
@@ -69,11 +61,11 @@ namespace object_recognition
           if (theta_delta < min_delta)
             min_delta = theta_delta;
         }
-        if (min_delta > *angle_thresh_/2)
+        if (min_delta > *angle_thresh_ / 2)
         {
           *novel_ = true;
           observations_.push_back(std::make_pair(R, T));
-          if(observations_.size() > *n_desired_)
+          if (observations_.size() > *n_desired_)
           {
             std::cout << "Satisfied, total observations: " << *n_desired_ << std::endl;
             return ecto::QUIT;

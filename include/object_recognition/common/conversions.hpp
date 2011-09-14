@@ -76,8 +76,7 @@ namespace object_recognition
 
     for (size_t v = 0; v < height; ++v)
     {
-      const float * begin = reinterpret_cast<const float*>(points3d.ptr(v));
-      for (size_t u = 0; u < width; ++u)
+      const float * begin = reinterpret_cast<const float*>(points3d.ptr(v));for (size_t u = 0; u < width; ++u)
       {
         PointT& p = cloud(u, v);
         p.x = *(begin++);
@@ -87,64 +86,11 @@ namespace object_recognition
     }
   }
 
-  template<typename PointT>
-  inline void
-  writePLY(const pcl::PointCloud<PointT>& cloud_m,
-                                   const std::string& mesh_file_name)
-  {
-    std::ofstream mesh_file(std::string(mesh_file_name).c_str());
-    mesh_file << "ply\n"
-              "format ascii 1.0\n"
-              "element vertex "
-              << cloud_m.points.size() << "\n"
-              "property float x\n"
-              "property float y\n"
-              "property float z\n"
-              "property uchar red\n"
-              "property uchar green\n"
-              "property uchar blue\n"
-              "property float nx\n"
-              "property float ny\n"
-              "property float nz\n"
-              "end_header\n";
-
-    //<x> <y> <z> <r> <g> <b>
-    for (size_t i = 0; i < cloud_m.points.size(); i++)
-    {
-      const PointT& p = cloud_m.points[i];
-      mesh_file << p.x << " " << p.y << " " << p.z << " " << int(p.r) << " " << int(p.g) << " " << int(p.b) << " "
-                << p.normal_x << " " << p.normal_y << " " << p.normal_z << "\n";
-    }
-  }
-  template<>
-  inline void
-  writePLY<pcl::PointXYZRGB>(const pcl::PointCloud<pcl::PointXYZRGB>& cloud_m, const std::string& mesh_file_name)
-  {
-    std::ofstream mesh_file(std::string(mesh_file_name).c_str());
-    mesh_file << "ply\n"
-              "format ascii 1.0\n"
-              "element vertex "
-              << cloud_m.points.size() << "\n"
-              "property float x\n"
-              "property float y\n"
-              "property float z\n"
-              "property uchar red\n"
-              "property uchar green\n"
-              "property uchar blue\n"
-              "end_header\n";
-    //<x> <y> <z> <r> <g> <b>
-    for (size_t i = 0; i < cloud_m.points.size(); i++)
-    {
-      const pcl::PointXYZRGB& p = cloud_m.points[i];
-      mesh_file << p.x << " " << p.y << " " << p.z << " " << int(p.r) << " " << int(p.g) << " " << int(p.b) << "\n";
-    }
-  }
-
-  /**
-   * p = R*x + T
-   * if inverse:
-   *  x = R^1*(p - T)
-   */
+      /**
+       * p = R*x + T
+       * if inverse:
+       *  x = R^1*(p - T)
+       */
   inline Eigen::Affine3f
   RT2Transform(cv::Mat& R, cv::Mat& T, bool inverse)
   {

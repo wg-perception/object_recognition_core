@@ -36,114 +36,112 @@
 #include <iostream>
 #include <stdexcept>
 #include <boost/shared_ptr.hpp>
-#ifdef WIN32
-//! JAM - This is to get rid of the warning MSVC belches out whenever using
-//!       standard functions/variables that the compiler thinks "may be unsafe"
-#pragma warning (disable:4996)
-#endif
 
 namespace object_recognition
 {
   namespace io
   {
-//! @brief Timestamp descriptor object
-//!
-struct TimeStamp
-{
-  int year;
-  int month;
-  int day;
+    //! @brief Timestamp descriptor object
+    //!
+    struct TimeStamp
+    {
+      int year;
+      int month;
+      int day;
 
-  int hour;
-  int min;
-  int sec;
-  int msec;
+      int hour;
+      int min;
+      int sec;
+      int msec;
 
-  //! @brief captures the current time.
-  void set();
-};
+      //! @brief captures the current time.
+      void
+      set();
+    };
 
+    //! @brief Information regarding the current execution of the detection program
+    //!
+    struct RunInfo
+    {
+      //! @brief 4-digit run number
+      int runID;
 
-//! @brief Information regarding the current execution of the detection program
-//!
-struct RunInfo
-{
-  //! @brief 4-digit run number
-  int runID;
+      //! @brief Team name
+      std::string name;
 
-  //! @brief Team name
-  std::string name;
+      //! @brief Current timestamp
+      TimeStamp ts;
+    };
 
-  //! @brief Current timestamp
-  TimeStamp ts;
-};
+    //! @brief Information regarding the pose of a detected object
+    //!
+    struct PoseInfo
+    {
+      //! @brief Current timestamp
+      TimeStamp ts;
 
+      //! @brief 4-digit run number
+      int run;
 
-//! @brief Information regarding the pose of a detected object
-//!
-struct PoseInfo
-{
-  //! @brief Current timestamp
-  TimeStamp ts;
+      //! @brief 3-digit frame number
+      int frame;
 
-  //! @brief 4-digit run number
-  int run;
+      //! @brief 3-digit detection number
+      int dID;
 
-  //! @brief 3-digit frame number
-  int frame;
+      //! @brief Object identification
+      std::string oID;
 
-  //! @brief 3-digit detection number
-  int dID;
+      //! @brief Rotation matix
+      double Rot[9];
 
-  //! @brief Object identification
-  std::string oID;
+      //! @brief Translation along the X axis;
+      double Tx;
 
-  //! @brief Rotation matix
-  double Rot[9];
+      //! @brief Translation along the Y axis
+      double Ty;
 
-  //! @brief Translation along the X axis;
-  double Tx;
+      //! @brief Translation along the Z axis
+      double Tz;
 
-  //! @brief Translation along the Y axis
-  double Ty;
+      //! @brief Access an element in row major form.
+      double&
+      R(int i, int j)
+      {
+        int offset = j * 3 + i;
+        if (offset >= 9 || offset < 0)
+          throw std::logic_error("i and j not in bounds.");
+        return Rot[offset]; //row major
+      }
+      //! @brief Access an element in row major form. const overload
+      double
+      R(int i, int j) const
+      {
+        int offset = j * 3 + i;
+        if (offset >= 9 || offset < 0)
+          throw std::logic_error("i and j not in bounds.");
+        return Rot[offset]; //row major
+      }
 
-  //! @brief Translation along the Z axis
-  double Tz;
+    };
 
-  //! @brief Access an element in row major form.
-  double& R(int i, int j)
-  {
-    int offset = j*3 + i;
-    if(offset >= 9 || offset < 0) throw std::logic_error("i and j not in bounds.");
-    return Rot[offset]; //row major
+    typedef boost::shared_ptr<std::ofstream> CSVOutput;
+
+    //! @brief Get a handle to the CSV output file
+    //!
+    //! @param rn   Information about the current run (run #, team name, etc.)
+    //! @param ps   Information of a detected object, including the frame #
+    //!
+    CSVOutput
+    openCSV(const RunInfo &rn);
+
+    //! @brief Output the detected object information in a formatted CSV file
+    //!
+    //! @param rn   Information about the current run (run #, team name, etc.)
+    //! @param ps   Information of a detected object, including the frame #
+    //!
+    void
+    writeCSV(CSVOutput out, const PoseInfo &ps);
+
   }
-  //! @brief Access an element in row major form. const overload
-  double R(int i, int j) const
-  {
-    int offset = j*3 + i;
-        if(offset >= 9 || offset < 0) throw std::logic_error("i and j not in bounds.");
-    return Rot[offset]; //row major
-  }
-
-};
-
-
-typedef boost::shared_ptr<std::ofstream> CSVOutput;
-
-//! @brief Get a handle to the CSV output file
-//!
-//! @param rn   Information about the current run (run #, team name, etc.)
-//! @param ps   Information of a detected object, including the frame #
-//!
-CSVOutput openCSV(const RunInfo &rn);
-
-
-//! @brief Output the detected object information in a formatted CSV file
-//!
-//! @param rn   Information about the current run (run #, team name, etc.)
-//! @param ps   Information of a detected object, including the frame #
-//!
-void writeCSV (CSVOutput out, const PoseInfo &ps);
-
-}
 }

@@ -11,7 +11,6 @@
 
 #include "object_recognition/db/db.h"
 #include "object_recognition/db/opencv.h"
-#include <object_recognition/db/couch.hpp>
 
 using ecto::tendrils;
 

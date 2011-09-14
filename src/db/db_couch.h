@@ -123,6 +123,8 @@ private:
 
   /** The URL of the DB, including port */
   std::string url_;
+
+  //FIXME why are these mutable
   mutable object_recognition::curl::cURL curl_;
   mutable std::stringstream json_writer_stream_, json_reader_stream_;
 

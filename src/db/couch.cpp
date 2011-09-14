@@ -13,7 +13,7 @@
 
 #include <json_spirit/json_spirit.h>
 
-#include "object_recognition/db/couch.hpp"
+#include "couch.hpp"
 
 #include "curl_interface.h"
 

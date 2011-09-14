@@ -1,6 +1,7 @@
 #include <cstdio>
 #include <streambuf>
 #include <string>
+#include <map>
 
 #include <boost/serialization/vector.hpp>
 #include <boost/serialization/binary_object.hpp>
@@ -11,9 +12,7 @@
 
 #include <curl/curl.h>
 
-#include <json_spirit/json_spirit.h>
-
-#include "object_recognition/db/couch.hpp"
+//#include "couch.hpp"
 
 namespace object_recognition
 {

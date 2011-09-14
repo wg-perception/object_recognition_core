@@ -8,9 +8,7 @@
 #include <boost/serialization/binary_object.hpp>
 #include <boost/serialization/split_free.hpp>
 
-namespace couch {
-  class Document;
-}
+#include <object_recognition/db/db.h>
 namespace object_recognition
 {
   namespace db
@@ -22,10 +20,10 @@ namespace object_recognition
     yaml2mats(std::map<std::string, cv::Mat>& mm,std::istream& in);
 
     void
-    png_attach(cv::Mat image, couch::Document& doc, const std::string& name);
+    png_attach(cv::Mat image, db_future::Document& doc, const std::string& name);
 
     void
-    get_png_attachment(cv::Mat& image, couch::Document& doc, const std::string& name);
+    get_png_attachment(cv::Mat& image, db_future::Document& doc, const std::string& name);
   }
 }
 

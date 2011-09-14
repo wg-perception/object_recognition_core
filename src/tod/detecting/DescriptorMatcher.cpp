@@ -32,7 +32,7 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  *
  */
-
+#include <ecto/ecto.hpp>
 #include <string>
 #include <map>
 #include <vector>
@@ -40,8 +40,8 @@
 #include <boost/foreach.hpp>
 #include <boost/python.hpp>
 #include <boost/python/stl_iterator.hpp>
+#include <boost/property_tree/json_parser.hpp>
 
-#include <ecto/ecto.hpp>
 
 #include <opencv2/core/core.hpp>
 #include <opencv2/features2d/features2d.hpp>
@@ -51,7 +51,6 @@
 #include "object_recognition/db/db.h"
 #include "object_recognition/db/opencv.h"
 #include "opencv_candidate/lsh.hpp"
-
 namespace object_recognition
 {
   namespace tod
