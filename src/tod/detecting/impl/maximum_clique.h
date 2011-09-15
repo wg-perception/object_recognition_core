@@ -45,6 +45,7 @@ namespace object_recognition
     {
     public:
       typedef unsigned int Vertex;
+      typedef std::vector<Vertex> Vertices;
 
       /** Constructor */
       Graph(unsigned int vertex_number);
@@ -57,12 +58,11 @@ namespace object_recognition
       void
       deleteEdge(Vertex vertex_1, Vertex vertex_2);
       void
-      findMaximumClique(std::vector<unsigned int> &max_clique);
+      findMaximumClique(Vertices &max_clique);
     private:
       typedef std::vector<unsigned int> Neighbors;
       typedef unsigned int Color;
       typedef std::vector<Color> Colors;
-      typedef std::vector<Vertex> Vertices;
 
       struct RCCompare
       {

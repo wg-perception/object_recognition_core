@@ -167,7 +167,7 @@ namespace object_recognition
     }
 
     void
-    Graph::findMaximumClique(std::vector<unsigned int> &max_clique)
+    Graph::findMaximumClique(Vertices &QMax)
     {
       all_steps_ = 0;
       t_limit_ = 0.025;
@@ -184,12 +184,10 @@ namespace object_recognition
       for (unsigned int i = max_degree; i < n_vertices_; i++)
         C[i] = max_degree + 1;
 
-      Vertices QMax, Q;
+      Vertices Q;
+      QMax.clear();
       std::vector<unsigned int> S(n_vertices_, 0), SOld(n_vertices_, 0);
       MaxCliqueDyn(R, C, 1, QMax, Q, S, SOld);
-
-      BOOST_FOREACH(Vertex vertex, QMax)
-            max_clique.push_back(vertex);
 
       // Check that the clique is valid
       /*int count = 0;
