@@ -47,6 +47,7 @@
 #include <opencv2/core/core.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/features2d/features2d.hpp>
+#include <opencv2/highgui/highgui.hpp>
 
 #include <pcl/sample_consensus/prosac.h>
 #include <pcl/sample_consensus/ransac.h>
@@ -54,8 +55,53 @@
 
 #include "object_recognition/common/types.h"
 #include "opencv_candidate/PoseRT.h"
+#include "impl/maximum_clique.h"
 
 using ecto::tendrils;
+
+namespace
+{
+  void
+  fill_connections(const pcl::PointCloud<pcl::PointXYZ> &training_point_cloud,
+                   const pcl::PointCloud<pcl::PointXYZ> & query_point_cloud,
+                   const std::vector<unsigned int> &query_indices, float object_span,
+                   object_recognition::maximum_clique::Graph &graph)
+  {
+    // The error the 3d sensor makes, distance wise
+    float sensor_error = 0.04;
+
+    std::cout << "training_point_cloud size " << training_point_cloud.size() << std::endl;
+    cv::Mat_<float> distances(training_point_cloud.size(), training_point_cloud.size());
+    for (unsigned int i = 0; i < training_point_cloud.size(); ++i)
+    {
+      const pcl::PointXYZ & training_point_1 = training_point_cloud.points[i], &query_point_1 =
+          query_point_cloud.points[i];
+      // For every other match that might end up in the same cluster
+      for (unsigned int j = i + 1; j < training_point_cloud.size(); ++j)
+      {
+        // Two matches with the same query point cannot be connected
+        if (query_indices[i] == query_indices[j])
+          continue;
+        // Two training points can be connected if they are within the span of an object
+        const pcl::PointXYZ & query_point_2 = query_point_cloud.points[j];
+        float dist2 = pcl::euclideanDistance(query_point_1, query_point_2);
+        //distances(i, j) = dist2;
+        //distances(j, i) = dist2;
+        if (dist2 > (object_span + 2 * sensor_error))
+          continue;
+
+        const pcl::PointXYZ & training_point_2 = training_point_cloud.points[j];
+        float dist1 = pcl::euclideanDistance(training_point_1, training_point_2);
+        // Make sure the distance between two points is somewhat conserved
+        if (std::abs(dist1 - dist2) > 2 * sensor_error)
+          continue;
+
+        // If all those conditions are respected, those two matches are potentially part of the same cluster
+        graph.addEdge(i, j);
+      }
+    }
+  }
+}
 
 namespace object_recognition
 {
@@ -84,6 +130,7 @@ namespace object_recognition
       static void
       declare_io(const tendrils& params, tendrils& inputs, tendrils& outputs)
       {
+        inputs.declare<cv::Mat>("image", "The height by width 3 channel point cloud");
         inputs.declare<cv::Mat>("points3d", "The height by width 3 channel point cloud");
         inputs.declare<std::vector<cv::KeyPoint> >("keypoints", "The interesting keypoints");
         inputs.declare<std::vector<std::vector<cv::DMatch> > >("matches", "The list of OpenCV DMatch");
@@ -104,48 +151,11 @@ namespace object_recognition
       {
         boost::property_tree::ptree param_tree;
         std::stringstream ssparams;
-        ssparams << params.get<std::string> ("json_params");
+        ssparams << params.get<std::string>("json_params");
         boost::property_tree::read_json(ssparams, param_tree);
 
-        min_inliers_ = param_tree.get<unsigned int> ("min_inliers");
-        n_ransac_iterations_ = param_tree.get<unsigned int> ("n_ransac_iterations");
-      }
-
-      void
-      filter_clouds(pcl::PointCloud<pcl::PointXYZ> & training_point_cloud,
-                    pcl::PointCloud<pcl::PointXYZ> & query_point_cloud)
-      {
-        pcl::PointCloud<pcl::PointXYZ> training, query;
-        float max_dist = 0.005;
-        for (unsigned int i = 0; i < training_point_cloud.size(); ++i)
-        {
-          pcl::PointXYZ & training_point_1 = training_point_cloud.points[i];
-          pcl::PointXYZ & query_point_1 = query_point_cloud.points[i];
-          unsigned int count = 0;
-          for (unsigned int j = 0; j < training_point_cloud.size(); ++j)
-          {
-            if (j == i)
-              continue;
-
-            pcl::PointXYZ & training_point_2 = training_point_cloud.points[j];
-            pcl::PointXYZ & query_point_2 = query_point_cloud.points[j];
-
-            float distsq_1 = pcl::euclideanDistance(training_point_1, training_point_2);
-            float distsq_2 = pcl::euclideanDistance(query_point_1, query_point_2);
-            if (std::abs(distsq_1 - distsq_2) < max_dist)
-              ++count;
-          }
-          if (count >= 3)
-          {
-            std::cout << count << " ";
-            training.push_back(training_point_1);
-            query.push_back(query_point_1);
-          }
-        }
-        std::cout << std::endl;
-
-        training_point_cloud = training;
-        query_point_cloud = query;
+        min_inliers_ = param_tree.get<unsigned int>("min_inliers");
+        n_ransac_iterations_ = param_tree.get<unsigned int>("n_ransac_iterations");
       }
 
       Eigen::VectorXf
@@ -154,16 +164,29 @@ namespace object_recognition
               std::vector<int>& inliers)
       {
         pcl::SampleConsensusModelRegistration<pcl::PointXYZ>::Ptr model(
-                                                                        new pcl::SampleConsensusModelRegistration<
-                                                                            pcl::PointXYZ>(training_point_cloud,
-                                                                                           good_indices));
+            new pcl::SampleConsensusModelRegistration<pcl::PointXYZ>(training_point_cloud, good_indices));
         pcl::RandomSampleConsensus<pcl::PointXYZ> sample_consensus(model);
         Eigen::VectorXf coefficients;
         model->setInputTarget(query_point_cloud, good_indices);
-        sample_consensus.setDistanceThreshold(0.01);
+        sample_consensus.setDistanceThreshold(0.03);
         sample_consensus.setMaxIterations(n_ransac_iterations_);
+
+        /*std::cout << '[';
+         BOOST_FOREACH(int i, good_indices) {
+         const pcl::PointXYZ &training_point =training_point_cloud->points[i];
+         std::cout << training_point.x << "," << training_point.y << "," << training_point.z << ";" << std::endl;
+         }
+         std::cout << ']';
+         std::cout << '[';
+         BOOST_FOREACH(int i, good_indices) {
+         const pcl::PointXYZ &query_point =query_point_cloud->points[i];
+         std::cout << query_point.x << "," << query_point.y << "," << query_point.z << ";" << std::endl;
+         }
+         std::cout << ']';*/
+
         if (sample_consensus.computeModel())
         {
+          inliers.clear();
           sample_consensus.getInliers(inliers);
           std::sort(inliers.begin(), inliers.end());
           sample_consensus.getModelCoefficients(coefficients);
@@ -173,120 +196,6 @@ namespace object_recognition
           inliers.clear();
         }
         return coefficients;
-      }
-      void
-      cluster_clouds(const pcl::PointCloud<pcl::PointXYZ> & training_point_cloud,
-                     const pcl::PointCloud<pcl::PointXYZ> & query_point_cloud, float span, std::vector<cv::Mat> &Rs,
-                     std::vector<cv::Mat> &Ts)
-      {
-        pcl::PointCloud<pcl::PointXYZ> training, query;
-        std::vector<std::vector<int> > clusters(training_point_cloud.size());
-        // The error the 3d sensor makes, distance wise
-        float sensor_error = 0.02;
-        // The minimal span of a point cluster to consider
-        float min_span = 0.02;
-        std::cout << "training_point_cloud size " << training_point_cloud.size() << std::endl;
-        for (unsigned int i = 0; i < training_point_cloud.size(); ++i)
-        {
-          float span_query = 0, span_training = 0;
-          const pcl::PointXYZ & training_point_1 = training_point_cloud.points[i], query_point_1 =
-              query_point_cloud.points[i];
-          std::vector<int>& cluster = clusters[i];
-          cluster.push_back(i);
-          for (unsigned int j = i + 1; j < training_point_cloud.size(); ++j)
-          {
-            const pcl::PointXYZ & query_point_2 = query_point_cloud.points[j];
-            float dist2 = pcl::euclideanDistance(query_point_1, query_point_2);
-            // Make sure that two points are within the span of the object
-            if (dist2 > (span + 2 * sensor_error))
-              continue;
-
-            const pcl::PointXYZ & training_point_2 = training_point_cloud.points[j];
-            float dist1 = pcl::euclideanDistance(training_point_1, training_point_2);
-            // Make sure the distance between two points is somewhat conserved
-            if (std::abs(dist1 - dist2) < 2 * sensor_error)
-            {
-              cluster.push_back(j);
-              clusters[j].push_back(i);
-              span_training = std::max(span_training, dist1);
-              span_query = std::max(span_query, dist2);
-            }
-          }
-          // make sure the clusters are physically big enough
-          if ((span_query < (min_span + 2 * sensor_error)) || (span_training < (min_span + 2 * sensor_error)))
-            cluster.clear();
-          std::sort(cluster.begin(), cluster.end());
-        }
-
-        // For each cluster of matches, compute a 3d model
-        pcl::PointCloud<pcl::PointXYZ>::Ptr
-            training_cloud_ptr(new pcl::PointCloud<pcl::PointXYZ>(training_point_cloud));
-        pcl::PointCloud<pcl::PointXYZ>::Ptr query_cloud_ptr(new pcl::PointCloud<pcl::PointXYZ>(query_point_cloud));
-        std::vector<int> inliers;
-        bool is_done = false;
-        while (!is_done)
-        {
-          std::vector<std::pair<int, int> > count_clusteridx;
-          count_clusteridx.reserve(clusters.size());
-          for (unsigned int i = 0; i < clusters.size(); ++i)
-            count_clusteridx.push_back(std::make_pair(clusters[i].size(), i));
-          std::sort(count_clusteridx.begin(), count_clusteridx.end(), compare_first);
-
-          is_done = true;
-          for (int i = count_clusteridx.size() - 1; i >= 0; i--)
-          {
-            int count_i, index_i;
-            boost::tie(count_i, index_i) = count_clusteridx[i];
-            std::vector<int>& cluster_i = clusters[index_i];
-            if (cluster_i.size() < min_inliers_)
-              break;
-            //largest cluster
-            inliers.clear();
-            Eigen::VectorXf coefficients = ransacy(training_cloud_ptr, query_cloud_ptr, cluster_i, inliers);
-            if (inliers.size() >= min_inliers_)
-            {
-              // Create a pose object
-              cv::Mat_<float> R_mat(3, 3), tvec(3, 1);
-              for (unsigned int j = 0; j < 3; ++j)
-              {
-                for (unsigned int i = 0; i < 3; ++i)
-                  R_mat(j, i) = coefficients[4 * j + i];
-                tvec(j, 0) = coefficients[4 * j + 3];
-              }
-              Rs.push_back(R_mat);
-              Ts.push_back(tvec);
-
-              std::vector<int> temp_cluster;
-              // remove inliers from all clusters
-              for (unsigned int index = 0; index < clusters.size(); ++index)
-              {
-
-                temp_cluster = clusters[index];
-                int size = temp_cluster.size();
-                clusters[index].resize(temp_cluster.size() + inliers.size());
-                std::vector<int>::iterator it;
-                it = std::set_difference(temp_cluster.begin(), temp_cluster.end(), inliers.begin(), inliers.end(),
-                                         clusters[index].begin());
-                //be sure to resize here.
-                clusters[index].resize(it - clusters[index].begin());
-                std::sort(clusters[index].begin(), clusters[index].end());
-                std::cout << "post diff : " << clusters[index].size() << " pre: " << size << std::endl;
-              }
-              for (unsigned int j = 0; j < inliers.size(); ++j)
-              {
-                clusters[inliers[j]].clear();
-              }
-              cluster_i.clear();
-              is_done = false;
-              break;
-            }
-            else
-            {
-              cluster_i.clear();
-            }
-          }
-          //break;//one cluster per object.
-        }
       }
 
       /** Get the 2d keypoints and figure out their 3D position from the depth map
@@ -298,24 +207,22 @@ namespace object_recognition
       process(const tendrils& inputs, const tendrils& outputs)
       {
         // Get the different matches
-        const std::vector<std::vector<cv::DMatch> > & matches =
-            inputs.get<std::vector<std::vector<cv::DMatch> > > ("matches");
-        const std::vector<cv::Mat> & matches_3d = inputs.get<std::vector<cv::Mat> > ("matches_3d");
+        const std::vector<std::vector<cv::DMatch> > & matches = inputs.get<std::vector<std::vector<cv::DMatch> > >(
+            "matches");
+        const std::vector<cv::Mat> & matches_3d = inputs.get<std::vector<cv::Mat> >("matches_3d");
 
         // Get the original keypoints and point cloud
-        const std::vector<cv::KeyPoint> & keypoints = inputs.get<std::vector<cv::KeyPoint> > ("keypoints");
-        cv::Mat point_cloud = inputs.get<cv::Mat> ("points3d");
-        std::map<ObjectOpenCVId, ObjectId> id_correspondences = inputs.get<std::map<ObjectOpenCVId, ObjectId> >(
+        const std::vector<cv::KeyPoint> & keypoints = inputs.get<std::vector<cv::KeyPoint> >("keypoints");
+        const cv::Mat point_cloud = inputs.get<cv::Mat>("points3d");
+        const std::map<ObjectOpenCVId, ObjectId> & id_correspondences = inputs.get<std::map<ObjectOpenCVId, ObjectId> >(
             "id_correspondences");
-        std::map<ObjectId, float> spans = inputs.get<std::map<ObjectId, float> >("spans");
+        const std::map<ObjectId, float> & spans = inputs.get<std::map<ObjectId, float> >("spans");
+
+        const cv::Mat & initial_image= inputs.get<cv::Mat>("image");
 
         // Get the outputs
-        std::vector<ObjectId> &object_ids = outputs.get<std::vector<ObjectId> > ("object_ids");
-        object_ids.clear();
-        std::vector<cv::Mat> &Rs = outputs.get<std::vector<cv::Mat> > ("Rs");
-        std::vector<cv::Mat> &Ts = outputs.get<std::vector<cv::Mat> > ("Ts");
-        Rs.clear();
-        Ts.clear();
+        std::vector<ObjectId> object_ids;
+        std::vector<cv::Mat> Rs, Ts;
 
         if (point_cloud.empty())
         {
@@ -325,43 +232,147 @@ namespace object_recognition
         }
         else
         {
-          // Use 3d to 3d matching
-
           // Cluster the matches per object ID
-          std::map<ObjectOpenCVId, pcl::PointCloud<pcl::PointXYZ> > query_point_clouds;
-          std::map<ObjectOpenCVId, pcl::PointCloud<pcl::PointXYZ> > training_point_clouds;
+          typedef std::map<ObjectOpenCVId, pcl::PointCloud<pcl::PointXYZ> > OpenCVIdToPointCloud;
+          OpenCVIdToPointCloud query_point_clouds;
+          OpenCVIdToPointCloud training_point_clouds;
+          std::map<ObjectOpenCVId, std::vector<unsigned int> > query_indices;
           std::vector<int> histo_count;
-          for (unsigned int descriptor_index = 0; descriptor_index < matches.size(); ++descriptor_index)
+          std::vector<cv::KeyPoint> draw_keypoints_1;
+          for (unsigned int query_index = 0; query_index < matches.size(); ++query_index)
           {
-            const cv::KeyPoint & keypoint = keypoints[descriptor_index];
-            cv::Vec3f point3f = point_cloud.at<cv::Vec3f> (keypoint.pt.y, keypoint.pt.x);
-            pcl::PointXYZ query_point = pcl::PointXYZ(point3f.val[0], point3f.val[1], point3f.val[2]);
+            // Figure out the 3d query point
+            pcl::PointXYZ query_point;
+            const cv::KeyPoint & keypoint = keypoints[query_index];
+            const cv::Vec3f &point3f = point_cloud.at<cv::Vec3f>(keypoint.pt.y, keypoint.pt.x);
+            query_point = pcl::PointXYZ(point3f.val[0], point3f.val[1], point3f.val[2]);
+            // Make sure it does not contain any NaN's
+            // We could have a solver that would consider Nan's as missing entries
+            if ((query_point.x != query_point.x) || (query_point.y != query_point.y)
+                || (query_point.z != query_point.z))
+              continue;
 
-            const std::vector<cv::DMatch> &local_matches = matches[descriptor_index];
-            const cv::Mat &local_matches_3d = matches_3d[descriptor_index];
+            const std::vector<cv::DMatch> &local_matches = matches[query_index];
+            const cv::Mat &local_matches_3d = matches_3d[query_index];
+            if (!local_matches.empty())
+              draw_keypoints_1.push_back(keypoint);
             // Get the matches for that point
             for (unsigned int match_index = 0; match_index < local_matches.size(); ++match_index)
             {
-              const cv::Vec3f & val = local_matches_3d.at<cv::Vec3f> (0, match_index);
+              const cv::Vec3f & val = local_matches_3d.at<cv::Vec3f>(0, match_index);
               pcl::PointXYZ training_point(val[0], val[1], val[2]);
 
               // Fill in the clouds
-              ObjectOpenCVId object_id = local_matches[match_index].imgIdx;
-              training_point_clouds[object_id].push_back(training_point);
-              query_point_clouds[object_id].push_back(query_point);
+              ObjectOpenCVId opencv_object_id = local_matches[match_index].imgIdx;
+              training_point_clouds[opencv_object_id].push_back(training_point);
+              query_point_clouds[opencv_object_id].push_back(query_point);
+              query_indices[opencv_object_id].push_back(query_index);
             }
           }
 
-          // For each object, perform 3d to 3d matching
-          for (std::map<ObjectOpenCVId, pcl::PointCloud<pcl::PointXYZ> >::const_iterator query_iterator =
-              query_point_clouds.begin(); query_iterator != query_point_clouds.end(); ++query_iterator)
-          {
-            ObjectOpenCVId object_opencv_id = query_iterator->first;
-            ObjectId object_id = id_correspondences[object_opencv_id];
-            cluster_clouds(training_point_clouds[object_opencv_id], query_point_clouds[object_opencv_id],
-                           spans[object_id], Rs, Ts);
-            object_ids.resize(Rs.size(), object_id); //fill in an object id for every new R and T found.
+          cv::Mat out_img;
+          cv::drawKeypoints(initial_image, draw_keypoints_1, out_img);
+          cv::namedWindow("keypoints on objects", 0);
+          cv::imshow("keypoints on objects", out_img);
+          cv::waitKey(1000);
+
+          // For each object, build the connectivity graph between the matches
+          typedef std::map<ObjectOpenCVId, object_recognition::maximum_clique::Graph> OpenCVIdToGraph;
+          OpenCVIdToGraph graphs;
+          for (OpenCVIdToPointCloud::const_iterator query_iterator = query_point_clouds.begin();
+              query_iterator != query_point_clouds.end(); ++query_iterator)
+              {
+            // Create a graph for that object
+            ObjectOpenCVId opencv_object_id = query_iterator->first;
+            object_recognition::maximum_clique::Graph graph(query_iterator->second.size());
+            //graphs.insert(std::make_pair(opencv_object_id, graph));
+
+            // Fill the connections for that graph
+            ObjectId object_id = id_correspondences.find(opencv_object_id)->second;
+            fill_connections(training_point_clouds[opencv_object_id], query_point_clouds[opencv_object_id],
+                             query_indices[opencv_object_id], spans.find(object_id)->second, graph);
+
+            /*cluster_clouds(training_point_clouds[opencv_object_id],
+             query_point_clouds[opencv_object_id], spans.find(object_id)->second,
+             Rs, Ts);
+             object_ids.resize(Rs.size(),object_id);
+             continue;*/
+            // Keep processing the graph until there is no maximum clique of the right size
+            while (true)
+            {
+              // Compute the maximum of clique of that graph
+              std::vector<unsigned int> maximum_clique;
+              graph.findMaximumClique(maximum_clique);
+              std::cout << "done finding max clique" << std::endl;
+
+              std::vector<cv::KeyPoint> draw_keypoints;
+              BOOST_FOREACH(int i, maximum_clique)
+                    draw_keypoints.push_back(keypoints[query_indices[opencv_object_id][i]]);
+              cv::Mat output_img;
+              cv::drawKeypoints(initial_image, draw_keypoints, output_img);
+              cv::namedWindow("max clique", 0);
+              cv::imshow("max clique", output_img);
+
+              if (maximum_clique.size() < min_inliers_)
+                break;
+
+              //check_clique(training_point_clouds[opencv_object_id], query_point_clouds[opencv_object_id],
+              //           query_indices[opencv_object_id], spans.find(object_id)->second, graph, maximum_clique);
+
+              // Perform RANSAC on it to find the best possible pose
+              std::vector<int> inliers;
+              pcl::PointCloud<pcl::PointXYZ>::Ptr training_cloud_ptr =
+                  training_point_clouds[opencv_object_id].makeShared();
+              pcl::PointCloud<pcl::PointXYZ>::Ptr query_cloud_ptr = query_point_clouds[opencv_object_id].makeShared();
+              std::vector<int> int_maximum_clique(maximum_clique.size());
+              std::copy(maximum_clique.begin(), maximum_clique.end(), int_maximum_clique.begin());
+              std::cout << "*** starting RANSAC" << std::endl;
+              Eigen::VectorXf coefficients = ransacy(training_cloud_ptr, query_cloud_ptr, int_maximum_clique, inliers);
+
+              // If no pose was found, forget about all the connections in that clique
+              std::cout << "*** n inliers: " << inliers.size() << " clique size " << int_maximum_clique.size()
+                        << std::endl;
+
+              if (inliers.size() < min_inliers_)
+              {
+                BOOST_FOREACH(int vertex, int_maximum_clique)
+                      graph.deleteEdges(vertex);
+                continue;
+              }
+
+              draw_keypoints.clear();
+              BOOST_FOREACH(int i, inliers)
+                    draw_keypoints.push_back(keypoints[query_indices[opencv_object_id][i]]);
+              cv::drawKeypoints(initial_image, draw_keypoints, output_img);
+              cv::namedWindow("inliers", 0);
+              cv::imshow("inliers", output_img);
+
+              // Check whether other matches could fit that model
+
+              // Store the pose
+              cv::Mat_<float> R_mat(3, 3), tvec(3, 1);
+              for (unsigned int j = 0; j < 3; ++j)
+              {
+                for (unsigned int i = 0; i < 3; ++i)
+                  R_mat(j, i) = coefficients[4 * j + i];
+                tvec(j, 0) = coefficients[4 * j + 3];
+              }
+              Rs.push_back(R_mat);
+              Ts.push_back(tvec);
+              object_ids.push_back(object_id);
+              std::cout << R_mat << std::endl;
+              std::cout << tvec << std::endl;
+
+              // Remove all the inliers from the graph
+              BOOST_FOREACH(int vertex, inliers)
+                    graph.deleteEdges(vertex);
+              break;
+            }
           }
+          outputs["Rs"] << Rs;
+          outputs["Ts"] << Ts;
+          outputs["object_ids"] << object_ids;
+          std::cout << "********************* found " << object_ids.size() << "poses" << std::endl;
         }
 
         return 0;
@@ -376,5 +387,4 @@ namespace object_recognition
 }
 
 ECTO_CELL(tod_detection, object_recognition::tod::GuessGenerator, "GuessGenerator",
-    "Given descriptors and 3D positions, compute object guesses.")
-;
+          "Given descriptors and 3D positions, compute object guesses.");

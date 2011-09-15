@@ -3,6 +3,7 @@ ectomodule(tod_detection
   DescriptorMatcher.cpp
   GuessGenerator.cpp
   module.cpp
+  impl/maximum_clique.cpp
   )
 
 link_ecto(tod_detection
