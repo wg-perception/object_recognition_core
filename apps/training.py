@@ -1,16 +1,16 @@
 #!/usr/bin/env python
+import os
+import string
+import sys
+import time
 import couchdb
-from object_recognition import dbtools
+from object_recognition import dbtools, models
 from ecto_object_recognition import capture, tod_training
 from ecto_opencv import highgui, cv_bp as opencv, calib, imgproc, features2d
 from object_recognition.tod.feature_descriptor import FeatureDescriptor
 from object_recognition.tod.trainer import Trainer as TodTrainer
 from argparse import ArgumentParser
 import ecto
-import os
-import string
-import sys
-import time
 from object_recognition.common.utils import json_helper
 
 DEBUG = False
@@ -45,19 +45,23 @@ if __name__ == '__main__':
 
     # initialize the DB
     couch = couchdb.Server(db_url)
-    dbtools.init_object_databases(couch)
+    dbs = dbtools.init_object_databases(couch)
 
     object_ids = json_params['object_ids']
     for object_id in object_ids:
         object_id = object_id.encode('ascii')
-        db_reader = capture.ObservationReader("db_reader", db_url=db_url, object_id=object_id)
+        db_reader = capture.ObservationReader("db_reader", db_url=db_url)
+        obs_ids = models.find_all_observations_for_object(dbs['observations'], object_id)
+
+        observation_dealer = ecto.Dealer(typer=db_reader.inputs.at('observation'), iterable=obs_ids)
 
         # connect the visualization
         plasm = ecto.Plasm()
 
         # connect to the model computation
         tod_model = TodTrainer(plasm, json_params['tod'], DISPLAY)
-        plasm.connect(db_reader['image', 'mask', 'depth', 'K', 'R', 'T'] >> tod_model['image', 'mask', 'depth', 'K', 'R', 'T'])
+        plasm.connect(observation_dealer[:] >> db_reader['observation'],
+            db_reader['image', 'mask', 'depth', 'K', 'R', 'T'] >> tod_model['image', 'mask', 'depth', 'K', 'R', 'T'])
 
         # persist to the DB
         _db_writer = tod_training.ModelInserter("db_writer", collection_models='models',

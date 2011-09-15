@@ -76,8 +76,8 @@ namespace object_recognition
       o["depth"] << obs.depth;
       o["mask"] << obs.mask;
       o["R"] << obs.R;
-      o["K"] << obs.T;
-      o["T"] << obs.K;
+      o["T"] << obs.T;
+      o["K"] << obs.K;
       o["frame_number"] << obs.frame_number;
     }
 

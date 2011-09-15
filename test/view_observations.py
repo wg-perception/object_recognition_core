@@ -34,7 +34,6 @@ if len(obs_ids) == 0:
 db_reader = capture.ObservationReader('db_reader', db_url=db_url, collection='observations')
 #observation dealer will deal out each observation id.
 observation_dealer = ecto.Dealer(typer=db_reader.inputs.at('observation'), iterable=obs_ids)
-db_reader = capture.ObservationReader('db_reader', db_url=db_url, collection='observations')
 fps = highgui.FPSDrawer('FPS drawer')
 plasm = ecto.Plasm()
 #View all of the observations.

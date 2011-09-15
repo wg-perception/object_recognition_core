@@ -136,6 +136,20 @@ def find_all_observations_for_session(observation_collection, session_id):
     obs_ids = zip(*sorted(obs_tuples, key=lambda obs: obs[0]))[1]
     return obs_ids
 
+def find_all_observations_for_object(observation_collection, object_id):
+    ''' Finds all of the observations associated with an object, and returns a list
+    of their ids. These are sorted by the frame number,
+    so they should be in chronological ordering.
+    '''
+    #run the view, keyed on the session id.
+    results = Observation.by_object_id(observation_collection, key=object_id)
+    if len(results) == 0 : return []
+    #create a list of tuples, so that they can be sorted by frame number
+    obs_tuples = [ (obs.frame_number, obs.id) for obs in results]
+    # sort by frame_number, helps preserve chronological order
+    obs_ids = zip(*sorted(obs_tuples, key=lambda obs: obs[0]))[1]
+    return obs_ids
+
 if __name__ == "__main__":
     couch = couchdb.Server(DEFAULT_SERVER_URL)
     dbs = init_object_databases(couch)
