@@ -17,4 +17,4 @@ target_link_libraries(or-db-test
   object_recognition_db
   )
 
-add_test(or_db_gunit_tests ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/or-db-test)
+add_test(object_recognition_db_tests ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/or-db-test)
