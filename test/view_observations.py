@@ -20,13 +20,16 @@ db_url = dbtools.DEFAULT_SERVER_URL
 #database ritual
 couch = couchdb.Server(db_url)
 dbs = dbtools.init_object_databases(couch)
-models.sync_models(dbs)
 sessions = dbs['sessions']
 observations = dbs['observations']
 results = models.Session.all(sessions)
 obs_ids = []
+
 for session in results:
     obs_ids += models.find_all_observations_for_session(observations, session.id)
+
+if len(obs_ids) == 0:
+    raise RuntimeError("There are no observations available.")
 
 db_reader = capture.ObservationReader('db_reader', db_url=db_url, collection='observations')
 #observation dealer will deal out each observation id.

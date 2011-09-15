@@ -1,5 +1,4 @@
 DEFAULT_SERVER_URL = 'http://localhost:5984'
-
 def create_db(db_name, couch):
     ''' Create and return a handle to the specified couch db database.
     Will attempt to find the existing db,
@@ -20,6 +19,9 @@ def init_object_databases(couch):
                models=create_db('models', couch),
                meshes=create_db('meshes', couch),
                )
+    import models
+    models.sync_models(dbs)
+
     return dbs
 
 def add_db_options(parser):

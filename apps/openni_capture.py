@@ -35,10 +35,10 @@ object sparsely, depending on the delta setting.'''),
                         default=False, help='Preview the pose estimator.')
     parser.add_argument('--use_turn_table', dest='use_turn_table', action='store_true',
                         default=False, help='Use an E106 servo based turntable.')
-    from ecto.opts import scheduler_options,cell_options
+    from ecto.opts import scheduler_options, cell_options
     from ecto_opencv.calib import PlanarSegmentation
-    segmentation_factory = cell_options(parser,PlanarSegmentation,'seg')
-  
+    segmentation_factory = cell_options(parser, PlanarSegmentation, 'seg')
+
     #add ecto scheduler args.
     group = parser.add_argument_group('ecto scheduler options')
     scheduler_options(group, default_scheduler='Singlethreaded')
