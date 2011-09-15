@@ -33,18 +33,6 @@
  *
  */
 
-#include <fstream>
-#include <iostream>
-#include <list>
-#include <string>
-#include <set>
-#include <vector>
-#include <queue>
-#include <stdio.h>
-#include <stdlib.h>
-#include <math.h>
-using namespace std;
-
 #include <boost/foreach.hpp>
 
 #include "maximum_clique.h"
@@ -53,27 +41,34 @@ namespace object_recognition
 {
   namespace maximum_clique
   {
+    /** Returns true if any element in B is a neighbor of in_vertex
+     * @param in_vertex
+     * @param vertices
+     * @return
+     */
     bool
-    Graph::IsIntersecting(Vertex p, const Vertices &B)
+    Graph::IsIntersecting(Vertex in_vertex, const Vertices &vertices)
     {
-      BOOST_FOREACH(Vertex vertex, B)
-            if (e_(p, vertex))
+      BOOST_FOREACH(Vertex vertex, vertices)
+            if (e_(in_vertex, vertex))
               return true;
       return false;
     }
 
+    /** Returns true if any element in B is a neighbor of in_vertex
+     * but also the set of corresponding enighbors
+     * @param in_vertex
+     * @param vertices
+     * @param intersection
+     * @return
+     */
     bool
-    Graph::Intersection(Vertex p, const Vertices & B, Vertices &C)
+    Graph::Intersection(Vertex p, const Vertices & vertices, Vertices &intersection)
     {
-      /*
-       return 1 if intersection of A and B is not empty
-       return 0 if there are no elements in common to A and B
-       in C we return the intersecting elements
-       */
-      BOOST_FOREACH(Vertex vertex, B)
+      BOOST_FOREACH(Vertex vertex, vertices)
             if (e_(p, vertex))
-              C.push_back(vertex);
-      return !C.empty();
+              intersection.push_back(vertex);
+      return !intersection.empty();
     }
 
     void
@@ -116,11 +111,11 @@ namespace object_recognition
     {
       unsigned int R_size = R.size();
       std::vector<std::pair<Vertex, unsigned int> > degrees(R.size());
-      for (unsigned int i = 0; i < R_size; i++)
+      for (unsigned int i = 0; i < R_size; ++i)
       {
         degrees[i].first = R[i];
         degrees[i].second = 0;
-        for (unsigned int j = 0; j < i; j++)
+        for (unsigned int j = 0; j < i; ++j)
           if (e_(R[i], R[j]))
           {
             degrees[i].second++;
@@ -136,8 +131,8 @@ namespace object_recognition
     }
 
     void
-    Graph::MaxCliqueDyn(Vertices & R, const Colors &C, int level, Vertices &QMax, Vertices &Q,
-                        std::vector<unsigned int> &S, std::vector<unsigned int> &SOld)
+    Graph::MaxCliqueDyn(Vertices & R, Colors &C, int level, Vertices &QMax, Vertices &Q, std::vector<unsigned int> &S,
+                        std::vector<unsigned int> &SOld)
     {
       S[level] = S[level] + S[level - 1] - SOld[level];
       SOld[level] = S[level - 1];
@@ -145,18 +140,21 @@ namespace object_recognition
       while (!R.empty())
       {
         Vertex p = R.back();
-        if (Q.size() + C.back() > QMax.size())
+        Color c = C.back();
+        R.pop_back();
+        C.pop_back();
+        if (Q.size() + c > QMax.size())
         {
           Q.push_back(p);
           Vertices Rp;
           if (Intersection(p, R, Rp))
           {
-            if ((double) S[level] / pk_ < num_level_)
+            if ((double) S[level] / all_steps_ < t_limit_)
               DegreeSort(Rp);
             Colors Cp;
             ColorSort(Rp, Cp, QMax, Q);
             ++S[level];
-            ++pk_;
+            ++all_steps_;
             MaxCliqueDyn(Rp, Cp, level + 1, QMax, Q, S, SOld);
           }
           else if (Q.size() > QMax.size())
@@ -164,50 +162,46 @@ namespace object_recognition
           Q.pop_back();
         }
         else
-        {
           return;
-        }
-        R.pop_back();
       }
     }
 
     void
     Graph::findMaximumClique(std::vector<unsigned int> &max_clique)
     {
-      pk_ = 0;
-      num_level_ = 0.025;
-      Vertices QMax;
-      Vertices Q;
+      all_steps_ = 0;
+      t_limit_ = 0.025;
 
-      Vertices V;
+      Vertices R(n_vertices_);
       for (unsigned int i = 0; i < n_vertices_; ++i)
-        V.push_back(i);
-      std::sort(V.begin(), V.end(), RCCompare(E_));
+        R[i] = i;
+      std::sort(R.begin(), R.end(), RCCompare(E_));
 
-      unsigned int max_degree = E_[V[0]].size();
+      unsigned int max_degree = E_[R[0]].size();
       Colors C(n_vertices_);
       for (unsigned int i = 0; i < max_degree; i++)
         C[i] = i + 1;
       for (unsigned int i = max_degree; i < n_vertices_; i++)
         C[i] = max_degree + 1;
 
+      Vertices QMax, Q;
       std::vector<unsigned int> S(n_vertices_, 0), SOld(n_vertices_, 0);
-      MaxCliqueDyn(V, C, 1, QMax, Q, S, SOld);
+      MaxCliqueDyn(R, C, 1, QMax, Q, S, SOld);
 
       BOOST_FOREACH(Vertex vertex, QMax)
             max_clique.push_back(vertex);
 
       // Check that the clique is valid
       /*int count = 0;
-      for (unsigned int i = 0; i < max_clique.size(); ++i)
-        for (unsigned int j = i + 1; j < max_clique.size(); ++j)
-          if (!e_(max_clique[i], max_clique[j]))
-          {
-            ++count;
-            std::cout << max_clique[i] << " " << max_clique[j] << std::endl;
-          }
-      if (count > 0)
-        std::cerr << count << " are bad out of " << max_clique.size() << std::endl;*/
+       for (unsigned int i = 0; i < max_clique.size(); ++i)
+       for (unsigned int j = i + 1; j < max_clique.size(); ++j)
+       if (!e_(max_clique[i], max_clique[j]))
+       {
+       ++count;
+       std::cout << max_clique[i] << " " << max_clique[j] << std::endl;
+       }
+       if (count > 0)
+       std::cerr << count << " are bad out of " << max_clique.size() << std::endl;*/
     }
 
     Graph::Graph(unsigned int vertex_number)

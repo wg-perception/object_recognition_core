@@ -51,7 +51,6 @@ namespace object_recognition
       /** Add an edge to the graph */
       void
       addEdge(Vertex vertex_1, Vertex vertex_2);
-
       /** Given a vertex, delete all the edges containing it */
       void
       deleteEdges(unsigned int vertex);
@@ -59,7 +58,6 @@ namespace object_recognition
       deleteEdge(Vertex vertex_1, Vertex vertex_2);
       void
       findMaximumClique(std::vector<unsigned int> &max_clique);
-
     private:
       typedef std::vector<unsigned int> Neighbors;
       typedef unsigned int Color;
@@ -100,7 +98,7 @@ namespace object_recognition
       void
       DegreeSort(Vertices & R);
       void
-      MaxCliqueDyn(Vertices & R, const Colors &C, int level, Vertices &QMax, Vertices &Q,
+      MaxCliqueDyn(Vertices & R, Colors &C, int level, Vertices &QMax, Vertices &Q,
              std::vector<unsigned int> &S, std::vector<unsigned int> &SOld);
 
       /** The list of edges per vertex */
@@ -110,9 +108,8 @@ namespace object_recognition
       /** The number of vertices in the graph */
       unsigned int n_vertices_;
 
-
-      int pk_;
-      double num_level_;
+      int all_steps_;
+      double t_limit_;
     };
   }
 }
