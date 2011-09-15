@@ -5,8 +5,10 @@
 #include <boost/format.hpp>
 #include <string>
 
-#include "object_recognition/db/db.h"
-#include "object_recognition/db/opencv.h"
+#include <object_recognition/db/db.h>
+#include <object_recognition/db/opencv.h>
+
+#include <object_recognition/db/models/observations.hpp>
 
 using ecto::tendrils;
 
@@ -14,13 +16,16 @@ namespace object_recognition
 {
   namespace capture
   {
-    struct Observation
+    void
+    Observation::declare(ecto::tendrils& t, bool required)
     {
-      cv::Mat K, R, T, image, depth, mask;
-      std::string object_id, session_id;
-      int frame_number;
-    };
-
+      t.declare<cv::Mat>("image", "An rgb full frame image.").required(true);
+      t.declare<cv::Mat>("depth", "The 16bit depth image.").required(true);
+      t.declare<cv::Mat>("mask", "The mask.").required(true);
+      t.declare<cv::Mat>("R", "The orientation.").required(true);
+      t.declare<cv::Mat>("T", "The translation.").required(true);
+      t.declare<cv::Mat>("K", "The camera intrinsic matrix").required(true);
+    }
     void
     operator>>(Observation& o, db_future::Document& doc)
     {

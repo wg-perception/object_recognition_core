@@ -4,8 +4,9 @@
 #include <boost/format.hpp>
 #include <string>
 
-#include "object_recognition/db/db.h"
-#include "object_recognition/db/opencv.h"
+#include <object_recognition/db/db.h>
+#include <object_recognition/db/opencv.h>
+#include <object_recognition/db/models/observations.hpp>
 
 #define DEFAULT_COUCHDB_URL "http://localhost:5984"
 
@@ -26,13 +27,7 @@ namespace object_recognition
       static void
       declare_io(const tendrils& params, tendrils& inputs, tendrils& outputs)
       {
-        inputs.declare<cv::Mat>("image", "An rgb full frame image.");
-        inputs.declare<cv::Mat>("depth", "The 16bit depth image.");
-        inputs.declare<cv::Mat>("mask", "The mask.");
-        inputs.declare<cv::Mat>("R", "The orientation.");
-        inputs.declare<cv::Mat>("T", "The translation.");
-        inputs.declare<cv::Mat>("K", "The camera intrinsic matrix");
-        inputs.declare<bool>("found", "Whether or not the R|T is valid.", false);
+        Observation::declare(inputs,true);//required
       }
       ObservationInserter()
           :
@@ -55,6 +50,7 @@ namespace object_recognition
       void
       configure(const tendrils& params, const tendrils& inputs,const tendrils& outputs)
       {
+        db_future::ObjectDb db()
 //        db = couch::Db(params.get<std::string>("db_url") + "/observations");
 //        db.create();
 //        ecto::spore<std::string> object_id = params["object_id"];

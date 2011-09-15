@@ -43,7 +43,7 @@
 #include <boost/archive/binary_oarchive.hpp>
 #include <boost/property_tree/ptree.hpp>
 
-#include "utils.h"
+#include <object_recognition/db/utils.h>
 
 namespace object_recognition
 {
@@ -58,7 +58,6 @@ namespace object_recognition
     {
     public:
       static const std::string JSON_PARAMS_EMPTY_DB;
-
       /** Constructor
        * @param params a JSON string containing the parameters for the DB. Depending on the type of DB, it should have the
        * following formatting:
