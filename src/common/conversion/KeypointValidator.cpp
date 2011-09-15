@@ -82,7 +82,7 @@ namespace
       int width = mask.cols, height = mask.rows;
       BOOST_FOREACH(cv::KeyPoint & keypoint, keypoints)
           {
-            unsigned int x = roundWithinBounds(keypoint.pt.x, 0, width), y = roundWithinBounds(keypoint.pt.x, 0,
+            unsigned int x = roundWithinBounds(keypoint.pt.x, 0, width), y = roundWithinBounds(keypoint.pt.y, 0,
                                                                                                height);
             if (mask(y, x))
             {
