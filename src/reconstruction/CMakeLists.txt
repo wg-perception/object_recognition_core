@@ -7,14 +7,18 @@ message(STATUS "pcl could not be found, so not building surfels.")
 return()
 endif()
 
+find_package(ecto_pcl REQUIRED)
+include_directories(${ecto_pcl_INCLUDE_DIRS})
+
 #deal with the objcog module
 ectomodule(reconstruction
   module.cpp
   surfel_conversion.cpp
   surfels.cpp
-  SurfelReconstruction.cpp
   reconstruction_db.cpp
-  SimpleReconstruction.cpp
+  SurfelReconstruction.cpp
+  PointCloudTransform.cpp
+  PointCloudAccumulator.cpp
   )
 
 set_target_properties(reconstruction_ectomodule

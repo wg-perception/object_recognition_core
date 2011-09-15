@@ -51,11 +51,10 @@ namespace object_recognition
 
       cv::Mat valid_mask = *depth_in == 0;
       depth.setTo(NAN, valid_mask); //set all non valid points in the depth to NAN.
-
       //resize into the subregion of the correct aspect ratio
       cv::Mat subregion(output.rowRange(0, dsize.height * factor));
-      //use cubic or better interpolation
-      cv::resize(depth, subregion, subregion.size(), CV_INTER_CUBIC);
+      //use nearest neighbor to prevent discontinuities causing bogus depth.
+      cv::resize(depth, subregion, subregion.size(), CV_INTER_NN);
       *depth_out = output;
       return ecto::OK;
     }
