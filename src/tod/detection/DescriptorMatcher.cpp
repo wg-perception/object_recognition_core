@@ -223,8 +223,7 @@ namespace object_recognition
         // TODO remove matches that match the same (common descriptors)
 
         // Build the 3D positions of the matches
-        std::vector<cv::Mat> &matches_3d = outputs.get<std::vector<cv::Mat> >("matches_3d");
-        matches_3d.resize(descriptors.rows);
+        std::vector<cv::Mat> matches_3d(descriptors.rows);
 
         for (int match_index = 0; match_index < descriptors.rows; ++match_index)
         {
@@ -238,6 +237,7 @@ namespace object_recognition
               }
         }
 
+        outputs["matches_3d"] << matches_3d;
         outputs["spans"] << spans_;
         outputs["id_correspondences"] << id_correspondences_;
 
