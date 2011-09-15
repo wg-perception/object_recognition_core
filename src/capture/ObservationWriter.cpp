@@ -7,14 +7,17 @@
 #include <object_recognition/db/db.h>
 #include <object_recognition/db/opencv.h>
 #include <object_recognition/db/models/observations.hpp>
+#include <object_recognition/db/parameters/couch.hpp>
 
 #define DEFAULT_COUCHDB_URL "http://localhost:5984"
-
 using ecto::tendrils;
+
 namespace object_recognition
 {
   namespace capture
   {
+    using db_future::Document;
+    using db_future::ObjectDb;
     struct ObservationInserter
     {
       static void
@@ -27,7 +30,7 @@ namespace object_recognition
       static void
       declare_io(const tendrils& params, tendrils& inputs, tendrils& outputs)
       {
-        Observation::declare(inputs,true);//required
+        Observation::declare(inputs, true); //required
       }
       ObservationInserter()
           :
@@ -48,44 +51,33 @@ namespace object_recognition
         frame_number = 0;
       }
       void
-      configure(const tendrils& params, const tendrils& inputs,const tendrils& outputs)
+      configure(const tendrils& params, const tendrils& inputs, const tendrils& outputs)
       {
-        db_future::ObjectDb db()
-//        db = couch::Db(params.get<std::string>("db_url") + "/observations");
-//        db.create();
-//        ecto::spore<std::string> object_id = params["object_id"];
-//        object_id.set_callback(boost::bind(&ObservationInserter::on_object_id_change, this, _1));
-//        ecto::spore<std::string> session_id = params["session_id"];
-//        session_id.set_callback(boost::bind(&ObservationInserter::on_session_id_change, this, _1));
+        std::string url;
+        params["db_url"] >> url;
+        db = ObjectDb(db_future::parameters::CouchDB(url));
+        ecto::spore<std::string> object_id = params["object_id"];
+        object_id.set_callback(boost::bind(&ObservationInserter::on_object_id_change, this, _1));
+        ecto::spore<std::string> session_id = params["session_id"];
+        session_id.set_callback(boost::bind(&ObservationInserter::on_session_id_change, this, _1));
       }
       int
-      process(const tendrils& inputs,const tendrils& outputs)
+      process(const tendrils& inputs, const tendrils& outputs)
       {
-//        if (inputs.get<bool>("found") == false)
-//          return 0;
-//        std::cout << "Inserting frame: " << frame_number << std::endl;
-//        Observation obj;
-//        obj.image = inputs.get<cv::Mat>("image");
-//        obj.depth = inputs.get<cv::Mat>("depth");
-//        if (obj.depth.depth() == CV_32F)
-//        {
-//          obj.depth.clone().convertTo(obj.depth, CV_16UC1, 1000);
-//        }
-//        obj.mask = inputs.get<cv::Mat>("mask");
-//        obj.R = inputs.get<cv::Mat>("R");
-//        obj.T = inputs.get<cv::Mat>("T");
-//        obj.K = inputs.get<cv::Mat>("K");
-//        obj.frame_number = frame_number;
-//        obj.object_id = object_id;
-//        obj.session_id = session_id;
-//        couch::Document doc(db);
-//        doc.create();
-//        obj >> doc;
-        frame_number++;
+        std::cout << "Inserting frame: " << frame_number << std::endl;
+        Observation obs;
+        obs << inputs;
+        obs.frame_number = frame_number++;
+        obs.object_id = object_id;
+        obs.session_id = session_id;
+        Document doc(db, "observations");
+        obs >> doc;
+        doc.Persist();
         return ecto::OK;
       }
       int frame_number;
       std::string object_id, session_id;
+      db_future::ObjectDb db;
     };
   }
 }

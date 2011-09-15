@@ -19,12 +19,12 @@ namespace object_recognition
     void
     Observation::declare(ecto::tendrils& t, bool required)
     {
-      t.declare<cv::Mat>("image", "An rgb full frame image.").required(true);
-      t.declare<cv::Mat>("depth", "The 16bit depth image.").required(true);
-      t.declare<cv::Mat>("mask", "The mask.").required(true);
-      t.declare<cv::Mat>("R", "The orientation.").required(true);
-      t.declare<cv::Mat>("T", "The translation.").required(true);
-      t.declare<cv::Mat>("K", "The camera intrinsic matrix").required(true);
+      t.declare<cv::Mat>("image", "An rgb full frame image.").required(required);
+      t.declare<cv::Mat>("depth", "The 16bit depth image.").required(required);
+      t.declare<cv::Mat>("mask", "The mask.").required(required);
+      t.declare<cv::Mat>("R", "The orientation.").required(required);
+      t.declare<cv::Mat>("T", "The translation.").required(required);
+      t.declare<cv::Mat>("K", "The camera intrinsic matrix").required(required);
     }
     void
     operator>>(Observation& o, db_future::Document& doc)
@@ -72,24 +72,28 @@ namespace object_recognition
     void
     operator>>(Observation& obs, const ecto::tendrils& o)
     {
-      o.get<cv::Mat>("image") = obs.image;
-      o.get<cv::Mat>("mask") = obs.mask;
-      o.get<cv::Mat>("depth") = obs.depth;
-      o.get<cv::Mat>("R") = obs.R;
-      o.get<cv::Mat>("T") = obs.T;
-      o.get<cv::Mat>("K") = obs.K;
-      o.get<int>("frame_number") = obs.frame_number;
+      o["image"] << obs.image;
+      o["depth"] << obs.depth;
+      o["mask"] << obs.mask;
+      o["R"] << obs.R;
+      o["K"] << obs.T;
+      o["T"] << obs.K;
+      o["frame_number"] << obs.frame_number;
     }
+
     void
     operator<<(Observation& obs, const ecto::tendrils& i)
     {
       i["image"] >> obs.image;
       i["mask"] >> obs.mask;
       i["depth"] >> obs.depth;
+      if (obs.depth.depth() == CV_32F)
+      {
+        obs.depth.clone().convertTo(obs.depth, CV_16UC1, 1000);
+      }
       i["R"] >> obs.R;
       i["T"] >> obs.T;
       i["K"] >> obs.K;
-      i["frame_number"] >> obs.frame_number;
     }
 
   }

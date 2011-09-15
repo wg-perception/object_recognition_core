@@ -175,6 +175,7 @@ namespace curl
       headers_ = 0;
       curl_easy_setopt(curl_, CURLOPT_HEADERFUNCTION, &writer::cb);
       curl_easy_setopt(curl_, CURLOPT_HEADERDATA, &header_writer_);
+      curl_easy_setopt(curl_, CURLOPT_CONNECTTIMEOUT,5);
     }
 
     int

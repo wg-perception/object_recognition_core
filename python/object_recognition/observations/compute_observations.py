@@ -89,7 +89,6 @@ def connect_observation_calc_with_mask_pose(sync, commit, object_id, session_id,
 
     if commit:
         db_inserter = capture.ObservationInserter("db_inserter", object_id=object_id, session_id=session_id)
-        db_inserter.inputs.found = True
         plasm.connect(depth[:] >> db_inserter['depth'],
                   pose['R', 'T'] >> db_inserter['R', 'T'],
                   mask[:] >> db_inserter['mask'],
