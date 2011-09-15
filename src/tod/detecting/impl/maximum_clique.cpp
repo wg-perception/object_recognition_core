@@ -42,20 +42,6 @@ namespace object_recognition
   namespace maximum_clique
   {
     /** Returns true if any element in B is a neighbor of in_vertex
-     * @param in_vertex
-     * @param vertices
-     * @return
-     */
-    bool
-    Graph::IsIntersecting(Vertex in_vertex, const Vertices &vertices)
-    {
-      BOOST_FOREACH(Vertex vertex, vertices)
-            if (e_(in_vertex, vertex))
-              return true;
-      return false;
-    }
-
-    /** Returns true if any element in B is a neighbor of in_vertex
      * but also the set of corresponding enighbors
      * @param in_vertex
      * @param vertices
@@ -79,15 +65,17 @@ namespace object_recognition
       std::vector<std::vector<unsigned int> > Ck(2);
 
       unsigned int j = 0;
+      unsigned int maxno = Ck.size();
       BOOST_FOREACH(Vertex p, R)
           {
             unsigned int k = 1;
             while (IsIntersecting(p, Ck[k]))
             {
               ++k;
-              if (k >= Ck.size())
+              if (k >= maxno)
               {
-                Ck.resize(Ck.size() + 1);
+                ++maxno;
+                Ck.resize(maxno);
                 break;
               }
             }
@@ -98,36 +86,39 @@ namespace object_recognition
       C.resize(R.size());
       if (j > 0)
         C[j - 1] = 0;
-      for (unsigned int k = min_k; k < Ck.size(); k++)
-        for (unsigned int i = 0; i < Ck[k].size(); i++)
-        {
-          R[j] = Ck[k][i];
-          C[j++] = k;
-        }
+      Vertices::iterator R_iter = R.begin() + j;
+      Colors::iterator C_iter = C.begin() + j;
+      for (unsigned int k = min_k; k < maxno; k++)
+      {
+        unsigned int Ck_size = Ck[k].size();
+        std::copy(Ck[k].begin(), Ck[k].end(), R_iter);
+        R_iter += Ck_size;
+        std::fill(C_iter, C_iter + Ck_size, k);
+        C_iter += Ck_size;
+      }
     }
 
     void
     Graph::DegreeSort(Vertices &R)
     {
       unsigned int R_size = R.size();
-      std::vector<std::pair<Vertex, unsigned int> > degrees(R.size());
+      std::vector<std::pair<unsigned int, Vertex> > degrees(R.size());
       for (unsigned int i = 0; i < R_size; ++i)
       {
-        degrees[i].first = R[i];
-        degrees[i].second = 0;
+        degrees[i] = std::make_pair(0, R[i]);
         for (unsigned int j = 0; j < i; ++j)
           if (e_(R[i], R[j]))
           {
-            degrees[i].second++;
-            degrees[j].second++;
+            degrees[i].first++;
+            degrees[j].first++;
           }
       }
       // Sort the vertices according to their degree
-      std::sort(degrees.begin(), degrees.end(), PairSorter());
+      std::sort(degrees.begin(), degrees.end());
 
       // Copy back to R in reverse
       for (unsigned int i = 0; i < R_size; i++)
-        R[i] = degrees[R_size - 1 - i].first;
+        R[i] = degrees[R_size - 1 - i].second;
     }
 
     void
@@ -155,6 +146,8 @@ namespace object_recognition
             ColorSort(Rp, Cp, QMax, Q);
             ++S[level];
             ++all_steps_;
+            if (all_steps_ > 1000)
+              return;
             MaxCliqueDyn(Rp, Cp, level + 1, QMax, Q, S, SOld);
           }
           else if (Q.size() > QMax.size())
@@ -173,11 +166,17 @@ namespace object_recognition
       t_limit_ = 0.025;
 
       Vertices R(n_vertices_);
-      for (unsigned int i = 0; i < n_vertices_; ++i)
-        R[i] = i;
-      std::sort(R.begin(), R.end(), RCCompare(E_));
+      {
+        std::vector<std::pair<unsigned int, Vertex> > R_count(n_vertices_);
+        for (unsigned int i = 0; i < n_vertices_; ++i)
+          R_count[i] = std::make_pair(cv::countNonZero(e_.row(i)), i);
+        std::sort(R_count.begin(), R_count.end());
 
-      unsigned int max_degree = E_[R[0]].size();
+        for (unsigned int i = 0; i < n_vertices_; ++i)
+          R[i] = R_count[i].second;
+      }
+
+      unsigned int max_degree = cv::countNonZero(e_.row(R[0]));
       Colors C(n_vertices_);
       for (unsigned int i = 0; i < max_degree; i++)
         C[i] = i + 1;
@@ -206,15 +205,12 @@ namespace object_recognition
 
     Graph::Graph(unsigned int vertex_number)
     {
-      E_.resize(vertex_number);
       e_ = cv::Mat_<uchar>::zeros(vertex_number, vertex_number);
       n_vertices_ = vertex_number;
     }
     void
     Graph::addEdge(unsigned int vertex_1, unsigned int vertex_2)
     {
-      E_[vertex_1].push_back(vertex_2);
-      E_[vertex_2].push_back(vertex_1);
       e_(vertex_1, vertex_2) = 1;
       e_(vertex_2, vertex_1) = 1;
     }
@@ -222,13 +218,8 @@ namespace object_recognition
     void
     Graph::deleteEdges(unsigned int in_vertex)
     {
-      BOOST_FOREACH(int vertex, E_[in_vertex])
-          {
-            e_(vertex, in_vertex) = 0;
-            e_(in_vertex, vertex) = 0;
-            std::remove(E_[vertex].begin(), E_[vertex].end(), in_vertex);
-          }
-      E_[in_vertex].clear();
+      e_.col(in_vertex).setTo(cv::Scalar(0));
+      e_.row(in_vertex).setTo(cv::Scalar(0));
     }
     /** Given a vertex, delete all the edges containing it */
     void
@@ -236,8 +227,6 @@ namespace object_recognition
     {
       e_(vertex_1, vertex_2) = 0;
       e_(vertex_2, vertex_1) = 0;
-      std::remove(E_[vertex_1].begin(), E_[vertex_1].end(), vertex_2);
-      std::remove(E_[vertex_2].begin(), E_[vertex_2].end(), vertex_1);
     }
   }
 }
