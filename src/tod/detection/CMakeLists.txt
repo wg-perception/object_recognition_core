@@ -2,6 +2,7 @@
 ectomodule(tod_detection
   DescriptorMatcher.cpp
   GuessGenerator.cpp
+  ModelReader.cpp
   module.cpp
   impl/maximum_clique.cpp
   )
