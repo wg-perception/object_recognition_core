@@ -45,6 +45,8 @@ namespace object_recognition
   cvToCloud(const cv::Mat_<cv::Point3f>& points3d, pcl::PointCloud<PointT>& cloud, const cv::Mat& mask = cv::Mat())
   {
     cloud.clear();
+    cloud.width = points3d.size().width;
+    cloud.height = points3d.size().height;
     cv::Mat_<cv::Point3f>::const_iterator point_it = points3d.begin(), point_end = points3d.end();
     const bool has_mask = !mask.empty();
     cv::Mat_<uchar>::const_iterator mask_it;

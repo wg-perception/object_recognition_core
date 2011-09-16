@@ -3,6 +3,7 @@ ectomodule(conversion
   KeypointValidator.cpp
   PointCloudToDepthMat.cpp
   PointCloudToMat.cpp
+  MatToPointCloud.cpp
   )
 
 link_ecto(conversion

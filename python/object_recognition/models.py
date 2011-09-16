@@ -116,11 +116,50 @@ class Bag(Document):
         cls.all.sync(db)
         cls.by_object_id.sync(db)
 
+class Mesh(Document):
+    object_id = TextField()
+    session_id = TextField()
+
+    by_object_id = ViewField('observations', '''\
+        function(doc) {
+            emit(doc.object_id, doc)
+        }
+    ''')
+    by_session_id = ViewField('observations', '''\
+        function(doc) {
+            emit(doc.session_id, doc)
+        }
+    ''')
+
+    @classmethod
+    def sync(cls, db):
+        cls.by_session_id.sync(db)
+        cls.by_object_id.sync(db)
+
+class Model(Document):
+    object_id = TextField()
+    model_params = TextField()
+    by_object_id = ViewField('observations', '''\
+        function(doc) {
+            emit(doc.object_id, doc)
+        }
+    ''')
+    all = ViewField('sessions', '''\
+        function(doc) {
+            emit(null,doc)
+        }''')
+    @classmethod
+    def sync(cls, db):
+        cls.by_object_id.sync(db)
+        cls.all.sync(db)
+
 def sync_models(dbs):
     Bag.sync(dbs['bags'])
     Object.sync(dbs['objects'])
     Session.sync(dbs['sessions'])
     Observation.sync(dbs['observations'])
+    Model.sync(dbs['models'])
+    Mesh.sync(dbs['meshes'])
 
 def find_all_observations_for_session(observation_collection, session_id):
     ''' Finds all of the observations associated with a session, and returns a list
@@ -149,6 +188,14 @@ def find_all_observations_for_object(observation_collection, object_id):
     # sort by frame_number, helps preserve chronological order
     obs_ids = zip(*sorted(obs_tuples, key=lambda obs: obs[0]))[1]
     return obs_ids
+
+def find_tod_model_for_object(models_collection, object_id):
+    ''' Finds all of the tod models associated with the given object_id
+    '''
+    #run the view, keyed on the object id.
+    r = Model.by_object_id(models_collection, key=object_id)
+    if len(r) == 0 : return []
+    return [ m.id for m in r ]
 
 if __name__ == "__main__":
     couch = couchdb.Server(DEFAULT_SERVER_URL)

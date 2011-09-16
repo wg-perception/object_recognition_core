@@ -47,7 +47,7 @@ namespace object_recognition
       configure(const tendrils& params, const tendrils& inputs, const tendrils& outputs)
       {
         db_json_params_ = params["db_json_params"];
-        collection_models_ = params["collection_models"];
+        collection_ = params["collection"];
 
         db_ = db_future::ObjectDb(*db_json_params_);
       }
@@ -56,7 +56,7 @@ namespace object_recognition
       process(const tendrils& inputs, const tendrils& outputs)
       {
         const std::string & model_id = inputs.get<std::string>("model_id");
-        db_future::Document doc(db_, *collection_models_, model_id);
+        db_future::Document doc(db_, *collection_, model_id);
 
         cv::Mat points, descriptors;
         doc.get_attachment<cv::Mat>("points", points);
@@ -69,7 +69,7 @@ namespace object_recognition
         return ecto::OK;
       }
       object_recognition::db_future::ObjectDb db_;
-      ecto::spore<CollectionName> collection_models_;
+      ecto::spore<CollectionName> collection_;
       ecto::spore<std::string> db_json_params_;
     };
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -80,6 +80,7 @@ namespace object_recognition
       static void
       declare_params(tendrils& params)
       {
+        params.declare<boost::python::object>("model_ids", "The DB id of the model to load.");
         params.declare<std::string>("collection", "The collection where the models are stored.", "models");
         params.declare<std::string>("db_json_params", "std::string The DB parameters, cf. ObjectDb", "models").required(
             true);
@@ -88,7 +89,6 @@ namespace object_recognition
       static void
       declare_io(const tendrils& params, tendrils& inputs, tendrils& outputs)
       {
-        inputs.declare<boost::python::object>("model_ids", "The DB id of the model to load.");
         outputs.declare<std::vector<cv::Mat> >("points", "The 3d position of the points.");
         outputs.declare<std::vector<cv::Mat> >("descriptors", "The descriptors.");
       }
@@ -97,26 +97,25 @@ namespace object_recognition
       configure(const tendrils& params, const tendrils& inputs, const tendrils& outputs)
       {
         db_json_params_ = params["db_json_params"];
-        collection_models_ = params["collection_models"];
-
+        collection_ = params["collection"];
         db_ = db_future::ObjectDb(*db_json_params_);
+
+        const boost::python::object & python_object_ids = params.get<boost::python::object>("object_ids");
+        boost::python::stl_input_iterator<std::string> begin(python_object_ids), end;
+        std::copy(begin, end, std::back_inserter(model_ids_));
       }
 
       int
       process(const tendrils& inputs, const tendrils& outputs)
       {
         // Load the list of models to load
-        const boost::python::object & python_object_ids = inputs.get<boost::python::object>("object_ids");
-        boost::python::stl_input_iterator<std::string> begin(python_object_ids), end;
-        std::vector<ModelId> model_ids;
-        std::copy(begin, end, std::back_inserter(model_ids));
 
         std::vector<cv::Mat> point_vector, descriptor_vector;
         std::vector<std::string> object_ids;
 
-        BOOST_FOREACH(const ModelId & model_id, model_ids)
+        BOOST_FOREACH(const ModelId & model_id, model_ids_)
             {
-              db_future::Document doc(db_, *collection_models_, model_id);
+              db_future::Document doc(db_, *collection_, model_id);
 
               cv::Mat descriptors, points;
               doc.get_attachment<cv::Mat>("descriptors", descriptors);
@@ -134,8 +133,9 @@ namespace object_recognition
         return ecto::OK;
       }
       object_recognition::db_future::ObjectDb db_;
-      ecto::spore<CollectionName> collection_models_;
+      ecto::spore<CollectionName> collection_;
       ecto::spore<std::string> db_json_params_;
+      std::vector<ModelId> model_ids_;
     };
   }
 }
