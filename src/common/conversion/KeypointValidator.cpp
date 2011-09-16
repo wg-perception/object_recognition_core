@@ -41,6 +41,7 @@
 #include <ecto/ecto.hpp>
 
 #include <opencv2/core/core.hpp>
+#include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/features2d/features2d.hpp>
 
@@ -71,56 +72,67 @@ namespace
     int
     process(const tendrils& inputs, const tendrils& outputs)
     {
-      std::vector<cv::KeyPoint> keypoints = inputs.get<std::vector<cv::KeyPoint> >("keypoints");
+      const std::vector<cv::KeyPoint> & in_keypoints = inputs.get<std::vector<cv::KeyPoint> >("keypoints");
       const cv::Mat & in_mask = inputs.get<cv::Mat>("image");
+
       cv::Mat_<uchar> mask(in_mask.size());
       if (in_mask.depth() == (CV_8U))
         mask = in_mask;
       else
         in_mask.convertTo(mask, CV_8U);
+      // Erode just because of the possible rescaling
+      cv::erode(mask, mask, cv::Mat(), cv::Point(-1, -1), 3);
 
       int width = mask.cols, height = mask.rows;
-      BOOST_FOREACH(cv::KeyPoint & keypoint, keypoints)
+      std::vector<cv::KeyPoint> keypoints;
+      keypoints.reserve(in_keypoints.size());
+      cv::KeyPoint keypoint;
+      BOOST_FOREACH(const cv::KeyPoint & in_keypoint, in_keypoints)
           {
-            unsigned int x = roundWithinBounds(keypoint.pt.x, 0, width), y = roundWithinBounds(keypoint.pt.y, 0,
-                                                                                               height);
+            unsigned int x = roundWithinBounds(in_keypoint.pt.x, 0, width), y = roundWithinBounds(in_keypoint.pt.y, 0,
+                                                                                                  height);
+            bool is_good = false;
             if (mask(y, x))
             {
+              keypoint = in_keypoint;
               keypoint.pt.x = x;
               keypoint.pt.y = y;
-              continue;
+              is_good = true;
             }
-            bool is_good = false;
-            int window_size = 1;
-            float min_dist_sq = std::numeric_limits<float>::max();
-            // Look into neighborhoods of different sizes to see if we have a point in the mask
-            while (!is_good)
+            else
             {
+              int window_size = 2;
+              float min_dist_sq = std::numeric_limits<float>::max();
+              // Look into neighborhoods of different sizes to see if we have a point in the mask
               for (unsigned int i = roundWithinBounds(x - window_size, 0, width);
                   i <= roundWithinBounds(x + window_size, 0, width); ++i)
                 for (unsigned int j = roundWithinBounds(y - window_size, 0, height);
                     j <= roundWithinBounds(y + window_size, 0, height); ++j)
                   if (mask(j, i))
                   {
-                    float dist_sq = (i - keypoint.pt.x) * (i - keypoint.pt.x)
-                                    + (j - keypoint.pt.y) * (j - keypoint.pt.y);
+                    float dist_sq = (i - in_keypoint.pt.x) * (i - in_keypoint.pt.x)
+                                    + (j - in_keypoint.pt.y) * (j - in_keypoint.pt.y);
                     if (dist_sq < min_dist_sq)
                     {
                       // If the point is in the mask and the closest from the keypoint
+                      keypoint = in_keypoint;
                       keypoint.pt.x = i;
                       keypoint.pt.y = j;
                       min_dist_sq = dist_sq;
                       is_good = true;
                     }
                   }
-              ++window_size;
             }
+            if (is_good)
+              keypoints.push_back(keypoint);
           }
+
       outputs.get<std::vector<cv::KeyPoint> >("keypoints") = keypoints;
 
       return ecto::OK;
     }
-  };
+  }
+  ;
 }
 
 ECTO_CELL(conversion, KeypointsValidator, "KeypointsValidator",
