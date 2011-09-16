@@ -34,6 +34,7 @@
  */
 
 // inspired by KONC, Janez, JANEŽIČ, Dušanka. An improved branch and bound algorithm for the maximum clique problem
+#include <set>
 
 #include <opencv2/core/core.hpp>
 
@@ -60,37 +61,25 @@ namespace object_recognition
       void
       findMaximumClique(Vertices &max_clique);
     private:
-      typedef std::vector<unsigned int> Neighbors;
+      typedef std::set<Vertex> Neighbors;
       typedef unsigned int Color;
       typedef std::vector<Color> Colors;
 
-      struct RCCompare
+      /** Returns true if any element in B is a neighbor of in_vertex
+       * @param in_vertex
+       * @param vertices
+       * @return
+       */
+      inline bool
+      IsIntersecting(Vertex in_vertex, const Vertices &vertices)
       {
-        RCCompare(const std::vector<Neighbors> &E)
-            :
-              E_(E)
-        {
-        }
+        uchar * data = e_.ptr(in_vertex);
+        BOOST_FOREACH(Vertex vertex, vertices)
+        if (data[vertex])
+        return true;
+        return false;
+      }
 
-        bool
-        operator()(const Vertex & vertex_1, const Vertex & vertex_2) const
-        {
-          return (E_[vertex_1].size() > E_[vertex_2].size());
-        }
-        const std::vector<Neighbors> &E_;
-      };
-
-      struct PairSorter
-      {
-        bool
-        operator()(const std::pair<Vertex, unsigned int> &left, const std::pair<Vertex, unsigned int> &right)
-        {
-          return left.second < right.second;
-        }
-      };
-
-      bool
-      IsIntersecting(Vertex p, const Vertices &B);
       bool
       Intersection(Vertex p, const Vertices & B, Vertices &C);
       void
@@ -98,11 +87,9 @@ namespace object_recognition
       void
       DegreeSort(Vertices & R);
       void
-      MaxCliqueDyn(Vertices & R, Colors &C, int level, Vertices &QMax, Vertices &Q,
-             std::vector<unsigned int> &S, std::vector<unsigned int> &SOld);
+      MaxCliqueDyn(Vertices & R, Colors &C, int level, Vertices &QMax, Vertices &Q, std::vector<unsigned int> &S,
+                   std::vector<unsigned int> &SOld);
 
-      /** The list of edges per vertex */
-      std::vector<Neighbors> E_;
       /** Mask for the edges */
       cv::Mat_<uchar> e_;
       /** The number of vertices in the graph */

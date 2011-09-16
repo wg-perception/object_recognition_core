@@ -48,6 +48,7 @@
 #include <boost/archive/text_oarchive.hpp>
 #include <boost/archive/text_iarchive.hpp>
 #include <boost/property_tree/ptree.hpp>
+#include <boost/property_tree/json_parser.hpp>
 
 #include <boost/shared_ptr.hpp>
 
@@ -95,6 +96,18 @@ namespace object_recognition
       get_attachment_stream(const DocumentId & document_id, const CollectionName &collection,
                             const AttachmentName& attachment_name, const MimeType& mime_type, std::ostream& stream,
                             RevisionId & revision_id)=0;
+
+      virtual void
+      Status(std::string& status) = 0;
+
+      virtual void
+      Status(const CollectionName& collection, std::string& status) = 0;
+
+      virtual void
+      CreateCollection(const CollectionName &collection) = 0;
+
+      virtual void
+      DeleteCollection(const CollectionName &collection) = 0;
 
       virtual DbType
       type() = 0;

@@ -62,7 +62,7 @@ namespace object_recognition
         const std::vector<cv::Mat> & input_descriptors = inputs.get<std::vector<cv::Mat> >("descriptors");
         std::cout << "Inserting " << input_descriptors.size() << " images" << std::endl;
 
-        object_recognition::db_future::Document doc;
+        object_recognition::db_future::Document doc(db_, collection_models_);
 
         // Stack all the descriptors together
         unsigned int n_rows = 0;
@@ -101,7 +101,7 @@ namespace object_recognition
         doc.set_value("object_id", *object_id_);
         doc.set_value("model_params", params_);
         std::cout << "Persisting" << std::endl;
-        doc.Persist(db_, collection_models_);
+        doc.Persist();
 
         return ecto::OK;
       }

@@ -54,7 +54,6 @@
 #include <pcl/sample_consensus/sac_model_registration.h>
 
 #include "object_recognition/common/types.h"
-#include "opencv_candidate/PoseRT.h"
 #include "impl/maximum_clique.h"
 
 using ecto::tendrils;
@@ -168,21 +167,21 @@ namespace object_recognition
         pcl::RandomSampleConsensus<pcl::PointXYZ> sample_consensus(model);
         Eigen::VectorXf coefficients;
         model->setInputTarget(query_point_cloud, good_indices);
-        sample_consensus.setDistanceThreshold(0.03);
+        sample_consensus.setDistanceThreshold(0.02);
         sample_consensus.setMaxIterations(n_ransac_iterations_);
 
-        /*std::cout << '[';
+        /*std::cout << "a=[";
          BOOST_FOREACH(int i, good_indices) {
          const pcl::PointXYZ &training_point =training_point_cloud->points[i];
-         std::cout << training_point.x << "," << training_point.y << "," << training_point.z << ";" << std::endl;
+         std::cout << training_point.x << "," << training_point.y << "," << training_point.z << ";";
          }
-         std::cout << ']';
-         std::cout << '[';
+         std::cout << "];"  << std::endl << "b=";
+         std::cout << "[";
          BOOST_FOREACH(int i, good_indices) {
          const pcl::PointXYZ &query_point =query_point_cloud->points[i];
-         std::cout << query_point.x << "," << query_point.y << "," << query_point.z << ";" << std::endl;
+         std::cout << query_point.x << "," << query_point.y << "," << query_point.z << ";";
          }
-         std::cout << ']';*/
+         std::cout << "];";*/
 
         if (sample_consensus.computeModel())
         {
@@ -218,7 +217,7 @@ namespace object_recognition
             "id_correspondences");
         const std::map<ObjectId, float> & spans = inputs.get<std::map<ObjectId, float> >("spans");
 
-        const cv::Mat & initial_image= inputs.get<cv::Mat>("image");
+        const cv::Mat & initial_image = inputs.get<cv::Mat>("image");
 
         // Get the outputs
         std::vector<ObjectId> object_ids;
@@ -305,14 +304,6 @@ namespace object_recognition
               graph.findMaximumClique(maximum_clique);
               std::cout << "done finding max clique" << std::endl;
 
-              std::vector<cv::KeyPoint> draw_keypoints;
-              BOOST_FOREACH(int i, maximum_clique)
-                    draw_keypoints.push_back(keypoints[query_indices[opencv_object_id][i]]);
-              cv::Mat output_img;
-              cv::drawKeypoints(initial_image, draw_keypoints, output_img);
-              cv::namedWindow("max clique", 0);
-              cv::imshow("max clique", output_img);
-
               if (maximum_clique.size() < min_inliers_)
                 break;
 
@@ -335,10 +326,19 @@ namespace object_recognition
 
               if (inliers.size() < min_inliers_)
               {
-                BOOST_FOREACH(int vertex, int_maximum_clique)
-                      graph.deleteEdges(vertex);
+                for (unsigned int i = 0; i < int_maximum_clique.size(); ++i)
+                  for (unsigned int j = i + 1; j < int_maximum_clique.size(); ++j)
+                    graph.deleteEdge(int_maximum_clique[i], int_maximum_clique[j]);
                 continue;
               }
+
+              std::vector<cv::KeyPoint> draw_keypoints;
+              BOOST_FOREACH(int i, maximum_clique)
+                    draw_keypoints.push_back(keypoints[query_indices[opencv_object_id][i]]);
+              cv::Mat output_img;
+              cv::drawKeypoints(initial_image, draw_keypoints, output_img);
+              cv::namedWindow("max clique", 0);
+              cv::imshow("max clique", output_img);
 
               draw_keypoints.clear();
               BOOST_FOREACH(int i, inliers)

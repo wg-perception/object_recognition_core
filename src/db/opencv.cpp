@@ -5,7 +5,7 @@
 #include <boost/filesystem.hpp>
 #include <boost/foreach.hpp>
 
-#include "object_recognition/db/couch.hpp"
+//#include "object_recognition/db/couch.hpp"
 #include "object_recognition/db/opencv.h"
 
 namespace fs = boost::filesystem;
@@ -71,17 +71,17 @@ namespace object_recognition
     }
 
     void
-    png_attach(cv::Mat image, couch::Document& doc, const std::string& name)
+    png_attach(cv::Mat image, db_future::Document& doc, const std::string& name)
     {
       std::vector<uint8_t> buffer;
       std::stringstream ss;
       cv::imencode(".png", image, buffer);
       std::copy(buffer.begin(), buffer.end(), std::ostream_iterator<uint8_t>(ss));
-      doc.attach(name, ss, "image/png");
+      doc.set_attachment_stream(name,ss,"image/png");
     }
 
     void
-    get_png_attachment(cv::Mat& image, couch::Document& doc, const std::string& name)
+    get_png_attachment(cv::Mat& image, db_future::Document& doc, const std::string& name)
     {
       std::stringstream ss;
       doc.get_attachment_stream(name, ss);

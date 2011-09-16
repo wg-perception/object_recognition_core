@@ -36,14 +36,20 @@ def parse_args():
     return args
 
 
-def simple_mesh_session(session, args):
-    db_reader = capture.ObservationReader('db_reader', session_id=session.id)
+def simple_mesh_session(dbs, session, args):
+    obs_ids = models.find_all_observations_for_session(dbs['observations'], session.id)
+    if len(obs_ids) == 0:
+        raise RuntimeError("There are no observations available.")
+    db_reader = capture.ObservationReader('db_reader', db_url=args.db_root, collection='observations')
+    #observation dealer will deal out each observation id.
+    observation_dealer = ecto.Dealer(typer=db_reader.inputs.at('observation'), iterable=obs_ids)
     depthTo3d = calib.DepthTo3d()
     erode = imgproc.Erode(kernel=3) #-> 7x7
     rescale_depth = capture.RescaledRegisteredDepth() #this is for SXGA mode scale handling.
     point_cloud_transform = reconstruction.PointCloudTransform()
     plasm = ecto.Plasm()
     plasm.connect(
+      observation_dealer[:] >> db_reader['observation'],
       db_reader['K'] >> depthTo3d['K'],
       db_reader['image'] >> rescale_depth['image'],
       db_reader['depth'] >> rescale_depth['depth'],
@@ -59,10 +65,10 @@ def simple_mesh_session(session, args):
     viewer = ecto_pcl.CloudViewer("viewer", window_name="PCD Viewer")
     voxel_grid = ecto_pcl.VoxelGrid("voxel_grid", leaf_size=0.0075)
     outlier_removal = ecto_pcl.StatisticalOutlierRemoval('Outlier Removal', mean_k=2, stddev=2)
+
     source, sink = ecto.EntangledPair(value=accum.inputs.at('view'), source_name='Feedback Cloud', sink_name='Feedback Cloud')
-    #normals = ecto_pcl.NormalEstimation("normals", k_search=0, radius_search=0.02)
     ply_writer = ecto_pcl.PLYWriter()
-    
+
     plasm.connect(source[:] >> accum['previous'],
                   point_cloud_transform['view'] >> accum['view'],
                           accum[:] >> voxel_grid[:],
@@ -80,77 +86,6 @@ def simple_mesh_session(session, args):
     sched = ecto.schedulers.Singlethreaded(plasm)
     sched.execute()
 
-
-def mesh_session(session, args):
-    db_reader = capture.ObservationReader('db_reader', session_id=session.id)
-    depthTo3d = calib.DepthTo3d()
-    rescale_depth = capture.RescaledRegisteredDepth() #this is for SXGA mode scale handling.
-    surfel_reconstruction = reconstruction.SurfelReconstruction(corrDistForUpdate=0.03,
-                                                                maxInterpolationDist=0.05,
-                                                                starvationConfidence=2,
-                                                                timeDiffForRemoval=30,
-                                                                maxNormalAngle=90 * math.pi / 180)
-    if True:
-        plasm = ecto.Plasm()
-        plasm.connect(
-                      db_reader['K'] >> depthTo3d['K'],
-                      db_reader['image'] >> rescale_depth['image'],
-                      db_reader['depth'] >>
-                      rescale_depth['depth'],
-                      rescale_depth[:] >>
-                      (depthTo3d['depth'], highgui.imshow(name='rdepth')[:]),
-                      depthTo3d['points3d'] >> surfel_reconstruction['points3d'],
-                      db_reader['K', 'R', 'T', 'image', 'mask'] >> surfel_reconstruction['K', 'R', 'T', 'image', 'mask'],
-                      )
-        if args.visualize:
-            plasm.connect(
-                      db_reader['image'] >> highgui.imshow('image', name='image')[:],
-                      db_reader['depth'] >> highgui.imshow('depth', name='depth')[:],
-                      db_reader['mask'] >> highgui.imshow('mask', name='mask')[:],
-                      )
-        sched = ecto.schedulers.Singlethreaded(plasm)
-        sched.execute()
-
-    if True:
-        location = '/tmp/object_recognition/'
-        try:
-            os.makedirs(location)
-        except Exception, e:
-            pass
-        mesh_script_txt = '''<!DOCTYPE FilterScript>
-<FilterScript>
- <filter name="Surface Reconstruction: Poisson">
-  <Param type="RichInt" value="8" name="OctDepth"/>
-  <Param type="RichInt" value="8" name="SolverDivide"/>
-  <Param type="RichFloat" value="2" name="SamplesPerNode"/>
-  <Param type="RichFloat" value="1" name="Offset"/>
- </filter>
-</FilterScript>     
-        '''
-        mesh_file_name = os.path.join(location, 'meshing.mlx')
-        with open(mesh_file_name, 'w') as mesh_script:
-            mesh_script.write(mesh_script_txt)
-        name_base = str(session.id)
-        surfel_ply = os.path.join(location, name_base + '.ply')
-        print "Saving to :", surfel_ply
-        surfel_saver = reconstruction.SurfelToPly(filename=surfel_ply)
-        surfel_saver.inputs.at('model').copy_value(surfel_reconstruction.outputs.at('model'))
-        surfel_saver.inputs.at('params').copy_value(surfel_reconstruction.outputs.at('params'))
-        surfel_saver.inputs.at('camera_params').copy_value(surfel_reconstruction.outputs.at('camera_params'))
-
-        surfel_saver.configure()
-        surfel_saver.process() #manually thunk the cell's process function
-
-        meshed_ply = os.path.join(location, name_base + '_meshed.ply')
-        mesh_args = ["meshlabserver", "-i", surfel_ply, "-o", meshed_ply, "-s", mesh_file_name, "-om", "vn", "fn", "vc", "fc"]
-        p = subprocess.Popen(mesh_args, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        o, e = p.communicate()
-        if p.returncode :
-            raise (o, e, p.returncode)
-
-        print "attempting : ", session.object_id
-        reconstruction.insert_mesh(args.db_root, str(session.object_id), session.id, surfel_ply, meshed_ply)
-
 if "__main__" == __name__:
     args = parse_args()
     couch = couchdb.Server(args.db_root)
@@ -159,8 +94,10 @@ if "__main__" == __name__:
     if args.compute_all:
         models.sync_models(dbs)
         results = models.Session.all(sessions)
+        results = models.Session.all(sessions)
+
         for session in results:
-            simple_mesh_session(session, args)
+            simple_mesh_session(dbs, session, args)
     else:
         session = models.Session.load(sessions, args.session_id)
         if session == None or session.id == None:

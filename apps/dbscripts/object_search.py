@@ -16,8 +16,6 @@ if __name__ == "__main__":
     args = parse_args()
     couch = couchdb.Server(args.db_root)
     dbs = dbtools.init_object_databases(couch)
-    models.sync_models(dbs)
-
     objects = dbs['objects']
     if len(args.tag) > 0:
         results = models.Object.by_tag(objects, key=args.tag)
@@ -32,3 +30,4 @@ if __name__ == "__main__":
         print "email:", obj.author_email
         print "db id:", obj.id
         print "bag ids:", [bag.id for bag in models.Bag.by_object_id(dbs['bags'], key=obj.id)]
+        print "session ids:", [session.id for session in models.Session.by_object_id(dbs['sessions'], key=obj.id)]

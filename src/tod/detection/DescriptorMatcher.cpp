@@ -32,7 +32,7 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  *
  */
-
+#include <ecto/ecto.hpp>
 #include <string>
 #include <map>
 #include <vector>
@@ -40,8 +40,8 @@
 #include <boost/foreach.hpp>
 #include <boost/python.hpp>
 #include <boost/python/stl_iterator.hpp>
+#include <boost/property_tree/json_parser.hpp>
 
-#include <ecto/ecto.hpp>
 
 #include <opencv2/core/core.hpp>
 #include <opencv2/features2d/features2d.hpp>
@@ -51,7 +51,6 @@
 #include "object_recognition/db/db.h"
 #include "object_recognition/db/opencv.h"
 #include "opencv_candidate/lsh.hpp"
-
 namespace object_recognition
 {
   namespace tod
@@ -143,7 +142,7 @@ namespace object_recognition
                   {
                 db_future::Document doc = *view;
                 cv::Mat descriptors;
-                doc.get_attachment<cv::Mat>(db, "descriptors", descriptors);
+                doc.get_attachment<cv::Mat>("descriptors", descriptors);
                 all_descriptors.push_back(descriptors);
 
                 // Store the id conversion
@@ -152,7 +151,7 @@ namespace object_recognition
 
                 // Store the 3d positions
                 cv::Mat points3d;
-                doc.get_attachment<cv::Mat>(db, "points", points3d);
+                doc.get_attachment<cv::Mat>("points", points3d);
                 if (points3d.rows != 1)
                   points3d = points3d.t();
                 features_3d_.push_back(points3d);
@@ -224,8 +223,7 @@ namespace object_recognition
         // TODO remove matches that match the same (common descriptors)
 
         // Build the 3D positions of the matches
-        std::vector<cv::Mat> &matches_3d = outputs.get<std::vector<cv::Mat> >("matches_3d");
-        matches_3d.resize(descriptors.rows);
+        std::vector<cv::Mat> matches_3d(descriptors.rows);
 
         for (int match_index = 0; match_index < descriptors.rows; ++match_index)
         {
@@ -239,6 +237,7 @@ namespace object_recognition
               }
         }
 
+        outputs["matches_3d"] << matches_3d;
         outputs["spans"] << spans_;
         outputs["id_correspondences"] << id_correspondences_;
 

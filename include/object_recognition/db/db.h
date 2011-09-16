@@ -37,13 +37,13 @@
 #define DB_H_
 
 #include <sstream>
+#include <map>
 
 #include <boost/archive/binary_iarchive.hpp>
 #include <boost/archive/binary_oarchive.hpp>
-#include <boost/property_tree/json_parser.hpp>
 #include <boost/property_tree/ptree.hpp>
 
-#include "utils.h"
+#include <object_recognition/db/utils.h>
 
 namespace object_recognition
 {
@@ -58,7 +58,6 @@ namespace object_recognition
     {
     public:
       static const std::string JSON_PARAMS_EMPTY_DB;
-
       /** Constructor
        * @param params a JSON string containing the parameters for the DB. Depending on the type of DB, it should have the
        * following formatting:
@@ -105,6 +104,18 @@ namespace object_recognition
       Query(const std::vector<std::string> & queries, const CollectionName & collection_name, int limit_rows,
             int start_offset, int& total_rows, int& offset, std::vector<DocumentId> & document_ids) const;
 
+      void
+      Status(std::string& status);
+
+      void
+      Status(const CollectionName& collection, std::string& status);
+
+      void
+      CreateCollection(const CollectionName &collection);
+
+      void
+      DeleteCollection(const CollectionName &collection);
+
       /** The type of the DB
        * @return The type of the DB as a string
        */
@@ -129,55 +140,15 @@ namespace object_recognition
     class Document
     {
     public:
-      Document()
-      {
-      }
-
-      Document(const ObjectDb & db, const CollectionName & collection, const DocumentId &document_id)
-          :
-            collection_(collection),
-            document_id_(document_id)
-      {
-        // Load all fields from the DB (not the attachments)
-        db.load_fields(document_id_, collection_, fields_);
-      }
-
-      virtual
-      ~Document()
-      {
-      }
+      Document();
+      ~Document();
+      Document(const ObjectDb & db, const CollectionName & collection);
+      Document(const ObjectDb & db, const CollectionName & collection, const DocumentId &document_id);
 
       /** Persist your object to a given DB
-       * @param db the DB to persist to
-       * @param collection the collection/schema where it should be saved
-       */
-      virtual void
-      Persist(ObjectDb & db, const CollectionName & collection);
-
-      /** Extract a specific field from the pre-loaded Document
-       * @param attachment_name
-       * @param value
-       */
-      template<typename T>
-      void
-      get_attachment(const AttachmentName &attachment_name, T & value) const
-      {
-        typedef boost::archive::binary_iarchive InputArchive;
-        std::stringstream stream;
-        get_attachment_stream(attachment_name, stream);
-        stream.seekg(0);
-        InputArchive ar(stream);
-        ar & value;
-      }
-
-      /** Extract the stream of a specific attachment from the pre-loaded Document
-       * @param attachment_name the name of the attachment
-       * @param stream the string of data to write to
-       * @param mime_type the MIME type as stoerd in the DB
        */
       void
-      get_attachment_stream(const AttachmentName &attachment_name, std::ostream& stream, MimeType mime_type =
-          MIME_TYPE_DEFAULT) const;
+      Persist();
 
       /** Extract a specific attachment from a document in the DB
        * @param db the db to read from
@@ -187,12 +158,12 @@ namespace object_recognition
        */
       template<typename T>
       void
-      get_attachment(ObjectDb & db, const AttachmentName &attachment_name, T & value, bool do_use_cache = true) const
+      get_attachment(const AttachmentName &attachment_name, T & value, bool do_use_cache = true)
       {
         typedef boost::archive::binary_iarchive InputArchive;
         std::stringstream stream;
         std::string tmp_mime_type;
-        get_attachment_stream(db, attachment_name, stream, tmp_mime_type, do_use_cache);
+        get_attachment_stream(attachment_name, stream, tmp_mime_type, do_use_cache);
         stream.seekg(0);
         InputArchive ar(stream);
         ar & value;
@@ -206,8 +177,9 @@ namespace object_recognition
        * @param do_use_cache if true, try to load and store data in the object itself
        */
       void
-      get_attachment_stream(ObjectDb & db, const AttachmentName &attachment_name, std::ostream& stream,
-                            MimeType mime_type = MIME_TYPE_DEFAULT, bool do_use_cache = true) const;
+      get_attachment_stream(const AttachmentName &attachment_name, std::ostream& stream, MimeType mime_type =
+          MIME_TYPE_DEFAULT,
+                            bool do_use_cache = true);
 
       /** Add a specific field to a Document (that has been pre-loaded or not)
        * @param attachment_name the name of the attachment
@@ -238,8 +210,7 @@ namespace object_recognition
       T
       get_value(const std::string& key) const
       {
-        std::cerr << "Document::get_value<T> not implemented for that type";
-        throw;
+        return fields_.get<T>(key);
       }
 
       /** Set a specific value */
@@ -247,8 +218,7 @@ namespace object_recognition
       void
       set_value(const std::string& key, const T& val)
       {
-        std::cerr << "Document::set_value<T> not implemented for that type";
-        throw;
+        fields_.put<T>(key, val);
       }
 
       /** Clear all the fields, there are no fields left after */
@@ -263,6 +233,17 @@ namespace object_recognition
       void
       SetIdRev(const std::string& id, const std::string& rev);
 
+      std::string
+      id()
+      {
+        return document_id_;
+      }
+
+      std::string
+      rev()
+      {
+        return revision_id_;
+      }
     private:
       /** contains the attachments: binary blobs */
       struct StreamAttachment: boost::noncopyable
@@ -294,65 +275,15 @@ namespace object_recognition
         typedef boost::shared_ptr<StreamAttachment> ptr;
       };
 
+      ObjectDb db_;
       CollectionName collection_;
       DocumentId document_id_;
-      mutable RevisionId revision_id_;
+      RevisionId revision_id_;
       typedef std::map<AttachmentName, StreamAttachment::ptr> AttachmentMap;
-      mutable AttachmentMap attachments_;
+      AttachmentMap attachments_;
       /** contains the fields: they are of integral types */
       boost::property_tree::ptree fields_;
     };
-
-    // Implementation of some specializations
-    template<>
-    inline bool
-    Document::get_value<bool>(const std::string& key) const
-    {
-      return fields_.get<bool>(key);
-    }
-    template<>
-    inline int
-    Document::get_value<int>(const std::string& key) const
-    {
-      return fields_.get<int>(key);
-    }
-    template<>
-    inline double
-    Document::get_value<double>(const std::string& key) const
-    {
-      return fields_.get<double>(key);
-    }
-    template<>
-    inline std::string
-    Document::get_value<std::string>(const std::string& key) const
-    {
-      return fields_.get<std::string>(key);
-    }
-
-    template<>
-    inline void
-    Document::set_value<bool>(const std::string& key, const bool& val)
-    {
-      fields_.put<bool>(key, val);
-    }
-    template<>
-    inline void
-    Document::set_value<int>(const std::string& key, const int& val)
-    {
-      fields_.put<int>(key, val);
-    }
-    template<>
-    inline void
-    Document::set_value<double>(const std::string& key, const double& val)
-    {
-      fields_.put<double>(key, val);
-    }
-    template<>
-    inline void
-    Document::set_value<std::string>(const std::string& key, const std::string& val)
-    {
-      fields_.put<std::string>(key, val);
-    }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 

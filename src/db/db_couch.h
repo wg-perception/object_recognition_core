@@ -80,6 +80,18 @@ public:
   Query(const std::vector<std::string> & queries, const CollectionName & collection_name, int limit_rows,
         int start_offset, int& total_rows, int& offset, std::vector<DocumentId> & document_ids);
 
+  virtual void
+  Status(std::string& status);
+
+  virtual void
+  Status(const CollectionName& collection, std::string& status);
+
+  virtual void
+  CreateCollection(const CollectionName &collection);
+
+  virtual void
+  DeleteCollection(const CollectionName &collection);
+
   virtual DbType
   type()
   {
@@ -123,11 +135,14 @@ private:
 
   /** The URL of the DB, including port */
   std::string url_;
+
+  //FIXME why are these mutable
   mutable object_recognition::curl::cURL curl_;
   mutable std::stringstream json_writer_stream_, json_reader_stream_;
 
   object_recognition::curl::writer json_writer_;
   object_recognition::curl::reader json_reader_;
+
 };
 
 #endif /* DB_COUCH_H_ */

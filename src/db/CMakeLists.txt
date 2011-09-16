@@ -7,18 +7,14 @@ find_package(Boost COMPONENTS
   REQUIRED
   )
 
-add_subdirectory(json_spirit)
-
 find_package(CURL REQUIRED)
 find_package(OpenCV)
 
 include_directories(
   ${CMAKE_CURRENT_SOURCE_DIR}
-  ${CMAKE_CURRENT_SOURCE_DIR}/../tod
   )
 
 add_library(object_recognition_db SHARED
-  couch.cpp
   db.cpp
   db_couch.cpp
   opencv.cpp
@@ -26,10 +22,13 @@ add_library(object_recognition_db SHARED
   )
 
 target_link_libraries(object_recognition_db
-  ${Boost_LIBRARIES}
+  boost_system
+  boost_serialization
+  boost_thread
+  boost_filesystem
+  boost_regex
   ${CURL_LIBRARIES}
   ${OpenCV_LIBS}
-  json_spirit
   )
 
 #install the main shared lib

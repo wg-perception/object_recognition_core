@@ -34,7 +34,7 @@
  */
 
 #include <boost/property_tree/json_parser.hpp>
-
+#include <sstream>
 #include "db_couch.h"
 
 object_recognition::curl::cURL_GS curl_init_cleanup;
@@ -53,9 +53,9 @@ void
 ObjectDbCouch::insert_object(const CollectionName &collection, const boost::property_tree::ptree &fields,
                              DocumentId & document_id, RevisionId & revision_id)
 {
+  CreateCollection(collection);
   std::string url = url_id(collection, "");
-  std::cout << " POST to " << url << std::endl;
-  upload_json(fields,url , "POST");
+  upload_json(fields, url, "POST");
   GetObjectRevisionId(document_id, revision_id);
 }
 
@@ -83,12 +83,12 @@ ObjectDbCouch::load_fields(const DocumentId & document_id, const CollectionName 
 
   curl_.perform();
 
-  if (curl_.get_response_code() == object_recognition::curl::cURL::OK)
+  if (curl_.get_response_code() != object_recognition::curl::cURL::OK)
   {
-    //update the object from the result.
-    json_writer_stream_.seekg(0);
-    boost::property_tree::read_json(json_writer_stream_, fields);
+    throw std::runtime_error(curl_.get_response_reason_phrase() + " : " + curl_.getURL());
   }
+  //update the object from the result.
+  boost::property_tree::read_json(json_writer_stream_, fields);
 }
 
 void
@@ -123,13 +123,16 @@ ObjectDbCouch::get_attachment_stream(const DocumentId & document_id, const Colle
   curl_.setURL(url_id(collection, document_id) + "/" + attachment_name);
   curl_.GET();
   curl_.perform();
+  if (curl_.get_response_code() != object_recognition::curl::cURL::OK)
+  {
+    throw std::runtime_error(curl_.get_response_reason_phrase() + " : " + curl_.getURL());
+  }
 }
 
 void
 ObjectDbCouch::GetObjectRevisionId(DocumentId& document_id, RevisionId & revision_id)
 {
   boost::property_tree::ptree params;
-  std::cout << json_writer_stream_.str() << std::endl;
   boost::property_tree::read_json(json_writer_stream_, params);
   document_id = params.get<std::string>("id", "");
   revision_id = params.get<std::string>("rev", "");
@@ -168,16 +171,21 @@ ObjectDbCouch::Query(const std::vector<std::string> & queries, const CollectionN
   curl_.reset();
   curl_.setReader(&json_reader_);
   curl_.setWriter(&json_writer_);
-  curl_.setURL(
-      url_ + "/" + collection_name + "/_temp_view?limit=" + boost::lexical_cast<std::string>(limit_rows) + "&skip="
-      + boost::lexical_cast<std::string>(start_offset));
+  std::string url = url_ + "/" + collection_name + "/_temp_view?limit=" + boost::lexical_cast<std::string>(limit_rows)
+                    + "&skip="
+                    + boost::lexical_cast<std::string>(start_offset);
+  curl_.setURL(url);
   curl_.setHeader("Content-Type: application/json");
   curl_.setCustomRequest("POST");
   curl_.perform();
 
+  if (curl_.get_response_code() != object_recognition::curl::cURL::OK)
+  {
+    throw std::runtime_error(curl_.get_response_reason_phrase() + " : " + curl_.getURL());
+  }
+
   json_reader_stream_.seekg(0);
   json_writer_stream_.seekg(0);
-  //std::cout << "view res" << json_writer_stream_.str() << std::endl;
   boost::property_tree::ptree fields;
   boost::property_tree::read_json(json_writer_stream_, fields);
 
@@ -192,6 +200,100 @@ ObjectDbCouch::Query(const std::vector<std::string> & queries, const CollectionN
 }
 
 void
+ObjectDbCouch::CreateCollection(const CollectionName &collection)
+{
+  boost::property_tree::ptree params;
+  std::string status;
+  Status(collection, status);
+  std::stringstream ss(status);
+  boost::property_tree::read_json(ss, params);
+  if (params.count("error") && params.count("reason") && params.get<std::string>("reason") == "no_db_file")
+  {
+    json_writer_stream_.str("");
+    json_reader_stream_.str("");
+    curl_.setWriter(&json_writer_);
+    curl_.setReader(&json_reader_);
+    curl_.setCustomRequest("PUT");
+    curl_.perform();
+    if (curl_.get_response_code() != object_recognition::curl::cURL::Created)
+    {
+      throw std::runtime_error(curl_.get_response_reason_phrase() + " : " + curl_.getURL());
+    }
+    boost::property_tree::read_json(json_writer_stream_, params);
+    if (!params.count("ok") || !params.get<bool>("ok"))
+    {
+      std::stringstream ss;
+      boost::property_tree::write_json(ss, params);
+      throw std::runtime_error("Could not create to database.\n" + ss.str());
+    }
+    return;
+  }
+  if (!params.count("db_name") || params.get<std::string>("db_name") != collection)
+  {
+    std::stringstream ss;
+    boost::property_tree::write_json(ss, params);
+    throw std::runtime_error("Could not connect to database.\n" + ss.str());
+  }
+}
+
+void
+ObjectDbCouch::Status(std::string& status)
+{
+  json_writer_stream_.str("");
+  json_reader_stream_.str("");
+  curl_.setWriter(&json_writer_);
+  curl_.setReader(&json_reader_);
+  //couch db post to the db
+  curl_.setURL(url_);
+  curl_.setCustomRequest("GET");
+  curl_.perform();
+  if (curl_.get_response_code() != object_recognition::curl::cURL::OK)
+  {
+    throw std::runtime_error(curl_.get_response_reason_phrase() + " : " + curl_.getURL());
+  }
+  status = json_writer_stream_.str();
+}
+
+void
+ObjectDbCouch::Status(const CollectionName& collection, std::string& status)
+{
+  json_writer_stream_.str("");
+  json_reader_stream_.str("");
+  curl_.setWriter(&json_writer_);
+  curl_.setReader(&json_reader_);
+  //couch db post to the db
+  curl_.setURL(url_ + "/" + collection);
+  curl_.setCustomRequest("GET");
+  curl_.perform();
+  if (curl_.get_response_code() == 0)
+  {
+    throw std::runtime_error(curl_.get_response_reason_phrase() + " : " + curl_.getURL());
+  }
+  status = json_writer_stream_.str();
+}
+
+void
+ObjectDbCouch::DeleteCollection(const CollectionName &collection)
+{
+  boost::property_tree::ptree params;
+  std::string status;
+  Status(collection, status);
+  if (curl_.get_response_code() == object_recognition::curl::cURL::OK)
+  {
+    curl_.setCustomRequest("DELETE");
+    curl_.perform();
+    if (curl_.get_response_code() != object_recognition::curl::cURL::OK)
+    {
+      throw std::runtime_error(curl_.get_response_reason_phrase() + " : " + curl_.getURL());
+    }
+  }
+  else if (curl_.get_response_code() != 404)
+  {
+    throw std::runtime_error(curl_.get_response_reason_phrase() + " : " + curl_.getURL());
+  }
+
+}
+void
 ObjectDbCouch::upload_json(const boost::property_tree::ptree &ptree, const std::string& url, const std::string& request)
 {
   curl_.reset();
@@ -200,7 +302,7 @@ ObjectDbCouch::upload_json(const boost::property_tree::ptree &ptree, const std::
   boost::property_tree::write_json(json_reader_stream_, ptree);
   curl_.setWriter(&json_writer_);
   curl_.setReader(&json_reader_);
-  //couch db post to the db
+//couch db post to the db
   curl_.setURL(url);
   curl_.setHeader("Content-Type: application/json");
   if (request == "PUT")
