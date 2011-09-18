@@ -63,13 +63,10 @@ namespace
   void
   fill_connections(const pcl::PointCloud<pcl::PointXYZ> &training_point_cloud,
                    const pcl::PointCloud<pcl::PointXYZ> & query_point_cloud,
-                   const std::vector<unsigned int> &query_indices, float object_span,
+                   const std::vector<unsigned int> &query_indices, float object_span, float sensor_error,
                    object_recognition::maximum_clique::Graph &graph)
   {
     // The error the 3d sensor makes, distance wise
-    float sensor_error = 0.04;
-
-    std::cout << "training_point_cloud size " << training_point_cloud.size() << std::endl;
     cv::Mat_<float> distances(training_point_cloud.size(), training_point_cloud.size());
     for (unsigned int i = 0; i < training_point_cloud.size(); ++i)
     {
@@ -83,16 +80,16 @@ namespace
           continue;
         // Two training points can be connected if they are within the span of an object
         const pcl::PointXYZ & query_point_2 = query_point_cloud.points[j];
-        float dist2 = pcl::euclideanDistance(query_point_1, query_point_2);
+        float dist_query = pcl::euclideanDistance(query_point_1, query_point_2);
         //distances(i, j) = dist2;
         //distances(j, i) = dist2;
-        if (dist2 > (object_span + 2 * sensor_error))
+        if (dist_query > (object_span + 2 * sensor_error))
           continue;
 
         const pcl::PointXYZ & training_point_2 = training_point_cloud.points[j];
-        float dist1 = pcl::euclideanDistance(training_point_1, training_point_2);
+        float dist_training = pcl::euclideanDistance(training_point_1, training_point_2);
         // Make sure the distance between two points is somewhat conserved
-        if (std::abs(dist1 - dist2) > 2 * sensor_error)
+        if (std::abs(dist_training - dist_query) > 2 * sensor_error)
           continue;
 
         // If all those conditions are respected, those two matches are potentially part of the same cluster
@@ -155,6 +152,9 @@ namespace object_recognition
 
         min_inliers_ = param_tree.get<unsigned int>("min_inliers");
         n_ransac_iterations_ = param_tree.get<unsigned int>("n_ransac_iterations");
+
+        debug_ = true;
+        sensor_error_ = 0.015;
       }
 
       Eigen::VectorXf
@@ -167,7 +167,7 @@ namespace object_recognition
         pcl::RandomSampleConsensus<pcl::PointXYZ> sample_consensus(model);
         Eigen::VectorXf coefficients;
         model->setInputTarget(query_point_cloud, good_indices);
-        sample_consensus.setDistanceThreshold(0.02);
+        sample_consensus.setDistanceThreshold(sensor_error_);
         sample_consensus.setMaxIterations(n_ransac_iterations_);
 
         /*std::cout << "a=[";
@@ -269,13 +269,17 @@ namespace object_recognition
             }
           }
 
-          cv::Mat out_img;
-          cv::drawKeypoints(initial_image, draw_keypoints_1, out_img);
-          cv::namedWindow("keypoints on objects", 0);
-          cv::imshow("keypoints on objects", out_img);
-          cv::waitKey(1000);
+          if (debug_)
+          {
+            cv::Mat out_img;
+            cv::drawKeypoints(initial_image, draw_keypoints_1, out_img);
+            cv::namedWindow("keypoints from objects", 0);
+            cv::imshow("keypoints from objects", out_img);
+            cv::waitKey(1000);
+          }
 
           // For each object, build the connectivity graph between the matches
+          std::map<ObjectOpenCVId, std::vector<std::vector<int> > > matching_query_points;
           typedef std::map<ObjectOpenCVId, object_recognition::maximum_clique::Graph> OpenCVIdToGraph;
           OpenCVIdToGraph graphs;
           for (OpenCVIdToPointCloud::const_iterator query_iterator = query_point_clouds.begin();
@@ -283,13 +287,14 @@ namespace object_recognition
               {
             // Create a graph for that object
             ObjectOpenCVId opencv_object_id = query_iterator->first;
+            std::cout << "Starting object: " << opencv_object_id << std::endl;
             object_recognition::maximum_clique::Graph graph(query_iterator->second.size());
             //graphs.insert(std::make_pair(opencv_object_id, graph));
 
             // Fill the connections for that graph
             ObjectId object_id = id_correspondences.find(opencv_object_id)->second;
             fill_connections(training_point_clouds[opencv_object_id], query_point_clouds[opencv_object_id],
-                             query_indices[opencv_object_id], spans.find(object_id)->second, graph);
+                             query_indices[opencv_object_id], spans.find(object_id)->second, sensor_error_, graph);
 
             /*cluster_clouds(training_point_clouds[opencv_object_id],
              query_point_clouds[opencv_object_id], spans.find(object_id)->second,
@@ -302,7 +307,7 @@ namespace object_recognition
               // Compute the maximum of clique of that graph
               std::vector<unsigned int> maximum_clique;
               graph.findMaximumClique(maximum_clique);
-              std::cout << "done finding max clique" << std::endl;
+              std::cout << "done finding max clique, size: " << maximum_clique.size() << std::endl;
 
               if (maximum_clique.size() < min_inliers_)
                 break;
@@ -332,20 +337,20 @@ namespace object_recognition
                 continue;
               }
 
-              std::vector<cv::KeyPoint> draw_keypoints;
-              BOOST_FOREACH(int i, maximum_clique)
-                    draw_keypoints.push_back(keypoints[query_indices[opencv_object_id][i]]);
-              cv::Mat output_img;
-              cv::drawKeypoints(initial_image, draw_keypoints, output_img);
-              cv::namedWindow("max clique", 0);
-              cv::imshow("max clique", output_img);
+              // Store the matches for debug purpose
+              if (debug_)
+              {
+                matching_query_points[opencv_object_id].push_back(inliers);
 
-              draw_keypoints.clear();
-              BOOST_FOREACH(int i, inliers)
-                    draw_keypoints.push_back(keypoints[query_indices[opencv_object_id][i]]);
-              cv::drawKeypoints(initial_image, draw_keypoints, output_img);
-              cv::namedWindow("inliers", 0);
-              cv::imshow("inliers", output_img);
+                std::vector<cv::KeyPoint> draw_keypoints;
+                BOOST_FOREACH(int i, maximum_clique)
+                      draw_keypoints.push_back(keypoints[query_indices[opencv_object_id][i]]);
+                cv::Mat output_img;
+                cv::drawKeypoints(initial_image, draw_keypoints, output_img);
+                cv::namedWindow("max clique", 0);
+                cv::imshow("max clique", output_img);
+                cv::waitKey(1000);
+              }
 
               // Check whether other matches could fit that model
 
@@ -363,12 +368,70 @@ namespace object_recognition
               std::cout << R_mat << std::endl;
               std::cout << tvec << std::endl;
 
-              // Remove all the inliers from the graph
-              BOOST_FOREACH(int vertex, inliers)
-                    graph.deleteEdges(vertex);
-              break;
+              // Figure out the matches to remove
+              std::vector<unsigned int> query_indices_to_delete;
+              BOOST_FOREACH(unsigned int index, inliers)
+                    query_indices_to_delete.push_back(query_indices[opencv_object_id][index]);
+
+              std::sort(query_indices_to_delete.begin(), query_indices_to_delete.end());
+              std::vector<unsigned int>::const_iterator iter = query_indices_to_delete.begin(), end =
+                  query_indices_to_delete.end();
+              int i = -1;
+              BOOST_FOREACH(unsigned int query_index, query_indices[opencv_object_id])
+                  {
+                    ++i;
+                    if (int(query_index) < *iter)
+                      continue;
+                    while ((iter != end) && (int(query_index) > *iter))
+                      ++iter;
+                    if (iter == end)
+                      break;
+                    // If the match has a keypoint in the inliers, remove the match
+                    if (int(query_index) == *iter)
+                      graph.deleteEdges(i);
+                  }
             }
           }
+
+          if (debug_)
+          {
+            // Draw the different inliers
+            cv::Mat output_img = initial_image.clone();
+            std::vector<cv::Scalar> colors;
+            colors.push_back(cv::Scalar(255, 255, 0));
+            colors.push_back(cv::Scalar(0, 255, 255));
+            colors.push_back(cv::Scalar(255, 0, 255));
+            colors.push_back(cv::Scalar(255, 0, 0));
+            colors.push_back(cv::Scalar(0, 255, 0));
+            colors.push_back(cv::Scalar(0, 0, 255));
+            colors.push_back(cv::Scalar(0, 0, 0));
+            colors.push_back(cv::Scalar(85, 85, 85));
+            colors.push_back(cv::Scalar(170, 170, 170));
+            colors.push_back(cv::Scalar(255, 255, 255));
+
+            unsigned int i = 0;
+            for (std::map<ObjectOpenCVId, std::vector<std::vector<int> > >::const_iterator query_iterator =
+                matching_query_points.begin(); query_iterator != matching_query_points.end(); ++query_iterator)
+            {
+              ObjectOpenCVId object_opencv_id = query_iterator->first;
+
+              BOOST_FOREACH(const std::vector<int> & indices, query_iterator->second)
+                  {
+                    std::vector<cv::KeyPoint> draw_keypoints;
+                    draw_keypoints.clear();
+                    BOOST_FOREACH(int index, indices)
+                          draw_keypoints.push_back(keypoints[query_indices[object_opencv_id][index]]);
+                    if (i < colors.size())
+                    {
+                      cv::drawKeypoints(output_img, draw_keypoints, output_img, colors[i]);
+                      ++i;
+                    }
+                  }
+            }
+            cv::namedWindow("inliers", 0);
+            cv::imshow("inliers", output_img);
+          }
+
           outputs["Rs"] << Rs;
           outputs["Ts"] << Ts;
           outputs["object_ids"] << object_ids;
@@ -378,6 +441,10 @@ namespace object_recognition
         return 0;
       }
     private:
+      /** How much can the sensor be wrong at most */
+      float sensor_error_;
+      /** flag indicating whether we run in edbug mode */
+      bool debug_;
       /** The minimum number of inliers in order to do pose matching */
       unsigned int min_inliers_;
       /** The number of RANSAC iterations to perform */
