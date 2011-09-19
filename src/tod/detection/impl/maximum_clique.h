@@ -33,6 +33,8 @@
  *
  */
 
+#ifndef MAXIMUM_CLIQUE_H_
+#define MAXIMUM_CLIQUE_H_
 // inspired by KONC, Janez, JANEŽIČ, Dušanka. An improved branch and bound algorithm for the maximum clique problem
 #include <set>
 
@@ -60,6 +62,12 @@ namespace object_recognition
       deleteEdge(Vertex vertex_1, Vertex vertex_2);
       void
       findMaximumClique(Vertices &max_clique);
+
+      inline const cv::Mat_<uchar>
+      adjacency() const
+      {
+        return adjacency_;
+      }
     private:
       typedef std::set<Vertex> Neighbors;
       typedef unsigned int Color;
@@ -73,7 +81,7 @@ namespace object_recognition
       inline bool
       IsIntersecting(Vertex in_vertex, const Vertices &vertices)
       {
-        uchar * data = e_.ptr(in_vertex);
+        const uchar * data = adjacency_.ptr(in_vertex);
         BOOST_FOREACH(Vertex vertex, vertices)
         if (data[vertex])
         return true;
@@ -91,7 +99,7 @@ namespace object_recognition
                    std::vector<unsigned int> &SOld);
 
       /** Mask for the edges */
-      cv::Mat_<uchar> e_;
+      cv::Mat_<uchar> adjacency_;
       /** The number of vertices in the graph */
       unsigned int n_vertices_;
 
@@ -100,3 +108,4 @@ namespace object_recognition
     };
   }
 }
+#endif

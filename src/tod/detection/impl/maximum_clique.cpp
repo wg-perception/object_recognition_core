@@ -33,6 +33,8 @@
  *
  */
 
+#include <iostream>
+
 #include <boost/foreach.hpp>
 
 #include "maximum_clique.h"
@@ -52,7 +54,7 @@ namespace object_recognition
     Graph::Intersection(Vertex p, const Vertices & vertices, Vertices &intersection)
     {
       BOOST_FOREACH(Vertex vertex, vertices)
-            if (e_(p, vertex))
+            if (adjacency_(p, vertex))
               intersection.push_back(vertex);
       return !intersection.empty();
     }
@@ -107,7 +109,7 @@ namespace object_recognition
       {
         degrees[i] = std::make_pair(0, R[i]);
         for (unsigned int j = 0; j < i; ++j)
-          if (e_(R[i], R[j]))
+          if (adjacency_(R[i], R[j]))
           {
             degrees[i].first++;
             degrees[j].first++;
@@ -146,12 +148,15 @@ namespace object_recognition
             ColorSort(Rp, Cp, QMax, Q);
             ++S[level];
             ++all_steps_;
-            if (all_steps_ > 1000)
-              return;
+            //if (all_steps_ > 100000)
+              //return;
             MaxCliqueDyn(Rp, Cp, level + 1, QMax, Q, S, SOld);
           }
           else if (Q.size() > QMax.size())
+          {
             QMax = Q;
+            std::cout << "step: " << all_steps_ << " with size " << QMax.size() << std::endl;
+          }
           Q.pop_back();
         }
         else
@@ -162,21 +167,15 @@ namespace object_recognition
     void
     Graph::findMaximumClique(Vertices &QMax)
     {
-      all_steps_ = 0;
+      all_steps_ = 1;
       t_limit_ = 0.025;
 
       Vertices R(n_vertices_);
-      {
-        std::vector<std::pair<unsigned int, Vertex> > R_count(n_vertices_);
-        for (unsigned int i = 0; i < n_vertices_; ++i)
-          R_count[i] = std::make_pair(cv::countNonZero(e_.row(i)), i);
-        std::sort(R_count.begin(), R_count.end());
+      for (unsigned int i = 0; i < n_vertices_; ++i)
+        R[i] = i;
+      DegreeSort(R);
 
-        for (unsigned int i = 0; i < n_vertices_; ++i)
-          R[i] = R_count[i].second;
-      }
-
-      unsigned int max_degree = cv::countNonZero(e_.row(R[0]));
+      unsigned int max_degree = cv::countNonZero(adjacency_.row(R[0]));
       Colors C(n_vertices_);
       for (unsigned int i = 0; i < max_degree; i++)
         C[i] = i + 1;
@@ -203,28 +202,28 @@ namespace object_recognition
 
     Graph::Graph(unsigned int vertex_number)
     {
-      e_ = cv::Mat_<uchar>::zeros(vertex_number, vertex_number);
+      adjacency_ = cv::Mat_<uchar>::zeros(vertex_number, vertex_number);
       n_vertices_ = vertex_number;
     }
     void
     Graph::addEdge(unsigned int vertex_1, unsigned int vertex_2)
     {
-      e_(vertex_1, vertex_2) = 1;
-      e_(vertex_2, vertex_1) = 1;
+      adjacency_(vertex_1, vertex_2) = 1;
+      adjacency_(vertex_2, vertex_1) = 1;
     }
     /** Given a vertex, delete all the edges containing it */
     void
     Graph::deleteEdges(unsigned int in_vertex)
     {
-      e_.col(in_vertex).setTo(cv::Scalar(0));
-      e_.row(in_vertex).setTo(cv::Scalar(0));
+      adjacency_.col(in_vertex).setTo(cv::Scalar(0));
+      adjacency_.row(in_vertex).setTo(cv::Scalar(0));
     }
     /** Given a vertex, delete all the edges containing it */
     void
     Graph::deleteEdge(Vertex vertex_1, Vertex vertex_2)
     {
-      e_(vertex_1, vertex_2) = 0;
-      e_(vertex_2, vertex_1) = 0;
+      adjacency_(vertex_1, vertex_2) = 0;
+      adjacency_(vertex_2, vertex_1) = 0;
     }
   }
 }
