@@ -44,7 +44,8 @@ class TodDetector(ecto.BlackBox):
 
     def connections(self):
         # make sure the inputs reach the right cells
-        connections = [self._image_duplicator[:] >> self.feature_descriptor['image']]
+        connections = [self._image_duplicator[:] >> self.feature_descriptor['image'],
+                       self._image_duplicator[:] >> self.guess_generator['image'],]
 
         connections += [self.feature_descriptor['keypoints'] >> self.guess_generator['keypoints'],
                 self.feature_descriptor['descriptors'] >> self.descriptor_matcher['descriptors'],
