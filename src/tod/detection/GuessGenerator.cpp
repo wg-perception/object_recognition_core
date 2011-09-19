@@ -435,14 +435,14 @@ namespace object_recognition
               BOOST_FOREACH(unsigned int query_index, query_indices[opencv_object_id])
                   {
                     ++i;
-                    if (int(query_index) < *iter)
+                    if (size_t(query_index) < *iter)
                       continue;
-                    while ((iter != end) && (int(query_index) > *iter))
+                    while ((iter != end) && (size_t(query_index) > *iter))
                       ++iter;
                     if (iter == end)
                       break;
                     // If the match has a keypoint in the inliers, remove the match
-                    if (int(query_index) == *iter)
+                    if (size_t(query_index) == *iter)
                       graph.deleteEdges(i);
                   }
             }
