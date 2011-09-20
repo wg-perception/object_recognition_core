@@ -190,53 +190,14 @@ namespace object_recognition
       }
 
       Eigen::VectorXf
-      ransacy(const pcl::PointCloud<pcl::PointXYZ>::ConstPtr& training_point_cloud,
-              const pcl::PointCloud<pcl::PointXYZ>::ConstPtr & query_point_cloud, const std::vector<int>& good_indices,
-              std::vector<int>& inliers)
-      {
-        pcl::SampleConsensusModelRegistration<pcl::PointXYZ>::Ptr model(
-            new pcl::SampleConsensusModelRegistration<pcl::PointXYZ>(training_point_cloud, good_indices));
-        pcl::RandomSampleConsensus<pcl::PointXYZ> sample_consensus(model);
-        Eigen::VectorXf coefficients;
-        model->setInputTarget(query_point_cloud, good_indices);
-        sample_consensus.setDistanceThreshold(sensor_error_);
-        sample_consensus.setMaxIterations(n_ransac_iterations_);
-
-        /*std::cout << "a=[";
-         BOOST_FOREACH(int i, good_indices) {
-         const pcl::PointXYZ &training_point =training_point_cloud->points[i];
-         std::cout << training_point.x << "," << training_point.y << "," << training_point.z << ";";
-         }
-         std::cout << "];"  << std::endl << "b=";
-         std::cout << "[";
-         BOOST_FOREACH(int i, good_indices) {
-         const pcl::PointXYZ &query_point =query_point_cloud->points[i];
-         std::cout << query_point.x << "," << query_point.y << "," << query_point.z << ";";
-         }
-         std::cout << "];";*/
-
-        if (sample_consensus.computeModel())
-        {
-          inliers.clear();
-          sample_consensus.getInliers(inliers);
-          std::sort(inliers.begin(), inliers.end());
-          sample_consensus.getModelCoefficients(coefficients);
-        }
-        else
-        {
-          inliers.clear();
-        }
-        return coefficients;
-      }
-
-      Eigen::VectorXf
       ransacy_graph(const pcl::PointCloud<pcl::PointXYZ>::ConstPtr& training_point_cloud,
                     const pcl::PointCloud<pcl::PointXYZ>::ConstPtr & query_point_cloud,
                     const std::vector<int>& good_indices, const object_recognition::maximum_clique::Graph &graph,
                     std::vector<int>& inliers)
       {
         SampleConsensusModelRegistrationGraph<pcl::PointXYZ>::Ptr model(
-            new SampleConsensusModelRegistrationGraph<pcl::PointXYZ>(query_point_cloud, good_indices, graph));
+            new SampleConsensusModelRegistrationGraph<pcl::PointXYZ>(query_point_cloud, good_indices, sensor_error_,
+                                                                     graph));
         pcl::RandomSampleConsensus<pcl::PointXYZ> sample_consensus(model);
         Eigen::VectorXf coefficients;
         model->setInputTarget(training_point_cloud, good_indices);
@@ -383,29 +344,10 @@ namespace object_recognition
               pcl::PointCloud<pcl::PointXYZ>::Ptr query_cloud_ptr = query_point_clouds[opencv_object_id].makeShared();
               Eigen::VectorXf coefficients;
 
-              if (0)
-              {
-                graph.findMaximumClique(maximum_clique);
-                std::cout << "done finding max clique, size: " << maximum_clique.size() << std::endl;
-
-                if (maximum_clique.size() < min_inliers_)
-                  break;
-
-                //check_clique(training_point_clouds[opencv_object_id], query_point_clouds[opencv_object_id],
-                //           query_indices[opencv_object_id], spans.find(object_id)->second, graph, maximum_clique);
-
-                // Perform RANSAC on it to find the best possible pose
-                std::copy(maximum_clique.begin(), maximum_clique.end(), int_maximum_clique.begin());
-                std::cout << "*** starting RANSAC" << std::endl;
-                coefficients = ransacy(training_cloud_ptr, query_cloud_ptr, int_maximum_clique, inliers);
-              }
-              else
-              {
-                for (unsigned int i = 0; i < training_point_clouds[opencv_object_id].points.size(); ++i)
-                  int_maximum_clique.push_back(i);
-                std::cout << "*** starting RANSAC" << std::endl;
-                coefficients = ransacy_graph(training_cloud_ptr, query_cloud_ptr, int_maximum_clique, graph, inliers);
-              }
+              for (unsigned int i = 0; i < training_point_clouds[opencv_object_id].points.size(); ++i)
+                int_maximum_clique.push_back(i);
+              std::cout << "*** starting RANSAC" << std::endl;
+              coefficients = ransacy_graph(training_cloud_ptr, query_cloud_ptr, int_maximum_clique, graph, inliers);
 
               // If no pose was found, forget about all the connections in that clique
               std::cout << "*** n inliers: " << inliers.size() << " clique size " << int_maximum_clique.size()
@@ -524,10 +466,9 @@ namespace object_recognition
                 tvec(j, 0) = coefficients[4 * j + 3];
               }
               R_mat = R_mat.t();
-              tvec = -R_mat*tvec;
+              tvec = -R_mat * tvec;
 
               // Check whether the pose could be close to a previous
-
 
               Rs.push_back(R_mat);
               Ts.push_back(tvec);
