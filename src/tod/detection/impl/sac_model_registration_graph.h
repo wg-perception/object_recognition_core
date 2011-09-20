@@ -63,7 +63,7 @@ namespace object_recognition
                                             const object_recognition::maximum_clique::Graph & graph, float threshold)
           :
             pcl::SampleConsensusModelRegistration<PointT>(cloud),
-            adjacency_(graph.adjacency()),
+            physical_adjacency_(graph.adjacency()),
             best_inlier_number_(0),
             input_(cloud),
             threshold_(threshold)
@@ -76,10 +76,12 @@ namespace object_recognition
        * \param indices a vector of point indices to be used from \a cloud
        */
       SampleConsensusModelRegistrationGraph(const PointCloudConstPtr &cloud, const std::vector<int> &indices,
-                                            float threshold, const object_recognition::maximum_clique::Graph & graph)
+                                            float threshold, const cv::Mat & physical_adjacency,
+                                            const cv::Mat &sample_adjacency)
           :
             pcl::SampleConsensusModelRegistration<PointT>(cloud, indices),
-            adjacency_(graph.adjacency()),
+            physical_adjacency_(physical_adjacency),
+            sample_adjacency_(sample_adjacency),
             indices_(indices),
             best_inlier_number_(0),
             input_(cloud),
@@ -136,15 +138,14 @@ namespace object_recognition
           bool sub_is_good = true;
           for (unsigned int i = 0; i < samples.size(); ++i)
             for (unsigned int j = i + 1; j < samples.size(); ++j)
-              if (!adjacency_(samples[i], samples[j]))
+              if (!physical_adjacency_(samples[i], samples[j])) {
+                std::cout << int(sample_adjacency_(samples[i], samples[j])) << " ";
                 sub_is_good = false;
+              }
           if (!sub_is_good)
-            std::cout << "problem with sample adjacency" << std::endl;
-        }
+            std::cout << std::endl << "problem with sample adjacency" << std::endl;
 
-        if (is_good)
-        {
-          samples_ = samples;
+          samples_ = new_samples;
         }
 
         return is_good;
@@ -158,7 +159,7 @@ namespace object_recognition
         // Assign a maximum distance for all the points that cannot belong to a clique including the sample
         for (size_t i = 0; i < indices_.size(); ++i)
         {
-          const uchar* row = adjacency_.ptr(indices_[i]);
+          const uchar* row = physical_adjacency_.ptr(indices_[i]);
           BOOST_FOREACH(int sample, samples_)
                 if (!row[sample])
                 {
@@ -181,7 +182,7 @@ namespace object_recognition
         BOOST_FOREACH(int inlier, possible_inliers)
             {
               bool is_good = true;
-              const uchar* row = adjacency_.ptr(inlier);
+              const uchar* row = physical_adjacency_.ptr(inlier);
               BOOST_FOREACH(int sample, samples_)
                     if (!row[sample])
                     {
@@ -264,16 +265,14 @@ namespace object_recognition
       void
       BuildNeighbors()
       {
-        neighbors_.resize(adjacency_.rows);
-        for (int j = 0; j < adjacency_.rows; ++j)
+        neighbors_.resize(sample_adjacency_.rows);
+        for (int j = 0; j < sample_adjacency_.rows; ++j)
         {
-          const uchar * row = adjacency_.ptr<uchar>(j);
-          const pcl::Array4fMapConst p0 = input_->points[j].getArray4fMap();
-          for (int i = 0; i < adjacency_.cols; ++i)
+          const uchar * row = sample_adjacency_.ptr(j);
+          for (int i = 0; i < sample_adjacency_.cols; ++i)
           {
-            const pcl::Array4fMapConst p1 = input_->points[i].getArray4fMap();
-            // If two points can belong to the same clique and are far enough
-            if ((row[i]) && ((p1 - p0).matrix().squaredNorm() > threshold_ * threshold_))
+            // If two points can belong to the same sample set
+            if (row[i])
               neighbors_[j].push_back(i);
           }
           if (neighbors_[j].size() >= 3)
@@ -289,7 +288,8 @@ namespace object_recognition
       }
 
       mutable std::vector<int> samples_;
-      const cv::Mat_<uchar> adjacency_;
+      const cv::Mat_<uchar> physical_adjacency_;
+      const cv::Mat_<uchar> sample_adjacency_;
       std::vector<int> indices_;
       std::vector<int> sample_pool_;
       std::vector<std::vector<unsigned int> > neighbors_;

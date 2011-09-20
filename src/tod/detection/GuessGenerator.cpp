@@ -62,10 +62,10 @@ using ecto::tendrils;
 namespace
 {
   void
-  fill_connections(const pcl::PointCloud<pcl::PointXYZ> &training_point_cloud,
-                   const pcl::PointCloud<pcl::PointXYZ> & query_point_cloud,
-                   const std::vector<unsigned int> &query_indices, float object_span, float sensor_error,
-                   object_recognition::maximum_clique::Graph &graph)
+  FillConnections(const pcl::PointCloud<pcl::PointXYZ> &training_point_cloud,
+                  const pcl::PointCloud<pcl::PointXYZ> & query_point_cloud,
+                  const std::vector<unsigned int> &query_indices, float object_span, float sensor_error,
+                  object_recognition::maximum_clique::Graph &graph)
   {
     // The error the 3d sensor makes, distance wise
     unsigned int n_matches = training_point_cloud.size();
@@ -81,7 +81,7 @@ namespace
         // They should not, but in practice, there is so much noise in the training that we should allow it
         // (as two points in the training might actually be two noisy versions of the same one)
         //if (query_indices[i] == query_indices[j])
-          //continue;
+        //continue;
         // Two training points can be connected if they are within the span of an object
         const pcl::PointXYZ & query_point_2 = query_point_cloud.points[j];
         float dist_query = pcl::euclideanDistance(query_point_1, query_point_2);
@@ -93,11 +93,47 @@ namespace
         const pcl::PointXYZ & training_point_2 = training_point_cloud.points[j];
         float dist_training = pcl::euclideanDistance(training_point_1, training_point_2);
         // Make sure the distance between two points is somewhat conserved
-        if (std::abs(dist_training - dist_query) > 2 * sensor_error)
+        if (std::abs(dist_training - dist_query) > 4 * sensor_error)
           continue;
 
         // If all those conditions are respected, those two matches are potentially part of the same cluster
         graph.addEdge(i, j);
+      }
+    }
+  }
+
+  /** Define an adjacency matrix for the RANSAC samples: the samples have to be physically adjacent but they also
+   * need to be far apart enough (to avoid degenerate situations)
+   */
+  void
+  GetSampleAdjacency(const pcl::PointCloud<pcl::PointXYZ> &training_point_cloud,
+                     const pcl::PointCloud<pcl::PointXYZ> & query_point_cloud, float sensor_error,
+                     const cv::Mat_<uchar> & physical_adjacency, cv::Mat_<uchar> &sample_adjacency)
+  {
+    physical_adjacency.copyTo(sample_adjacency);
+
+    // The error the 3d sensor makes, distance wise
+    unsigned int n_matches = training_point_cloud.size();
+    for (unsigned int i = 0; i < n_matches; ++i)
+    {
+      const pcl::PointXYZ & training_point_1 = training_point_cloud.points[i], &query_point_1 =
+          query_point_cloud.points[i];
+      const uchar * row = physical_adjacency.ptr(i);
+      // For every other match that might end up in the same cluster
+      for (unsigned int j = i + 1; j < n_matches; ++j)
+      {
+        if (!row[j])
+          continue;
+        // Two training points can be connected if they are within the span of an object
+        const pcl::PointXYZ & query_point_2 = query_point_cloud.points[j], &training_point_2 =
+            training_point_cloud.points[j];
+        float dist_query = pcl::euclideanDistance(query_point_1, query_point_2);
+        float dist_training = pcl::euclideanDistance(training_point_1, training_point_2);
+        if ((dist_query < 2 * sensor_error) || (dist_training < 2 * sensor_error))
+        {
+          sample_adjacency(i, j) = 0;
+          sample_adjacency(j, i) = 0;
+        }
       }
     }
   }
@@ -188,18 +224,19 @@ namespace object_recognition
         n_ransac_iterations_ = param_tree.get<unsigned int>("n_ransac_iterations");
 
         debug_ = true;
-        sensor_error_ = 0.02;
+        sensor_error_ = 0.015;
       }
 
       Eigen::VectorXf
       ransacy_graph(const pcl::PointCloud<pcl::PointXYZ>::ConstPtr& training_point_cloud,
                     const pcl::PointCloud<pcl::PointXYZ>::ConstPtr & query_point_cloud,
-                    const std::vector<int>& good_indices, const object_recognition::maximum_clique::Graph &graph,
-                    std::vector<int>& inliers)
+                    const std::vector<int>& good_indices, const cv::Mat_<uchar> & physical_adjacency,
+                    const cv::Mat_<uchar> &sample_adjacency, std::vector<int>& inliers)
       {
+
         SampleConsensusModelRegistrationGraph<pcl::PointXYZ>::Ptr model(
             new SampleConsensusModelRegistrationGraph<pcl::PointXYZ>(query_point_cloud, good_indices, sensor_error_,
-                                                                     graph));
+                                                                     physical_adjacency, sample_adjacency));
         pcl::RandomSampleConsensus<pcl::PointXYZ> sample_consensus(model);
         Eigen::VectorXf coefficients;
         model->setInputTarget(training_point_cloud, good_indices);
@@ -328,8 +365,8 @@ namespace object_recognition
 
             // Fill the connections for that graph
             ObjectId object_id = id_correspondences.find(opencv_object_id)->second;
-            fill_connections(training_point_clouds[opencv_object_id], query_point_clouds[opencv_object_id],
-                             query_indices[opencv_object_id], spans.find(object_id)->second, sensor_error_, graph);
+            FillConnections(training_point_clouds[opencv_object_id], query_point_clouds[opencv_object_id],
+                            query_indices[opencv_object_id], spans.find(object_id)->second, sensor_error_, graph);
 
             // Keep processing the graph until there is no maximum clique of the right size
             std::vector<ObjectId> object_ids;
@@ -338,18 +375,25 @@ namespace object_recognition
             while (true)
             {
               // Compute the maximum of clique of that graph
-              std::vector<unsigned int> maximum_clique;
-              std::vector<int> int_maximum_clique(maximum_clique.size());
+              std::vector<int> int_maximum_clique;
               std::vector<int> inliers;
               pcl::PointCloud<pcl::PointXYZ>::Ptr training_cloud_ptr =
                   training_point_clouds[opencv_object_id].makeShared();
               pcl::PointCloud<pcl::PointXYZ>::Ptr query_cloud_ptr = query_point_clouds[opencv_object_id].makeShared();
               Eigen::VectorXf coefficients;
 
+
+
+              const cv::Mat_<uchar> & physical_adjacency = graph.adjacency();
+              cv::Mat_<uchar> sample_adjacency;
+              GetSampleAdjacency(training_point_clouds[opencv_object_id], query_point_clouds[opencv_object_id],
+                                 sensor_error_, physical_adjacency, sample_adjacency);
+
               for (unsigned int i = 0; i < training_point_clouds[opencv_object_id].points.size(); ++i)
                 int_maximum_clique.push_back(i);
               std::cout << "*** starting RANSAC" << std::endl;
-              coefficients = ransacy_graph(training_cloud_ptr, query_cloud_ptr, int_maximum_clique, graph, inliers);
+              coefficients = ransacy_graph(training_cloud_ptr, query_cloud_ptr, int_maximum_clique, physical_adjacency,
+                                           sample_adjacency, inliers);
 
               // If no pose was found, forget about all the connections in that clique
               std::cout << "*** n inliers: " << inliers.size() << " clique size " << int_maximum_clique.size()
@@ -369,14 +413,16 @@ namespace object_recognition
               {
                 matching_query_points[opencv_object_id].push_back(inliers);
 
-                std::vector<cv::KeyPoint> draw_keypoints;
-                BOOST_FOREACH(int i, maximum_clique)
-                      draw_keypoints.push_back(keypoints[query_indices[opencv_object_id][i]]);
-                cv::Mat output_img;
-                cv::drawKeypoints(initial_image, draw_keypoints, output_img);
-                cv::namedWindow("max clique", 0);
-                cv::imshow("max clique", output_img);
-                cv::waitKey(1000);
+                /*
+                 std::vector<unsigned int> maximum_clique;
+                 std::vector<cv::KeyPoint> draw_keypoints;
+                 BOOST_FOREACH(int i, maximum_clique)
+                 draw_keypoints.push_back(keypoints[query_indices[opencv_object_id][i]]);
+                 cv::Mat output_img;
+                 cv::drawKeypoints(initial_image, draw_keypoints, output_img);
+                 cv::namedWindow("max clique", 0);
+                 cv::imshow("max clique", output_img);
+                 cv::waitKey(1000);*/
               }
 
               // Check whether other matches could fit that model
@@ -427,9 +473,9 @@ namespace object_recognition
                 for (unsigned int i = 0; i < query_indices[opencv_object_id].size(); ++i)
                   indices.push_back(i);
                 /*std::vector<unsigned int>::iterator end = std::set_intersection(indices.begin(), indices.end(),
-                                                                                bad_indices.begin(), bad_indices.end(),
-                                                                                indices.begin());
-                indices.resize(end - indices.begin());*/
+                 bad_indices.begin(), bad_indices.end(),
+                 indices.begin());
+                 indices.resize(end - indices.begin());*/
 
                 double thresh = sensor_error_ * sensor_error_;
 
@@ -443,13 +489,13 @@ namespace object_recognition
                 unsigned int count = 0;
                 BOOST_FOREACH(unsigned int index, indices )
                     {
-                      const Eigen::Map<Eigen::Vector4f, Eigen::Aligned> &pt_tgt =
-                          query_cloud_ptr->points[index].getVector4fMap();
                       const Eigen::Map<Eigen::Vector4f, Eigen::Aligned> &pt_src =
+                          query_cloud_ptr->points[index].getVector4fMap();
+                      const Eigen::Map<Eigen::Vector4f, Eigen::Aligned> &pt_tgt =
                           training_cloud_ptr->points[index].getVector4fMap();
                       Eigen::Vector4f p_tr = transform * pt_src;
                       // Calculate the distance from the transformed point to its correspondence
-                      if ((p_tr - pt_tgt).squaredNorm() < 4 * thresh)
+                      if ((p_tr - pt_tgt).squaredNorm() < 2 * thresh)
                       {
                         inliers.push_back(index);
                         ++count;
@@ -478,7 +524,7 @@ namespace object_recognition
               std::cout << R_mat << std::endl;
               std::cout << tvec << std::endl;
 
-              if (0)
+              if (1)
               {
                 for (std::vector<int>::const_iterator iter = inliers.begin(), end = inliers.end() - 1; iter < end;
                     ++iter)
