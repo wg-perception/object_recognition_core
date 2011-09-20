@@ -78,8 +78,10 @@ namespace
       for (unsigned int j = i + 1; j < n_matches; ++j)
       {
         // Two matches with the same query point cannot be connected
-        if (query_indices[i] == query_indices[j])
-          continue;
+        // They should not, but in practice, there is so much noise in the training that we should allow it
+        // (as two points in the training might actually be two noisy versions of the same one)
+        //if (query_indices[i] == query_indices[j])
+          //continue;
         // Two training points can be connected if they are within the span of an object
         const pcl::PointXYZ & query_point_2 = query_point_cloud.points[j];
         float dist_query = pcl::euclideanDistance(query_point_1, query_point_2);
@@ -424,10 +426,10 @@ namespace object_recognition
                 std::vector<unsigned int> indices;
                 for (unsigned int i = 0; i < query_indices[opencv_object_id].size(); ++i)
                   indices.push_back(i);
-                std::vector<unsigned int>::iterator end = std::set_intersection(indices.begin(), indices.end(),
+                /*std::vector<unsigned int>::iterator end = std::set_intersection(indices.begin(), indices.end(),
                                                                                 bad_indices.begin(), bad_indices.end(),
                                                                                 indices.begin());
-                indices.resize(end - indices.begin());
+                indices.resize(end - indices.begin());*/
 
                 double thresh = sensor_error_ * sensor_error_;
 
@@ -447,7 +449,7 @@ namespace object_recognition
                           training_cloud_ptr->points[index].getVector4fMap();
                       Eigen::Vector4f p_tr = transform * pt_src;
                       // Calculate the distance from the transformed point to its correspondence
-                      if ((p_tr - pt_tgt).squaredNorm() < 2 * thresh)
+                      if ((p_tr - pt_tgt).squaredNorm() < 4 * thresh)
                       {
                         inliers.push_back(index);
                         ++count;
@@ -476,8 +478,34 @@ namespace object_recognition
               std::cout << R_mat << std::endl;
               std::cout << tvec << std::endl;
 
-              for (std::vector<int>::const_iterator iter = inliers.begin(), end = inliers.end() - 1; iter < end; ++iter)
-                std::cout << int(graph.adjacency()(*iter, *(iter + 1))) << " ";
+              if (0)
+              {
+                for (std::vector<int>::const_iterator iter = inliers.begin(), end = inliers.end() - 1; iter < end;
+                    ++iter)
+                    {
+                  std::cout << int(graph.adjacency()(*iter, *(iter + 1))) << " ";
+                  if (graph.adjacency()(*iter, *(iter + 1)))
+                    continue;
+                  int i = *iter, j = *(iter + 1);
+
+                  const pcl::PointXYZ & training_point_1 = training_point_clouds[opencv_object_id].points[i],
+                      &query_point_1 = query_point_clouds[opencv_object_id].points[i], &training_point_2 =
+                          training_point_clouds[opencv_object_id].points[j], &query_point_2 =
+                          query_point_clouds[opencv_object_id].points[j];
+
+                  // Two matches with the same query point cannot be connected
+                  std::cout << "-" << int(query_indices[opencv_object_id][i] == query_indices[opencv_object_id][j])
+                            << " ";
+
+                  float dist_query = pcl::euclideanDistance(query_point_1, query_point_2);
+
+                  std::cout << int(dist_query > (spans.find(object_id)->second + 2 * sensor_error_)) << " ";
+
+                  float dist_training = pcl::euclideanDistance(training_point_1, training_point_2);
+                  // Make sure the distance between two points is somewhat conserved
+                  std::cout << int(std::abs(dist_training - dist_query) > 2 * sensor_error_) << "-- ";
+                }
+              }
               std::cout << std::endl;
 
               // Figure out the matches to remove
