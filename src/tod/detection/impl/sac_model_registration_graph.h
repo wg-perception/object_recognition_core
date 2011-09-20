@@ -54,6 +54,7 @@ namespace object_recognition
     {
     public:
       typedef typename pcl::SampleConsensusModelRegistration<PointT>::PointCloudConstPtr PointCloudConstPtr;
+      using pcl::SampleConsensusModel<PointT>::drawIndexSample;
 
       /** \brief Constructor for base SampleConsensusModelRegistration.
        * \param cloud the input point cloud dataset
@@ -62,7 +63,9 @@ namespace object_recognition
                                             const object_recognition::maximum_clique::Graph & graph)
           :
             pcl::SampleConsensusModelRegistration<PointT>(cloud),
-            adjacency_(graph.adjacency())
+            adjacency_(graph.adjacency()),
+            best_inlier_number_(0),
+            input_(cloud)
       {
         BuildNeighbors();
       }
@@ -77,96 +80,104 @@ namespace object_recognition
             pcl::SampleConsensusModelRegistration<PointT>(cloud, indices),
             adjacency_(graph.adjacency()),
             indices_(indices),
-            shuffled_indices_(indices)
+            shuffled_indices_(indices),
+            best_inlier_number_(0),
+            input_(cloud)
       {
         BuildNeighbors();
       }
 
-      inline void
-      drawIndexSample(std::vector<int> & sample)
-      {
-        size_t sample_size = sample.size();
-        sample.clear();
-        size_t index_size = shuffled_indices_.size();
-        std::vector<unsigned int> valid_samples = shuffled_indices_;
-        drawIndexSample(valid_samples, sample);
-        while (true)
-        {
-          // Decide on the first sample
-          unsigned int first_sample;
-          while (true)
-          {
-            first_sample = rand() % index_size;
-            if (neighbors_[first_sample].size() >= sample_size)
-              break;
-          }
-          sample.push_back(first_sample);
-
-          // Then, draw from its neighbors
-          std::vector<unsigned int> valid_samples = neighbors_[first_sample];
-          while ((sample.size() < sample_size) && (!valid_samples.empty()))
-          {
-            unsigned int new_sample = rand() % valid_samples.size();
-            sample.push_back(first_sample);
-          }
-          for (unsigned int i = 0; i < sample_size; ++i)
-            // The 1/(RAND_MAX+1.0) trick is when the random numbers are not uniformly distributed and for small modulo
-            // elements, that does not matter (and nowadays, random number generators are good)
-            std::swap(shuffled_indices_[i], shuffled_indices_[i + (rand() % (index_size - i))]);
-        }
-        std::copy(shuffled_indices_.begin(), shuffled_indices_.begin() + sample_size, sample.begin());
-      }
       bool
-      drawIndexSampleHelper(const std::vector<unsigned int> & valid_samples, unsigned int n_samples,
-                            std::vector<unsigned int> & samples)
+      drawIndexSampleHelper(std::vector<int> & valid_samples, unsigned int n_samples, std::vector<int> & samples) const
       {
         if (n_samples == 0)
           return true;
-        unsigned int sample = rand() % valid_samples.size();
-        std::vector<unsigned int> new_valid_samples = valid_samples;
-        std::vector<unsigned int>::iterator end = std::set_intersection(valid_samples.begin(), valid_samples.end(),
-                                                                        neighbors_[sample].begin(),
-                                                                        neighbors_[sample].end(),
-                                                                        new_valid_samples.begin());
-        new_valid_samples.resize(end - new_valid_samples.begin());
-        if (new_valid_samples.empty())
-          return false;
-        std::vector<unsigned int> new_samples;
-        if (drawIndexSampleHelper(new_valid_samples, n_samples - 1, new_samples))
+        while (true)
         {
-          samples = new_samples;
-          samples.push_back(sample);
-          return true;
+          int sample = valid_samples[rand() % valid_samples.size()];
+          std::vector<int> new_valid_samples(valid_samples.size());
+          std::vector<int>::iterator end = std::set_intersection(valid_samples.begin(), valid_samples.end(),
+                                                                 neighbors_[sample].begin(), neighbors_[sample].end(),
+                                                                 new_valid_samples.begin());
+          new_valid_samples.resize(end - new_valid_samples.begin());
+          if (new_valid_samples.empty())
+            return false;
+          std::vector<int> new_samples;
+          if (drawIndexSampleHelper(new_valid_samples, n_samples - 1, new_samples))
+          {
+            samples = new_samples;
+            valid_samples = new_valid_samples;
+            samples.push_back(sample);
+            return true;
+          }
+          else
+          {
+            std::vector<int>::iterator end = std::remove(valid_samples.begin(), valid_samples.end(), sample);
+            valid_samples.resize(end - valid_samples.begin());
+            if (valid_samples.empty())
+              return false;
+          }
         }
-        else
-          return false;
+        return false;
       }
 
-      /*      bool
-       isSampleGood(const std::vector<int> &samples) const
-       {
-       bool is_good = true;
-       // First make sure all the samples can belong to one common clique
-       std::vector<int>::const_iterator iter1 = samples.begin(), iter2, end = samples.end();
-       for (; iter1 != end; ++iter1)
-       {
-       const uchar* row = adjacency_.ptr(*iter1);
-       for (iter2 = iter1 + 1; iter2 != end; ++iter2)
-       if (!row[*iter2])
-       {
-       is_good = false;
-       break;
-       }
-       }
-       if (is_good)
-       {
-       is_good = pcl::SampleConsensusModelRegistration<PointT>::isSampleGood(samples);
-       if (is_good)
-       samples_ = samples;
-       }
+      bool
+      isSampleGood(const std::vector<int> &samples) const
+      {
+        std::vector<int> valid_samples(shuffled_indices_.size());
+        std::copy(shuffled_indices_.begin(), shuffled_indices_.end(), valid_samples.begin());
 
-       return is_good;
-       }*/
+        std::sort(valid_samples.begin(), valid_samples.end());
+        std::vector<int> &new_samples = const_cast<std::vector<int> &>(samples);
+        size_t sample_size = new_samples.size();
+        bool is_good = drawIndexSampleHelper(valid_samples, sample_size, new_samples);
+
+        static int count_good = 0;
+        static int count_bad = 0;
+        static int count_finally_bad = 0;
+        if (is_good)
+        {
+          ++count_good;
+          bool sub_is_good = true;
+          for (unsigned int i = 0; i < samples.size(); ++i)
+            for (unsigned int j = i + 1; j < samples.size(); ++j)
+              if (!adjacency_(samples[i], samples[j]))
+                sub_is_good = false;
+          if (!sub_is_good)
+            std::cout << "problem with sample adjacency" << std::endl;
+        }
+        else
+        {
+          ++count_bad;
+          //std::cout << "bad ones: " << count_bad << " good ones: " << count_good << " made bad: " << count_finally_bad
+            //        << std::endl;
+        }
+
+        /*
+         // First make sure all the samples can belong to one common clique
+         std::vector<int>::const_iterator iter1 = samples.begin(), iter2, end = samples.end();
+         for (; iter1 != end; ++iter1)
+         {
+         const uchar* row = adjacency_.ptr(*iter1);
+         for (iter2 = iter1 + 1; iter2 != end; ++iter2)
+         if (!row[*iter2])
+         {
+         is_good = false;
+         break;
+         }
+         }
+         */
+        if (is_good)
+        {
+          is_good = pcl::SampleConsensusModelRegistration<PointT>::isSampleGood(samples);
+          if (is_good)
+            samples_ = samples;
+          else
+            ++count_finally_bad;
+        }
+
+        return is_good;
+      }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
       void
       getDistancesToModel(const Eigen::VectorXf &model_coefficients, std::vector<double> &distances)
@@ -174,7 +185,6 @@ namespace object_recognition
         pcl::SampleConsensusModelRegistration<PointT>::getDistancesToModel(model_coefficients, distances);
 
         // Assign a maximum distance for all the points that cannot belong to a clique including the sample
-        std::vector<int> final_inliers;
         for (size_t i = 0; i < indices_.size(); ++i)
         {
           const uchar* row = adjacency_.ptr(indices_[i]);
@@ -189,13 +199,15 @@ namespace object_recognition
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
       void
-      selectWithinDistance(const Eigen::VectorXf &model_coefficients, double threshold, std::vector<int> &inliers)
+      selectWithinDistance(const Eigen::VectorXf &model_coefficients, double threshold, std::vector<int> &in_inliers)
       {
-        pcl::SampleConsensusModelRegistration<PointT>::selectWithinDistance(model_coefficients, threshold, inliers);
+        std::vector<int> possible_inliers;
+        pcl::SampleConsensusModelRegistration<PointT>::selectWithinDistance(model_coefficients, threshold,
+                                                                            possible_inliers);
 
         // Remove all the points that cannot belong to a clique including the samples
-        std::vector<int> final_inliers;
-        BOOST_FOREACH(int inlier, inliers)
+        std::vector<int> coherent_inliers;
+        BOOST_FOREACH(int inlier, possible_inliers)
             {
               bool is_good = true;
               const uchar* row = adjacency_.ptr(inlier);
@@ -206,22 +218,102 @@ namespace object_recognition
                       break;
                     }
               if (is_good)
-                final_inliers.push_back(inlier);
+                coherent_inliers.push_back(inlier);
             }
-        inliers = final_inliers;
+
+        // If that set is not bigger than the best so far, no need to refine it
+        if (coherent_inliers.size() < best_inlier_number_)
+        {
+          in_inliers = coherent_inliers;
+          return;
+        }
+        if (coherent_inliers.empty())
+          return;
+
+        std::vector<int> new_coherent_inliers;
+        {
+          object_recognition::maximum_clique::Graph graph(coherent_inliers.size());
+          for (unsigned int j = 0; j < coherent_inliers.size(); ++j)
+            for (unsigned int i = j + 1; i < coherent_inliers.size(); ++i)
+              if (adjacency_(coherent_inliers[j], coherent_inliers[i]))
+                graph.addEdge(j, i);
+          std::vector<unsigned int> vertices;
+          graph.findMaximumClique(vertices);
+
+          BOOST_FOREACH(unsigned int vertex, vertices)
+                new_coherent_inliers.push_back(coherent_inliers[vertex]);
+        }
+
+        std::sort(possible_inliers.begin(), possible_inliers.end());
+        std::sort(new_coherent_inliers.begin(), new_coherent_inliers.end());
+
+        // Try to augment this set, in case the max clique did not do its job fully
+        {
+          std::vector<unsigned int> intersection(possible_inliers.size());
+          std::copy(possible_inliers.begin(), possible_inliers.end(), intersection.begin());
+          while (!intersection.empty())
+          {
+            std::vector<unsigned int>::iterator end = std::set_difference(intersection.begin(), intersection.end(),
+                                                                          new_coherent_inliers.begin(),
+                                                                          new_coherent_inliers.end(),
+                                                                          intersection.begin());
+            intersection.resize(end - intersection.begin());
+            BOOST_FOREACH(int inlier, new_coherent_inliers)
+                {
+                  end = std::set_intersection(intersection.begin(), intersection.end(), neighbors_[inlier].begin(),
+                                              neighbors_[inlier].end(), intersection.begin());
+                  intersection.resize(end - intersection.begin());
+                }
+            if ((1) && (!intersection.empty()))
+            {
+              // Find the max clique between the elements in that intersection
+              std::cout << "missed some:" << intersection.size();
+              object_recognition::maximum_clique::Graph graph(intersection.size());
+              for (unsigned int j = 0; j < intersection.size(); ++j)
+                for (unsigned int i = j + 1; i < intersection.size(); ++i)
+                  if (adjacency_(intersection[j], intersection[i]))
+                    graph.addEdge(j, i);
+              std::vector<unsigned int> vertices;
+              graph.findMaximumClique(vertices);
+
+              std::cout << " actually missed :" << vertices.size() << std::endl;
+              BOOST_FOREACH(int vertex, vertices)
+                    new_coherent_inliers.push_back(intersection[vertex]);
+            }
+          }
+        }
+        in_inliers = new_coherent_inliers;
+
+        best_inlier_number_ = std::max(in_inliers.size(), best_inlier_number_);
       }
     private:
       void
       BuildNeighbors()
       {
+        // Compute the principal directions via PCA
+        Eigen::Vector4f xyz_centroid;
+        pcl::compute3DCentroid(*input_, xyz_centroid);
+        EIGEN_ALIGN16 Eigen::Matrix3f covariance_matrix;
+        pcl::computeCovarianceMatrixNormalized(*input_, xyz_centroid, covariance_matrix);
+        EIGEN_ALIGN16 Eigen::Vector3f eigen_values;
+        EIGEN_ALIGN16 Eigen::Matrix3f eigen_vectors;
+        pcl::eigen33(covariance_matrix, eigen_vectors, eigen_values);
+
+        // Compute the distance threshold for sample selection
+        double sample_dist_thresh = eigen_values.array().sqrt().sum() / 3.0;
+        sample_dist_thresh *= sample_dist_thresh;
+
         neighbors_.resize(adjacency_.rows);
         for (int j = 0; j < adjacency_.rows; ++j)
         {
           const uchar * row = adjacency_.ptr<uchar>(j);
+          const pcl::Array4fMapConst p0 = input_->points[j].getArray4fMap();
           for (int i = 0; i < adjacency_.cols; ++i)
-            if (row[i])
+          {
+            const pcl::Array4fMapConst p1 = input_->points[i].getArray4fMap();
+            if ((row[i]) && ((p1 - p0).matrix().squaredNorm() > sample_dist_thresh))
               neighbors_[j].push_back(i);
-          std::sort(neighbors_[j].begin(), neighbors_[j].end());
+          }
         }
       }
 
@@ -230,6 +322,8 @@ namespace object_recognition
       std::vector<int> indices_;
       std::vector<int> shuffled_indices_;
       std::vector<std::vector<unsigned int> > neighbors_;
+      size_t best_inlier_number_;
+      PointCloudConstPtr input_;
     };
   }
 }

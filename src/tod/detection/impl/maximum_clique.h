@@ -95,8 +95,8 @@ namespace object_recognition
       void
       DegreeSort(Vertices & R);
       void
-      MaxCliqueDyn(Vertices & R, Colors &C, int level, Vertices &QMax, Vertices &Q, std::vector<unsigned int> &S,
-                   std::vector<unsigned int> &SOld);
+      MaxCliqueDyn(Vertices & R, Colors &C, unsigned int level, Vertices &QMax, Vertices &Q,
+                   std::vector<unsigned int> &S, std::vector<unsigned int> &SOld);
 
       /** Mask for the edges */
       cv::Mat_<uchar> adjacency_;

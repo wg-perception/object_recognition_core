@@ -68,13 +68,14 @@ namespace
                    object_recognition::maximum_clique::Graph &graph)
   {
     // The error the 3d sensor makes, distance wise
-    cv::Mat_<float> distances(training_point_cloud.size(), training_point_cloud.size());
-    for (unsigned int i = 0; i < training_point_cloud.size(); ++i)
+    unsigned int n_matches = training_point_cloud.size();
+    cv::Mat_<float> distances(n_matches, n_matches);
+    for (unsigned int i = 0; i < n_matches; ++i)
     {
       const pcl::PointXYZ & training_point_1 = training_point_cloud.points[i], &query_point_1 =
           query_point_cloud.points[i];
       // For every other match that might end up in the same cluster
-      for (unsigned int j = i + 1; j < training_point_cloud.size(); ++j)
+      for (unsigned int j = i + 1; j < n_matches; ++j)
       {
         // Two matches with the same query point cannot be connected
         if (query_indices[i] == query_indices[j])
@@ -96,6 +97,36 @@ namespace
         // If all those conditions are respected, those two matches are potentially part of the same cluster
         graph.addEdge(i, j);
       }
+    }
+  }
+
+  void
+  FindMatchesWithSameQueryIndices(const std::vector<unsigned int> &query_indices, const std::vector<int> &inliers,
+                                  std::vector<unsigned int> &indices)
+  {
+    std::vector<unsigned int> matching_query_indices;
+    BOOST_FOREACH(unsigned int index, inliers)
+          matching_query_indices.push_back(query_indices[index]);
+    std::sort(matching_query_indices.begin(), matching_query_indices.end());
+
+    std::vector<unsigned int>::const_iterator iter = matching_query_indices.begin(), end = matching_query_indices.end();
+    unsigned int count = 0;
+    for (unsigned int i = 0; i < query_indices.size(); ++i)
+    {
+      unsigned int query_index = query_indices[i];
+      if (query_index < *iter)
+        continue;
+      // If the match has a keypoint in the inliers, remove the match
+      if (query_index == *iter)
+      {
+        indices.push_back(i);
+        ++count;
+        continue;
+      }
+      while ((iter != end) && (query_index > *iter))
+        ++iter;
+      if (iter == end)
+        break;
     }
   }
 }
@@ -155,7 +186,7 @@ namespace object_recognition
         n_ransac_iterations_ = param_tree.get<unsigned int>("n_ransac_iterations");
 
         debug_ = true;
-        sensor_error_ = 0.015;
+        sensor_error_ = 0.02;
       }
 
       Eigen::VectorXf
@@ -205,10 +236,10 @@ namespace object_recognition
                     std::vector<int>& inliers)
       {
         SampleConsensusModelRegistrationGraph<pcl::PointXYZ>::Ptr model(
-            new SampleConsensusModelRegistrationGraph<pcl::PointXYZ>(training_point_cloud, good_indices, graph));
+            new SampleConsensusModelRegistrationGraph<pcl::PointXYZ>(query_point_cloud, good_indices, graph));
         pcl::RandomSampleConsensus<pcl::PointXYZ> sample_consensus(model);
         Eigen::VectorXf coefficients;
-        model->setInputTarget(query_point_cloud, good_indices);
+        model->setInputTarget(training_point_cloud, good_indices);
         sample_consensus.setDistanceThreshold(sensor_error_);
         sample_consensus.setMaxIterations(n_ransac_iterations_);
 
@@ -262,9 +293,6 @@ namespace object_recognition
         const cv::Mat & initial_image = inputs.get<cv::Mat>("image");
 
         // Get the outputs
-        std::vector<ObjectId> object_ids;
-        std::vector<cv::Mat> Rs, Ts;
-
         if (point_cloud.empty())
         {
           // Only use 2d to 3d matching
@@ -321,6 +349,8 @@ namespace object_recognition
           }
 
           // For each object, build the connectivity graph between the matches
+          std::vector<ObjectId> object_ids_final;
+          std::vector<cv::Mat> Rs_final, Ts_final;
           std::map<ObjectOpenCVId, std::vector<std::vector<int> > > matching_query_points;
           typedef std::map<ObjectOpenCVId, object_recognition::maximum_clique::Graph> OpenCVIdToGraph;
           OpenCVIdToGraph graphs;
@@ -338,12 +368,10 @@ namespace object_recognition
             fill_connections(training_point_clouds[opencv_object_id], query_point_clouds[opencv_object_id],
                              query_indices[opencv_object_id], spans.find(object_id)->second, sensor_error_, graph);
 
-            /*cluster_clouds(training_point_clouds[opencv_object_id],
-             query_point_clouds[opencv_object_id], spans.find(object_id)->second,
-             Rs, Ts);
-             object_ids.resize(Rs.size(),object_id);
-             continue;*/
             // Keep processing the graph until there is no maximum clique of the right size
+            std::vector<ObjectId> object_ids;
+            std::vector<cv::Mat> Rs, Ts;
+
             while (true)
             {
               // Compute the maximum of clique of that graph
@@ -408,7 +436,85 @@ namespace object_recognition
               }
 
               // Check whether other matches could fit that model
+              /*std::vector<std::vector<int> > neighbors;
+               const cv::Mat_<uchar> & adjacency = graph.adjacency();
+               {
+               neighbors.resize(adjacency.rows);
+               for (int j = 0; j < adjacency.rows; ++j)
+               {
+               const uchar * row = adjacency.ptr<uchar>(j);
+               for (int i = 0; i < adjacency.cols; ++i)
+               if (row[i])
+               neighbors[j].push_back(i);
+               }
+               }
 
+               std::vector<int> intersection = neighbors[inliers[0]];
+               std::sort(inliers.begin(), inliers.end());
+               std::vector<int>::iterator intersection_end = std::set_difference(neighbors[inliers[0]].begin(),
+               neighbors[inliers[0]].end(),
+               inliers.begin(), inliers.end(),
+               intersection.begin());
+               intersection.resize(intersection_end - intersection.begin());
+               BOOST_FOREACH(int inlier, inliers)
+               {
+               intersection_end = std::set_intersection(intersection.begin(), intersection.end(),
+               neighbors[inlier].begin(), neighbors[inlier].end(),
+               intersection.begin());
+               intersection.resize(intersection_end - intersection.begin());
+               }
+
+               // Check why those are not good
+               std::cout << "possible coherent ones: " << intersection.size();
+
+               object_recognition::maximum_clique::Graph graph_new(intersection.size());
+               for (unsigned int j = 0; j < intersection.size(); ++j)
+               for (unsigned int i = j + 1; i < intersection.size(); ++i)
+               if (adjacency(intersection[j], intersection[i]))
+               graph_new.addEdge(j, i);
+               std::vector<unsigned int> vertices;
+               graph_new.findMaximumClique(vertices);
+
+               std::cout << " witin themselves: " << vertices.size() << std::endl;*/
+              {
+                std::vector<unsigned int> bad_indices;
+                FindMatchesWithSameQueryIndices(query_indices[opencv_object_id], inliers, bad_indices);
+                std::vector<unsigned int> indices;
+                for (unsigned int i = 0; i < query_indices[opencv_object_id].size(); ++i)
+                  indices.push_back(i);
+                std::vector<unsigned int>::iterator end = std::set_intersection(indices.begin(), indices.end(),
+                                                                                bad_indices.begin(), bad_indices.end(),
+                                                                                indices.begin());
+                indices.resize(end - indices.begin());
+
+                double thresh = sensor_error_ * sensor_error_;
+
+                // Check if the model is valid given the user constraints
+                Eigen::Matrix4f transform;
+                transform.row(0) = coefficients.segment<4>(0);
+                transform.row(1) = coefficients.segment<4>(4);
+                transform.row(2) = coefficients.segment<4>(8);
+                transform.row(3) = coefficients.segment<4>(12);
+
+                unsigned int count = 0;
+                BOOST_FOREACH(unsigned int index, indices )
+                    {
+                      const Eigen::Map<Eigen::Vector4f, Eigen::Aligned> &pt_tgt =
+                          query_cloud_ptr->points[index].getVector4fMap();
+                      const Eigen::Map<Eigen::Vector4f, Eigen::Aligned> &pt_src =
+                          training_cloud_ptr->points[index].getVector4fMap();
+                      Eigen::Vector4f p_tr = transform * pt_src;
+                      // Calculate the distance from the transformed point to its correspondence
+                      if ((p_tr - pt_tgt).squaredNorm() < 2 * thresh)
+                      {
+                        inliers.push_back(index);
+                        ++count;
+                      }
+                    }
+                std::cout << " added : " << count << std::endl;
+              }
+
+              // Go over all the matches that have not been checked
               // Store the pose
               cv::Mat_<float> R_mat(3, 3), tvec(3, 1);
               for (unsigned int j = 0; j < 3; ++j)
@@ -417,35 +523,37 @@ namespace object_recognition
                   R_mat(j, i) = coefficients[4 * j + i];
                 tvec(j, 0) = coefficients[4 * j + 3];
               }
+              R_mat = R_mat.t();
+              tvec = -R_mat*tvec;
+
+              // Check whether the pose could be close to a previous
+
+
               Rs.push_back(R_mat);
               Ts.push_back(tvec);
               object_ids.push_back(object_id);
               std::cout << R_mat << std::endl;
               std::cout << tvec << std::endl;
 
-              // Figure out the matches to remove
-              std::vector<unsigned int> query_indices_to_delete;
-              BOOST_FOREACH(unsigned int index, inliers)
-                    query_indices_to_delete.push_back(query_indices[opencv_object_id][index]);
+              for (std::vector<int>::const_iterator iter = inliers.begin(), end = inliers.end() - 1; iter < end; ++iter)
+                std::cout << int(graph.adjacency()(*iter, *(iter + 1))) << " ";
+              std::cout << std::endl;
 
-              std::sort(query_indices_to_delete.begin(), query_indices_to_delete.end());
-              std::vector<unsigned int>::const_iterator iter = query_indices_to_delete.begin(), end =
-                  query_indices_to_delete.end();
-              int i = -1;
-              BOOST_FOREACH(unsigned int query_index, query_indices[opencv_object_id])
-                  {
-                    ++i;
-                    if (size_t(query_index) < *iter)
-                      continue;
-                    while ((iter != end) && (size_t(query_index) > *iter))
-                      ++iter;
-                    if (iter == end)
-                      break;
-                    // If the match has a keypoint in the inliers, remove the match
-                    if (size_t(query_index) == *iter)
-                      graph.deleteEdges(i);
-                  }
+              // Figure out the matches to remove
+              {
+                std::vector<unsigned int> indices;
+                FindMatchesWithSameQueryIndices(query_indices[opencv_object_id], inliers, indices);
+
+                BOOST_FOREACH(unsigned int index, indices)
+                      graph.deleteEdges(index);
+                std::cout << indices.size() << " edges deleted" << std::endl;
+              }
             }
+
+            // Save all the poses;
+            Rs_final.insert(Rs_final.end(), Rs.begin(), Rs.end());
+            Ts_final.insert(Ts_final.end(), Ts.begin(), Ts.end());
+            object_ids_final.insert(object_ids_final.end(), object_ids.begin(), object_ids.end());
           }
 
           if (debug_)
@@ -487,10 +595,10 @@ namespace object_recognition
             cv::imshow("inliers", output_img);
           }
 
-          outputs["Rs"] << Rs;
-          outputs["Ts"] << Ts;
-          outputs["object_ids"] << object_ids;
-          std::cout << "********************* found " << object_ids.size() << "poses" << std::endl;
+          outputs["Rs"] << Rs_final;
+          outputs["Ts"] << Ts_final;
+          outputs["object_ids"] << object_ids_final;
+          std::cout << "********************* found " << object_ids_final.size() << "poses" << std::endl;
         }
 
         return 0;

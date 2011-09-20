@@ -44,7 +44,7 @@ namespace object_recognition
   namespace maximum_clique
   {
     /** Returns true if any element in B is a neighbor of in_vertex
-     * but also the set of corresponding enighbors
+     * but also the set of corresponding neighbors
      * @param in_vertex
      * @param vertices
      * @param intersection
@@ -90,7 +90,7 @@ namespace object_recognition
         C[j - 1] = 0;
       Vertices::iterator R_iter = R.begin() + j;
       Colors::iterator C_iter = C.begin() + j;
-      for (unsigned int k = min_k; k < maxno; k++)
+      for (unsigned int k = min_k; k < maxno; ++k)
       {
         unsigned int Ck_size = Ck[k].size();
         std::copy(Ck[k].begin(), Ck[k].end(), R_iter);
@@ -104,7 +104,7 @@ namespace object_recognition
     Graph::DegreeSort(Vertices &R)
     {
       unsigned int R_size = R.size();
-      std::vector<std::pair<unsigned int, Vertex> > degrees(R.size());
+      std::vector<std::pair<unsigned int, Vertex> > degrees(R_size);
       for (unsigned int i = 0; i < R_size; ++i)
       {
         degrees[i] = std::make_pair(0, R[i]);
@@ -119,14 +119,22 @@ namespace object_recognition
       std::sort(degrees.begin(), degrees.end());
 
       // Copy back to R in reverse
-      for (unsigned int i = 0; i < R_size; i++)
+      for (unsigned int i = 0; i < R_size; ++i)
         R[i] = degrees[R_size - 1 - i].second;
     }
 
     void
-    Graph::MaxCliqueDyn(Vertices & R, Colors &C, int level, Vertices &QMax, Vertices &Q, std::vector<unsigned int> &S,
-                        std::vector<unsigned int> &SOld)
+    Graph::MaxCliqueDyn(Vertices & R, Colors &C, unsigned int level, Vertices &QMax, Vertices &Q,
+                        std::vector<unsigned int> &S, std::vector<unsigned int> &SOld)
     {
+      if (level >= S.size())
+      {
+        S.reserve(2 * S.size());
+        S.resize(S.size() + 1);
+        SOld.reserve(2 * SOld.size());
+        SOld.resize(SOld.size() + 1);
+      }
+
       S[level] = S[level] + S[level - 1] - SOld[level];
       SOld[level] = S[level - 1];
 
@@ -149,13 +157,13 @@ namespace object_recognition
             ++S[level];
             ++all_steps_;
             //if (all_steps_ > 100000)
-              //return;
+            //return;
             MaxCliqueDyn(Rp, Cp, level + 1, QMax, Q, S, SOld);
           }
           else if (Q.size() > QMax.size())
           {
             QMax = Q;
-            std::cout << "step: " << all_steps_ << " with size " << QMax.size() << std::endl;
+            //std::cout << "step: " << all_steps_ << " with size " << QMax.size() << std::endl;
           }
           Q.pop_back();
         }
@@ -167,6 +175,8 @@ namespace object_recognition
     void
     Graph::findMaximumClique(Vertices &QMax)
     {
+      if (n_vertices_ == 0)
+        return;
       all_steps_ = 1;
       t_limit_ = 0.025;
 
@@ -184,7 +194,8 @@ namespace object_recognition
 
       Vertices Q;
       QMax.clear();
-      std::vector<unsigned int> S(n_vertices_, 0), SOld(n_vertices_, 0);
+      // +1 as we start at level 1
+      std::vector<unsigned int> S(n_vertices_ + 1, 0), SOld(n_vertices_ + 1, 0);
       MaxCliqueDyn(R, C, 1, QMax, Q, S, SOld);
 
       // Check that the clique is valid
