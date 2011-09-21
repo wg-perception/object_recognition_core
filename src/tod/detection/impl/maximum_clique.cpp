@@ -124,9 +124,11 @@ namespace object_recognition
     }
 
     void
-    Graph::MaxCliqueDyn(Vertices & R, Colors &C, unsigned int level, Vertices &QMax, Vertices &Q,
-                        std::vector<unsigned int> &S, std::vector<unsigned int> &SOld)
+    Graph::MaxCliqueDyn(Vertices & R, Colors &C, unsigned int level, unsigned int minimal_size, Vertices &QMax,
+                        Vertices &Q, std::vector<unsigned int> &S, std::vector<unsigned int> &SOld)
     {
+      if (QMax.size() >= minimal_size)
+        return;
       if (level >= S.size())
       {
         S.reserve(2 * S.size());
@@ -158,11 +160,13 @@ namespace object_recognition
             ++all_steps_;
             //if (all_steps_ > 100000)
             //return;
-            MaxCliqueDyn(Rp, Cp, level + 1, QMax, Q, S, SOld);
+            MaxCliqueDyn(Rp, Cp, level + 1, minimal_size, QMax, Q, S, SOld);
           }
           else if (Q.size() > QMax.size())
           {
             QMax = Q;
+            if (QMax.size() >= minimal_size)
+              return;
             //std::cout << "step: " << all_steps_ << " with size " << QMax.size() << std::endl;
           }
           Q.pop_back();
@@ -172,8 +176,13 @@ namespace object_recognition
       }
     }
 
+    /** Tries to find a clique of a size at least min_size. If it does nto find it, it returns the biggest clique
+     * it can
+     * @param QMax The final clique
+     * @param min_size The minimal size the desired clique should have
+     */
     void
-    Graph::findMaximumClique(Vertices &QMax)
+    Graph::FindClique(Vertices & QMax, unsigned int minimal_size)
     {
       if (n_vertices_ == 0)
         return;
@@ -196,36 +205,31 @@ namespace object_recognition
       QMax.clear();
       // +1 as we start at level 1
       std::vector<unsigned int> S(n_vertices_ + 1, 0), SOld(n_vertices_ + 1, 0);
-      MaxCliqueDyn(R, C, 1, QMax, Q, S, SOld);
-
-      // Check that the clique is valid
-      /*int count = 0;
-       for (unsigned int i = 0; i < max_clique.size(); ++i)
-       for (unsigned int j = i + 1; j < max_clique.size(); ++j)
-       if (!e_(max_clique[i], max_clique[j]))
-       {
-       ++count;
-       std::cout << max_clique[i] << " " << max_clique[j] << std::endl;
-       }
-       if (count > 0)
-       std::cerr << count << " are bad out of " << max_clique.size() << std::endl;*/
+      MaxCliqueDyn(R, C, 1, minimal_size, QMax, Q, S, SOld);
     }
+
     void
-    Graph::addEdge(unsigned int vertex_1, unsigned int vertex_2)
+    Graph::FindMaximumClique(Vertices &QMax)
+    {
+      FindClique(QMax, std::numeric_limits<unsigned int>::max());
+    }
+
+    void
+    Graph::AddEdge(unsigned int vertex_1, unsigned int vertex_2)
     {
       adjacency_(vertex_1, vertex_2) = 1;
       adjacency_(vertex_2, vertex_1) = 1;
     }
     /** Given a vertex, delete all the edges containing it */
     void
-    Graph::deleteEdges(unsigned int in_vertex)
+    Graph::DeleteEdges(unsigned int in_vertex)
     {
       adjacency_.col(in_vertex).setTo(cv::Scalar(0));
       adjacency_.row(in_vertex).setTo(cv::Scalar(0));
     }
     /** Given a vertex, delete all the edges containing it */
     void
-    Graph::deleteEdge(Vertex vertex_1, Vertex vertex_2)
+    Graph::DeleteEdge(Vertex vertex_1, Vertex vertex_2)
     {
       adjacency_(vertex_1, vertex_2) = 0;
       adjacency_(vertex_2, vertex_1) = 0;

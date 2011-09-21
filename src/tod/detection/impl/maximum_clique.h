@@ -71,23 +71,39 @@ namespace object_recognition
 
       /** Add an edge to the graph */
       void
-      addEdge(Vertex vertex_1, Vertex vertex_2);
+      AddEdge(Vertex vertex_1, Vertex vertex_2);
 
       /** Given a vertex, delete all the edges containing it */
       void
-      deleteEdges(unsigned int vertex);
+      DeleteEdges(unsigned int vertex);
 
       void
-      deleteEdge(Vertex vertex_1, Vertex vertex_2);
+      DeleteEdge(Vertex vertex_1, Vertex vertex_2);
 
       void
-      findMaximumClique(Vertices &max_clique);
+      FindMaximumClique(Vertices &max_clique);
+
+      /** Tries to find a clique of a size at least min_size. If it does nto find it, it returns the biggest clique
+       * it can
+       * @param QMax The final clique
+       * @param min_size The minimal size the desired clique should have
+       */
+      void
+      FindClique(Vertices & QMax, unsigned int minimal_size);
 
       inline const cv::Mat_<uchar>
       adjacency() const
       {
         return adjacency_;
       }
+
+      inline void
+      set_adjacency(const cv::Mat_<uchar> & adjacency)
+      {
+        adjacency_ = adjacency;
+        n_vertices_ = adjacency_.cols;
+      }
+
     private:
       typedef std::set<Vertex> Neighbors;
       typedef unsigned int Color;
@@ -115,7 +131,7 @@ namespace object_recognition
       void
       DegreeSort(Vertices & R);
       void
-      MaxCliqueDyn(Vertices & R, Colors &C, unsigned int level, Vertices &QMax, Vertices &Q,
+      MaxCliqueDyn(Vertices & R, Colors &C, unsigned int level, unsigned int minimal_size, Vertices &QMax, Vertices &Q,
                    std::vector<unsigned int> &S, std::vector<unsigned int> &SOld);
 
       /** Mask for the edges */

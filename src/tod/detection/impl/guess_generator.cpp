@@ -229,9 +229,10 @@ namespace object_recognition
           physical_adjacency_(j, i) = 1;
 
           const cv::KeyPoint & keypoint1 = keypoints[query_indices_[i]], &keypoint2 = keypoints[query_indices_[j]];
-          if (((keypoint1.pt.x - keypoint2.pt.x) * (keypoint1.pt.x - keypoint2.pt.x)
-               + (keypoint1.pt.y - keypoint2.pt.y) * (keypoint1.pt.y - keypoint2.pt.y))
-              > 20 * 20)
+          if ((((keypoint1.pt.x - keypoint2.pt.x) * (keypoint1.pt.x - keypoint2.pt.x)
+                + (keypoint1.pt.y - keypoint2.pt.y) * (keypoint1.pt.y - keypoint2.pt.y))
+               > 20 * 20)
+              && (std::abs(dist_training - dist_query) < 2 * sensor_error))
           //((dist_query >= 5 * sensor_error) && (dist_training >= 5 * sensor_error))
           {
             sample_adjacency_(i, j) = 1;
@@ -324,15 +325,6 @@ namespace object_recognition
         sample_consensus.getInliers(inliers);
         std::sort(inliers.begin(), inliers.end());
         sample_consensus.getModelCoefficients(coefficients);
-        // Print out the resulting points
-        std::cout << "query points:" << std::endl;
-        BOOST_FOREACH(int index, model->samples_)
-              std::cout << object_points.query_points(index).x << " " << object_points.query_points(index).y << " "
-                        << object_points.query_points(index).z << std::endl;
-        std::cout << "training points:" << std::endl;
-        BOOST_FOREACH(int index, model->samples_)
-              std::cout << object_points.training_points(index).x << " " << object_points.training_points(index).y
-                        << " " << object_points.training_points(index).z << std::endl;
       }
       else
       {

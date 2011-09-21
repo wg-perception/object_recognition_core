@@ -111,7 +111,7 @@ namespace object_recognition
         n_ransac_iterations_ = param_tree.get<unsigned int>("n_ransac_iterations");
 
         debug_ = true;
-        sensor_error_ = 0.01;
+        sensor_error_ = 0.015;
       }
 
       /** Get the 2d keypoints and figure out their 3D position from the depth map

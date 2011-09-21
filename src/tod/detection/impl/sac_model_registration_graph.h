@@ -165,11 +165,15 @@ namespace object_recognition
         {
           const uchar* row = physical_adjacency_.ptr(indices_[i]);
           BOOST_FOREACH(int sample, samples_)
+              {
+                if (sample == indices_[i])
+                  continue;
                 if (!row[sample])
                 {
                   distances[i] = std::numeric_limits<double>::max();
                   break;
                 }
+              }
         }
       }
 
@@ -181,6 +185,14 @@ namespace object_recognition
         pcl::SampleConsensusModelRegistration<PointT>::selectWithinDistance(model_coefficients, threshold,
                                                                             possible_inliers);
 
+        // Make sure the sample belongs to the inliers
+        BOOST_FOREACH(int sample, samples_)
+              if (std::find(possible_inliers.begin(), possible_inliers.end(), sample) == possible_inliers.end())
+              {
+                in_inliers.clear();
+                return;
+              }
+
         // Remove all the points that cannot belong to a clique including the samples
         std::vector<int> coherent_inliers;
         BOOST_FOREACH(int inlier, possible_inliers)
@@ -188,14 +200,26 @@ namespace object_recognition
               bool is_good = true;
               const uchar* row = physical_adjacency_.ptr(inlier);
               BOOST_FOREACH(int sample, samples_)
+                  {
+                    if (sample == inlier)
+                      continue;
                     if (!row[sample])
                     {
                       is_good = false;
                       break;
                     }
+                  }
               if (is_good)
                 coherent_inliers.push_back(inlier);
             }
+
+        BOOST_FOREACH(int sample, samples_)
+              if (std::find(coherent_inliers.begin(), coherent_inliers.end(), sample) == coherent_inliers.end())
+              {
+                std::cout << "prolem" << std::endl;
+                in_inliers.clear();
+                return;
+              }
 
         // If that set is not bigger than the best so far, no need to refine it
         if (coherent_inliers.size() < best_inlier_number_)
@@ -203,66 +227,67 @@ namespace object_recognition
           in_inliers = coherent_inliers;
           return;
         }
-        if (coherent_inliers.empty())
-          return;
 
-        in_inliers = coherent_inliers;
-        /*
-         std::vector<int> new_coherent_inliers;
-         {
-         object_recognition::maximum_clique::Graph graph(coherent_inliers.size());
-         for (unsigned int j = 0; j < coherent_inliers.size(); ++j)
-         for (unsigned int i = j + 1; i < coherent_inliers.size(); ++i)
-         if (adjacency_(coherent_inliers[j], coherent_inliers[i]))
-         graph.addEdge(j, i);
-         std::vector<unsigned int> vertices;
-         graph.findMaximumClique(vertices);
+        std::vector<int> new_coherent_inliers;
+        {
+          object_recognition::maximum_clique::Graph graph(coherent_inliers.size());
+          for (unsigned int j = 0; j < coherent_inliers.size(); ++j)
+            for (unsigned int i = j + 1; i < coherent_inliers.size(); ++i)
+              if (sample_adjacency_(coherent_inliers[j], coherent_inliers[i]))
+                graph.AddEdge(j, i);
+          std::vector<unsigned int> vertices;
 
-         BOOST_FOREACH(unsigned int vertex, vertices)
-         new_coherent_inliers.push_back(coherent_inliers[vertex]);
-         }
+          unsigned int minimal_size = 5;
+          graph.FindClique(vertices, minimal_size);
+          if (vertices.size() >= minimal_size)
+          {
+            //BOOST_FOREACH(unsigned int vertex, vertices)
+              //    new_coherent_inliers.push_back(coherent_inliers[vertex]);
+            new_coherent_inliers = coherent_inliers;
+          }
+        }
 
-         std::sort(possible_inliers.begin(), possible_inliers.end());
-         std::sort(new_coherent_inliers.begin(), new_coherent_inliers.end());
+        std::sort(new_coherent_inliers.begin(), new_coherent_inliers.end());
 
-         // Try to augment this set, in case the max clique did not do its job fully
-         if (0)
-         {
-         std::vector<unsigned int> intersection(possible_inliers.size());
-         std::copy(possible_inliers.begin(), possible_inliers.end(), intersection.begin());
-         while (!intersection.empty())
-         {
-         std::vector<unsigned int>::iterator end = std::set_difference(intersection.begin(), intersection.end(),
-         new_coherent_inliers.begin(),
-         new_coherent_inliers.end(),
-         intersection.begin());
-         intersection.resize(end - intersection.begin());
-         BOOST_FOREACH(int inlier, new_coherent_inliers)
-         {
-         end = std::set_intersection(intersection.begin(), intersection.end(), neighbors_[inlier].begin(),
-         neighbors_[inlier].end(), intersection.begin());
-         intersection.resize(end - intersection.begin());
-         }
-         if ((1) && (!intersection.empty()))
-         {
-         // Find the max clique between the elements in that intersection
-         std::cout << "missed some:" << intersection.size();
-         object_recognition::maximum_clique::Graph graph(intersection.size());
-         for (unsigned int j = 0; j < intersection.size(); ++j)
-         for (unsigned int i = j + 1; i < intersection.size(); ++i)
-         if (adjacency_(intersection[j], intersection[i]))
-         graph.addEdge(j, i);
-         std::vector<unsigned int> vertices;
-         graph.findMaximumClique(vertices);
+        // Try to augment this set, in case the max clique did not do its job fully
+        if (0)
+        {
+          std::sort(possible_inliers.begin(), possible_inliers.end());
+          std::vector<unsigned int> intersection(possible_inliers.size());
+          std::copy(possible_inliers.begin(), possible_inliers.end(), intersection.begin());
+          while (!intersection.empty())
+          {
+            std::vector<unsigned int>::iterator end = std::set_difference(intersection.begin(), intersection.end(),
+                                                                          new_coherent_inliers.begin(),
+                                                                          new_coherent_inliers.end(),
+                                                                          intersection.begin());
+            intersection.resize(end - intersection.begin());
+            BOOST_FOREACH(int inlier, new_coherent_inliers)
+                {
+                  end = std::set_intersection(intersection.begin(), intersection.end(), neighbors_[inlier].begin(),
+                                              neighbors_[inlier].end(), intersection.begin());
+                  intersection.resize(end - intersection.begin());
+                }
+            if ((1) && (!intersection.empty()))
+            {
+              // Find the max clique between the elements in that intersection
+              std::cout << "missed some:" << intersection.size();
+              object_recognition::maximum_clique::Graph graph(intersection.size());
+              for (unsigned int j = 0; j < intersection.size(); ++j)
+                for (unsigned int i = j + 1; i < intersection.size(); ++i)
+                  if (sample_adjacency_(intersection[j], intersection[i]))
+                    graph.AddEdge(j, i);
+              std::vector<unsigned int> vertices;
+              graph.FindMaximumClique(vertices);
 
-         std::cout << " actually missed :" << vertices.size() << std::endl;
-         BOOST_FOREACH(int vertex, vertices)
-         new_coherent_inliers.push_back(intersection[vertex]);
-         }
-         }
-         }
-         in_inliers = new_coherent_inliers;
-         */
+              std::cout << " actually missed :" << vertices.size() << std::endl;
+              BOOST_FOREACH(int vertex, vertices)
+                    new_coherent_inliers.push_back(intersection[vertex]);
+            }
+          }
+        }
+        in_inliers = new_coherent_inliers;
+
         best_inlier_number_ = std::max(in_inliers.size(), best_inlier_number_);
       }
 
