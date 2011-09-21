@@ -44,104 +44,116 @@
 #include "object_recognition/common/types.h"
 #include "maximum_clique.h"
 
-class ObjectPoints
+namespace object_recognition
 {
-public:
-  ObjectPoints()
+  namespace tod
   {
-    query_points_ = boost::shared_ptr<pcl::PointCloud<pcl::PointXYZ> >(new pcl::PointCloud<pcl::PointXYZ>());
-    training_points_ = boost::shared_ptr<pcl::PointCloud<pcl::PointXYZ> >(new pcl::PointCloud<pcl::PointXYZ>());
-  }
 
-  void
-  FillAdjacency(const std::vector<cv::KeyPoint> & keypoints, float object_span, float sensor_error);
+    class ObjectPoints
+    {
+    public:
+      ObjectPoints()
+      {
+        query_points_ = boost::shared_ptr<pcl::PointCloud<pcl::PointXYZ> >(new pcl::PointCloud<pcl::PointXYZ>());
+        training_points_ = boost::shared_ptr<pcl::PointCloud<pcl::PointXYZ> >(new pcl::PointCloud<pcl::PointXYZ>());
+      }
 
-  void
-  AddPoints(const pcl::PointXYZ &training_point, const pcl::PointXYZ & query_point, unsigned int query_index);
+      void
+      FillAdjacency(const std::vector<cv::KeyPoint> & keypoints, float object_span, float sensor_error);
 
-  void
-  InvalidateIndices(std::vector<unsigned int> &indices);
+      void
+      AddPoints(const pcl::PointXYZ &training_point, const pcl::PointXYZ & query_point, unsigned int query_index);
 
-  void
-  InvalidateQueryIndices(std::vector<unsigned int> &query_indices);
+      void
+      InvalidateIndices(std::vector<unsigned int> &indices);
 
-  void
-  DeleteQueryIndices(std::vector<unsigned int> &query_indices);
+      void
+      InvalidateQueryIndices(std::vector<unsigned int> &query_indices);
 
-  unsigned int
-  n_points() const
-  {
-    return query_indices_.size();
-  }
+      void
+      DeleteQueryIndices(std::vector<unsigned int> &query_indices);
 
-  inline pcl::PointCloud<pcl::PointXYZ>::Ptr
-  query_points() const
-  {
-    return query_points_;
-  }
-  inline pcl::PointXYZ &
-  query_points(unsigned int index) const
-  {
-    return query_points_->points[index];
-  }
+      unsigned int
+      n_points() const
+      {
+        return query_indices_.size();
+      }
 
-  inline pcl::PointCloud<pcl::PointXYZ>::Ptr
-  training_points() const
-  {
-    return training_points_;
-  }
-  inline pcl::PointXYZ &
-  training_points(unsigned int index) const
-  {
-    return training_points_->points[index];
-  }
+      inline pcl::PointCloud<pcl::PointXYZ>::Ptr
+      query_points() const
+      {
+        return query_points_;
+      }
+      inline pcl::PointXYZ &
+      query_points(unsigned int index) const
+      {
+        return query_points_->points[index];
+      }
 
-  inline const std::vector<unsigned int> &
-  query_indices() const
-  {
-    return query_indices_;
-  }
+      inline pcl::PointCloud<pcl::PointXYZ>::Ptr
+      training_points() const
+      {
+        return training_points_;
+      }
+      inline pcl::PointXYZ &
+      training_points(unsigned int index) const
+      {
+        return training_points_->points[index];
+      }
 
-  inline unsigned int
-  query_indices(unsigned int index) const
-  {
-    return query_indices_[index];
-  }
+      inline const std::vector<unsigned int> &
+      query_indices() const
+      {
+        return query_indices_;
+      }
 
-  const std::vector<int>
-  valid_indices() const
-  {
-    std::vector<int> valid_indices(valid_indices_.size());
-    for (unsigned int i = 0; i < valid_indices_.size(); ++i)
-      valid_indices[i] = valid_indices_[i];
+      inline unsigned int
+      query_indices(unsigned int index) const
+      {
+        return query_indices_[index];
+      }
 
-    return valid_indices;
-  }
+      const std::vector<int>
+      valid_indices() const
+      {
+        std::vector<int> valid_indices(valid_indices_.size());
+        for (unsigned int i = 0; i < valid_indices_.size(); ++i)
+          valid_indices[i] = valid_indices_[i];
 
-  ObjectId object_id_;
-  ObjectOpenCVId object_opencv_id_;
-  object_recognition::maximum_clique::Graph graph_;
-  /** matrix indicating whether two points are close enough physically */
-  cv::Mat_<uchar> physical_adjacency_;
-  /** matrix indicating whether two points can be drawn in a RANSAC sample (belong to physical_adjacency but are not
-   * too close) */
-  cv::Mat_<uchar> sample_adjacency_;
+        return valid_indices;
+      }
 
-private:
-  pcl::PointCloud<pcl::PointXYZ>::Ptr query_points_;
-  pcl::PointCloud<pcl::PointXYZ>::Ptr training_points_;
-  std::vector<unsigned int> query_indices_;
-  /** The list of indices that are actually valid in the current data structures */
-  std::vector<unsigned int> valid_indices_;
-};
+      ObjectId object_id_;
+      ObjectOpenCVId object_opencv_id_;
+      object_recognition::maximum_clique::Graph graph_;
+      /** matrix indicating whether two points are close enough physically */
+      cv::Mat_<uchar> physical_adjacency_;
+      /** matrix indicating whether two points can be drawn in a RANSAC sample (belong to physical_adjacency but are not
+       * too close) */
+      cv::Mat_<uchar> sample_adjacency_;
+
+    private:
+      pcl::PointCloud<pcl::PointXYZ>::Ptr query_points_;
+      pcl::PointCloud<pcl::PointXYZ>::Ptr training_points_;
+      std::vector<unsigned int> query_indices_;
+      /** The list of indices that are actually valid in the current data structures */
+      std::vector<unsigned int> valid_indices_;
+    };
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-typedef std::map<ObjectOpenCVId, ObjectPoints> OpenCVIdToObjectPoints;
+    typedef std::map<ObjectOpenCVId, ObjectPoints> OpenCVIdToObjectPoints;
 
-void
-ClusterPerObject(const std::vector<cv::KeyPoint> & keypoints, const cv::Mat &point_cloud,
-                 const std::vector<std::vector<cv::DMatch> > & matches, const std::vector<cv::Mat> & matches_3d,
-                 bool debug, const cv::Mat & initial_image, OpenCVIdToObjectPoints &object_points);
+    void
+    ClusterPerObject(const std::vector<cv::KeyPoint> & keypoints, const cv::Mat &point_cloud,
+                     const std::vector<std::vector<cv::DMatch> > & matches, const std::vector<cv::Mat> & matches_3d,
+                     bool debug, const cv::Mat & initial_image, OpenCVIdToObjectPoints &object_points);
 
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    Eigen::VectorXf
+    RansacAdjacency(const ObjectPoints & object_points, float sensor_error, unsigned int n_ransac_iterations,
+                    std::vector<int>& inliers);
+  }
+}
 #endif /* GUESS_GENERATOR_H_ */
