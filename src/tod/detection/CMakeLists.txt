@@ -5,6 +5,7 @@ ectomodule(tod_detection
   ModelReader.cpp
   module.cpp
   impl/maximum_clique.cpp
+  impl/guess_generator.cpp
   )
 
 link_ecto(tod_detection
