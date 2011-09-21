@@ -37,6 +37,7 @@
 #define SAC_MODEL_REGISTRATION_GRAPH_H_
 
 #include "pcl/sample_consensus/sac_model.h"
+#include "pcl/sample_consensus/sac_model_registration.h"
 #include "pcl/sample_consensus/model_types.h"
 
 #include "maximum_clique.h"
@@ -54,6 +55,8 @@ namespace object_recognition
     {
     public:
       typedef typename pcl::SampleConsensusModelRegistration<PointT>::PointCloudConstPtr PointCloudConstPtr;
+      typedef boost::shared_ptr<SampleConsensusModelRegistrationGraph> Ptr;
+
       using pcl::SampleConsensusModel<PointT>::drawIndexSample;
 
       /** \brief Constructor for base SampleConsensusModelRegistration.
@@ -138,7 +141,8 @@ namespace object_recognition
           bool sub_is_good = true;
           for (unsigned int i = 0; i < samples.size(); ++i)
             for (unsigned int j = i + 1; j < samples.size(); ++j)
-              if (!physical_adjacency_(samples[i], samples[j])) {
+              if (!physical_adjacency_(samples[i], samples[j]))
+              {
                 std::cout << int(sample_adjacency_(samples[i], samples[j])) << " ";
                 sub_is_good = false;
               }
@@ -261,6 +265,8 @@ namespace object_recognition
          */
         best_inlier_number_ = std::max(in_inliers.size(), best_inlier_number_);
       }
+
+      mutable std::vector<int> samples_;
     private:
       void
       BuildNeighbors()
@@ -287,7 +293,6 @@ namespace object_recognition
         }
       }
 
-      mutable std::vector<int> samples_;
       const cv::Mat_<uchar> physical_adjacency_;
       const cv::Mat_<uchar> sample_adjacency_;
       std::vector<int> indices_;

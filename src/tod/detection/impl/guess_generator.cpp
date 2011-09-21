@@ -324,7 +324,15 @@ namespace object_recognition
         sample_consensus.getInliers(inliers);
         std::sort(inliers.begin(), inliers.end());
         sample_consensus.getModelCoefficients(coefficients);
-        // Print out th
+        // Print out the resulting points
+        std::cout << "query points:" << std::endl;
+        BOOST_FOREACH(int index, model->samples_)
+              std::cout << object_points.query_points(index).x << " " << object_points.query_points(index).y << " "
+                        << object_points.query_points(index).z << std::endl;
+        std::cout << "training points:" << std::endl;
+        BOOST_FOREACH(int index, model->samples_)
+              std::cout << object_points.training_points(index).x << " " << object_points.training_points(index).y
+                        << " " << object_points.training_points(index).z << std::endl;
       }
       else
       {
