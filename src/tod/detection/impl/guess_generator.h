@@ -54,7 +54,7 @@ public:
   }
 
   void
-  FillAdjacency(float object_span, float sensor_error);
+  FillAdjacency(const std::vector<cv::KeyPoint> & keypoints, float object_span, float sensor_error);
 
   void
   AddPoints(const pcl::PointXYZ &training_point, const pcl::PointXYZ & query_point, unsigned int query_index);
@@ -74,29 +74,47 @@ public:
     return query_indices_.size();
   }
 
-  pcl::PointCloud<pcl::PointXYZ>::Ptr
+  inline pcl::PointCloud<pcl::PointXYZ>::Ptr
   query_points() const
   {
     return query_points_;
   }
+  inline pcl::PointXYZ &
+  query_points(unsigned int index) const
+  {
+    return query_points_->points[index];
+  }
 
-  pcl::PointCloud<pcl::PointXYZ>::Ptr
+  inline pcl::PointCloud<pcl::PointXYZ>::Ptr
   training_points() const
   {
     return training_points_;
   }
+  inline pcl::PointXYZ &
+  training_points(unsigned int index) const
+  {
+    return training_points_->points[index];
+  }
 
-  const std::vector<unsigned int> &
+  inline const std::vector<unsigned int> &
   query_indices() const
   {
     return query_indices_;
+  }
+
+  inline unsigned int
+  query_indices(unsigned int index) const
+  {
+    return query_indices_[index];
   }
 
   const std::vector<int>
   valid_indices() const
   {
     std::vector<int> valid_indices(valid_indices_.size());
-    std::copy(valid_indices_.begin(), valid_indices_.end(), valid_indices.begin());
+    for (unsigned int i = 0; i < valid_indices_.size(); ++i)
+      valid_indices[i] = valid_indices_[i];
+
     return valid_indices;
   }
 

@@ -115,7 +115,7 @@ namespace object_recognition
         n_ransac_iterations_ = param_tree.get<unsigned int>("n_ransac_iterations");
 
         debug_ = true;
-        sensor_error_ = 0.015;
+        sensor_error_ = 0.01;
       }
 
       Eigen::VectorXf
@@ -212,7 +212,7 @@ namespace object_recognition
 
             std::cout << "***Starting object: " << opencv_object_id << std::endl;
 
-            object_points.FillAdjacency(spans.find(object_id)->second, sensor_error_);
+            object_points.FillAdjacency(keypoints, spans.find(object_id)->second, sensor_error_);
 
             // Keep processing the graph until there is no maximum clique of the right size
             std::vector<ObjectId> object_ids;
@@ -297,14 +297,6 @@ namespace object_recognition
 
                std::cout << " witin themselves: " << vertices.size() << std::endl;*/
               {
-                std::vector<unsigned int> indices;
-                for (unsigned int i = 0; i < object_points.n_points(); ++i)
-                  indices.push_back(i);
-                /*std::vector<unsigned int>::iterator end = std::set_intersection(indices.begin(), indices.end(),
-                 bad_indices.begin(), bad_indices.end(),
-                 indices.begin());
-                 indices.resize(end - indices.begin());*/
-
                 double thresh = sensor_error_ * sensor_error_;
 
                 // Check if the model is valid given the user constraints
@@ -314,13 +306,19 @@ namespace object_recognition
                 transform.row(2) = coefficients.segment<4>(8);
                 transform.row(3) = coefficients.segment<4>(12);
 
+                std::vector<int> valid_indices = object_points.valid_indices();
+                std::vector<int>::iterator valid_end = std::set_difference(valid_indices.begin(), valid_indices.end(),
+                                                                           inliers.begin(), inliers.end(),
+                                                                           valid_indices.begin());
+                valid_indices.resize(valid_end - valid_indices.begin());
+
                 unsigned int count = 0;
-                BOOST_FOREACH(unsigned int index, indices )
+                BOOST_FOREACH(int index, valid_indices)
                     {
                       const Eigen::Map<Eigen::Vector4f, Eigen::Aligned> &pt_src =
-                          object_points.query_points()->points[index].getVector4fMap();
+                          object_points.query_points(index).getVector4fMap();
                       const Eigen::Map<Eigen::Vector4f, Eigen::Aligned> &pt_tgt =
-                          object_points.training_points()->points[index].getVector4fMap();
+                          object_points.training_points(index).getVector4fMap();
                       Eigen::Vector4f p_tr = transform * pt_src;
                       // Calculate the distance from the transformed point to its correspondence
                       if ((p_tr - pt_tgt).squaredNorm() < 2 * thresh)
@@ -333,18 +331,34 @@ namespace object_recognition
               }
 
               // Get the span of the inliers
-              float max_dist_training = 0;
+              float max_dist_training = 0, max_dist_training_xy = 0, max_dist_query = 0, max_dist_query_xy = 0;
               for (unsigned int i = 0; i < inliers.size(); ++i)
               {
-                const pcl::PointXYZ & training_point_1 = object_points.training_points()->points[inliers[i]];
+                const pcl::PointXYZ & training_point_1 = object_points.training_points(inliers[i]), &query_point_1 =
+                    object_points.query_points(inliers[i]);
                 for (unsigned int j = i + 1; j < inliers.size(); ++j)
                 {
-                  const pcl::PointXYZ & training_point_2 = object_points.training_points()->points[inliers[j]];
+                  const pcl::PointXYZ & training_point_2 = object_points.training_points(inliers[j]), &query_point_2 =
+                      object_points.query_points(inliers[j]);
                   float dist_training = pcl::euclideanDistance(training_point_1, training_point_2);
+                  float dist_query = pcl::euclideanDistance(query_point_1, query_point_2);
                   max_dist_training = std::max(max_dist_training, dist_training);
+                  max_dist_query = std::max(max_dist_query, dist_query);
+                  max_dist_training_xy = std::max(
+                      max_dist_training_xy,
+                      std::sqrt(
+                          (training_point_1.x - training_point_2.x) * (training_point_1.x - training_point_2.x)
+                          + (training_point_1.y - training_point_2.y) * (training_point_1.y - training_point_2.y)));
+                  max_dist_query_xy = std::max(
+                      max_dist_query_xy,
+                      std::sqrt(
+                          (query_point_1.x - query_point_2.x) * (query_point_1.x - query_point_2.x)
+                          + (query_point_1.y - query_point_2.y) * (query_point_1.y - query_point_2.y)));
                 }
               }
-              std::cout << "span of inliers: " << max_dist_training << std::endl;
+              std::cout << "span of training inliers: " << max_dist_training << " for xy: " << max_dist_training_xy
+                        << std::endl;
+              std::cout << "span of query inliers: " << max_dist_query << " for xy: " << max_dist_query_xy << std::endl;
 
               // Go over all the matches that have not been checked
               // Store the pose
@@ -438,7 +452,7 @@ namespace object_recognition
                     draw_keypoints.clear();
                     BOOST_FOREACH(int index, indices)
                           draw_keypoints.push_back(
-                              keypoints[all_object_points[query_iterator->first].query_indices()[index]]);
+                              keypoints[all_object_points[query_iterator->first].query_indices(index)]);
                     if (i < colors.size())
                     {
                       cv::drawKeypoints(output_img, draw_keypoints, output_img, colors[i]);

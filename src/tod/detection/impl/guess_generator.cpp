@@ -63,7 +63,7 @@ ObjectPoints::InvalidateIndices(std::vector<unsigned int> &indices)
   indices.resize(std::unique(indices.begin(), indices.end()) - indices.begin());
 
   std::vector<unsigned int>::iterator end = std::set_difference(valid_indices_.begin(), valid_indices_.end(),
-                                                                indices.begin(), end, valid_indices_.begin());
+                                                                indices.begin(), indices.end(), valid_indices_.begin());
   valid_indices_.resize(end - valid_indices_.begin());
 
   // Reset the matrices
@@ -182,7 +182,7 @@ ObjectPoints::DeleteQueryIndices(std::vector<unsigned int> &query_indices)
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 void
-ObjectPoints::FillAdjacency(float object_span, float sensor_error)
+ObjectPoints::FillAdjacency(const std::vector<cv::KeyPoint> & keypoints, float object_span, float sensor_error)
 {
   // The error the 3d sensor makes, distance wise
   unsigned int n_matches = training_points_->size();
@@ -217,7 +217,11 @@ ObjectPoints::FillAdjacency(float object_span, float sensor_error)
       physical_adjacency_(i, j) = 1;
       physical_adjacency_(j, i) = 1;
 
-      if ((dist_query >= 4 * sensor_error) && (dist_training >= 4 * sensor_error))
+      const cv::KeyPoint & keypoint1 = keypoints[query_indices_[i]], &keypoint2 = keypoints[query_indices_[j]];
+      if (((keypoint1.pt.x - keypoint2.pt.x) * (keypoint1.pt.x - keypoint2.pt.x)
+           + (keypoint1.pt.y - keypoint2.pt.y) * (keypoint1.pt.y - keypoint2.pt.y))
+          > 20*20)
+      //((dist_query >= 5 * sensor_error) && (dist_training >= 5 * sensor_error))
       {
         sample_adjacency_(i, j) = 1;
         sample_adjacency_(j, i) = 1;
