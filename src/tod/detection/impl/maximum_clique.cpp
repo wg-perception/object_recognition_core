@@ -210,12 +210,6 @@ namespace object_recognition
        if (count > 0)
        std::cerr << count << " are bad out of " << max_clique.size() << std::endl;*/
     }
-
-    Graph::Graph(unsigned int vertex_number)
-    {
-      adjacency_ = cv::Mat_<uchar>::zeros(vertex_number, vertex_number);
-      n_vertices_ = vertex_number;
-    }
     void
     Graph::addEdge(unsigned int vertex_1, unsigned int vertex_2)
     {

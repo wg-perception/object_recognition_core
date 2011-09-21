@@ -54,120 +54,11 @@
 #include <pcl/sample_consensus/sac_model_registration.h>
 
 #include "object_recognition/common/types.h"
+#include "impl/guess_generator.h"
 #include "impl/maximum_clique.h"
 #include "impl/sac_model_registration_graph.h"
 
 using ecto::tendrils;
-
-namespace
-{
-  void
-  FillConnections(const pcl::PointCloud<pcl::PointXYZ> &training_point_cloud,
-                  const pcl::PointCloud<pcl::PointXYZ> & query_point_cloud,
-                  const std::vector<unsigned int> &query_indices, float object_span, float sensor_error,
-                  object_recognition::maximum_clique::Graph &graph)
-  {
-    // The error the 3d sensor makes, distance wise
-    unsigned int n_matches = training_point_cloud.size();
-    cv::Mat_<float> distances(n_matches, n_matches);
-    for (unsigned int i = 0; i < n_matches; ++i)
-    {
-      const pcl::PointXYZ & training_point_1 = training_point_cloud.points[i], &query_point_1 =
-          query_point_cloud.points[i];
-      // For every other match that might end up in the same cluster
-      for (unsigned int j = i + 1; j < n_matches; ++j)
-      {
-        // Two matches with the same query point cannot be connected
-        // They should not, but in practice, there is so much noise in the training that we should allow it
-        // (as two points in the training might actually be two noisy versions of the same one)
-        //if (query_indices[i] == query_indices[j])
-        //continue;
-        // Two training points can be connected if they are within the span of an object
-        const pcl::PointXYZ & query_point_2 = query_point_cloud.points[j];
-        float dist_query = pcl::euclideanDistance(query_point_1, query_point_2);
-        //distances(i, j) = dist2;
-        //distances(j, i) = dist2;
-        if (dist_query > (object_span + 2 * sensor_error))
-          continue;
-
-        const pcl::PointXYZ & training_point_2 = training_point_cloud.points[j];
-        float dist_training = pcl::euclideanDistance(training_point_1, training_point_2);
-        // Make sure the distance between two points is somewhat conserved
-        if (std::abs(dist_training - dist_query) > 4 * sensor_error)
-          continue;
-
-        // If all those conditions are respected, those two matches are potentially part of the same cluster
-        graph.addEdge(i, j);
-      }
-    }
-  }
-
-  /** Define an adjacency matrix for the RANSAC samples: the samples have to be physically adjacent but they also
-   * need to be far apart enough (to avoid degenerate situations)
-   */
-  void
-  GetSampleAdjacency(const pcl::PointCloud<pcl::PointXYZ> &training_point_cloud,
-                     const pcl::PointCloud<pcl::PointXYZ> & query_point_cloud, float sensor_error,
-                     const cv::Mat_<uchar> & physical_adjacency, cv::Mat_<uchar> &sample_adjacency)
-  {
-    physical_adjacency.copyTo(sample_adjacency);
-
-    // The error the 3d sensor makes, distance wise
-    unsigned int n_matches = training_point_cloud.size();
-    for (unsigned int i = 0; i < n_matches; ++i)
-    {
-      const pcl::PointXYZ & training_point_1 = training_point_cloud.points[i], &query_point_1 =
-          query_point_cloud.points[i];
-      const uchar * row = physical_adjacency.ptr(i);
-      // For every other match that might end up in the same cluster
-      for (unsigned int j = i + 1; j < n_matches; ++j)
-      {
-        if (!row[j])
-          continue;
-        // Two training points can be connected if they are within the span of an object
-        const pcl::PointXYZ & query_point_2 = query_point_cloud.points[j], &training_point_2 =
-            training_point_cloud.points[j];
-        float dist_query = pcl::euclideanDistance(query_point_1, query_point_2);
-        float dist_training = pcl::euclideanDistance(training_point_1, training_point_2);
-        if ((dist_query < 2 * sensor_error) || (dist_training < 2 * sensor_error))
-        {
-          sample_adjacency(i, j) = 0;
-          sample_adjacency(j, i) = 0;
-        }
-      }
-    }
-  }
-
-  void
-  FindMatchesWithSameQueryIndices(const std::vector<unsigned int> &query_indices, const std::vector<int> &inliers,
-                                  std::vector<unsigned int> &indices)
-  {
-    std::vector<unsigned int> matching_query_indices;
-    BOOST_FOREACH(unsigned int index, inliers)
-          matching_query_indices.push_back(query_indices[index]);
-    std::sort(matching_query_indices.begin(), matching_query_indices.end());
-
-    std::vector<unsigned int>::const_iterator iter = matching_query_indices.begin(), end = matching_query_indices.end();
-    unsigned int count = 0;
-    for (unsigned int i = 0; i < query_indices.size(); ++i)
-    {
-      unsigned int query_index = query_indices[i];
-      if (query_index < *iter)
-        continue;
-      // If the match has a keypoint in the inliers, remove the match
-      if (query_index == *iter)
-      {
-        indices.push_back(i);
-        ++count;
-        continue;
-      }
-      while ((iter != end) && (query_index > *iter))
-        ++iter;
-      if (iter == end)
-        break;
-    }
-  }
-}
 
 namespace object_recognition
 {
@@ -228,10 +119,10 @@ namespace object_recognition
       }
 
       Eigen::VectorXf
-      ransacy_graph(const pcl::PointCloud<pcl::PointXYZ>::ConstPtr& training_point_cloud,
-                    const pcl::PointCloud<pcl::PointXYZ>::ConstPtr & query_point_cloud,
-                    const std::vector<int>& good_indices, const cv::Mat_<uchar> & physical_adjacency,
-                    const cv::Mat_<uchar> &sample_adjacency, std::vector<int>& inliers)
+      ransacy_graph(const pcl::PointCloud<pcl::PointXYZ>::Ptr& training_point_cloud,
+                    const pcl::PointCloud<pcl::PointXYZ>::Ptr & query_point_cloud, const std::vector<int>& good_indices,
+                    const cv::Mat_<uchar> & physical_adjacency, const cv::Mat_<uchar> &sample_adjacency,
+                    std::vector<int>& inliers)
       {
 
         SampleConsensusModelRegistrationGraph<pcl::PointXYZ>::Ptr model(
@@ -302,51 +193,8 @@ namespace object_recognition
         else
         {
           // Cluster the matches per object ID
-          typedef std::map<ObjectOpenCVId, pcl::PointCloud<pcl::PointXYZ> > OpenCVIdToPointCloud;
-          OpenCVIdToPointCloud query_point_clouds;
-          OpenCVIdToPointCloud training_point_clouds;
-          std::map<ObjectOpenCVId, std::vector<unsigned int> > query_indices;
-          std::vector<int> histo_count;
-          std::vector<cv::KeyPoint> draw_keypoints_1;
-          for (unsigned int query_index = 0; query_index < matches.size(); ++query_index)
-          {
-            // Figure out the 3d query point
-            pcl::PointXYZ query_point;
-            const cv::KeyPoint & keypoint = keypoints[query_index];
-            const cv::Vec3f &point3f = point_cloud.at<cv::Vec3f>(keypoint.pt.y, keypoint.pt.x);
-            query_point = pcl::PointXYZ(point3f.val[0], point3f.val[1], point3f.val[2]);
-            // Make sure it does not contain any NaN's
-            // We could have a solver that would consider Nan's as missing entries
-            if ((query_point.x != query_point.x) || (query_point.y != query_point.y)
-                || (query_point.z != query_point.z))
-              continue;
-
-            const std::vector<cv::DMatch> &local_matches = matches[query_index];
-            const cv::Mat &local_matches_3d = matches_3d[query_index];
-            if (!local_matches.empty())
-              draw_keypoints_1.push_back(keypoint);
-            // Get the matches for that point
-            for (unsigned int match_index = 0; match_index < local_matches.size(); ++match_index)
-            {
-              const cv::Vec3f & val = local_matches_3d.at<cv::Vec3f>(0, match_index);
-              pcl::PointXYZ training_point(val[0], val[1], val[2]);
-
-              // Fill in the clouds
-              ObjectOpenCVId opencv_object_id = local_matches[match_index].imgIdx;
-              training_point_clouds[opencv_object_id].push_back(training_point);
-              query_point_clouds[opencv_object_id].push_back(query_point);
-              query_indices[opencv_object_id].push_back(query_index);
-            }
-          }
-
-          if (debug_)
-          {
-            cv::Mat out_img;
-            cv::drawKeypoints(initial_image, draw_keypoints_1, out_img);
-            cv::namedWindow("keypoints from objects", 0);
-            cv::imshow("keypoints from objects", out_img);
-            cv::waitKey(1000);
-          }
+          OpenCVIdToObjectPoints all_object_points;
+          ClusterPerObject(keypoints, point_cloud, matches, matches_3d, debug_, initial_image, all_object_points);
 
           // For each object, build the connectivity graph between the matches
           std::vector<ObjectId> object_ids_final;
@@ -354,19 +202,17 @@ namespace object_recognition
           std::map<ObjectOpenCVId, std::vector<std::vector<int> > > matching_query_points;
           typedef std::map<ObjectOpenCVId, object_recognition::maximum_clique::Graph> OpenCVIdToGraph;
           OpenCVIdToGraph graphs;
-          for (OpenCVIdToPointCloud::const_iterator query_iterator = query_point_clouds.begin();
-              query_iterator != query_point_clouds.end(); ++query_iterator)
+          for (OpenCVIdToObjectPoints::iterator query_iterator = all_object_points.begin();
+              query_iterator != all_object_points.end(); ++query_iterator)
               {
             // Create a graph for that object
+            ObjectPoints & object_points = query_iterator->second;
             ObjectOpenCVId opencv_object_id = query_iterator->first;
-            std::cout << "Starting object: " << opencv_object_id << std::endl;
-            object_recognition::maximum_clique::Graph graph(query_iterator->second.size());
-            //graphs.insert(std::make_pair(opencv_object_id, graph));
-
-            // Fill the connections for that graph
             ObjectId object_id = id_correspondences.find(opencv_object_id)->second;
-            FillConnections(training_point_clouds[opencv_object_id], query_point_clouds[opencv_object_id],
-                            query_indices[opencv_object_id], spans.find(object_id)->second, sensor_error_, graph);
+
+            std::cout << "***Starting object: " << opencv_object_id << std::endl;
+
+            object_points.FillAdjacency(spans.find(object_id)->second, sensor_error_);
 
             // Keep processing the graph until there is no maximum clique of the right size
             std::vector<ObjectId> object_ids;
@@ -375,35 +221,19 @@ namespace object_recognition
             while (true)
             {
               // Compute the maximum of clique of that graph
-              std::vector<int> int_maximum_clique;
               std::vector<int> inliers;
-              pcl::PointCloud<pcl::PointXYZ>::Ptr training_cloud_ptr =
-                  training_point_clouds[opencv_object_id].makeShared();
-              pcl::PointCloud<pcl::PointXYZ>::Ptr query_cloud_ptr = query_point_clouds[opencv_object_id].makeShared();
               Eigen::VectorXf coefficients;
 
-
-
-              const cv::Mat_<uchar> & physical_adjacency = graph.adjacency();
-              cv::Mat_<uchar> sample_adjacency;
-              GetSampleAdjacency(training_point_clouds[opencv_object_id], query_point_clouds[opencv_object_id],
-                                 sensor_error_, physical_adjacency, sample_adjacency);
-
-              for (unsigned int i = 0; i < training_point_clouds[opencv_object_id].points.size(); ++i)
-                int_maximum_clique.push_back(i);
-              std::cout << "*** starting RANSAC" << std::endl;
-              coefficients = ransacy_graph(training_cloud_ptr, query_cloud_ptr, int_maximum_clique, physical_adjacency,
-                                           sample_adjacency, inliers);
+              std::cout << "* starting RANSAC" << std::endl;
+              coefficients = ransacy_graph(object_points.training_points(), object_points.query_points(),
+                                           object_points.valid_indices(), object_points.physical_adjacency_,
+                                           object_points.sample_adjacency_, inliers);
 
               // If no pose was found, forget about all the connections in that clique
-              std::cout << "*** n inliers: " << inliers.size() << " clique size " << int_maximum_clique.size()
-                        << std::endl;
+              std::cout << "* n inliers: " << inliers.size() << std::endl;
 
               if (inliers.size() < min_inliers_)
               {
-                for (unsigned int i = 0; i < int_maximum_clique.size(); ++i)
-                  for (unsigned int j = i + 1; j < int_maximum_clique.size(); ++j)
-                    graph.deleteEdge(int_maximum_clique[i], int_maximum_clique[j]);
                 break;
                 continue;
               }
@@ -467,10 +297,8 @@ namespace object_recognition
 
                std::cout << " witin themselves: " << vertices.size() << std::endl;*/
               {
-                std::vector<unsigned int> bad_indices;
-                FindMatchesWithSameQueryIndices(query_indices[opencv_object_id], inliers, bad_indices);
                 std::vector<unsigned int> indices;
-                for (unsigned int i = 0; i < query_indices[opencv_object_id].size(); ++i)
+                for (unsigned int i = 0; i < object_points.n_points(); ++i)
                   indices.push_back(i);
                 /*std::vector<unsigned int>::iterator end = std::set_intersection(indices.begin(), indices.end(),
                  bad_indices.begin(), bad_indices.end(),
@@ -490,9 +318,9 @@ namespace object_recognition
                 BOOST_FOREACH(unsigned int index, indices )
                     {
                       const Eigen::Map<Eigen::Vector4f, Eigen::Aligned> &pt_src =
-                          query_cloud_ptr->points[index].getVector4fMap();
+                          object_points.query_points()->points[index].getVector4fMap();
                       const Eigen::Map<Eigen::Vector4f, Eigen::Aligned> &pt_tgt =
-                          training_cloud_ptr->points[index].getVector4fMap();
+                          object_points.training_points()->points[index].getVector4fMap();
                       Eigen::Vector4f p_tr = transform * pt_src;
                       // Calculate the distance from the transformed point to its correspondence
                       if ((p_tr - pt_tgt).squaredNorm() < 2 * thresh)
@@ -503,6 +331,20 @@ namespace object_recognition
                     }
                 std::cout << " added : " << count << std::endl;
               }
+
+              // Get the span of the inliers
+              float max_dist_training = 0;
+              for (unsigned int i = 0; i < inliers.size(); ++i)
+              {
+                const pcl::PointXYZ & training_point_1 = object_points.training_points()->points[inliers[i]];
+                for (unsigned int j = i + 1; j < inliers.size(); ++j)
+                {
+                  const pcl::PointXYZ & training_point_2 = object_points.training_points()->points[inliers[j]];
+                  float dist_training = pcl::euclideanDistance(training_point_1, training_point_2);
+                  max_dist_training = std::max(max_dist_training, dist_training);
+                }
+              }
+              std::cout << "span of inliers: " << max_dist_training << std::endl;
 
               // Go over all the matches that have not been checked
               // Store the pose
@@ -524,24 +366,23 @@ namespace object_recognition
               std::cout << R_mat << std::endl;
               std::cout << tvec << std::endl;
 
-              if (1)
+              if (0)
               {
                 for (std::vector<int>::const_iterator iter = inliers.begin(), end = inliers.end() - 1; iter < end;
                     ++iter)
                     {
-                  std::cout << int(graph.adjacency()(*iter, *(iter + 1))) << " ";
-                  if (graph.adjacency()(*iter, *(iter + 1)))
+                  std::cout << int(object_points.physical_adjacency_(*iter, *(iter + 1))) << " ";
+                  if (object_points.physical_adjacency_(*iter, *(iter + 1)))
                     continue;
                   int i = *iter, j = *(iter + 1);
 
-                  const pcl::PointXYZ & training_point_1 = training_point_clouds[opencv_object_id].points[i],
-                      &query_point_1 = query_point_clouds[opencv_object_id].points[i], &training_point_2 =
-                          training_point_clouds[opencv_object_id].points[j], &query_point_2 =
-                          query_point_clouds[opencv_object_id].points[j];
+                  const pcl::PointXYZ & training_point_1 = object_points.training_points()->points[i], &query_point_1 =
+                      object_points.query_points()->points[i], &training_point_2 =
+                      object_points.training_points()->points[j], &query_point_2 =
+                      object_points.query_points()->points[j];
 
                   // Two matches with the same query point cannot be connected
-                  std::cout << "-" << int(query_indices[opencv_object_id][i] == query_indices[opencv_object_id][j])
-                            << " ";
+                  std::cout << "-" << int(object_points.query_indices()[i] == object_points.query_indices()[j]) << " ";
 
                   float dist_query = pcl::euclideanDistance(query_point_1, query_point_2);
 
@@ -556,12 +397,12 @@ namespace object_recognition
 
               // Figure out the matches to remove
               {
-                std::vector<unsigned int> indices;
-                FindMatchesWithSameQueryIndices(query_indices[opencv_object_id], inliers, indices);
+                std::vector<unsigned int> query_indices;
+                BOOST_FOREACH(unsigned int inlier, inliers)
+                      query_indices.push_back(object_points.query_indices()[inlier]);
 
-                BOOST_FOREACH(unsigned int index, indices)
-                      graph.deleteEdges(index);
-                std::cout << indices.size() << " edges deleted" << std::endl;
+                object_points.InvalidateQueryIndices(query_indices);
+                std::cout << query_indices.size() << " edges deleted" << std::endl;
               }
             }
 
@@ -591,14 +432,13 @@ namespace object_recognition
             for (std::map<ObjectOpenCVId, std::vector<std::vector<int> > >::const_iterator query_iterator =
                 matching_query_points.begin(); query_iterator != matching_query_points.end(); ++query_iterator)
             {
-              ObjectOpenCVId object_opencv_id = query_iterator->first;
-
               BOOST_FOREACH(const std::vector<int> & indices, query_iterator->second)
                   {
                     std::vector<cv::KeyPoint> draw_keypoints;
                     draw_keypoints.clear();
                     BOOST_FOREACH(int index, indices)
-                          draw_keypoints.push_back(keypoints[query_indices[object_opencv_id][index]]);
+                          draw_keypoints.push_back(
+                              keypoints[all_object_points[query_iterator->first].query_indices()[index]]);
                     if (i < colors.size())
                     {
                       cv::drawKeypoints(output_img, draw_keypoints, output_img, colors[i]);

@@ -51,15 +51,35 @@ namespace object_recognition
       typedef std::vector<Vertex> Vertices;
 
       /** Constructor */
-      Graph(unsigned int vertex_number);
+      Graph()
+      {
+        n_vertices_ = 0;
+      }
+
+      /** Constructor */
+      Graph(unsigned int vertex_number)
+      {
+        set_vertex_number(vertex_number);
+      }
+
+      void
+      set_vertex_number(unsigned int vertex_number)
+      {
+        adjacency_ = cv::Mat_<uchar>::zeros(vertex_number, vertex_number);
+        n_vertices_ = vertex_number;
+      }
+
       /** Add an edge to the graph */
       void
       addEdge(Vertex vertex_1, Vertex vertex_2);
+
       /** Given a vertex, delete all the edges containing it */
       void
       deleteEdges(unsigned int vertex);
+
       void
       deleteEdge(Vertex vertex_1, Vertex vertex_2);
+
       void
       findMaximumClique(Vertices &max_clique);
 
