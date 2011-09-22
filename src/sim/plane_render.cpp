@@ -395,7 +395,7 @@ main(int argc, char *argv[])
 
   std::string inputFilename = argv[1];
 
-  boost::shared_ptr<SimRunner> sm(new SimRunner(inputFilename, 0.4, 0.8, 640, 480));
+  boost::shared_ptr<SimRunner> sm(new SimRunner(inputFilename, 0.8, 0.4, 640, 480));
   boost::thread t(boost::ref(*sm));
   cv::Mat image, depth, mask, R, T, K;
   bool new_data;
