@@ -112,6 +112,20 @@ namespace object_recognition
 
         debug_ = true;
         sensor_error_ = 0.01;
+
+        if (debug_)
+        {
+          colors_.push_back(cv::Scalar(255, 255, 0));
+          colors_.push_back(cv::Scalar(0, 255, 255));
+          colors_.push_back(cv::Scalar(255, 0, 255));
+          colors_.push_back(cv::Scalar(255, 0, 0));
+          colors_.push_back(cv::Scalar(0, 255, 0));
+          colors_.push_back(cv::Scalar(0, 0, 255));
+          colors_.push_back(cv::Scalar(0, 0, 0));
+          colors_.push_back(cv::Scalar(85, 85, 85));
+          colors_.push_back(cv::Scalar(170, 170, 170));
+          colors_.push_back(cv::Scalar(255, 255, 255));
+        }
       }
 
       /** Get the 2d keypoints and figure out their 3D position from the depth map
@@ -147,7 +161,7 @@ namespace object_recognition
         {
           // Cluster the matches per object ID
           OpenCVIdToObjectPoints all_object_points;
-          ClusterPerObject(keypoints, point_cloud, matches, matches_3d, debug_, initial_image, all_object_points);
+          ClusterPerObject(keypoints, point_cloud, matches, matches_3d, debug_, colors_, initial_image, all_object_points);
 
           // For each object, build the connectivity graph between the matches
           std::vector<ObjectId> object_ids_final;
@@ -246,37 +260,6 @@ namespace object_recognition
                  graph_new.findMaximumClique(vertices);
 
                  std::cout << " witin themselves: " << vertices.size() << std::endl;*/
-
-                // Get the span of the inliers
-                float max_dist_training = 0, max_dist_training_xy = 0, max_dist_query = 0, max_dist_query_xy = 0;
-                for (unsigned int i = 0; i < inliers.size(); ++i)
-                {
-                  const pcl::PointXYZ & training_point_1 = object_points.training_points(inliers[i]), &query_point_1 =
-                      object_points.query_points(inliers[i]);
-                  for (unsigned int j = i + 1; j < inliers.size(); ++j)
-                  {
-                    const pcl::PointXYZ & training_point_2 = object_points.training_points(inliers[j]), &query_point_2 =
-                        object_points.query_points(inliers[j]);
-                    float dist_training = pcl::euclideanDistance(training_point_1, training_point_2);
-                    float dist_query = pcl::euclideanDistance(query_point_1, query_point_2);
-                    max_dist_training = std::max(max_dist_training, dist_training);
-                    max_dist_query = std::max(max_dist_query, dist_query);
-                    max_dist_training_xy = std::max(
-                        max_dist_training_xy,
-                        std::sqrt(
-                            (training_point_1.x - training_point_2.x) * (training_point_1.x - training_point_2.x)
-                            + (training_point_1.y - training_point_2.y) * (training_point_1.y - training_point_2.y)));
-                    max_dist_query_xy = std::max(
-                        max_dist_query_xy,
-                        std::sqrt(
-                            (query_point_1.x - query_point_2.x) * (query_point_1.x - query_point_2.x)
-                            + (query_point_1.y - query_point_2.y) * (query_point_1.y - query_point_2.y)));
-                  }
-                }
-                std::cout << "span of training inliers: " << max_dist_training << " for xy: " << max_dist_training_xy
-                          << std::endl;
-                std::cout << "span of query inliers: " << max_dist_query << " for xy: " << max_dist_query_xy
-                          << std::endl;
               }
 
               // Store the pose
@@ -317,17 +300,6 @@ namespace object_recognition
           {
             // Draw the different inliers
             cv::Mat output_img = initial_image.clone();
-            std::vector<cv::Scalar> colors;
-            colors.push_back(cv::Scalar(255, 255, 0));
-            colors.push_back(cv::Scalar(0, 255, 255));
-            colors.push_back(cv::Scalar(255, 0, 255));
-            colors.push_back(cv::Scalar(255, 0, 0));
-            colors.push_back(cv::Scalar(0, 255, 0));
-            colors.push_back(cv::Scalar(0, 0, 255));
-            colors.push_back(cv::Scalar(0, 0, 0));
-            colors.push_back(cv::Scalar(85, 85, 85));
-            colors.push_back(cv::Scalar(170, 170, 170));
-            colors.push_back(cv::Scalar(255, 255, 255));
 
             unsigned int i = 0;
             for (std::map<ObjectOpenCVId, std::vector<std::vector<int> > >::const_iterator query_iterator =
@@ -340,9 +312,9 @@ namespace object_recognition
                     BOOST_FOREACH(int index, indices)
                           draw_keypoints.push_back(
                               keypoints[all_object_points[query_iterator->first].query_indices(index)]);
-                    if (i < colors.size())
+                    if (i < colors_.size())
                     {
-                      cv::drawKeypoints(output_img, draw_keypoints, output_img, colors[i]);
+                      cv::drawKeypoints(output_img, draw_keypoints, output_img, colors_[i]);
                       ++i;
                     }
                   }
@@ -360,14 +332,16 @@ namespace object_recognition
         return 0;
       }
     private:
-      /** How much can the sensor be wrong at most */
-      float sensor_error_;
-      /** flag indicating whether we run in edbug mode */
+      /** List of very different colors, for debugging purposes */
+      std::vector<cv::Scalar> colors_;
+      /** flag indicating whether we run in debug mode */
       bool debug_;
       /** The minimum number of inliers in order to do pose matching */
       unsigned int min_inliers_;
       /** The number of RANSAC iterations to perform */
       unsigned int n_ransac_iterations_;
+      /** How much can the sensor be wrong at most */
+      float sensor_error_;
     }
     ;
   }

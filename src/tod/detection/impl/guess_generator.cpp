@@ -98,11 +98,12 @@ namespace object_recognition
       query_indices.resize(end - query_indices.begin());
 
       std::vector<unsigned int> indices_to_remove;
+      indices_to_remove.reserve(query_indices_.size());
       std::vector<unsigned int>::const_iterator iter = query_indices.begin();
       for (unsigned int i = 0; i < query_indices_.size(); ++i)
       {
         unsigned int query_index = query_indices_[i];
-        if ((iter == end) || (query_index < *iter))
+        if (query_index < *iter)
           continue;
         // If the match has a keypoint in the inliers, remove the match
         if (query_index == *iter)
@@ -112,6 +113,8 @@ namespace object_recognition
         }
         while ((iter != end) && (query_index > *iter))
           ++iter;
+        if (iter == end)
+          break;
       }
       InvalidateIndices(indices_to_remove);
     }
@@ -247,10 +250,10 @@ namespace object_recognition
     void
     ClusterPerObject(const std::vector<cv::KeyPoint> & keypoints, const cv::Mat &point_cloud,
                      const std::vector<std::vector<cv::DMatch> > & matches, const std::vector<cv::Mat> & matches_3d,
-                     bool debug, const cv::Mat & initial_image, OpenCVIdToObjectPoints &object_points)
+                     bool debug, const std::vector<cv::Scalar> & colors, const cv::Mat & initial_image,
+                     OpenCVIdToObjectPoints &object_points)
     {
       std::vector<int> histo_count;
-      std::vector<cv::KeyPoint> draw_keypoints_1;
       for (unsigned int query_index = 0; query_index < matches.size(); ++query_index)
       {
         // Figure out the 3d query point
@@ -265,8 +268,7 @@ namespace object_recognition
 
         const std::vector<cv::DMatch> &local_matches = matches[query_index];
         const cv::Mat &local_matches_3d = matches_3d[query_index];
-        if (!local_matches.empty())
-          draw_keypoints_1.push_back(keypoint);
+
         // Get the matches for that point
         for (unsigned int match_index = 0; match_index < local_matches.size(); ++match_index)
         {
@@ -281,8 +283,22 @@ namespace object_recognition
 
       if (debug)
       {
-        cv::Mat out_img;
-        cv::drawKeypoints(initial_image, draw_keypoints_1, out_img);
+        cv::Mat out_img = initial_image.clone();
+        unsigned int i = 0;
+        // Draw the keypoints with a different color per object
+        for (OpenCVIdToObjectPoints::iterator query_iterator = object_points.begin();
+            query_iterator != object_points.end(); ++query_iterator)
+            {
+          std::vector<unsigned int> query_indices = query_iterator->second.query_indices();
+          std::vector<unsigned int>::iterator end = std::unique(query_indices.begin(), query_indices.end());
+          query_indices.resize(end - query_indices.begin());
+          std::vector<cv::KeyPoint> local_keypoints(query_indices.size());
+          for (unsigned int j = 0; j < query_indices.size(); ++j)
+            local_keypoints[j] = keypoints[query_indices[j]];
+          cv::drawKeypoints(out_img, local_keypoints, out_img, colors[i]);
+          ++i;
+          std::cout << i << std::endl;
+        }
         cv::namedWindow("keypoints from objects", 0);
         cv::imshow("keypoints from objects", out_img);
       }
@@ -324,20 +340,24 @@ namespace object_recognition
         return coefficients;
 
       sample_consensus.getInliers(inliers);
+      std::sort(inliers.begin(), inliers.end());
       sample_consensus.getModelCoefficients(coefficients);
       std::vector<int> valid_indices = object_points.valid_indices();
-      //for(unsigned int i=0;i<2;++i)
-      while(true)
+      std::vector<int>::iterator valid_end = std::set_difference(valid_indices.begin(), valid_indices.end(),
+                                                                 inliers.begin(), inliers.end(), valid_indices.begin());
+      valid_indices.resize(valid_end - valid_indices.begin());
+
+      bool do_final = false;
+      double thresh = sensor_error * sensor_error;
+      // Try to bring more points to the model, without removing points, which could bias the model
+      // Also, for the last iteration (when we cannot add points anymore), we get a looser threshold
+      while (true)
       {
-        std::sort(inliers.begin(), inliers.end());
         {
           Eigen::VectorXf new_coefficients = coefficients;
           model->optimizeModelCoefficients(object_points.training_points(), inliers, coefficients, new_coefficients);
           coefficients = new_coefficients;
         }
-
-        // Figure out whether there are more points that verify the model
-        double thresh = sensor_error * sensor_error;
 
         // Check if the model is valid given the user constraints
         Eigen::Matrix4f transform;
@@ -346,13 +366,7 @@ namespace object_recognition
         transform.row(2) = coefficients.segment<4>(8);
         transform.row(3) = coefficients.segment<4>(12);
 
-        std::vector<int>::iterator valid_end = std::set_difference(valid_indices.begin(), valid_indices.end(),
-                                                                   inliers.begin(), inliers.end(),
-                                                                   valid_indices.begin());
-        valid_indices.resize(valid_end - valid_indices.begin());
-
-        unsigned int count = 0;
-        bool do_have_new_inliers = false;
+        std::vector<int> extra_inliers;
         BOOST_FOREACH(int index, valid_indices)
             {
               const Eigen::Map<Eigen::Vector4f, Eigen::Aligned> &pt_src =
@@ -362,15 +376,28 @@ namespace object_recognition
               Eigen::Vector4f p_tr = transform * pt_src;
               // Calculate the distance from the transformed point to its correspondence
               if ((p_tr - pt_tgt).squaredNorm() < thresh)
-              {
-                inliers.push_back(index);
-                do_have_new_inliers = true;
-                ++count;
-              }
+                extra_inliers.push_back(index);
             }
-        std::cout << " added : " << count << std::endl;
-        if (!do_have_new_inliers)
+        std::cout << " added : " << extra_inliers.size() << std::endl;
+        // Add those extra inliers to the inliers and remove them from the valid indices
+        {
+          std::vector<int> new_inliers(inliers.size() + extra_inliers.size());
+          std::merge(inliers.begin(), inliers.end(), extra_inliers.begin(), extra_inliers.end(), new_inliers.begin());
+          inliers = new_inliers;
+        }
+        valid_end = std::set_difference(valid_indices.begin(), valid_indices.end(), extra_inliers.begin(),
+                                        extra_inliers.end(), valid_indices.begin());
+        valid_indices.resize(valid_end - valid_indices.begin());
+
+        if (do_final)
           break;
+        if (extra_inliers.empty())
+        {
+          break;
+          do_final = true;
+          thresh *= 4;
+        }
+
       }
       return coefficients;
     }

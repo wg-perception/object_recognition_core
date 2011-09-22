@@ -147,7 +147,8 @@ namespace object_recognition
     void
     ClusterPerObject(const std::vector<cv::KeyPoint> & keypoints, const cv::Mat &point_cloud,
                      const std::vector<std::vector<cv::DMatch> > & matches, const std::vector<cv::Mat> & matches_3d,
-                     bool debug, const cv::Mat & initial_image, OpenCVIdToObjectPoints &object_points);
+                     bool debug, const std::vector<cv::Scalar> & colors, const cv::Mat & initial_image,
+                     OpenCVIdToObjectPoints &object_points);
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
