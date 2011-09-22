@@ -98,6 +98,8 @@ namespace object_recognition
       {
         if (n_samples == 0)
           return true;
+        if (valid_samples.empty())
+          return false;
         while (true)
         {
           int sample = valid_samples[rand() % valid_samples.size()];
@@ -106,11 +108,8 @@ namespace object_recognition
                                                                  neighbors_[sample].begin(), neighbors_[sample].end(),
                                                                  new_valid_samples.begin());
           new_valid_samples.resize(end - new_valid_samples.begin());
-          --n_samples;
-          if (new_valid_samples.size() < n_samples)
-            return false;
           std::vector<int> new_samples;
-          if (drawIndexSampleHelper(new_valid_samples, n_samples, new_samples))
+          if (drawIndexSampleHelper(new_valid_samples, n_samples - 1, new_samples))
           {
             samples = new_samples;
             valid_samples = new_valid_samples;
@@ -292,8 +291,8 @@ namespace object_recognition
       }
 
       void
-      optimizeModelCoefficients(const PointCloudConstPtr &target, const std::vector<int> &inliers, const Eigen::VectorXf &model_coefficients,
-                                Eigen::VectorXf &optimized_coefficients)
+      optimizeModelCoefficients(const PointCloudConstPtr &target, const std::vector<int> &inliers,
+                                const Eigen::VectorXf &model_coefficients, Eigen::VectorXf &optimized_coefficients)
       {
         Eigen::Matrix4f transform;
         pcl::estimateRigidTransformationSVD<PointT, PointT>(*input_, inliers, *target, inliers, transform);
