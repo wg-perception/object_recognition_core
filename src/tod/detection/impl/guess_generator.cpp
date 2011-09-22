@@ -319,16 +319,58 @@ namespace object_recognition
        }
        std::cout << "];";*/
 
-      if (sample_consensus.computeModel())
+      inliers.clear();
+      if (!sample_consensus.computeModel())
+        return coefficients;
+
+      sample_consensus.getInliers(inliers);
+      sample_consensus.getModelCoefficients(coefficients);
+      std::vector<int> valid_indices = object_points.valid_indices();
+      //for(unsigned int i=0;i<2;++i)
+      while(true)
       {
-        inliers.clear();
-        sample_consensus.getInliers(inliers);
         std::sort(inliers.begin(), inliers.end());
-        sample_consensus.getModelCoefficients(coefficients);
-      }
-      else
-      {
-        inliers.clear();
+        {
+          Eigen::VectorXf new_coefficients = coefficients;
+          model->optimizeModelCoefficients(object_points.training_points(), inliers, coefficients, new_coefficients);
+          coefficients = new_coefficients;
+        }
+
+        // Figure out whether there are more points that verify the model
+        double thresh = sensor_error * sensor_error;
+
+        // Check if the model is valid given the user constraints
+        Eigen::Matrix4f transform;
+        transform.row(0) = coefficients.segment<4>(0);
+        transform.row(1) = coefficients.segment<4>(4);
+        transform.row(2) = coefficients.segment<4>(8);
+        transform.row(3) = coefficients.segment<4>(12);
+
+        std::vector<int>::iterator valid_end = std::set_difference(valid_indices.begin(), valid_indices.end(),
+                                                                   inliers.begin(), inliers.end(),
+                                                                   valid_indices.begin());
+        valid_indices.resize(valid_end - valid_indices.begin());
+
+        unsigned int count = 0;
+        bool do_have_new_inliers = false;
+        BOOST_FOREACH(int index, valid_indices)
+            {
+              const Eigen::Map<Eigen::Vector4f, Eigen::Aligned> &pt_src =
+                  object_points.query_points(index).getVector4fMap();
+              const Eigen::Map<Eigen::Vector4f, Eigen::Aligned> &pt_tgt =
+                  object_points.training_points(index).getVector4fMap();
+              Eigen::Vector4f p_tr = transform * pt_src;
+              // Calculate the distance from the transformed point to its correspondence
+              if ((p_tr - pt_tgt).squaredNorm() < thresh)
+              {
+                inliers.push_back(index);
+                do_have_new_inliers = true;
+                ++count;
+              }
+            }
+        std::cout << " added : " << count << std::endl;
+        if (!do_have_new_inliers)
+          break;
       }
       return coefficients;
     }

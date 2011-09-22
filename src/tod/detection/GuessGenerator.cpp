@@ -111,7 +111,7 @@ namespace object_recognition
         n_ransac_iterations_ = param_tree.get<unsigned int>("n_ransac_iterations");
 
         debug_ = true;
-        sensor_error_ = 0.015;
+        sensor_error_ = 0.01;
       }
 
       /** Get the 2d keypoints and figure out their 3D position from the depth map
@@ -246,39 +246,6 @@ namespace object_recognition
                  graph_new.findMaximumClique(vertices);
 
                  std::cout << " witin themselves: " << vertices.size() << std::endl;*/
-                {
-                  double thresh = sensor_error_ * sensor_error_;
-
-                  // Check if the model is valid given the user constraints
-                  Eigen::Matrix4f transform;
-                  transform.row(0) = coefficients.segment<4>(0);
-                  transform.row(1) = coefficients.segment<4>(4);
-                  transform.row(2) = coefficients.segment<4>(8);
-                  transform.row(3) = coefficients.segment<4>(12);
-
-                  std::vector<int> valid_indices = object_points.valid_indices();
-                  std::vector<int>::iterator valid_end = std::set_difference(valid_indices.begin(), valid_indices.end(),
-                                                                             inliers.begin(), inliers.end(),
-                                                                             valid_indices.begin());
-                  valid_indices.resize(valid_end - valid_indices.begin());
-
-                  unsigned int count = 0;
-                  BOOST_FOREACH(int index, valid_indices)
-                      {
-                        const Eigen::Map<Eigen::Vector4f, Eigen::Aligned> &pt_src =
-                            object_points.query_points(index).getVector4fMap();
-                        const Eigen::Map<Eigen::Vector4f, Eigen::Aligned> &pt_tgt =
-                            object_points.training_points(index).getVector4fMap();
-                        Eigen::Vector4f p_tr = transform * pt_src;
-                        // Calculate the distance from the transformed point to its correspondence
-                        if ((p_tr - pt_tgt).squaredNorm() < 2 * thresh)
-                        {
-                          inliers.push_back(index);
-                          ++count;
-                        }
-                      }
-                  std::cout << " added : " << count << std::endl;
-                }
 
                 // Get the span of the inliers
                 float max_dist_training = 0, max_dist_training_xy = 0, max_dist_query = 0, max_dist_query_xy = 0;
@@ -310,111 +277,78 @@ namespace object_recognition
                           << std::endl;
                 std::cout << "span of query inliers: " << max_dist_query << " for xy: " << max_dist_query_xy
                           << std::endl;
-
-                // Go over all the matches that have not been checked
-                // Store the pose
-                cv::Mat_<float> R_mat(3, 3), tvec(3, 1);
-                for (unsigned int j = 0; j < 3; ++j)
-                {
-                  for (unsigned int i = 0; i < 3; ++i)
-                    R_mat(j, i) = coefficients[4 * j + i];
-                  tvec(j, 0) = coefficients[4 * j + 3];
-                }
-                R_mat = R_mat.t();
-                tvec = -R_mat * tvec;
-
-                // Check whether the pose could be close to a previous
-
-                Rs.push_back(R_mat);
-                Ts.push_back(tvec);
-                object_ids.push_back(object_id);
-                std::cout << R_mat << std::endl;
-                std::cout << tvec << std::endl;
-
-                if (0)
-                {
-                  for (std::vector<int>::const_iterator iter = inliers.begin(), end = inliers.end() - 1; iter < end;
-                      ++iter)
-                      {
-                    std::cout << int(object_points.physical_adjacency_(*iter, *(iter + 1))) << " ";
-                    if (object_points.physical_adjacency_(*iter, *(iter + 1)))
-                      continue;
-                    int i = *iter, j = *(iter + 1);
-
-                    const pcl::PointXYZ & training_point_1 = object_points.training_points()->points[i],
-                        &query_point_1 = object_points.query_points()->points[i], &training_point_2 =
-                            object_points.training_points()->points[j], &query_point_2 =
-                            object_points.query_points()->points[j];
-
-                    // Two matches with the same query point cannot be connected
-                    std::cout << "-" << int(object_points.query_indices()[i] == object_points.query_indices()[j])
-                              << " ";
-
-                    float dist_query = pcl::euclideanDistance(query_point_1, query_point_2);
-
-                    std::cout << int(dist_query > (spans.find(object_id)->second + 2 * sensor_error_)) << " ";
-
-                    float dist_training = pcl::euclideanDistance(training_point_1, training_point_2);
-                    // Make sure the distance between two points is somewhat conserved
-                    std::cout << int(std::abs(dist_training - dist_query) > 2 * sensor_error_) << "-- ";
-                  }
-                }
-                std::cout << std::endl;
-
-                // Figure out the matches to remove
-                {
-                  std::vector<unsigned int> query_indices;
-                  BOOST_FOREACH(unsigned int inlier, inliers)
-                        query_indices.push_back(object_points.query_indices()[inlier]);
-
-                  object_points.InvalidateQueryIndices(query_indices);
-                  std::cout << query_indices.size() << " edges deleted" << std::endl;
-                }
               }
 
-              // Save all the poses;
-              Rs_final.insert(Rs_final.end(), Rs.begin(), Rs.end());
-              Ts_final.insert(Ts_final.end(), Ts.begin(), Ts.end());
-              object_ids_final.insert(object_ids_final.end(), object_ids.begin(), object_ids.end());
-            }
-
-            if (debug_)
-            {
-              // Draw the different inliers
-              cv::Mat output_img = initial_image.clone();
-              std::vector<cv::Scalar> colors;
-              colors.push_back(cv::Scalar(255, 255, 0));
-              colors.push_back(cv::Scalar(0, 255, 255));
-              colors.push_back(cv::Scalar(255, 0, 255));
-              colors.push_back(cv::Scalar(255, 0, 0));
-              colors.push_back(cv::Scalar(0, 255, 0));
-              colors.push_back(cv::Scalar(0, 0, 255));
-              colors.push_back(cv::Scalar(0, 0, 0));
-              colors.push_back(cv::Scalar(85, 85, 85));
-              colors.push_back(cv::Scalar(170, 170, 170));
-              colors.push_back(cv::Scalar(255, 255, 255));
-
-              unsigned int i = 0;
-              for (std::map<ObjectOpenCVId, std::vector<std::vector<int> > >::const_iterator query_iterator =
-                  matching_query_points.begin(); query_iterator != matching_query_points.end(); ++query_iterator)
+              // Store the pose
+              cv::Mat_<float> R_mat(3, 3), tvec(3, 1);
+              for (unsigned int j = 0; j < 3; ++j)
               {
-                BOOST_FOREACH(const std::vector<int> & indices, query_iterator->second)
-                    {
-                      std::vector<cv::KeyPoint> draw_keypoints;
-                      draw_keypoints.clear();
-                      BOOST_FOREACH(int index, indices)
-                            draw_keypoints.push_back(
-                                keypoints[all_object_points[query_iterator->first].query_indices(index)]);
-                      if (i < colors.size())
-                      {
-                        cv::drawKeypoints(output_img, draw_keypoints, output_img, colors[i]);
-                        ++i;
-                      }
-                    }
+                for (unsigned int i = 0; i < 3; ++i)
+                  R_mat(j, i) = coefficients[4 * j + i];
+                tvec(j, 0) = coefficients[4 * j + 3];
               }
-              cv::namedWindow("inliers", 0);
-              cv::imshow("inliers", output_img);
+              R_mat = R_mat.t();
+              tvec = -R_mat * tvec;
+
+              Rs.push_back(R_mat);
+              Ts.push_back(tvec);
+              object_ids.push_back(object_id);
+              std::cout << R_mat << std::endl;
+              std::cout << tvec << std::endl;
+
+              // Figure out the matches to remove
+              {
+                std::vector<unsigned int> query_indices;
+                BOOST_FOREACH(unsigned int inlier, inliers)
+                      query_indices.push_back(object_points.query_indices(inlier));
+
+                object_points.InvalidateQueryIndices(query_indices);
+                std::cout << query_indices.size() << " edges deleted" << std::endl;
+              }
             }
+
+            // Save all the poses;
+            Rs_final.insert(Rs_final.end(), Rs.begin(), Rs.end());
+            Ts_final.insert(Ts_final.end(), Ts.begin(), Ts.end());
+            object_ids_final.insert(object_ids_final.end(), object_ids.begin(), object_ids.end());
+          }
+
+          if (debug_)
+          {
+            // Draw the different inliers
+            cv::Mat output_img = initial_image.clone();
+            std::vector<cv::Scalar> colors;
+            colors.push_back(cv::Scalar(255, 255, 0));
+            colors.push_back(cv::Scalar(0, 255, 255));
+            colors.push_back(cv::Scalar(255, 0, 255));
+            colors.push_back(cv::Scalar(255, 0, 0));
+            colors.push_back(cv::Scalar(0, 255, 0));
+            colors.push_back(cv::Scalar(0, 0, 255));
+            colors.push_back(cv::Scalar(0, 0, 0));
+            colors.push_back(cv::Scalar(85, 85, 85));
+            colors.push_back(cv::Scalar(170, 170, 170));
+            colors.push_back(cv::Scalar(255, 255, 255));
+
+            unsigned int i = 0;
+            for (std::map<ObjectOpenCVId, std::vector<std::vector<int> > >::const_iterator query_iterator =
+                matching_query_points.begin(); query_iterator != matching_query_points.end(); ++query_iterator)
+            {
+              BOOST_FOREACH(const std::vector<int> & indices, query_iterator->second)
+                  {
+                    std::vector<cv::KeyPoint> draw_keypoints;
+                    draw_keypoints.clear();
+                    BOOST_FOREACH(int index, indices)
+                          draw_keypoints.push_back(
+                              keypoints[all_object_points[query_iterator->first].query_indices(index)]);
+                    if (i < colors.size())
+                    {
+                      cv::drawKeypoints(output_img, draw_keypoints, output_img, colors[i]);
+                      ++i;
+                    }
+                  }
+            }
+            cv::namedWindow("inliers", 0);
+            cv::imshow("inliers", output_img);
           }
 
           outputs["Rs"] << Rs_final;

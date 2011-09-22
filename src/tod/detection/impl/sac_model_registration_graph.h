@@ -242,7 +242,7 @@ namespace object_recognition
           if (vertices.size() >= minimal_size)
           {
             //BOOST_FOREACH(unsigned int vertex, vertices)
-              //    new_coherent_inliers.push_back(coherent_inliers[vertex]);
+            //    new_coherent_inliers.push_back(coherent_inliers[vertex]);
             new_coherent_inliers = coherent_inliers;
           }
         }
@@ -289,6 +289,19 @@ namespace object_recognition
         in_inliers = new_coherent_inliers;
 
         best_inlier_number_ = std::max(in_inliers.size(), best_inlier_number_);
+      }
+
+      void
+      optimizeModelCoefficients(const PointCloudConstPtr &target, const std::vector<int> &inliers, const Eigen::VectorXf &model_coefficients,
+                                Eigen::VectorXf &optimized_coefficients)
+      {
+        Eigen::Matrix4f transform;
+        pcl::estimateRigidTransformationSVD<PointT, PointT>(*input_, inliers, *target, inliers, transform);
+        optimized_coefficients.resize(16);
+        optimized_coefficients.segment<4>(0) = transform.row(0);
+        optimized_coefficients.segment<4>(4) = transform.row(1);
+        optimized_coefficients.segment<4>(8) = transform.row(2);
+        optimized_coefficients.segment<4>(12) = transform.row(3);
       }
 
       mutable std::vector<int> samples_;
