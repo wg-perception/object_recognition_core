@@ -136,20 +136,7 @@ namespace object_recognition
         bool is_good = drawIndexSampleHelper(valid_samples, sample_size, new_samples);
 
         if (is_good)
-        {
-          bool sub_is_good = true;
-          for (unsigned int i = 0; i < samples.size(); ++i)
-            for (unsigned int j = i + 1; j < samples.size(); ++j)
-              if (!physical_adjacency_(samples[i], samples[j]))
-              {
-                std::cout << int(sample_adjacency_(samples[i], samples[j])) << " ";
-                sub_is_good = false;
-              }
-          if (!sub_is_good)
-            std::cout << std::endl << "problem with sample adjacency" << std::endl;
-
           samples_ = new_samples;
-        }
 
         return is_good;
       }
@@ -184,16 +171,13 @@ namespace object_recognition
         pcl::SampleConsensusModelRegistration<PointT>::selectWithinDistance(model_coefficients, threshold,
                                                                             possible_inliers);
 
+        in_inliers.clear();
         // Make sure the sample belongs to the inliers
         BOOST_FOREACH(int sample, samples_)
               if (std::find(possible_inliers.begin(), possible_inliers.end(), sample) == possible_inliers.end())
-              {
-                in_inliers.clear();
                 return;
-              }
 
         // Remove all the points that cannot belong to a clique including the samples
-        std::vector<int> coherent_inliers;
         BOOST_FOREACH(int inlier, possible_inliers)
             {
               bool is_good = true;
@@ -209,83 +193,27 @@ namespace object_recognition
                     }
                   }
               if (is_good)
-                coherent_inliers.push_back(inlier);
+                in_inliers.push_back(inlier);
             }
-
-        BOOST_FOREACH(int sample, samples_)
-              if (std::find(coherent_inliers.begin(), coherent_inliers.end(), sample) == coherent_inliers.end())
-              {
-                std::cout << "prolem" << std::endl;
-                in_inliers.clear();
-                return;
-              }
 
         // If that set is not bigger than the best so far, no need to refine it
-        if (coherent_inliers.size() < best_inlier_number_)
-        {
-          in_inliers = coherent_inliers;
+        if (in_inliers.size() < best_inlier_number_)
+          return;
+
+        object_recognition::maximum_clique::Graph graph(in_inliers.size());
+        for (unsigned int j = 0; j < in_inliers.size(); ++j)
+          for (unsigned int i = j + 1; i < in_inliers.size(); ++i)
+            if (sample_adjacency_(in_inliers[j], in_inliers[i]))
+              graph.AddEdge(j, i);
+
+        // If we cannot even find enough points well distributed in the sample, stop here
+        unsigned int minimal_size = 5;
+        std::vector<unsigned int> vertices;
+        graph.FindClique(vertices, minimal_size);
+        if (vertices.size() < minimal_size) {
+          in_inliers.clear();
           return;
         }
-
-        std::vector<int> new_coherent_inliers;
-        {
-          object_recognition::maximum_clique::Graph graph(coherent_inliers.size());
-          for (unsigned int j = 0; j < coherent_inliers.size(); ++j)
-            for (unsigned int i = j + 1; i < coherent_inliers.size(); ++i)
-              if (sample_adjacency_(coherent_inliers[j], coherent_inliers[i]))
-                graph.AddEdge(j, i);
-          std::vector<unsigned int> vertices;
-
-          unsigned int minimal_size = 5;
-          graph.FindClique(vertices, minimal_size);
-          if (vertices.size() >= minimal_size)
-          {
-            //BOOST_FOREACH(unsigned int vertex, vertices)
-            //    new_coherent_inliers.push_back(coherent_inliers[vertex]);
-            new_coherent_inliers = coherent_inliers;
-          }
-        }
-
-        std::sort(new_coherent_inliers.begin(), new_coherent_inliers.end());
-
-        // Try to augment this set, in case the max clique did not do its job fully
-        if (0)
-        {
-          std::sort(possible_inliers.begin(), possible_inliers.end());
-          std::vector<unsigned int> intersection(possible_inliers.size());
-          std::copy(possible_inliers.begin(), possible_inliers.end(), intersection.begin());
-          while (!intersection.empty())
-          {
-            std::vector<unsigned int>::iterator end = std::set_difference(intersection.begin(), intersection.end(),
-                                                                          new_coherent_inliers.begin(),
-                                                                          new_coherent_inliers.end(),
-                                                                          intersection.begin());
-            intersection.resize(end - intersection.begin());
-            BOOST_FOREACH(int inlier, new_coherent_inliers)
-                {
-                  end = std::set_intersection(intersection.begin(), intersection.end(), neighbors_[inlier].begin(),
-                                              neighbors_[inlier].end(), intersection.begin());
-                  intersection.resize(end - intersection.begin());
-                }
-            if ((1) && (!intersection.empty()))
-            {
-              // Find the max clique between the elements in that intersection
-              std::cout << "missed some:" << intersection.size();
-              object_recognition::maximum_clique::Graph graph(intersection.size());
-              for (unsigned int j = 0; j < intersection.size(); ++j)
-                for (unsigned int i = j + 1; i < intersection.size(); ++i)
-                  if (sample_adjacency_(intersection[j], intersection[i]))
-                    graph.AddEdge(j, i);
-              std::vector<unsigned int> vertices;
-              graph.FindMaximumClique(vertices);
-
-              std::cout << " actually missed :" << vertices.size() << std::endl;
-              BOOST_FOREACH(int vertex, vertices)
-                    new_coherent_inliers.push_back(intersection[vertex]);
-            }
-          }
-        }
-        in_inliers = new_coherent_inliers;
 
         best_inlier_number_ = std::max(in_inliers.size(), best_inlier_number_);
       }
