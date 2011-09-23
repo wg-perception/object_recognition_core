@@ -92,6 +92,8 @@ namespace object_recognition
     void
     ObjectPoints::InvalidateQueryIndices(std::vector<unsigned int> &query_indices)
     {
+      if (query_indices.empty())
+        return;
       // Figure out the points with those query indices
       std::sort(query_indices.begin(), query_indices.end());
       std::vector<unsigned int>::iterator end = std::unique(query_indices.begin(), query_indices.end());
@@ -381,9 +383,10 @@ namespace object_recognition
         std::cout << " added : " << extra_inliers.size() << std::endl;
         // Add those extra inliers to the inliers and remove them from the valid indices
         {
-          std::vector<int> new_inliers(inliers.size() + extra_inliers.size());
-          std::merge(inliers.begin(), inliers.end(), extra_inliers.begin(), extra_inliers.end(), new_inliers.begin());
-          inliers = new_inliers;
+          std::vector<int> tmp_inliers = inliers;
+          inliers.resize(inliers.size() + extra_inliers.size());
+          std::merge(tmp_inliers.begin(), tmp_inliers.end(), extra_inliers.begin(), extra_inliers.end(),
+                     inliers.begin());
         }
         valid_end = std::set_difference(valid_indices.begin(), valid_indices.end(), extra_inliers.begin(),
                                         extra_inliers.end(), valid_indices.begin());
