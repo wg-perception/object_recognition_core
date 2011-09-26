@@ -43,6 +43,13 @@
 
 #include "opencv_candidate/lsh.hpp"
 
+#include <Eigen/Core>
+#include <Eigen/Geometry>
+#include <Eigen/Geometry>
+#define EIGEN_YES_I_KNOW_SPARSE_MODULE_IS_NOT_STABLE_YET
+#include <Eigen/Sparse>
+#include <Eigen/StdVector>
+
 using ecto::tendrils;
 
 namespace object_recognition
@@ -67,10 +74,24 @@ namespace object_recognition
       static void
       declare_io(const tendrils& params, tendrils& inputs, tendrils& outputs)
       {
+        inputs.declare<cv::Mat>("K", "The camera instrinsics matrix.").required(true);
+
         inputs.declare<cv::Mat>("points", "The 3d position of the points.").required(true);
         inputs.declare<cv::Mat>("descriptors", "The descriptors.").required(true);
+
         outputs.declare<std::vector<cv::Mat> >("points", "The stacked 3d position of the points.");
         outputs.declare<std::vector<cv::Mat> >("descriptors", "The stacked descriptors.");
+
+        outputs.declare<Eigen::SparseMatrix<Eigen::Vector3i> >("matches",
+                                                               "The n_view by n_points matrix with 3 channels.").required(
+            true);
+        outputs.declare<std::vector<Eigen::Quaterniond> >("quaternions",
+                                                          "The initial estimates of the camera rotations.").required(
+            true);
+        outputs.declare<std::vector<Eigen::Vector3d> >("Ts", "The initial estimates of the camera translations.").required(
+            true);
+        outputs.declare<Eigen::Matrix3d>("K", "The intrinsic parameter matrix.").required(true);
+        outputs.declare<std::vector<Eigen::Vector3d> >("point_estimates", "The stacked descriptors.").required(true);
       }
 
       void
@@ -85,6 +106,12 @@ namespace object_recognition
         matcher_ = new lsh::LshMatcher(search_param_tree.get<unsigned int>("n_tables"),
                                        search_param_tree.get<unsigned int>("key_size"),
                                        search_param_tree.get<unsigned int>("multi_probe_level"));
+
+        matches_ = outputs["matches"];
+        quaternions_ = outputs["Rs"];
+        Ts_ = outputs["Ts"];
+        K_ = outputs["K"];
+        point_estimates_ = outputs["point_estimates"];
       }
 
       int
@@ -116,6 +143,7 @@ namespace object_recognition
               if ((!matches.empty()) && (!matches[i].empty()))
                 continue;
 
+
               *(iter_filtered++) = point;
               cv::Mat row_filtered_mat = descriptors_filtered.row(row_filtered++);
               descriptors.row(row).copyTo(row_filtered_mat);
@@ -145,6 +173,12 @@ namespace object_recognition
       cv::Ptr<cv::DescriptorMatcher> matcher_;
       /** The radius for the nearest neighbors (if not using ratio) */
       unsigned int radius_;
+
+      ecto::spore<Eigen::SparseMatrix<Eigen::Vector3i> > matches_;
+      ecto::spore<std::vector<Eigen::Quaterniond> > quaternions_;
+      ecto::spore<std::vector<Eigen::Vector3d> > Ts_;
+      ecto::spore<Eigen::Matrix3d> K_;
+      ecto::spore<std::vector<Eigen::Vector3d> > point_estimates_;
     };
   }
 }

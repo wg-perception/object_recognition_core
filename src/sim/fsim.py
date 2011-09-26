@@ -1,43 +1,48 @@
 #!/usr/bin/env python
 
 import ecto
-from object_recognition.common.io.standalone.source import KinectReader
-from object_recognition.observations import *
-from ecto_opencv import highgui, calib, imgproc, cv_bp as cv
-from object_recognition.observations import *
-from ecto_object_recognition import capture, sim
+from ecto_opencv.highgui import imshow, VideoCapture
+from ecto_opencv.imgproc import cvtColor, Conversion
+from ecto_opencv.calib import PatternDetector, FiducialPoseFinder, \
+     PatternDrawer, PoseDrawer, CameraIntrinsics, ASYMMETRIC_CIRCLES_GRID
+from sim import PlanarSim
+
 import sys
-board = 'board.png'
-if len(sys.argv) > 1:
-    board = sys.argv[1]
 
+board = '11x4.png'
+simulator = PlanarSim(image_name=board, width=0.279, height=0.22)
+
+rows = 11
+cols = 4
+square_size = 0.04 # in meters, 4 cm
+pattern_type = ASYMMETRIC_CIRCLES_GRID
+
+pattern_show = imshow('Display', name='pattern')
+rgb2gray = cvtColor('RGB -> Gray', flag=Conversion.RGB2GRAY)
+circle_detector = PatternDetector(rows=rows, cols=cols,
+                                  pattern_type=pattern_type,
+                                  square_size=square_size)
+circle_drawer = PatternDrawer(rows=rows, cols=cols)
+poser = FiducialPoseFinder()
+pose_drawer = PoseDrawer()
+gt_drawer = PoseDrawer()
 plasm = ecto.Plasm()
+plasm.connect(simulator['image'] >> (rgb2gray['image'], circle_drawer['input']),
+            rgb2gray['image'] >> circle_detector['input'],
+            circle_detector['out', 'found'] >> circle_drawer['points', 'found'],
+            simulator['K'] >> poser['K'],
+            circle_detector['out', 'ideal', 'found'] >> poser['points', 'ideal', 'found'],
+            poser['R', 'T'] >> pose_drawer['R', 'T'],
+            circle_detector['found'] >> pose_drawer['trigger'],
+            circle_drawer['out'] >> pose_drawer['image'],
+            simulator['K'] >> pose_drawer['K'],
+            pose_drawer['output'] >> pattern_show['image'],
+            )
 
-simulator = sim.PlanarSim(image_name=board, width=0.8, height=0.4)
+plasm.connect(simulator['image','R','T','K'] >> gt_drawer['image','R','T','K'],
+              gt_drawer['output'] >> imshow(name='Ground Truth')['image']
+            )
 
-poser = OpposingDotPoseEstimator(plasm,
-                                 rows=5, cols=3,
-                                 pattern_type=calib.ASYMMETRIC_CIRCLES_GRID,
-                                 square_size=0.04, debug=True)
-
-gt_pose_drawer = calib.PoseDrawer('Ground Truth Pose')
-
-rgb2gray = imgproc.cvtColor('rgb -> gray', flag=imgproc.Conversion.RGB2GRAY)
-display = highgui.imshow(name='Pose')
-depth_display = highgui.imshow(name='Depth')
-graph = [simulator['image'] >> (rgb2gray[:], poser['color_image'], gt_pose_drawer['image']),
-         simulator['R', 'T', 'K'] >> gt_pose_drawer['R', 'T', 'K'],
-         gt_pose_drawer['output'] >> highgui.imshow(name="Ground Truth")['image'],
-         rgb2gray[:] >> poser['image'],
-         poser['debug_image'] >> display['image'],
-         simulator['K'] >> poser['K'],
-         simulator['depth'] >> depth_display[:],
-         ]
-plasm.connect(graph)
-
-sched = ecto.schedulers.Singlethreaded(plasm)
-sched.execute()
-
-#if __name__ == '__main__':
-#    from ecto.opts import doit
-#    doit(plasm, description='Simulate pose estimation')
+if __name__ == '__main__':
+    from ecto.opts import doit
+    doit(plasm, description='Simulate pose estimation')

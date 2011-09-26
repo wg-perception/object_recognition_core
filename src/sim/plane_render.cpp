@@ -217,30 +217,43 @@ namespace object_recognition
   }
 
   void
+  view_angles(double degrees, double aspect_ratio, double& alpha, double& beta)
+  {
+    alpha = (degrees * CV_PI / 180.0) / 2.0; //in radians, half the angle.
+    beta = atan(tan(alpha) * aspect_ratio); // assume that the angles are related such that the focal length must be the same.
+  }
+
+  double
+  f_from_fov(double alpha, double w)
+  {
+    return w / tan(alpha);
+  }
+  void
   vtk_to_K(cv::Size sz, vtkCamera* cam, cv::Mat& K, cv::Mat& R, cv::Mat& T)
   {
 
     K = cv::Mat::eye(3, 3, CV_64F);
-    double imgW = sz.width;
-    double imgH = sz.height;
+    double cx = (sz.width - 1.0) / 2.0;
+    double cy = (sz.height - 1.0) / 2.0;
     double fovx, fovy;
+    double f;
     if (cam->GetUseHorizontalViewAngle())
     {
-      fovx = cam->GetViewAngle();
-      fovy = fovx * imgH / imgW;
+      //horizonal view anble
+      view_angles(cam->GetViewAngle(), cy / cx, fovx, fovy);
     }
     else
     {
-      fovy = cam->GetViewAngle();
-      fovx = fovy * imgW / imgH;
+      //vertical view angle
+      view_angles(cam->GetViewAngle(), cx / cy, fovy, fovx);
     }
-    double alphax = imgW / (2 * tan((fovx / 2.0) * CV_PI / 180.0));
-    double alphay = imgH / (2 * tan((fovy / 2.0) * CV_PI / 180.0));
+    //calculate our focal length based of the fov in X and our center x
+    f = f_from_fov(fovx, cx);
 
-    K.at<double>(0, 0) = alphax;
-    K.at<double>(0, 2) = (imgW - 1.0) / 2.0;
-    K.at<double>(1, 1) = alphay;
-    K.at<double>(1, 2) = (imgH - 1.0) / 2.0;
+    K.at<double>(0, 0) = f;
+    K.at<double>(0, 2) = cx;
+    K.at<double>(1, 1) = f;
+    K.at<double>(1, 2) = cy;
 
     double x, y, z;
     // construct a rotation matrix around x.
@@ -268,8 +281,8 @@ namespace object_recognition
   }
 
   void
-  grab_frame(vtkRenderWindow* renderWindow, cv::Mat& image, cv::Mat& depth, cv::Mat& mask, cv::Mat& K, cv::Mat& R,
-             cv::Mat& T)
+  grab_frame(vtkRenderWindow* renderWindow, cv::Mat& image, cv::Mat& depth, cv::Mat& mask,
+            cv::Mat& K, cv::Mat& R, cv::Mat& T)
   {
     int * ws = renderWindow->GetSize();
     cv::Size sz(ws[0], ws[1]);
@@ -294,10 +307,6 @@ namespace object_recognition
     }
     cv::flip(image, image, 0); //vertical flip.
     cv::flip(depth, depth, 0); //vertical flip.
-
-    //
-//    std::cout << "********** ground truth begin *******\nK = " << K << "\nR = " << R << "\nT = " << T
-//              << "\n******** ground truth end *********" << std::endl;
   }
 }
 #if DO_ECTO

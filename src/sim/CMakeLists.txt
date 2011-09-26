@@ -15,9 +15,6 @@ endif()
 
 include(${VTK_USE_FILE})
 
-#add_executable(Cone Cone.cxx)
-#target_link_libraries(Cone vtkRendering vtkWidgets)
-
 set( VTK_REQUIRED_LIBS vtkRendering  vtkGraphics vtkHybrid  vtkWidgets 
                      vtkImaging vtkIO vtkFiltering vtkCommon vtkVolumeRendering)
 
@@ -26,16 +23,21 @@ target_link_libraries(plane_render ${VTK_REQUIRED_LIBS} ${OpenCV_LIBS} boost_thr
 
 find_package(ecto)
 if(ecto_FOUND)
-  ectomodule(sim
-       module.cpp
-       plane_render.cpp
-  )
+  #set the default path for built libraries to the "ecto_opencv" directory
+  if (NOT CMAKE_LIBRARY_OUTPUT_DIRECTORY)
+    set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
+    ecto_python_env_gen(${CMAKE_LIBRARY_OUTPUT_DIRECTORY})
+  endif()
 
+  ectomodule(sim
+     module.cpp
+     plane_render.cpp
+  )
   link_ecto(sim
-       ${VTK_REQUIRED_LIBS} ${OpenCV_LIBS}
+    ${VTK_REQUIRED_LIBS} ${OpenCV_LIBS}
   )
   set_target_properties(sim_ectomodule
-      PROPERTIES
-      COMPILE_DEFINITIONS "DO_ECTO"
-      )
+    PROPERTIES
+    COMPILE_DEFINITIONS "DO_ECTO"
+    )
 endif()
