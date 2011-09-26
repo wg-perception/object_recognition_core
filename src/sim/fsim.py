@@ -10,18 +10,31 @@ from sim import PlanarSim
 import sys
 
 board = '11x4.png'
-simulator = PlanarSim(image_name=board, width=0.279, height=0.22)
 
 rows = 11
 cols = 4
-square_size = 0.04 # in meters, 4 cm
+width = 0.279
+height = 0.216
+offset_x = -(width/2 - 0.06)
+offset_y = -(height/2 - 0.020)
+
+print "ox" , offset_x, "oy", offset_y
+
+
+simulator = PlanarSim(image_name=board, width=width, height=height)
+
+square_size = 0.02 # in meters, 2 cm
 pattern_type = ASYMMETRIC_CIRCLES_GRID
 
 pattern_show = imshow('Display', name='pattern')
 rgb2gray = cvtColor('RGB -> Gray', flag=Conversion.RGB2GRAY)
 circle_detector = PatternDetector(rows=rows, cols=cols,
                                   pattern_type=pattern_type,
-                                  square_size=square_size)
+                                  square_size=square_size,
+                                  offset_x = offset_x,
+                                  offset_y = offset_y
+                                  )
+
 circle_drawer = PatternDrawer(rows=rows, cols=cols)
 poser = FiducialPoseFinder()
 pose_drawer = PoseDrawer()

@@ -7,15 +7,14 @@
    xmlns="http://www.w3.org/2000/svg"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
-   style="stroke-linejoin:round; stroke:black; stroke-width:0.5pt; text-anchor:middle; fill:none"
-   font-family="Helvetica, Arial, FreeSans, Sans, sans, sans-serif"
-   height="279mm"
-   width="216mm"
+   style="text-anchor:middle;fill:none;stroke:#000000;stroke-width:0.5pt;stroke-linejoin:round;font-family:'Helvetica, Arial, FreeSans, Sans, sans, sans-serif'"
+   height="765.35431"
+   width="988.5827"
    version="1.1"
-   viewBox="0 0 216 279"
+   viewBox="0 0 279.00002 215.99999"
    id="svg2"
    inkscape:version="0.48.1 r9760"
-   sodipodi:docname="11x4.png">
+   sodipodi:docname="11x4.svg">
   <metadata
      id="metadata98">
     <rdf:RDF>
@@ -24,7 +23,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title></dc:title>
+        <dc:title />
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -40,17 +39,20 @@
      inkscape:pageopacity="0"
      inkscape:pageshadow="2"
      inkscape:window-width="2560"
-     inkscape:window-height="1525"
+     inkscape:window-height="1575"
      id="namedview94"
      showgrid="true"
-     inkscape:zoom="2.9640924"
-     inkscape:cx="282.66665"
-     inkscape:cy="605.5546"
-     inkscape:window-x="0"
-     inkscape:window-y="25"
+     inkscape:zoom="1.4820462"
+     inkscape:cx="479.60785"
+     inkscape:cy="358.34179"
+     inkscape:window-x="2560"
+     inkscape:window-y="0"
      inkscape:window-maximized="1"
-     inkscape:current-layer="svg2"
-     inkscape:document-units="mm">
+     inkscape:current-layer="g3027"
+     inkscape:document-units="mm"
+     units="mm"
+     inkscape:snap-center="true"
+     inkscape:snap-object-midpoints="true">
     <inkscape:grid
        type="xygrid"
        id="grid3094"
@@ -63,270 +65,543 @@
        spacingy="1mm" />
   </sodipodi:namedview>
   <g
-     id="g4">
-    <circle
-       cy="259.0"
-       cx="20.0"
-       r="4.0"
-       fill="black"
-       id="circle6" />
-    <circle
-       cy="259.0"
-       cx="60.0"
-       r="4.0"
-       fill="black"
-       id="circle8" />
-    <circle
-       cy="259.0"
-       cx="100.0"
-       r="4.0"
-       fill="black"
-       id="circle10" />
-    <circle
-       cy="259.0"
-       cx="140.0"
-       r="4.0"
-       fill="black"
-       id="circle12" />
-    <circle
-       cy="239.0"
-       cx="40.0"
-       r="4.0"
-       fill="black"
-       id="circle14" />
-    <circle
-       cy="239.0"
-       cx="80.0"
-       r="4.0"
-       fill="black"
-       id="circle16" />
-    <circle
-       cy="239.0"
-       cx="120.0"
-       r="4.0"
-       fill="black"
-       id="circle18" />
-    <circle
-       cy="239.0"
-       cx="160.0"
-       r="4.0"
-       fill="black"
-       id="circle20" />
-    <circle
-       cy="219.0"
-       cx="20.0"
-       r="4.0"
-       fill="black"
-       id="circle22" />
-    <circle
-       cy="219.0"
-       cx="60.0"
-       r="4.0"
-       fill="black"
-       id="circle24" />
-    <circle
-       cy="219.0"
-       cx="100.0"
-       r="4.0"
-       fill="black"
-       id="circle26" />
-    <circle
-       cy="219.0"
-       cx="140.0"
-       r="4.0"
-       fill="black"
-       id="circle28" />
-    <circle
-       cy="199.0"
-       cx="40.0"
-       r="4.0"
-       fill="black"
-       id="circle30" />
-    <circle
-       cy="199.0"
-       cx="80.0"
-       r="4.0"
-       fill="black"
-       id="circle32" />
-    <circle
-       cy="199.0"
-       cx="120.0"
-       r="4.0"
-       fill="black"
-       id="circle34" />
-    <circle
-       cy="199.0"
-       cx="160.0"
-       r="4.0"
-       fill="black"
-       id="circle36" />
-    <circle
-       cy="179.0"
-       cx="20.0"
-       r="4.0"
-       fill="black"
-       id="circle38" />
-    <circle
-       cy="179.0"
-       cx="60.0"
-       r="4.0"
-       fill="black"
-       id="circle40" />
-    <circle
-       cy="179.0"
-       cx="100.0"
-       r="4.0"
-       fill="black"
-       id="circle42" />
-    <circle
-       cy="179.0"
-       cx="140.0"
-       r="4.0"
-       fill="black"
-       id="circle44" />
-    <circle
-       cy="159.0"
-       cx="40.0"
-       r="4.0"
-       fill="black"
-       id="circle46" />
-    <circle
-       cy="159.0"
-       cx="80.0"
-       r="4.0"
-       fill="black"
-       id="circle48" />
-    <circle
-       cy="159.0"
-       cx="120.0"
-       r="4.0"
-       fill="black"
-       id="circle50" />
-    <circle
-       cy="159.0"
-       cx="160.0"
-       r="4.0"
-       fill="black"
-       id="circle52" />
-    <circle
-       cy="139.0"
-       cx="20.0"
-       r="4.0"
-       fill="black"
-       id="circle54" />
-    <circle
-       cy="139.0"
-       cx="60.0"
-       r="4.0"
-       fill="black"
-       id="circle56" />
-    <circle
-       cy="139.0"
-       cx="100.0"
-       r="4.0"
-       fill="black"
-       id="circle58" />
-    <circle
-       cy="139.0"
-       cx="140.0"
-       r="4.0"
-       fill="black"
-       id="circle60" />
-    <circle
-       cy="119.0"
-       cx="40.0"
-       r="4.0"
-       fill="black"
-       id="circle62" />
-    <circle
-       cy="119.0"
-       cx="80.0"
-       r="4.0"
-       fill="black"
-       id="circle64" />
-    <circle
-       cy="119.0"
-       cx="120.0"
-       r="4.0"
-       fill="black"
-       id="circle66" />
-    <circle
-       cy="119.0"
-       cx="160.0"
-       r="4.0"
-       fill="black"
-       id="circle68" />
-    <circle
-       cy="99.0"
-       cx="20.0"
-       r="4.0"
-       fill="black"
-       id="circle70" />
-    <circle
-       cy="99.0"
-       cx="60.0"
-       r="4.0"
-       fill="black"
-       id="circle72" />
-    <circle
-       cy="99.0"
-       cx="100.0"
-       r="4.0"
-       fill="black"
-       id="circle74" />
-    <circle
-       cy="99.0"
-       cx="140.0"
-       r="4.0"
-       fill="black"
-       id="circle76" />
-    <circle
-       cy="79.0"
-       cx="40.0"
-       r="4.0"
-       fill="black"
-       id="circle78" />
-    <circle
-       cy="79.0"
-       cx="80.0"
-       r="4.0"
-       fill="black"
-       id="circle80" />
-    <circle
-       cy="79.0"
-       cx="120.0"
-       r="4.0"
-       fill="black"
-       id="circle82" />
-    <circle
-       cy="79.0"
-       cx="160.0"
-       r="4.0"
-       fill="black"
-       id="circle84" />
-    <circle
-       cy="59.0"
-       cx="20.0"
-       r="4.0"
-       fill="black"
-       id="circle86" />
-    <circle
-       cy="59.0"
-       cx="60.0"
-       r="4.0"
-       fill="black"
-       id="circle88" />
-    <circle
-       cy="59.0"
-       cx="100.0"
-       r="4.0"
-       fill="black"
-       id="circle90" />
-    <circle
-       cy="59.0"
-       cx="140.0"
-       r="4.0"
-       fill="black"
-       id="circle92" />
+     id="g4"
+     transform="translate(0,-63.000015)">
+    <g
+       id="g3027"
+       transform="matrix(0,-1,1,0,-4.9999959,279.00001)">
+      <g
+         id="g3073"
+         transform="translate(-1.1727946e-6,6.000008)">
+        <circle
+           cy="259"
+           cx="20"
+           r="4"
+           id="circle6"
+           sodipodi:cx="20"
+           sodipodi:cy="259"
+           sodipodi:rx="4"
+           sodipodi:ry="4"
+           style="fill:#000000"
+           d="m 24,259 c 0,2.20914 -1.790861,4 -4,4 -2.209139,0 -4,-1.79086 -4,-4 0,-2.20914 1.790861,-4 4,-4 2.209139,0 4,1.79086 4,4 z"
+           transform="matrix(0,-1,1,0,-239,279)" />
+        <circle
+           cy="259"
+           cx="60"
+           r="4"
+           id="circle8"
+           sodipodi:cx="60"
+           sodipodi:cy="259"
+           sodipodi:rx="4"
+           sodipodi:ry="4"
+           style="fill:#000000"
+           d="m 64,259 c 0,2.20914 -1.790861,4 -4,4 -2.209139,0 -4,-1.79086 -4,-4 0,-2.20914 1.790861,-4 4,-4 2.209139,0 4,1.79086 4,4 z"
+           transform="matrix(0,-1,1,0,-199,319)" />
+        <circle
+           cy="259"
+           cx="100"
+           r="4"
+           id="circle10"
+           sodipodi:cx="100"
+           sodipodi:cy="259"
+           sodipodi:rx="4"
+           sodipodi:ry="4"
+           style="fill:#000000"
+           d="m 104,259 c 0,2.20914 -1.79086,4 -4,4 -2.209139,0 -4,-1.79086 -4,-4 0,-2.20914 1.790861,-4 4,-4 2.20914,0 4,1.79086 4,4 z"
+           transform="matrix(0,-1,1,0,-159,359)" />
+        <circle
+           cy="259"
+           cx="140"
+           r="4"
+           id="circle12"
+           sodipodi:cx="140"
+           sodipodi:cy="259"
+           sodipodi:rx="4"
+           sodipodi:ry="4"
+           style="fill:#000000"
+           d="m 144,259 c 0,2.20914 -1.79086,4 -4,4 -2.20914,0 -4,-1.79086 -4,-4 0,-2.20914 1.79086,-4 4,-4 2.20914,0 4,1.79086 4,4 z"
+           transform="matrix(0,-1,1,0,-119,399)" />
+        <circle
+           cy="239"
+           cx="40"
+           r="4"
+           id="circle14"
+           sodipodi:cx="40"
+           sodipodi:cy="239"
+           sodipodi:rx="4"
+           sodipodi:ry="4"
+           style="fill:#000000"
+           d="m 44,239 c 0,2.20914 -1.790861,4 -4,4 -2.209139,0 -4,-1.79086 -4,-4 0,-2.20914 1.790861,-4 4,-4 2.209139,0 4,1.79086 4,4 z"
+           transform="matrix(0,-1,1,0,-199,279)" />
+        <circle
+           cy="239"
+           cx="80"
+           r="4"
+           id="circle16"
+           sodipodi:cx="80"
+           sodipodi:cy="239"
+           sodipodi:rx="4"
+           sodipodi:ry="4"
+           style="fill:#000000"
+           d="m 84,239 c 0,2.20914 -1.790861,4 -4,4 -2.209139,0 -4,-1.79086 -4,-4 0,-2.20914 1.790861,-4 4,-4 2.209139,0 4,1.79086 4,4 z"
+           transform="matrix(0,-1,1,0,-159,319)" />
+        <circle
+           cy="239"
+           cx="120"
+           r="4"
+           id="circle18"
+           sodipodi:cx="120"
+           sodipodi:cy="239"
+           sodipodi:rx="4"
+           sodipodi:ry="4"
+           style="fill:#000000"
+           d="m 124,239 c 0,2.20914 -1.79086,4 -4,4 -2.20914,0 -4,-1.79086 -4,-4 0,-2.20914 1.79086,-4 4,-4 2.20914,0 4,1.79086 4,4 z"
+           transform="matrix(0,-1,1,0,-119,359)" />
+        <circle
+           cy="239"
+           cx="160"
+           r="4"
+           id="circle20"
+           sodipodi:cx="160"
+           sodipodi:cy="239"
+           sodipodi:rx="4"
+           sodipodi:ry="4"
+           style="fill:#000000"
+           d="m 164,239 c 0,2.20914 -1.79086,4 -4,4 -2.20914,0 -4,-1.79086 -4,-4 0,-2.20914 1.79086,-4 4,-4 2.20914,0 4,1.79086 4,4 z"
+           transform="matrix(0,-1,1,0,-79,399)" />
+        <circle
+           cy="219"
+           cx="20"
+           r="4"
+           id="circle22"
+           sodipodi:cx="20"
+           sodipodi:cy="219"
+           sodipodi:rx="4"
+           sodipodi:ry="4"
+           style="fill:#000000"
+           d="m 24,219 c 0,2.20914 -1.790861,4 -4,4 -2.209139,0 -4,-1.79086 -4,-4 0,-2.20914 1.790861,-4 4,-4 2.209139,0 4,1.79086 4,4 z"
+           transform="matrix(0,-1,1,0,-199,239)" />
+        <circle
+           cy="219"
+           cx="60"
+           r="4"
+           id="circle24"
+           sodipodi:cx="60"
+           sodipodi:cy="219"
+           sodipodi:rx="4"
+           sodipodi:ry="4"
+           style="fill:#000000"
+           d="m 64,219 c 0,2.20914 -1.790861,4 -4,4 -2.209139,0 -4,-1.79086 -4,-4 0,-2.20914 1.790861,-4 4,-4 2.209139,0 4,1.79086 4,4 z"
+           transform="matrix(0,-1,1,0,-159,279)" />
+        <circle
+           cy="219"
+           cx="100"
+           r="4"
+           id="circle26"
+           sodipodi:cx="100"
+           sodipodi:cy="219"
+           sodipodi:rx="4"
+           sodipodi:ry="4"
+           style="fill:#000000"
+           d="m 104,219 c 0,2.20914 -1.79086,4 -4,4 -2.209139,0 -4,-1.79086 -4,-4 0,-2.20914 1.790861,-4 4,-4 2.20914,0 4,1.79086 4,4 z"
+           transform="matrix(0,-1,1,0,-119,319)" />
+        <circle
+           cy="219"
+           cx="140"
+           r="4"
+           id="circle28"
+           sodipodi:cx="140"
+           sodipodi:cy="219"
+           sodipodi:rx="4"
+           sodipodi:ry="4"
+           style="fill:#000000"
+           d="m 144,219 c 0,2.20914 -1.79086,4 -4,4 -2.20914,0 -4,-1.79086 -4,-4 0,-2.20914 1.79086,-4 4,-4 2.20914,0 4,1.79086 4,4 z"
+           transform="matrix(0,-1,1,0,-79,359)" />
+        <circle
+           cy="199"
+           cx="40"
+           r="4"
+           id="circle30"
+           sodipodi:cx="40"
+           sodipodi:cy="199"
+           sodipodi:rx="4"
+           sodipodi:ry="4"
+           style="fill:#000000"
+           d="m 44,199 c 0,2.20914 -1.790861,4 -4,4 -2.209139,0 -4,-1.79086 -4,-4 0,-2.20914 1.790861,-4 4,-4 2.209139,0 4,1.79086 4,4 z"
+           transform="matrix(0,-1,1,0,-159,239)" />
+        <circle
+           cy="199"
+           cx="80"
+           r="4"
+           id="circle32"
+           sodipodi:cx="80"
+           sodipodi:cy="199"
+           sodipodi:rx="4"
+           sodipodi:ry="4"
+           style="fill:#000000"
+           d="m 84,199 c 0,2.20914 -1.790861,4 -4,4 -2.209139,0 -4,-1.79086 -4,-4 0,-2.20914 1.790861,-4 4,-4 2.209139,0 4,1.79086 4,4 z"
+           transform="matrix(0,-1,1,0,-119,279)" />
+        <circle
+           cy="199"
+           cx="120"
+           r="4"
+           id="circle34"
+           sodipodi:cx="120"
+           sodipodi:cy="199"
+           sodipodi:rx="4"
+           sodipodi:ry="4"
+           style="fill:#000000"
+           d="m 124,199 c 0,2.20914 -1.79086,4 -4,4 -2.20914,0 -4,-1.79086 -4,-4 0,-2.20914 1.79086,-4 4,-4 2.20914,0 4,1.79086 4,4 z"
+           transform="matrix(0,-1,1,0,-79,319)" />
+        <circle
+           cy="199"
+           cx="160"
+           r="4"
+           id="circle36"
+           sodipodi:cx="160"
+           sodipodi:cy="199"
+           sodipodi:rx="4"
+           sodipodi:ry="4"
+           style="fill:#000000"
+           d="m 164,199 c 0,2.20914 -1.79086,4 -4,4 -2.20914,0 -4,-1.79086 -4,-4 0,-2.20914 1.79086,-4 4,-4 2.20914,0 4,1.79086 4,4 z"
+           transform="matrix(0,-1,1,0,-39,359)" />
+        <circle
+           cy="179"
+           cx="20"
+           r="4"
+           id="circle38"
+           sodipodi:cx="20"
+           sodipodi:cy="179"
+           sodipodi:rx="4"
+           sodipodi:ry="4"
+           style="fill:#000000"
+           d="m 24,179 c 0,2.20914 -1.790861,4 -4,4 -2.209139,0 -4,-1.79086 -4,-4 0,-2.20914 1.790861,-4 4,-4 2.209139,0 4,1.79086 4,4 z"
+           transform="matrix(0,-1,1,0,-159,199)" />
+        <circle
+           cy="179"
+           cx="60"
+           r="4"
+           id="circle40"
+           sodipodi:cx="60"
+           sodipodi:cy="179"
+           sodipodi:rx="4"
+           sodipodi:ry="4"
+           style="fill:#000000"
+           d="m 64,179 c 0,2.20914 -1.790861,4 -4,4 -2.209139,0 -4,-1.79086 -4,-4 0,-2.20914 1.790861,-4 4,-4 2.209139,0 4,1.79086 4,4 z"
+           transform="matrix(0,-1,1,0,-119,239)" />
+        <circle
+           cy="179"
+           cx="100"
+           r="4"
+           id="circle42"
+           sodipodi:cx="100"
+           sodipodi:cy="179"
+           sodipodi:rx="4"
+           sodipodi:ry="4"
+           style="fill:#000000"
+           d="m 104,179 c 0,2.20914 -1.79086,4 -4,4 -2.209139,0 -4,-1.79086 -4,-4 0,-2.20914 1.790861,-4 4,-4 2.20914,0 4,1.79086 4,4 z"
+           transform="matrix(0,-1,1,0,-79,279)" />
+        <circle
+           cy="179"
+           cx="140"
+           r="4"
+           id="circle44"
+           sodipodi:cx="140"
+           sodipodi:cy="179"
+           sodipodi:rx="4"
+           sodipodi:ry="4"
+           style="fill:#000000"
+           d="m 144,179 c 0,2.20914 -1.79086,4 -4,4 -2.20914,0 -4,-1.79086 -4,-4 0,-2.20914 1.79086,-4 4,-4 2.20914,0 4,1.79086 4,4 z"
+           transform="matrix(0,-1,1,0,-39,319)" />
+        <circle
+           cy="159"
+           cx="40"
+           r="4"
+           id="circle46"
+           sodipodi:cx="40"
+           sodipodi:cy="159"
+           sodipodi:rx="4"
+           sodipodi:ry="4"
+           style="fill:#000000"
+           d="m 44,159 c 0,2.20914 -1.790861,4 -4,4 -2.209139,0 -4,-1.79086 -4,-4 0,-2.20914 1.790861,-4 4,-4 2.209139,0 4,1.79086 4,4 z"
+           transform="matrix(0,-1,1,0,-119,199)" />
+        <circle
+           cy="159"
+           cx="80"
+           r="4"
+           id="circle48"
+           sodipodi:cx="80"
+           sodipodi:cy="159"
+           sodipodi:rx="4"
+           sodipodi:ry="4"
+           style="fill:#000000"
+           d="m 84,159 c 0,2.20914 -1.790861,4 -4,4 -2.209139,0 -4,-1.79086 -4,-4 0,-2.20914 1.790861,-4 4,-4 2.209139,0 4,1.79086 4,4 z"
+           transform="matrix(0,-1,1,0,-79,239)" />
+        <circle
+           cy="159"
+           cx="120"
+           r="4"
+           id="circle50"
+           sodipodi:cx="120"
+           sodipodi:cy="159"
+           sodipodi:rx="4"
+           sodipodi:ry="4"
+           style="fill:#000000"
+           d="m 124,159 c 0,2.20914 -1.79086,4 -4,4 -2.20914,0 -4,-1.79086 -4,-4 0,-2.20914 1.79086,-4 4,-4 2.20914,0 4,1.79086 4,4 z"
+           transform="matrix(0,-1,1,0,-39,279)" />
+        <circle
+           cy="159"
+           cx="160"
+           r="4"
+           id="circle52"
+           sodipodi:cx="160"
+           sodipodi:cy="159"
+           sodipodi:rx="4"
+           sodipodi:ry="4"
+           style="fill:#000000"
+           d="m 164,159 c 0,2.20914 -1.79086,4 -4,4 -2.20914,0 -4,-1.79086 -4,-4 0,-2.20914 1.79086,-4 4,-4 2.20914,0 4,1.79086 4,4 z"
+           transform="matrix(0,-1,1,0,1,319)" />
+        <circle
+           cy="139"
+           cx="20"
+           r="4"
+           id="circle54"
+           sodipodi:cx="20"
+           sodipodi:cy="139"
+           sodipodi:rx="4"
+           sodipodi:ry="4"
+           style="fill:#000000"
+           d="m 24,139 c 0,2.20914 -1.790861,4 -4,4 -2.209139,0 -4,-1.79086 -4,-4 0,-2.20914 1.790861,-4 4,-4 2.209139,0 4,1.79086 4,4 z"
+           transform="matrix(0,-1,1,0,-119,159)" />
+        <circle
+           cy="139"
+           cx="60"
+           r="4"
+           id="circle56"
+           sodipodi:cx="60"
+           sodipodi:cy="139"
+           sodipodi:rx="4"
+           sodipodi:ry="4"
+           style="fill:#000000"
+           d="m 64,139 c 0,2.20914 -1.790861,4 -4,4 -2.209139,0 -4,-1.79086 -4,-4 0,-2.20914 1.790861,-4 4,-4 2.209139,0 4,1.79086 4,4 z"
+           transform="matrix(0,-1,1,0,-79,199)" />
+        <circle
+           cy="139"
+           cx="100"
+           r="4"
+           id="circle58"
+           sodipodi:cx="100"
+           sodipodi:cy="139"
+           sodipodi:rx="4"
+           sodipodi:ry="4"
+           style="fill:#000000"
+           d="m 104,139 c 0,2.20914 -1.79086,4 -4,4 -2.209139,0 -4,-1.79086 -4,-4 0,-2.20914 1.790861,-4 4,-4 2.20914,0 4,1.79086 4,4 z"
+           transform="matrix(0,-1,1,0,-39,239)" />
+        <circle
+           cy="139"
+           cx="140"
+           r="4"
+           id="circle60"
+           sodipodi:cx="140"
+           sodipodi:cy="139"
+           sodipodi:rx="4"
+           sodipodi:ry="4"
+           style="fill:#000000"
+           d="m 144,139 c 0,2.20914 -1.79086,4 -4,4 -2.20914,0 -4,-1.79086 -4,-4 0,-2.20914 1.79086,-4 4,-4 2.20914,0 4,1.79086 4,4 z"
+           transform="matrix(0,-1,1,0,1,279)" />
+        <circle
+           cy="119"
+           cx="40"
+           r="4"
+           id="circle62"
+           sodipodi:cx="40"
+           sodipodi:cy="119"
+           sodipodi:rx="4"
+           sodipodi:ry="4"
+           style="fill:#000000"
+           d="m 44,119 c 0,2.20914 -1.790861,4 -4,4 -2.209139,0 -4,-1.79086 -4,-4 0,-2.20914 1.790861,-4 4,-4 2.209139,0 4,1.79086 4,4 z"
+           transform="matrix(0,-1,1,0,-79,159)" />
+        <circle
+           cy="119"
+           cx="80"
+           r="4"
+           id="circle64"
+           sodipodi:cx="80"
+           sodipodi:cy="119"
+           sodipodi:rx="4"
+           sodipodi:ry="4"
+           style="fill:#000000"
+           d="m 84,119 c 0,2.20914 -1.790861,4 -4,4 -2.209139,0 -4,-1.79086 -4,-4 0,-2.20914 1.790861,-4 4,-4 2.209139,0 4,1.79086 4,4 z"
+           transform="matrix(0,-1,1,0,-39,199)" />
+        <circle
+           cy="119"
+           cx="120"
+           r="4"
+           id="circle66"
+           sodipodi:cx="120"
+           sodipodi:cy="119"
+           sodipodi:rx="4"
+           sodipodi:ry="4"
+           style="fill:#000000"
+           d="m 124,119 c 0,2.20914 -1.79086,4 -4,4 -2.20914,0 -4,-1.79086 -4,-4 0,-2.20914 1.79086,-4 4,-4 2.20914,0 4,1.79086 4,4 z"
+           transform="matrix(0,-1,1,0,1,239)" />
+        <circle
+           cy="119"
+           cx="160"
+           r="4"
+           id="circle68"
+           sodipodi:cx="160"
+           sodipodi:cy="119"
+           sodipodi:rx="4"
+           sodipodi:ry="4"
+           style="fill:#000000"
+           d="m 164,119 c 0,2.20914 -1.79086,4 -4,4 -2.20914,0 -4,-1.79086 -4,-4 0,-2.20914 1.79086,-4 4,-4 2.20914,0 4,1.79086 4,4 z"
+           transform="matrix(0,-1,1,0,41,279)" />
+        <circle
+           cy="99"
+           cx="20"
+           r="4"
+           id="circle70"
+           sodipodi:cx="20"
+           sodipodi:cy="99"
+           sodipodi:rx="4"
+           sodipodi:ry="4"
+           style="fill:#000000"
+           d="m 24,99 c 0,2.20914 -1.790861,4 -4,4 -2.209139,0 -4,-1.79086 -4,-4 0,-2.209139 1.790861,-4 4,-4 2.209139,0 4,1.790861 4,4 z"
+           transform="matrix(0,-1,1,0,-79,119)" />
+        <circle
+           cy="99"
+           cx="60"
+           r="4"
+           id="circle72"
+           sodipodi:cx="60"
+           sodipodi:cy="99"
+           sodipodi:rx="4"
+           sodipodi:ry="4"
+           style="fill:#000000"
+           d="m 64,99 c 0,2.20914 -1.790861,4 -4,4 -2.209139,0 -4,-1.79086 -4,-4 0,-2.209139 1.790861,-4 4,-4 2.209139,0 4,1.790861 4,4 z"
+           transform="matrix(0,-1,1,0,-39,159)" />
+        <circle
+           cy="99"
+           cx="100"
+           r="4"
+           id="circle74"
+           sodipodi:cx="100"
+           sodipodi:cy="99"
+           sodipodi:rx="4"
+           sodipodi:ry="4"
+           style="fill:#000000"
+           d="m 104,99 c 0,2.20914 -1.79086,4 -4,4 -2.209139,0 -4,-1.79086 -4,-4 0,-2.209139 1.790861,-4 4,-4 2.20914,0 4,1.790861 4,4 z"
+           transform="matrix(0,-1,1,0,1,199)" />
+        <circle
+           cy="99"
+           cx="140"
+           r="4"
+           id="circle76"
+           sodipodi:cx="140"
+           sodipodi:cy="99"
+           sodipodi:rx="4"
+           sodipodi:ry="4"
+           style="fill:#000000"
+           d="m 144,99 c 0,2.20914 -1.79086,4 -4,4 -2.20914,0 -4,-1.79086 -4,-4 0,-2.209139 1.79086,-4 4,-4 2.20914,0 4,1.790861 4,4 z"
+           transform="matrix(0,-1,1,0,41,239)" />
+        <circle
+           cy="79"
+           cx="40"
+           r="4"
+           id="circle78"
+           sodipodi:cx="40"
+           sodipodi:cy="79"
+           sodipodi:rx="4"
+           sodipodi:ry="4"
+           style="fill:#000000"
+           d="m 44,79 c 0,2.209139 -1.790861,4 -4,4 -2.209139,0 -4,-1.790861 -4,-4 0,-2.209139 1.790861,-4 4,-4 2.209139,0 4,1.790861 4,4 z"
+           transform="matrix(0,-1,1,0,-39,119)" />
+        <circle
+           cy="79"
+           cx="80"
+           r="4"
+           id="circle80"
+           sodipodi:cx="80"
+           sodipodi:cy="79"
+           sodipodi:rx="4"
+           sodipodi:ry="4"
+           style="fill:#000000"
+           d="m 84,79 c 0,2.209139 -1.790861,4 -4,4 -2.209139,0 -4,-1.790861 -4,-4 0,-2.209139 1.790861,-4 4,-4 2.209139,0 4,1.790861 4,4 z"
+           transform="matrix(0,-1,1,0,1,159)" />
+        <circle
+           cy="79"
+           cx="120"
+           r="4"
+           id="circle82"
+           sodipodi:cx="120"
+           sodipodi:cy="79"
+           sodipodi:rx="4"
+           sodipodi:ry="4"
+           style="fill:#000000"
+           d="m 124,79 c 0,2.209139 -1.79086,4 -4,4 -2.20914,0 -4,-1.790861 -4,-4 0,-2.209139 1.79086,-4 4,-4 2.20914,0 4,1.790861 4,4 z"
+           transform="matrix(0,-1,1,0,41,199)" />
+        <circle
+           cy="79"
+           cx="160"
+           r="4"
+           id="circle84"
+           sodipodi:cx="160"
+           sodipodi:cy="79"
+           sodipodi:rx="4"
+           sodipodi:ry="4"
+           style="fill:#000000"
+           d="m 164,79 c 0,2.209139 -1.79086,4 -4,4 -2.20914,0 -4,-1.790861 -4,-4 0,-2.209139 1.79086,-4 4,-4 2.20914,0 4,1.790861 4,4 z"
+           transform="matrix(0,-1,1,0,81,239)" />
+        <circle
+           cy="59"
+           cx="20"
+           r="4"
+           id="circle86"
+           sodipodi:cx="20"
+           sodipodi:cy="59"
+           sodipodi:rx="4"
+           sodipodi:ry="4"
+           style="fill:#000000"
+           d="m 24,59 c 0,2.209139 -1.790861,4 -4,4 -2.209139,0 -4,-1.790861 -4,-4 0,-2.209139 1.790861,-4 4,-4 2.209139,0 4,1.790861 4,4 z"
+           transform="matrix(0,-1,1,0,-39,79)" />
+        <circle
+           cy="59"
+           cx="60"
+           r="4"
+           id="circle88"
+           sodipodi:cx="60"
+           sodipodi:cy="59"
+           sodipodi:rx="4"
+           sodipodi:ry="4"
+           style="fill:#000000"
+           d="m 64,59 c 0,2.209139 -1.790861,4 -4,4 -2.209139,0 -4,-1.790861 -4,-4 0,-2.209139 1.790861,-4 4,-4 2.209139,0 4,1.790861 4,4 z"
+           transform="matrix(0,-1,1,0,1,119)" />
+        <circle
+           cy="59"
+           cx="100"
+           r="4"
+           id="circle90"
+           sodipodi:cx="100"
+           sodipodi:cy="59"
+           sodipodi:rx="4"
+           sodipodi:ry="4"
+           style="fill:#000000"
+           d="m 104,59 c 0,2.209139 -1.79086,4 -4,4 -2.209139,0 -4,-1.790861 -4,-4 0,-2.209139 1.790861,-4 4,-4 2.20914,0 4,1.790861 4,4 z"
+           transform="matrix(0,-1,1,0,41,159)" />
+        <circle
+           cy="59"
+           cx="140"
+           r="4"
+           id="circle92"
+           sodipodi:cx="140"
+           sodipodi:cy="59"
+           sodipodi:rx="4"
+           sodipodi:ry="4"
+           style="fill:#000000"
+           d="m 144,59 c 0,2.209139 -1.79086,4 -4,4 -2.20914,0 -4,-1.790861 -4,-4 0,-2.209139 1.79086,-4 4,-4 2.20914,0 4,1.790861 4,4 z"
+           transform="matrix(0,-1,1,0,81,199)" />
+      </g>
+    </g>
   </g>
 </svg>

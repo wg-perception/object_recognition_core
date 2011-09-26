@@ -23,11 +23,11 @@ target_link_libraries(plane_render ${VTK_REQUIRED_LIBS} ${OpenCV_LIBS} boost_thr
 
 find_package(ecto)
 if(ecto_FOUND)
+
+  set_ecto_install_package_name("")
   #set the default path for built libraries to the "ecto_opencv" directory
-  if (NOT CMAKE_LIBRARY_OUTPUT_DIRECTORY)
-    set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
-    ecto_python_env_gen(${CMAKE_LIBRARY_OUTPUT_DIRECTORY})
-  endif()
+  set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
+  ecto_python_env_gen(${CMAKE_LIBRARY_OUTPUT_DIRECTORY})
 
   ectomodule(sim
      module.cpp
