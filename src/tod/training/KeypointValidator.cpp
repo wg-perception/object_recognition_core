@@ -62,18 +62,42 @@ namespace
   struct KeypointsValidator
   {
     static void
+    declare_params(ecto::tendrils& params)
+    {
+      params.declare<double>("baseline", "the baseline in meters", 0.075).required();
+    }
+
+    static void
     declare_io(const tendrils& params, tendrils& inputs, tendrils& outputs)
     {
       inputs.declare<std::vector<cv::KeyPoint> >("keypoints", "The keypoints").required(true);
-      inputs.declare<cv::Mat>("image", "The mask keypoint have to belong to").required(true);
-      outputs.declare<std::vector<cv::KeyPoint> >("keypoints", "The adjusted keypoints");
+      inputs.declare<cv::Mat>("descriptors", "The descriptors").required(true);
+      inputs.declare<cv::Mat>("mask", "The mask keypoint have to belong to").required(true);
+      inputs.declare<cv::Mat>("K", "The calibration matrix").required(true);
+      inputs.declare<cv::Mat>("depth", "The depth image (with a size similar to the mask one).").required(true);
+
+      outputs.declare<cv::Mat>("points", "The valid keypoints: (x in pixels, y in pixels, disparity in pixels)");
+      outputs.declare<cv::Mat>("descriptors", "The matching descriptors");
+    }
+
+    void
+    configure(const ecto::tendrils& params, const ecto::tendrils& inputs, const ecto::tendrils& outputs)
+    {
+      baseline_ = params["baseline"];
     }
 
     int
     process(const tendrils& inputs, const tendrils& outputs)
     {
       const std::vector<cv::KeyPoint> & in_keypoints = inputs.get<std::vector<cv::KeyPoint> >("keypoints");
-      const cv::Mat & in_mask = inputs.get<cv::Mat>("image");
+      cv::Mat in_mask, depth, descriptors, K;
+      inputs["image"] >> in_mask;
+      inputs["depth"] >> depth;
+      inputs["K"] >> K;
+      inputs["descriptors"] >> descriptors;
+      unsigned int n_points = descriptors.rows;
+      cv::Mat clean_descriptors = cv::Mat(descriptors.size(), descriptors.type());
+      cv::Mat clean_points = cv::Mat(1, n_points, CV_32FC3);
 
       cv::Mat_<uchar> mask(in_mask.size());
       if (in_mask.depth() == (CV_8U))
@@ -84,53 +108,79 @@ namespace
       cv::erode(mask, mask, cv::Mat(), cv::Point(-1, -1), 3);
 
       int width = mask.cols, height = mask.rows;
-      std::vector<cv::KeyPoint> keypoints;
-      keypoints.reserve(in_keypoints.size());
-      cv::KeyPoint keypoint;
-      BOOST_FOREACH(const cv::KeyPoint & in_keypoint, in_keypoints)
-          {
-            unsigned int x = roundWithinBounds(in_keypoint.pt.x, 0, width), y = roundWithinBounds(in_keypoint.pt.y, 0,
-                                                                                                  height);
-            bool is_good = false;
-            if (mask(y, x))
-            {
-              keypoint = in_keypoint;
-              keypoint.pt.x = x;
-              keypoint.pt.y = y;
-              is_good = true;
-            }
-            else
-            {
-              int window_size = 2;
-              float min_dist_sq = std::numeric_limits<float>::max();
-              // Look into neighborhoods of different sizes to see if we have a point in the mask
-              for (unsigned int i = roundWithinBounds(x - window_size, 0, width);
-                  i <= roundWithinBounds(x + window_size, 0, width); ++i)
-                for (unsigned int j = roundWithinBounds(y - window_size, 0, height);
-                    j <= roundWithinBounds(y + window_size, 0, height); ++j)
-                  if (mask(j, i))
-                  {
-                    float dist_sq = (i - in_keypoint.pt.x) * (i - in_keypoint.pt.x)
-                                    + (j - in_keypoint.pt.y) * (j - in_keypoint.pt.y);
-                    if (dist_sq < min_dist_sq)
-                    {
-                      // If the point is in the mask and the closest from the keypoint
-                      keypoint = in_keypoint;
-                      keypoint.pt.x = i;
-                      keypoint.pt.y = j;
-                      min_dist_sq = dist_sq;
-                      is_good = true;
-                    }
-                  }
-            }
-            if (is_good)
-              keypoints.push_back(keypoint);
-          }
+      size_t clean_row_index = 0;
+      for (size_t keypoint_index; keypoint_index < n_points; ++keypoint_index)
+      {
+        // First, make sure that the keypoint belongs to the mask
+        const cv::KeyPoint & in_keypoint = in_keypoints[keypoint_index];
+        unsigned int x = roundWithinBounds(in_keypoint.pt.x, 0, width), y = roundWithinBounds(in_keypoint.pt.y, 0,
+                                                                                              height);
+        float z;
+        bool is_good = false;
+        if (mask(y, x))
+          is_good = true;
+        else
+        {
+          // If the keypoint does not belong to the mask, look in a slightly bigger neighborhood
+          int window_size = 2;
+          float min_dist_sq = std::numeric_limits<float>::max();
+          // Look into neighborhoods of different sizes to see if we have a point in the mask
+          for (unsigned int i = roundWithinBounds(x - window_size, 0, width);
+              i <= roundWithinBounds(x + window_size, 0, width); ++i)
+            for (unsigned int j = roundWithinBounds(y - window_size, 0, height);
+                j <= roundWithinBounds(y + window_size, 0, height); ++j)
+              if (mask(j, i))
+              {
+                float dist_sq = (i - in_keypoint.pt.x) * (i - in_keypoint.pt.x)
+                                + (j - in_keypoint.pt.y) * (j - in_keypoint.pt.y);
+                if (dist_sq < min_dist_sq)
+                {
+                  // If the point is in the mask and the closest from the keypoint
+                  x = i;
+                  y = j;
+                  min_dist_sq = dist_sq;
+                  is_good = true;
+                }
+              }
+        }
+        if (!is_good)
+          continue;
 
-      outputs.get<std::vector<cv::KeyPoint> >("keypoints") = keypoints;
+        // Now, check that the depth of the keypoint is valid
+        if (depth.depth() == CV_16U)
+        {
+          z = depth.at<uint16_t>(y, x);
+          if ((z == std::numeric_limits<uint16_t>::min()) || (z == std::numeric_limits<uint16_t>::max()))
+            is_good = false;
+          z /= 1000;
+        }
+        else
+        {
+          z = depth.at<float>(y, x);
+          if ((z != z) || (z == std::numeric_limits<float>::max()))
+            is_good = false;
+        }
+
+        if (!is_good)
+          continue;
+
+        // Store the keypoint and descriptor
+        clean_points.at<cv::Vec3f>(0, clean_row_index) = cv::Vec3f(x, y, (*baseline_) * K.at<float>(0, 0) / z);
+        cv::Mat clean_descriptor_row = clean_descriptors.row(clean_row_index++);
+        descriptors.row(keypoint_index).copyTo(clean_descriptor_row);
+      }
+
+      cv::Mat final_points;
+      clean_points.rowRange(0, clean_row_index).copyTo(final_points);
+      outputs.get<cv::Mat>("points") = final_points;
+      cv::Mat final_descriptors;
+      clean_descriptors.rowRange(0, clean_row_index).copyTo(final_descriptors);
+      outputs.get<cv::Mat>("descriptors") = final_descriptors;
 
       return ecto::OK;
     }
+  private:
+    ecto::spore<double> baseline_;
   }
   ;
 }
