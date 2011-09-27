@@ -7,6 +7,7 @@ ectomodule(tod_training
     ModelInserter.cpp
     ModelStacker.cpp
     module.cpp
+    PointMerger.cpp
     PrepareForG2O.cpp
     )
 

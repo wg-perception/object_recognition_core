@@ -33,13 +33,17 @@
  *
  */
 
+#include <list>
 #include <vector>
+
+#include <Eigen/Core>
+#include <Eigen/Geometry>
 
 #include <ecto/ecto.hpp>
 
 #include <opencv2/core/core.hpp>
-
-using ecto::tendrils;
+#include <opencv2/core/eigen.hpp>
+#include <opencv2/features2d/features2d.hpp>
 
 namespace object_recognition
 {
@@ -51,54 +55,74 @@ namespace object_recognition
     {
     public:
       static void
-      declare_io(const tendrils& params, tendrils& inputs, tendrils& outputs)
+      declare_io(const ecto::tendrils& params, ecto::tendrils& inputs, ecto::tendrils& outputs)
       {
-        inputs.declare<cv::Mat>("points", "The 3d position of the points.").required(true);
+        inputs.declare<cv::Mat>("K", "The camera intrinsics matrix.").required(true);
+        inputs.declare<cv::Mat>("R", "The rotation matrix of the camera.").required(true);
+        inputs.declare<cv::Mat>("T", "The translation vector of the camera.").required(true);
+        inputs.declare<cv::Mat>("points", "The 2d position of the points, with their disparity.").required(true);
+        inputs.declare<cv::Mat>("points3d", "The 3d position of the points.").required(true);
         inputs.declare<cv::Mat>("descriptors", "The descriptors.").required(true);
-        outputs.declare<std::vector<cv::Mat> >("points", "The stacked 3d position of the points.");
+
+        outputs.declare<Eigen::Matrix3d>("K", "The intrinsic parameter matrix.").required(true);
+        outputs.declare<std::list<Eigen::Quaterniond> >("quaternions", "The initial estimates of the camera rotations.").required(
+            true);
+        outputs.declare<std::list<Eigen::Vector3d> >("Ts", "The initial estimates of the camera translations.").required(
+            true);
+        outputs.declare<std::vector<cv::Mat> >("points3d",
+                                               "The measured 2d positions and disparity (3-channel matrices).");
+        outputs.declare<std::vector<cv::Mat> >("points",
+                                               "The estimated 3d position of the points (3-channel matrices).");
         outputs.declare<std::vector<cv::Mat> >("descriptors", "The stacked descriptors.");
       }
 
-      int
-      process(const tendrils& inputs, const tendrils& outputs)
+      void
+      configure(const ecto::tendrils& params, const ecto::tendrils& inputs, const ecto::tendrils& outputs)
       {
+        K_ = outputs["K"];
+        quaternions_ = outputs["quaternions"];
+        Ts_ = outputs["Ts"];
+        points_ = outputs["points"];
+        descriptors_ = outputs["descriptors"];
+      }
+
+      int
+      process(const ecto::tendrils& inputs, const ecto::tendrils& outputs)
+      {
+        // Add the points to the stack of points
         cv::Mat points;
         inputs["points"] >> points;
-        if (!points.empty())
+        if (points.empty())
+          return ecto::OK;
+
+        // Clean the input points
+        cv::Mat descriptors, points3d;
+        inputs["descriptors"] >> descriptors;
+        inputs["points3d"] >> points3d;
+        descriptors_->push_back(descriptors);
+        points_->push_back(points);
+        points3d_->push_back(points3d);
+
+        // Add the new camera parameters to the list of camera parameters
         {
-          cv::Mat_<cv::Vec3f> points_filtered(1, points.cols);
-          cv::Mat descriptors;
-          inputs["descriptors"] >> descriptors;
-          cv::Mat descriptors_filtered(descriptors.rows, descriptors.cols, descriptors.type());
-
-          cv::Mat_<cv::Vec3f>::iterator iter = points.begin<cv::Vec3f>(), end = points.end<cv::Vec3f>();
-          cv::Mat_<cv::Vec3f>::iterator iter_filtered = points_filtered.begin();
-          unsigned int row = 0, row_filtered = 0;
-          for (; iter != end; ++iter, ++row)
-          {
-            const cv::Vec3f & point = *iter;
-            if ((point.val[0] == point.val[0]) && (point.val[1] == point.val[1]) && (point.val[2] == point.val[2]))
-            {
-              *(iter_filtered++) = point;
-              cv::Mat row_filtered_mat = descriptors_filtered.row(row_filtered++);
-              descriptors.row(row).copyTo(row_filtered_mat);
-            }
-          }
-
-          cv::Mat final_points, final_descriptors;
-          points_filtered.colRange(0, row_filtered).copyTo(final_points);
-          descriptors_filtered.rowRange(0, row_filtered).copyTo(final_descriptors);
-          points_.push_back(final_points);
-          descriptors_.push_back(final_descriptors);
+          cv::cv2eigen(inputs.get<cv::Mat>("K"), *K_);
+          Eigen::Matrix3d R;
+          cv::cv2eigen(inputs.get<cv::Mat>("R"), R);
+          quaternions_->push_back(Eigen::Quaterniond(R));
+          Eigen::Vector3d T;
+          cv::cv2eigen(inputs.get<cv::Mat>("T"), T);
+          Ts_->push_back(T);
         }
 
-        outputs.get<std::vector<cv::Mat> >("points") = points_;
-        outputs.get<std::vector<cv::Mat> >("descriptors") = descriptors_;
         return ecto::OK;
       }
     private:
-      std::vector<cv::Mat> points_;
-      std::vector<cv::Mat> descriptors_;
+      ecto::spore<Eigen::Matrix3d> K_;
+      ecto::spore<std::list<Eigen::Quaterniond> > quaternions_;
+      ecto::spore<std::list<Eigen::Vector3d> > Ts_;
+      ecto::spore<std::vector<cv::Mat> > points3d_;
+      ecto::spore<std::vector<cv::Mat> > points_;
+      ecto::spore<std::vector<cv::Mat> > descriptors_;
     };
   }
 }
