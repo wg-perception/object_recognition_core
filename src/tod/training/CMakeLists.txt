@@ -3,9 +3,11 @@ ectomodule(tod_training
     CameraToWorld.cpp
     FilteredModelStacker.cpp
     KeypointsToMat.cpp
+    KeypointValidator.cpp
     ModelInserter.cpp
     ModelStacker.cpp
     module.cpp
+    PrepareForG2O.cpp
     )
 
 link_ecto(tod_training
