@@ -407,26 +407,6 @@ namespace lsh
       addedDescCount += descriptors[i].rows;
   }
 
-  /** Implementation of the virtual function
-   */
-  void
-  LshMatcher::clear()
-  {
-    // Taken from FlannBasedMatcher
-    DescriptorMatcher::clear();
-
-    mergedDescriptors.clear();
-
-    addedDescCount = 0;
-
-    // Proper to LSH
-    tables_.clear();
-    tables_.reserve(table_number_);
-    if (feature_size_ != 0)
-      for (unsigned int i = 0; i < table_number_; ++i)
-        tables_.push_back(LshTable(feature_size_, key_size_));
-  }
-
   /** Implementation of the pure virtual function
    * @return
    */
@@ -480,6 +460,17 @@ namespace lsh
   LshMatcher::train()
   {
     int previousSize = mergedDescriptors.size();
+    if (previousSize == 0)
+    {
+      tables_.clear();
+      if (feature_size_ != 0)
+      {
+        tables_.reserve(table_number_);
+        for (unsigned int i = 0; i < table_number_; ++i)
+          tables_.push_back(LshTable(feature_size_, key_size_));
+      }
+    }
+
     if (previousSize < addedDescCount)
     {
       mergedDescriptors.set(trainDescCollection);
