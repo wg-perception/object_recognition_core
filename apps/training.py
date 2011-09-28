@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+import roscompat
 import os
 import string
 import sys

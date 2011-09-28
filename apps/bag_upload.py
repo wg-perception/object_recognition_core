@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# abstract the input.
+import roscompat
 from object_recognition import models, dbtools
 from object_recognition.ingest.bag_upload import upload_bag
 import argparse

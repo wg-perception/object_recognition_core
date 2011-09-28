@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+import roscompat
 import ecto
 from object_recognition import capture
 from object_recognition.capture import openni_capture

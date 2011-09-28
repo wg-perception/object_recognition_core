@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-
+import roscompat
 import sys
 import argparse
 import time
