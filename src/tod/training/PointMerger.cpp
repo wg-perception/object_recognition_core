@@ -82,17 +82,17 @@ namespace object_recognition
         // Figure out the number of points
         unsigned int n_points = 0, n_images = descriptors_->size();
         for (size_t image_id = 0; image_id < n_images; ++image_id)
-          n_points += (*descriptors_)[0].cols;
+          n_points += (*descriptors_)[image_id].rows;
 
         // Fill the descriptors and 3d points
         *out_descriptors_ = cv::Mat(n_points, (*descriptors_)[0].cols, (*descriptors_)[0].depth());
-        *in_points_ = cv::Mat(1, n_points, CV_32FC3);
+        *out_points_ = cv::Mat(1, n_points, CV_32FC3);
         size_t row_index = 0;
         for (size_t image_id = 0; image_id < n_images; ++image_id)
         {
           // Copy the descriptors
           const cv::Mat & descriptors = (*descriptors_)[image_id];
-          cv::Mat sub_descriptors = out_descriptors_->rowRange(row_index, row_index + descriptors.cols);
+          cv::Mat sub_descriptors = out_descriptors_->rowRange(row_index, row_index + descriptors.rows);
           descriptors.copyTo(sub_descriptors);
           // Copy the 3d points
           BOOST_FOREACH( size_t id, (*ids_)[image_id])

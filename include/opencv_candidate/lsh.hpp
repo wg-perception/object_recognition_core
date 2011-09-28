@@ -191,7 +191,7 @@ public:
   /** Default constructor
    */
   LshMatcher() :
-    feature_size_(0)
+    addedDescCount(0), feature_size_(0)
   {
   }
 
@@ -201,7 +201,7 @@ public:
    * @param multi_probe_level how far should we look for neighbors in multi-probe LSH. 0 for standard LSH, 2 is good
    */
   LshMatcher(unsigned int table_number, unsigned int key_size, unsigned int multi_probe_level) :
-    feature_size_(0)
+    addedDescCount(0), feature_size_(0)
   {
     setDimensions(table_number, key_size, multi_probe_level);
   }
@@ -210,10 +210,6 @@ public:
    * @param descriptors
    */
   void add(const std::vector<cv::Mat>& descriptors);
-
-  /** Implementation of the virtual function
-   */
-  void clear();
 
   /** Implementation of the pure virtual function
    * @return
