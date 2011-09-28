@@ -98,6 +98,6 @@ class Sink(ecto.BlackBox):
                 #TODO, use the following when working
                 #self._cells.append(self._cell_factory[Sink.ROS](parser))
                 from ros.sink import Publisher
-                self._cells.append(Publisher(self._plasm, args.ros_topic, True))
+                self._cells.append(Publisher(self._plasm, 'poses', 'object_ids', True))
             if args.ros_tabletop_topic:
                 self._cells.append(self._cell_factory[Sink.ROS_TABLETOP](parser))

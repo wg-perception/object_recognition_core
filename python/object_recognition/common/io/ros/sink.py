@@ -17,11 +17,12 @@ class Publisher(ecto.BlackBox):
     Class publishing the different results of object recognition as ROS topics
     http://ecto.willowgarage.com/releases/amoeba-beta3/ros/geometry_msgs.html#Publisher_PoseArray
     """
-    def __init__(self, plasm, topic_name, latched = False):
+    def __init__(self, plasm, pose_topic_name, obejct_ids_topic_name, latched = False):
         ecto.BlackBox.__init__(self, plasm)
 
         self._pose_array_assembler = io_ros.PoseArrayAssembler()
-        self._pose_pub = PoseArrayPub(topic_name=topic_name, latched = latched)
+        self._pose_pub = PoseArrayPub(topic_name=pose_topic_name, latched = latched)
+        self._object_ids_pub = PoseArrayPub(topic_name=object_ids_topic_name, latched = latched)
 
     def expose_inputs(self):
         return {'object_ids':self._pose_array_assembler['object_ids'],
@@ -36,7 +37,8 @@ class Publisher(ecto.BlackBox):
         return {}
 
     def connections(self):
-        return [self._pose_array_assembler['pose_message'] >> self._pose_pub[:]]
+        return [self._pose_array_assembler['pose_message'] >> self._pose_pub[:],
+                self._pose_array_assembler['object_ids__message'] >> self._object_ids_pub[:]]
 
 ########################################################################################################################
 
