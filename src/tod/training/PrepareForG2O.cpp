@@ -114,10 +114,12 @@ namespace object_recognition
       int
       process(const tendrils& inputs, const tendrils& outputs)
       {
-        std::vector<cv::Mat> points, descriptors_all;
+        std::vector<cv::Mat> descriptors_all;
         inputs["descriptors"] >> descriptors_all;
         size_t n_images = descriptors_all.size();
+        std::cout << "G2O: " << n_images << " images " << in_points_->size() << " " << in_points3d_->size() << std::endl;
 
+        matcher_->clear();
         matcher_->add(descriptors_all);
         matcher_->train();
 
@@ -131,6 +133,7 @@ namespace object_recognition
           (*ids_)[image_id] = std::vector<size_t>(descriptors.rows);
           is_done_all[image_id] = boost::dynamic_bitset<>(descriptors.rows);
           n_points_all += descriptors.rows;
+          std::cout << descriptors.rows << " " << (*in_points_)[image_id].cols << " " << (*in_points3d_)[image_id].cols << std::endl;
         }
         // Figure out the physical matches of the input points
         size_t id = 0;
@@ -143,6 +146,7 @@ namespace object_recognition
           std::vector<std::vector<cv::DMatch> > matches_all;
           matcher_->radiusMatch(descriptors, matches_all, radius_);
           size_t n_points = matches_all.size();
+          std::cout << "G2O: matched " << n_points << " points with radius " << radius_ << std::endl;
 
           boost::dynamic_bitset<> & is_done = is_done_all[image_id];
 
@@ -154,6 +158,11 @@ namespace object_recognition
             BOOST_FOREACH(const cv::DMatch & match, matches_all[descriptor_id])
                 {
                   // TODO, make sure the matches are also close to each other physically
+                  if (match.imgIdx >= int(is_done_all.size()))
+                  {
+                    std::cout << match.imgIdx << " ";
+                    continue;
+                  }
                   is_done_all[match.imgIdx].set(match.trainIdx);
                   (*ids_)[match.imgIdx][match.trainIdx] = id;
                   id_to_index_set[id].push_back(ImageIdIndex(match.imgIdx, match.trainIdx));
