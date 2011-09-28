@@ -91,11 +91,11 @@ namespace
     {
       const std::vector<cv::KeyPoint> & in_keypoints = inputs.get<std::vector<cv::KeyPoint> >("keypoints");
       cv::Mat in_mask, depth, descriptors, K;
-      inputs["image"] >> in_mask;
+      inputs["mask"] >> in_mask;
       inputs["depth"] >> depth;
       inputs["K"] >> K;
       inputs["descriptors"] >> descriptors;
-      unsigned int n_points = descriptors.rows;
+      size_t n_points = descriptors.rows;
       cv::Mat clean_descriptors = cv::Mat(descriptors.size(), descriptors.type());
       cv::Mat clean_points = cv::Mat(1, n_points, CV_32FC3);
 
@@ -109,7 +109,7 @@ namespace
 
       int width = mask.cols, height = mask.rows;
       size_t clean_row_index = 0;
-      for (size_t keypoint_index; keypoint_index < n_points; ++keypoint_index)
+      for (size_t keypoint_index = 0; keypoint_index < n_points; ++keypoint_index)
       {
         // First, make sure that the keypoint belongs to the mask
         const cv::KeyPoint & in_keypoint = in_keypoints[keypoint_index];
@@ -170,11 +170,13 @@ namespace
         descriptors.row(keypoint_index).copyTo(clean_descriptor_row);
       }
 
-      cv::Mat final_points;
-      clean_points.rowRange(0, clean_row_index).copyTo(final_points);
+      cv::Mat final_points, final_descriptors;
+      if (clean_row_index > 0)
+      {
+        clean_points.colRange(0, clean_row_index).copyTo(final_points);
+        clean_descriptors.rowRange(0, clean_row_index).copyTo(final_descriptors);
+      }
       outputs.get<cv::Mat>("points") = final_points;
-      cv::Mat final_descriptors;
-      clean_descriptors.rowRange(0, clean_row_index).copyTo(final_descriptors);
       outputs.get<cv::Mat>("descriptors") = final_descriptors;
 
       return ecto::OK;

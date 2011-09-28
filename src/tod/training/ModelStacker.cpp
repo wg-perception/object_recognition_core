@@ -64,11 +64,10 @@ namespace object_recognition
         inputs.declare<cv::Mat>("points3d", "The 3d position of the points.").required(true);
         inputs.declare<cv::Mat>("descriptors", "The descriptors.").required(true);
 
-        outputs.declare<Eigen::Matrix3d>("K", "The intrinsic parameter matrix.").required(true);
-        outputs.declare<std::list<Eigen::Quaterniond> >("quaternions", "The initial estimates of the camera rotations.").required(
-            true);
-        outputs.declare<std::list<Eigen::Vector3d> >("Ts", "The initial estimates of the camera translations.").required(
-            true);
+        outputs.declare<Eigen::Matrix3d>("K", "The intrinsic parameter matrix.");
+        outputs.declare<std::vector<Eigen::Quaterniond> >("quaternions",
+                                                          "The initial estimates of the camera rotations.");
+        outputs.declare<std::vector<Eigen::Vector3d> >("Ts", "The initial estimates of the camera translations.");
         outputs.declare<std::vector<cv::Mat> >("points3d",
                                                "The measured 2d positions and disparity (3-channel matrices).");
         outputs.declare<std::vector<cv::Mat> >("points",
@@ -83,6 +82,7 @@ namespace object_recognition
         quaternions_ = outputs["quaternions"];
         Ts_ = outputs["Ts"];
         points_ = outputs["points"];
+        points3d_ = outputs["points3d"];
         descriptors_ = outputs["descriptors"];
       }
 
@@ -118,8 +118,8 @@ namespace object_recognition
       }
     private:
       ecto::spore<Eigen::Matrix3d> K_;
-      ecto::spore<std::list<Eigen::Quaterniond> > quaternions_;
-      ecto::spore<std::list<Eigen::Vector3d> > Ts_;
+      ecto::spore<std::vector<Eigen::Quaterniond> > quaternions_;
+      ecto::spore<std::vector<Eigen::Vector3d> > Ts_;
       ecto::spore<std::vector<cv::Mat> > points3d_;
       ecto::spore<std::vector<cv::Mat> > points_;
       ecto::spore<std::vector<cv::Mat> > descriptors_;

@@ -53,15 +53,9 @@ if __name__ == '__main__':
         db_reader = capture.ObservationReader("db_reader", db_url=db_url)
         obs_ids = models.find_all_observations_for_object(dbs['observations'], object_id)
 
-        observation_dealer = ecto.Dealer(typer=db_reader.inputs.at('observation'), iterable=obs_ids)
-
-        # connect the visualization
-        plasm = ecto.Plasm()
-
         # connect to the model computation
-        tod_model = TodTrainer(plasm, json_params['tod'], DISPLAY)
-        plasm.connect(observation_dealer[:] >> db_reader['observation'],
-            db_reader['image', 'mask', 'depth', 'K', 'R', 'T'] >> tod_model['image', 'mask', 'depth', 'K', 'R', 'T'])
+        plasm = ecto.Plasm()
+        tod_model = TodTrainer(plasm, db_reader, obs_ids[:3], json_params['tod'], DISPLAY)
 
         # persist to the DB
         _db_writer = tod_training.ModelInserter("db_writer", collection_models='models',
