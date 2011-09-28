@@ -35,6 +35,9 @@
 
 #include <vector>
 
+#include <boost/foreach.hpp>
+#include <boost/property_tree/json_parser.hpp>
+
 #include <ecto/ecto.hpp>
 
 #include <Eigen/Geometry>
@@ -47,18 +50,16 @@
 
 #include <opencv2/core/core.hpp>
 
-typedef unsigned int ObjectId;
+#include "object_recognition/common/types.h"
 
 namespace object_recognition
 {
   struct PoseArrayAssembler
   {
-    typedef geometry_msgs::PoseArrayConstPtr output_t;
-
-    void
-    configure(const ecto::tendrils& params, const ecto::tendrils& inputs, const ecto::tendrils& outputs)
-    {
-    }
+    typedef geometry_msgs::PoseArrayConstPtr PoseArrayMsgPtr;
+    typedef geometry_msgs::PoseArray PoseArrayMsg;
+    typedef std_msgs::StringPtr ObjectIdsMsgPtr;
+    typedef std_msgs::String ObjectIdsMsg;
 
     static void
     declare_io(const ecto::tendrils& params, ecto::tendrils& inputs, ecto::tendrils& outputs)
@@ -67,55 +68,85 @@ namespace object_recognition
       inputs.declare<sensor_msgs::ImageConstPtr>("image_message", "the image message to get the header");
       inputs.declare<std::vector<cv::Mat> >("Rs", "The rotations of the poses of the found objects");
       inputs.declare<std::vector<cv::Mat> >("Ts", "The translations of the poses of the found objects");
-      outputs.declare<output_t>("pose_message", "The poses");
+
+      outputs.declare<PoseArrayMsgPtr>("pose_message", "The poses");
+      outputs.declare<ObjectIdsMsgPtr>("object_ids_message", "The poses");
+    }
+
+    void
+    configure(const ecto::tendrils& params, const ecto::tendrils& inputs, const ecto::tendrils& outputs)
+    {
+      Rs_ = inputs["Rs"];
+      Ts_ = inputs["Ts"];
+      image_message_ = inputs["image_message"];
+      object_ids_ = inputs["descriptors"];
     }
 
     int
     process(const ecto::tendrils& inputs, const ecto::tendrils& outputs)
     {
-      const std::vector<cv::Mat> & Rs = inputs.get<std::vector<cv::Mat> >("Rs");
-      const std::vector<cv::Mat> & Ts = inputs.get<std::vector<cv::Mat> >("Ts");
+      PoseArrayMsg pose_array_msg;
+      ObjectIdsMsg object_ids_msg;
 
-      static geometry_msgs::PoseArray pose_array_msgs;
-      static std::vector<geometry_msgs::Pose> &poses = pose_array_msgs.poses;
-      poses.resize(Rs.size());
-
-      unsigned int i;
-      for (i = 0; i < Rs.size(); ++i)
+      // Create poses and fill them in the message
       {
-        cv::Mat_<float> T, R;
-        Ts[i].convertTo(T, CV_32F);
-        Rs[i].convertTo(R, CV_32F);
+        std::vector<geometry_msgs::Pose> &poses = pose_array_msg.poses;
+        poses.resize(Rs_->size());
 
-        geometry_msgs::Pose & msg_pose = poses[i];
+        unsigned int i;
+        for (i = 0; i < Rs_->size(); ++i)
+        {
+          cv::Mat_<float> T, R;
+          (*Ts_)[i].convertTo(T, CV_32F);
+          (*Rs_)[i].convertTo(R, CV_32F);
 
-        Eigen::Matrix3f rotation_matrix;
-        for (unsigned int j = 0; j < 3; ++j)
-          for (unsigned int i = 0; i < 3; ++i)
-            rotation_matrix(j, i) = R(j, i);
+          geometry_msgs::Pose & msg_pose = poses[i];
 
-        Eigen::Quaternion<float> quaternion(rotation_matrix);
+          Eigen::Matrix3f rotation_matrix;
+          for (unsigned int j = 0; j < 3; ++j)
+            for (unsigned int i = 0; i < 3; ++i)
+              rotation_matrix(j, i) = R(j, i);
 
-        msg_pose.position.x = T(0);
-        msg_pose.position.y = T(1);
-        msg_pose.position.z = T(2);
-        msg_pose.orientation.x = quaternion.x();
-        msg_pose.orientation.y = quaternion.y();
-        msg_pose.orientation.z = quaternion.z();
-        msg_pose.orientation.w = quaternion.w();
+          Eigen::Quaternion<float> quaternion(rotation_matrix);
+
+          msg_pose.position.x = T(0);
+          msg_pose.position.y = T(1);
+          msg_pose.position.z = T(2);
+          msg_pose.orientation.x = quaternion.x();
+          msg_pose.orientation.y = quaternion.y();
+          msg_pose.orientation.z = quaternion.z();
+          msg_pose.orientation.w = quaternion.w();
+        }
       }
 
-      // Publish the different poses
+      // Add the object ids to the message
+      {
+        boost::property_tree::ptree object_ids_param_tree;
+        object_ids_param_tree.put("object_ids", object_ids_);
+
+        std::stringstream ssparams;
+        boost::property_tree::write_json(ssparams, object_ids_param_tree);
+
+        object_ids_msg.data = ssparams.str();
+      }
+
+      // Publish the info
       ros::Time time = ros::Time::now();
 
-      std::string frame_id = inputs.get<sensor_msgs::ImageConstPtr>("image_message")->header.frame_id;
-      pose_array_msgs.header.stamp = time;
-      pose_array_msgs.header.frame_id = frame_id;
+      std::string frame_id = (*image_message_)->header.frame_id;
+      pose_array_msg.header.stamp = time;
+      pose_array_msg.header.frame_id = frame_id;
 
-      outputs["pose_message"] << output_t(new geometry_msgs::PoseArray(pose_array_msgs));
+      outputs["pose_message"] << PoseArrayMsgPtr(new PoseArrayMsg(pose_array_msg));
+      outputs["object_ids_message"] << ObjectIdsMsgPtr(new ObjectIdsMsg(object_ids_msg));
 
       return 0;
     }
+  private:
+    ecto::spore<std::vector<cv::Mat> > Rs_;
+    ecto::spore<std::vector<cv::Mat> > Ts_;
+    ecto::spore<std::vector<std::string> > object_ids_;
+    ecto::spore<sensor_msgs::ImageConstPtr> image_message_;
   };
 }
 
