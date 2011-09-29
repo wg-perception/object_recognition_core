@@ -13,6 +13,7 @@ User Docs
    
    db/couch.rst
    capture/capture.rst
+   training/training.rst
    detection/detection.rst
 
 Api

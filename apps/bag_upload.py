@@ -1,10 +1,112 @@
 #!/usr/bin/env python
-# abstract the input.
+import roscompat
 from object_recognition import models, dbtools
 from object_recognition.ingest.bag_upload import upload_bag
 import argparse
 from object_recognition.dbtools import add_db_options
+import ecto
+from ecto_opencv import highgui, imgproc
+import ecto_ros, ecto_sensor_msgs, ecto_geometry_msgs
 
+import object_recognition
+from object_recognition import dbtools, models, capture
+
+def connect_observation_calc_with_mask_pose(sync, commit, object_id, session_id, debug=False):
+    plasm = ecto.Plasm()
+    #need to go from ROS message types to opencv types.
+    depth_ci = ecto_ros.CameraInfo2Cv('camera_info -> cv::Mat')
+    image_ci = ecto_ros.CameraInfo2Cv('camera_info -> cv::Mat')
+    image = ecto_ros.Image2Mat()
+    depth = ecto_ros.Image2Mat()
+    mask = ecto_ros.Image2Mat()
+    pose = ecto_ros.PoseStamped2RT()
+
+    #conversions
+    plasm.connect(
+      sync["image"] >> image["image"],
+      sync["depth"] >> depth['image'],
+      sync['image_ci'] >> image_ci[:],
+      sync['depth_ci'] >> depth_ci[:],
+      sync['mask'] >> mask[:],
+      sync['pose'] >> pose[:]
+      )
+
+    rgb = imgproc.cvtColor('bgr -> rgb', flag=imgproc.Conversion.BGR2RGB)
+    gray = imgproc.cvtColor('rgb -> gray', flag=imgproc.Conversion.RGB2GRAY)
+    plasm.connect(image[:] >> (rgb[:], gray[:]),
+                  )
+    if debug:
+        image_display = highgui.imshow('image display', name='image')
+        mask_display = highgui.imshow('mask display', name='mask')
+        plasm.connect(rgb[:] >> image_display[:])
+        plasm.connect(mask[:] >> mask_display[:])
+
+    if commit:
+        db_inserter = capture.ObservationInserter("db_inserter", object_id=object_id, session_id=session_id)
+        plasm.connect(depth[:] >> db_inserter['depth'],
+                  pose['R', 'T'] >> db_inserter['R', 'T'],
+                  mask[:] >> db_inserter['mask'],
+                  rgb[:] >> db_inserter['image'],
+                  image_ci['K'] >> db_inserter['K'],
+                  )
+    return plasm
+
+def compute_for_bag_with_mask_pose(bag, obj, args):
+    import couchdb
+    couch = couchdb.Server(args.db_root)
+    dbs = dbtools.init_object_databases(couch)
+    objects = dbs['objects']
+    bags = dbs['bags']
+    existing = models.Object.by_object_name(objects, key=obj.object_name)
+    store_new = True
+    if len(existing) > 0:
+        print "It appears that there are %d object(s) with the same name."%len(existing)
+        for x in existing:
+            print x
+            use_it = raw_input("Use the object id above? [y,n]")
+            if 'y' in use_it.lower():
+                store_new = False
+                obj = x
+                break
+    else:
+        store_new = True
+    if store_new:
+        obj.store(objects)
+        print "Stored new object with id:", obj.id
+
+    ImageBagger = ecto_sensor_msgs.Bagger_Image
+    CameraInfoBagger = ecto_sensor_msgs.Bagger_CameraInfo
+    PoseBagger = ecto_geometry_msgs.Bagger_PoseStamped
+
+
+    print "Loading bag with :", bag
+    baggers = dict(image=ImageBagger(topic_name='/camera/rgb/image_color'),
+                 depth=ImageBagger(topic_name='/camera/depth/image'),
+                 mask=ImageBagger(topic_name='/camera/mask'),
+                 pose=PoseBagger(topic_name='/camera/pose'),
+                 image_ci=CameraInfoBagger(topic_name='/camera/rgb/camera_info'),
+                 depth_ci=CameraInfoBagger(topic_name='/camera/depth/camera_info'),
+                 )
+    sync = ecto_ros.BagReader('Bag Reader',
+                              baggers=baggers,
+                              bag=bag,
+                             )
+
+    sessions = dbs['sessions']
+    session = models.Session()
+    session.object_id = obj.id
+    session.bag_id = bag
+    if args.commit:
+        session.store(sessions)
+    print "running graph"
+    plasm = connect_observation_calc_with_mask_pose(sync, args.commit,
+                                     str(session.object_id),
+                                     str(session.id),
+                                     args.visualize)
+
+    from ecto.opts import run_plasm
+    run_plasm(args, plasm, locals=vars())
+    return session
 def parse_args():
     parser = argparse.ArgumentParser(description='''Uploads a bag, with an object description to the db.''',
                                       fromfile_prefix_chars='@')
@@ -21,7 +123,13 @@ def parse_args():
                        default='')
     parser.add_argument('tags', metavar='TAGS', type=str, nargs='+',
                    help='Tags to add to object description.')
+    parser.add_argument('--visualize', dest='visualize', action='store_const',
+                        const=True, default=False,
+                        help='Turn on visiualization')
     add_db_options(parser)
+    from ecto.opts import scheduler_options
+    scheduler_options(parser, default_scheduler='Threadpool')
+
     args = parser.parse_args()
     if len(args.bag) < 1:
       parser.print_help()
@@ -30,16 +138,17 @@ def parse_args():
 
 if "__main__" == __name__:
     args = parse_args()
-    bag = open(args.bag, 'rb')
+    bag = args.bag
     obj = models.Object(object_name=args.object_name,
                         description=args.description,
                         tags=args.tags,
                         author_name=args.author_name,
                         author_email=args.author_email,
                         )
+
     if args.commit:
-        bag_up = upload_bag(obj, bag, couchdb_url=args.db_root)
-        print "Uploaded bag has id =", bag_up.id
+        session = compute_for_bag_with_mask_pose(bag, obj, args)
+        print 'Uploaded session with id:', session.id
     else:
         print 'Did not upload. Please pass --commit to actually upload the bag.'
 

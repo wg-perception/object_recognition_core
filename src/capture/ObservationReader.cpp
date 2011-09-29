@@ -28,10 +28,9 @@ namespace object_recognition
       static void
       declare_params(tendrils& params)
       {
-        params.declare<std::string>("collection", "The collection to load from.", "observations");
+        params.declare<std::string>("db_collection", "The collection to load from.", "object_recognition");
         params.declare<std::string>("db_url", "The database url", std::string(DEFAULT_COUCHDB_URL));
       }
-
       static void
       declare_io(const tendrils& params, tendrils& inputs, tendrils& outputs)
       {
@@ -48,7 +47,7 @@ namespace object_recognition
       configure(const tendrils& params, const tendrils& inputs, const tendrils& outputs)
       {
         params["db_url"] >> db_url;
-        params["collection"] >> collection;
+        params["db_collection"] >> collection;
         observation = inputs["observation"];
         db = ObjectDb(db_future::parameters::CouchDB(db_url));
       }
