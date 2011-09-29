@@ -25,7 +25,9 @@ namespace object_recognition
       {
         params.declare<std::string>("object_id", "The object id, to associate this frame with.").required(true);
         params.declare<std::string>("session_id", "The session id, to associate this frame with.").required(true);
+
         params.declare<std::string>("db_url", "The database url", std::string(DEFAULT_COUCHDB_URL));
+        params.declare<std::string>("db_collection", "The database collection.", "object_recognition");
       }
       static void
       declare_io(const tendrils& params, tendrils& inputs, tendrils& outputs)
@@ -40,13 +42,11 @@ namespace object_recognition
       void
       on_object_id_change(const std::string& id)
       {
-        std::cout << "object_id = " << id << std::endl;
         object_id = id;
       }
       void
       on_session_id_change(const std::string& id)
       {
-        std::cout << "session_id = " << id << std::endl;
         session_id = id;
         frame_number = 0;
       }
@@ -55,6 +55,7 @@ namespace object_recognition
       {
         std::string url;
         params["db_url"] >> url;
+        collection_ = params["db_collection"];
         db = ObjectDb(db_future::parameters::CouchDB(url));
         ecto::spore<std::string> object_id = params["object_id"];
         object_id.set_callback(boost::bind(&ObservationInserter::on_object_id_change, this, _1));
@@ -70,13 +71,14 @@ namespace object_recognition
         obs.frame_number = frame_number++;
         obs.object_id = object_id;
         obs.session_id = session_id;
-        Document doc(db, "observations");
+        Document doc(db, *collection_);
         obs >> doc;
         doc.Persist();
         return ecto::OK;
       }
       int frame_number;
       std::string object_id, session_id;
+      ecto::spore<std::string> collection_;
       db_future::ObjectDb db;
     };
   }

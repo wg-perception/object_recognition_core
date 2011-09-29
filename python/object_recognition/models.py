@@ -11,24 +11,27 @@ class Object(Document):
     author_name = TextField()
     author_email = TextField()
     added = DateTimeField(default=datetime.now)
-
+    Type = TextField(default="Object")
     all = ViewField('objects', '''\
         function(doc) {
-            emit(null,doc)
+            if(doc.Type == "Object")
+                emit(doc.object_name,doc)
         }
     ''')
     by_object_name = ViewField('objects', '''\
         function(doc) {
-            emit(doc.object_name, doc)
+            if(doc.Type == "Object")
+                emit(doc.object_name, doc)
         }
     ''')
 
     by_tag = ViewField('objects', '''\
         function(doc) {
-            for( tag in doc.tags )
-            {
-                emit(doc.tags[tag], doc)
-            }
+            if(doc.Type == "Object")
+                for( tag in doc.tags )
+                {
+                    emit(doc.tags[tag], doc)
+                }
         }
     ''')
     @classmethod
@@ -41,22 +44,25 @@ class Observation(Document):
     object_id = TextField()
     session_id = TextField()
     frame_number = IntegerField()
-
+    Type = TextField(default="Observation")
     by_object_id = ViewField('observations', '''\
         function(doc) {
+        if(doc.Type == "Observation")
             emit(doc.object_id, doc)
         }
     ''')
 
     by_frame_number = ViewField('observations', '''\
         function(doc) {
-            emit(doc.frame_number, doc)
+            if(doc.Type == "Observation")
+                emit(doc.frame_number, doc)
         }
     ''')
 
     by_session_id = ViewField('observations', '''\
         function(doc) {
-            emit(doc.session_id, doc)
+            if(doc.Type == "Observation")
+                emit(doc.session_id, doc)
         }
     ''')
 
@@ -70,23 +76,25 @@ class Session(Document):
     object_id = TextField()
     bag_id = TextField()
     added = DateTimeField(default=datetime.now)
-
+    Type = TextField(default="Session")
     all = ViewField('sessions', '''\
         function(doc) {
-            emit(null,doc)
+            if(doc.Type == "Session")
+                emit(null,doc)
         }
     ''')
     by_object_id = ViewField('sessions', '''\
         function(doc) {
-            emit(doc.object_id,doc)
+            if(doc.Type == "Session")
+                emit(doc.object_id,doc)
         }
     ''')
     by_bag_id = ViewField('sessions', '''\
         function(doc) {
-            emit(doc.bag_id,doc)
+            if(doc.Type == "Session")
+                emit(doc.bag_id,doc)
         }
     ''')
-
 
     @classmethod
     def sync(cls, db):
@@ -94,31 +102,10 @@ class Session(Document):
         cls.by_object_id.sync(db)
         cls.by_bag_id.sync(db)
 
-
-class Bag(Document):
-    object_id = TextField()
-    author_name = TextField()
-    author_email = TextField()
-    added = DateTimeField(default=datetime.now)
-    by_object_id = ViewField('bags', '''\
-        function(doc) {
-            emit(doc.object_id,doc)
-        }
-    ''')
-    all = ViewField('bags', '''\
-        function(doc) {
-            emit(null,doc)
-        }
-    ''')
-
-    @classmethod
-    def sync(cls, db):
-        cls.all.sync(db)
-        cls.by_object_id.sync(db)
-
 class Mesh(Document):
     object_id = TextField()
     session_id = TextField()
+    Type = TextField(default="Mesh")
 
     by_object_id = ViewField('observations', '''\
         function(doc) {
@@ -139,7 +126,10 @@ class Mesh(Document):
 class Model(Document):
     object_id = TextField()
     model_params = TextField()
-    by_object_id = ViewField('observations', '''\
+    Type = TextField(default="Model")
+    ModelType = TextField()
+    
+    by_object_id = ViewField('models', '''\
         function(doc) {
             emit(doc.object_id, doc)
         }
@@ -154,7 +144,6 @@ class Model(Document):
         cls.all.sync(db)
 
 def sync_models(dbs):
-    Bag.sync(dbs['bags'])
     Object.sync(dbs['objects'])
     Session.sync(dbs['sessions'])
     Observation.sync(dbs['observations'])
@@ -196,6 +185,11 @@ def find_tod_model_for_object(models_collection, object_id):
     r = Model.by_object_id(models_collection, key=object_id)
     if len(r) == 0 : return []
     return [ m.id for m in r ]
+
+def objects_by_name(objects_collection, object_name):
+    r = Object.by_object_name(objects_collection, key=object_name)
+    if len(r) == 0 : return []
+    return r
 
 if __name__ == "__main__":
     couch = couchdb.Server(DEFAULT_SERVER_URL)

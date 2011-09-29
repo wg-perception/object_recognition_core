@@ -11,17 +11,17 @@ def create_db(db_name, couch):
         db = couch.create(db_name)
     return db
 
-def init_object_databases(couch):
-    dbs = dict(bags=create_db('bags', couch),
-               objects=create_db('objects', couch),
-               sessions=create_db('sessions', couch),
-               observations=create_db('observations', couch),
-               models=create_db('models', couch),
-               meshes=create_db('meshes', couch),
+def init_object_databases(couch, db_name='object_recognition'):
+    db = create_db('object_recognition', couch)
+    dbs = dict(bags=db,
+               objects=db,
+               sessions=db,
+               observations=db,
+               models=db,
+               meshes=db,
                )
     import models
     models.sync_models(dbs)
-
     return dbs
 
 def add_db_options(parser):
