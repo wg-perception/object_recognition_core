@@ -58,7 +58,7 @@ if __name__ == '__main__':
         tod_model = TodTrainer(plasm, db_reader, obs_ids[:3], json_params['tod'], DISPLAY)
 
         # persist to the DB
-        _db_writer = tod_training.ModelInserter("db_writer", collection_models='models',
+        db_writer = tod_training.ModelInserter("db_writer", collection_models='models',
                                     db_json_params=json_helper.dict_to_cpp_json_str(json_params['db']), object_id=object_id,
                                     model_json_params=json_helper.dict_to_cpp_json_str(json_params['tod']))
         orb_params = None
@@ -66,8 +66,6 @@ if __name__ == '__main__':
         #db_writer.add_misc(orb_params)
         
         # never execute the db_writer
-        db_writer = ecto.If(cell=_db_writer)
-        db_writer.inputs.__test__ = False
         plasm.connect(tod_model['points', 'descriptors'] >> db_writer['points', 'descriptors'])
 
         if DEBUG:
@@ -76,6 +74,4 @@ if __name__ == '__main__':
             ecto.view_plasm(plasm)
 
         sched = ecto.schedulers.Singlethreaded(plasm)
-        sched.execute()
-
-        _db_writer.process()
+        sched.execute(niter=1)
