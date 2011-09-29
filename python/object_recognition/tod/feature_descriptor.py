@@ -12,8 +12,9 @@ def FeatureDescriptor(json_params):
     'combination':
         'type': can be 'ORB' or 
     """
+    print json_params
     if json_params.has_key('combination'):
-        if json_params['combination']['type'] == 'ORB':
+        if json_params['combination'] == 'ORB':
             params = json_params.get('feature', {})
             params.update(json_params.get('descriptor', {}))
             return features2d.ORB(**params)
