@@ -103,27 +103,6 @@ class Session(Document):
         cls.by_object_id.sync(db)
         cls.by_bag_id.sync(db)
 
-class Mesh(Document):
-    object_id = TextField()
-    session_id = TextField()
-    Type = TextField(default="Mesh")
-
-    by_object_id = ViewField('observations', '''\
-        function(doc) {
-            emit(doc.object_id, doc)
-        }
-    ''')
-    by_session_id = ViewField('observations', '''\
-        function(doc) {
-            emit(doc.session_id, doc)
-        }
-    ''')
-
-    @classmethod
-    def sync(cls, db):
-        cls.by_session_id.sync(db)
-        cls.by_object_id.sync(db)
-
 class Model(Document):
     object_id = TextField()
     model_params = TextField()
@@ -136,7 +115,7 @@ class Model(Document):
                 emit(doc.object_id, doc)
         }
     ''')
-    all = ViewField('sessions', '''\
+    all = ViewField('models', '''\
         function(doc) {
             if(doc.Type == "Model")
                 emit(null,doc)
@@ -151,7 +130,6 @@ def sync_models(db):
     Session.sync(db)
     Observation.sync(db)
     Model.sync(db)
-    Mesh.sync(db)
 
 def find_all_observations_for_session(observation_collection, session_id):
     ''' Finds all of the observations associated with a session, and returns a list

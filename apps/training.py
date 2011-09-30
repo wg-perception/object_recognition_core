@@ -48,22 +48,22 @@ if __name__ == '__main__':
 
     # initialize the DB
     couch = couchdb.Server(db_url)
-    dbs = dbtools.init_object_databases(couch)
+    db = dbtools.init_object_databases(couch)
 
     for object_id in args.object_ids:
         object_id = object_id.encode('ascii')
         db_reader = capture.ObservationReader("db_reader", db_url=db_url)
-        obs_ids = models.find_all_observations_for_object(dbs['observations'], object_id)
+        obs_ids = models.find_all_observations_for_object(db, object_id)
         if not obs_ids:
             print 'no observations found for object %s' % object_id
             continue
 
         # connect to the model computation
         plasm = ecto.Plasm()
-        tod_model = TodTrainer(plasm, db_reader, obs_ids[:3], tod_params, DISPLAY)
+        tod_model = TodTrainer(plasm, db_reader, obs_ids, tod_params, DISPLAY)
 
         # persist to the DB
-        db_writer = tod_training.ModelInserter("db_writer", collection_models='models',
+        db_writer = tod_training.ModelInserter("db_writer", collection_models=args.db_collection,
                                     db_json_params=json_helper.dict_to_cpp_json_str(db_dict), object_id=object_id,
                                     model_json_params=json_helper.dict_to_cpp_json_str(tod_params))
         orb_params = None

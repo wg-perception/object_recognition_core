@@ -45,7 +45,8 @@ def args_to_dict(args):
     Given args, create a dictionary containing only the db arguments
     """
     dic = {}
-    for key in [ 'db_type', 'db_root' ]:
+    remap_dic = {'db_type':'type', 'db_root':'url', 'db_collection': 'collection'}
+    for key in remap_dic.iterkeys():
         if hasattr(args, key):
-            dic[key] = getattr(args, key)
+            dic[remap_dic[key]] = getattr(args, key)
     return dic

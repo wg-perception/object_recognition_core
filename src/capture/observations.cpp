@@ -42,6 +42,7 @@ namespace object_recognition
       object_recognition::db::png_attach(o.mask, doc, "mask");
       doc.set_attachment_stream("intrinsics.yml", intr_ss, "text/x-yaml");
       doc.set_attachment_stream("extrinsics.yml", extr_ss, "text/x-yaml");
+      doc.set_value("Type", "Observation");
       doc.set_value("object_id", o.object_id);
       doc.set_value("session_id", o.session_id);
       doc.set_value("frame_number", o.frame_number);

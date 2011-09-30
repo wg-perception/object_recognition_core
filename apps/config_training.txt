@@ -5,6 +5,7 @@
 # info about the db
 --db_type CouchDB
 --db_root http://localhost:5984
+--db_collection object_recognition
 
 # The list of object_ids to analyze
-e3b224eb94c0d9b0822f723a13000ad6
+e2449bdc43fd6d9dd646fcbcd00f89a7 e2449bdc43fd6d9dd646fcbcd00f89a7

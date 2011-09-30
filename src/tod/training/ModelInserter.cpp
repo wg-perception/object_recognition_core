@@ -64,6 +64,7 @@ namespace object_recognition
         doc.set_attachment<cv::Mat>("points", *points_);
         doc.set_value("object_id", *object_id_);
         doc.set_value("model_params", params_);
+        doc.set_value("Type", "Model");
         std::cout << "Persisting" << std::endl;
         doc.Persist();
 
