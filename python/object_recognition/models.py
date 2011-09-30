@@ -146,12 +146,12 @@ class Model(Document):
         cls.by_object_id.sync(db)
         cls.all.sync(db)
 
-def sync_models(dbs):
-    Object.sync(dbs['objects'])
-    Session.sync(dbs['sessions'])
-    Observation.sync(dbs['observations'])
-    Model.sync(dbs['models'])
-    Mesh.sync(dbs['meshes'])
+def sync_models(db):
+    Object.sync(db)
+    Session.sync(db)
+    Observation.sync(db)
+    Model.sync(db)
+    Mesh.sync(db)
 
 def find_all_observations_for_session(observation_collection, session_id):
     ''' Finds all of the observations associated with a session, and returns a list

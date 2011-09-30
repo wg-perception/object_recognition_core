@@ -1,26 +1,10 @@
-{
-	"tod":
-	{
-		"feature_descriptor":
-		{
-	       "combination":
-	        {
-	                "type": "ORB" 
-	        },
-			"feature":
-			{
-				"n_features": 1000
-			}
-		}
-	},
-	"db":
-	{
-		"type": "CouchDB",
-		"url": "http://localhost:5984"
-	},
-	"object_ids": 
-	[
-	"6279b8c2599f44103e0573e75cfef9da",
-	"a2a8fc92b29601be9de6acffc052d5a3"
-	]
-}
+# Info about the tod model
+--tod_combination ORB
+--tod_n_features 1000
+
+# info about the db
+--db_type CouchDB
+--db_root http://localhost:5984
+
+# The list of object_ids to analyze
+e3b224eb94c0d9b0822f723a13000ad6

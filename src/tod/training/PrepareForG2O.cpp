@@ -69,7 +69,7 @@ namespace object_recognition
         std::stringstream ss;
         ss << "JSON string that can contain the following fields: \"radius\" (for epsilon nearest neighbor search), "
            << "\"ratio\" when applying the ratio criterion like in SIFT";
-        p.declare<std::string>("search_json_params", ss.str()).required();
+        p.declare<std::string>("search_json_params", ss.str()).required(true);
       }
 
       static void
@@ -117,7 +117,8 @@ namespace object_recognition
         std::vector<cv::Mat> descriptors_all;
         inputs["descriptors"] >> descriptors_all;
         size_t n_images = descriptors_all.size();
-        std::cout << "G2O: " << n_images << " images " << in_points_->size() << " " << in_points3d_->size() << std::endl;
+        std::cout << "G2O: " << n_images << " images " << in_points_->size() << " " << in_points3d_->size()
+                  << std::endl;
 
         matcher_->clear();
         matcher_->add(descriptors_all);
@@ -133,7 +134,8 @@ namespace object_recognition
           (*ids_)[image_id] = std::vector<size_t>(descriptors.rows);
           is_done_all[image_id] = boost::dynamic_bitset<>(descriptors.rows);
           n_points_all += descriptors.rows;
-          std::cout << descriptors.rows << " " << (*in_points_)[image_id].cols << " " << (*in_points3d_)[image_id].cols << std::endl;
+          std::cout << descriptors.rows << " " << (*in_points_)[image_id].cols << " " << (*in_points3d_)[image_id].cols
+                    << std::endl;
         }
         // Figure out the physical matches of the input points
         size_t id = 0;
@@ -143,6 +145,8 @@ namespace object_recognition
         {
           // Find the nearest neighbors of all the points in the current image
           const cv::Mat & descriptors = descriptors_all[image_id];
+          const cv::Mat_<cv::Vec3f> & points3d = (*in_points3d_)[image_id];
+
           std::vector<std::vector<cv::DMatch> > matches_all;
           matcher_->radiusMatch(descriptors, matches_all, radius_);
           size_t n_points = matches_all.size();
@@ -155,14 +159,25 @@ namespace object_recognition
             // If we've matched the point before, no need to do anything
             if (is_done[descriptor_id])
               continue;
+            const cv::Vec3f & point1 = points3d.at<cv::Vec3f>(0, descriptor_id);
             BOOST_FOREACH(const cv::DMatch & match, matches_all[descriptor_id])
                 {
-                  // TODO, make sure the matches are also close to each other physically
-                  if (match.imgIdx >= int(is_done_all.size()))
+                  if (match.imgIdx == int(image_id))
                   {
-                    std::cout << match.imgIdx << " ";
+                    if (match.trainIdx != int(descriptor_id))
+                      continue;
+                  }
+                  else
+                  {
+                    // make sure the matches are also close to each other physically
+                    const cv::Vec3f & point2 = (*in_points3d_)[match.imgIdx].at<cv::Vec3f>(0, match.trainIdx);
+                    cv::Vec3f diff = point1 - point2;
+                    float norm = diff.val[0] * diff.val[0] + diff.val[1] * diff.val[1] + diff.val[2] * diff.val[2];
+                    if (norm > 0.01 * 0.01)
+                      continue;
                     continue;
                   }
+
                   is_done_all[match.imgIdx].set(match.trainIdx);
                   (*ids_)[match.imgIdx][match.trainIdx] = id;
                   id_to_index_set[id].push_back(ImageIdIndex(match.imgIdx, match.trainIdx));
@@ -219,7 +234,8 @@ namespace object_recognition
       ecto::spore<Eigen::SparseMatrix<int> > disparity_;
       ecto::spore<std::vector<Eigen::Vector3d> > out_points_;
       ecto::spore<std::vector<std::vector<size_t> > > ids_;
-    };
+    }
+    ;
   }
 }
 
