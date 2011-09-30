@@ -12,6 +12,7 @@ class Object(Document):
     author_email = TextField()
     added = DateTimeField(default=datetime.now)
     Type = TextField(default="Object")
+    
     all = ViewField('objects', '''\
         function(doc) {
             if(doc.Type == "Object")
@@ -131,12 +132,14 @@ class Model(Document):
     
     by_object_id = ViewField('models', '''\
         function(doc) {
-            emit(doc.object_id, doc)
+            if(doc.Type == "Model")
+                emit(doc.object_id, doc)
         }
     ''')
     all = ViewField('sessions', '''\
         function(doc) {
-            emit(null,doc)
+            if(doc.Type == "Model")
+                emit(null,doc)
         }''')
     @classmethod
     def sync(cls, db):

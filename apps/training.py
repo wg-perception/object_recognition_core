@@ -53,13 +53,12 @@ if __name__ == '__main__':
         object_id = object_id.encode('ascii')
         db_reader = capture.ObservationReader("db_reader", db_url=db_url)
         obs_ids = models.find_all_observations_for_object(dbs['observations'], object_id)
-
         # connect to the model computation
         plasm = ecto.Plasm()
         tod_model = TodTrainer(plasm, db_reader, obs_ids[:3], json_params['tod'], DISPLAY)
 
         # persist to the DB
-        db_writer = tod_training.ModelInserter("db_writer", collection_models='models',
+        db_writer = tod_training.ModelInserter("db_writer", collection_models='object_recognition',
                                     db_json_params=json_helper.dict_to_cpp_json_str(json_params['db']), object_id=object_id,
                                     model_json_params=json_helper.dict_to_cpp_json_str(json_params['tod']))
         orb_params = None

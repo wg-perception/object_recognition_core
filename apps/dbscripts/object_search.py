@@ -29,5 +29,4 @@ if __name__ == "__main__":
         print "Author:", obj.author_name
         print "email:", obj.author_email
         print "db id:", obj.id
-        print "bag ids:", [bag.id for bag in models.Bag.by_object_id(dbs['bags'], key=obj.id)]
         print "session ids:", [session.id for session in models.Session.by_object_id(dbs['sessions'], key=obj.id)]
