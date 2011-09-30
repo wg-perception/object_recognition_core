@@ -54,9 +54,8 @@ def connect_observation_calc_with_mask_pose(sync, commit, object_id, session_id,
 def compute_for_bag_with_mask_pose(bag, obj, args):
     import couchdb
     couch = couchdb.Server(args.db_root)
-    dbs = dbtools.init_object_databases(couch)
-    objects = dbs['objects']
-    bags = dbs['bags']
+    db = dbtools.init_object_databases(couch)
+    objects = db
     existing = models.Object.by_object_name(objects, key=obj.object_name)
     store_new = True
     if len(existing) > 0:
@@ -92,7 +91,7 @@ def compute_for_bag_with_mask_pose(bag, obj, args):
                               bag=bag,
                              )
 
-    sessions = dbs['sessions']
+    sessions = db
     session = models.Session()
     session.object_id = obj.id
     session.bag_id = bag

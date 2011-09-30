@@ -13,16 +13,9 @@ def create_db(db_name, couch):
 
 def init_object_databases(couch, db_name='object_recognition'):
     db = create_db('object_recognition', couch)
-    dbs = dict(bags=db,
-               objects=db,
-               sessions=db,
-               observations=db,
-               models=db,
-               meshes=db,
-               )
     import models
-    models.sync_models(dbs)
-    return dbs
+    models.sync_models(db)
+    return db
 
 def add_db_arguments(parser):
     '''Appends some common arguments to the argparse parser.
@@ -34,6 +27,8 @@ def add_db_arguments(parser):
                        help='The type of database used: one of [%(choices)s]. Default: %(default)s')
     group.add_argument('--db_root', metavar='DB_ROOT_URL', dest='db_root', type=str, default=DEFAULT_SERVER_URL,
                        help='The database root URL to connect to. Default: %(default)s')
+    group.add_argument('--db_collection', metavar='DB_COLLECTION', dest='db_collection', type=str,
+                       default='object_recognition', help='The database root URL to connect to. Default: %(default)s')
     return group
 
 def add_db_options(parser):
