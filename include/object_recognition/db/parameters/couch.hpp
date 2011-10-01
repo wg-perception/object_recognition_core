@@ -10,7 +10,7 @@ namespace object_recognition
       inline std::string
       CouchDB(const std::string& url = "http://localhost:5984")
       {
-        return boost::str(boost::format("{\"type\": \"CouchDB\",\"url\": \"%s\"}")%url);
+        return boost::str(boost::format("{\"type\": \"CouchDB\",\"root\": \"%s\"}")%url);
       }
     }
 

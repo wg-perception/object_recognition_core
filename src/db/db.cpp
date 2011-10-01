@@ -101,11 +101,11 @@ namespace object_recognition
       }
       else if (db_type == "couchdb")
       {
-        db_ = boost::shared_ptr<ObjectDbBase>(new ObjectDbCouch(params.get<std::string>("url")));
+        db_ = boost::shared_ptr<ObjectDbBase>(new ObjectDbCouch(params.get<std::string>("root")));
       }
       else
       {
-        throw std::runtime_error("Invalid database type" + db_type);
+        throw std::runtime_error("Invalid database type: " + db_type);
       }
     }
 

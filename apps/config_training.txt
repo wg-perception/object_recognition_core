@@ -1,11 +1,21 @@
-# Info about the tod model
---tod_combination ORB
---tod_n_features 1000
-
 # info about the db
---db_type CouchDB
---db_root http://localhost:5984
---db_collection object_recognition
+db:
+  type: 'CouchDB'
+  root: 'http://localhost:5984'
+  collection: 'object_recognition'
+
+pipeline1:
+  feature_descriptor:
+    combination: 'ORB'
+    feature:
+      n_features: 1000
+  search:
+    key_size: 18
+    multi_probe_level: 2
+    n_tables: 16
+    radius: 50
+    ratio: 0.8
+    type: 'LSH'
 
 # The list of object_ids to analyze
-e2449bdc43fd6d9dd646fcbcd00f89a7 e2449bdc43fd6d9dd646fcbcd00f89a7
+object_ids: [ "e2449bdc43fd6d9dd646fcbcd00f89a7", "e2449bdc43fd6d9dd646fcbcd00f89a7" ]
