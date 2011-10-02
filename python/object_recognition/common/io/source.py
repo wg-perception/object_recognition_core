@@ -2,16 +2,29 @@
 """
 Module defining several inputs for the object recognition pipeline
 """ 
-
 import ecto
-import ecto.opts
-from ecto_object_recognition.io import GuessCsvWriter
-import sys
-import ecto_object_recognition.conversion
-import object_recognition.capture as capture
-from ecto_opencv import calib
+
+def _assert_source_interface(cell):
+    ''' This ensures that the given cell exhibits the minimal interface to be
+    considered a source for object recogntion
+    '''
+    outputs = dir(cell.outputs)
+    for x in ('K', 'image', 'depth'):
+        if x not in outputs:
+            raise NotImplementedError('This cell does not correctly implement the source interface. Must have an output named %s' % x)
+    #type checks
+    for x in ('K', 'image', 'depth'):
+        type_name =cell.outputs.at(x).type_name
+        if type_name != 'cv::Mat': #TODO add more explicit types.
+            raise NotImplementedError('This cell does not correctly implement the source interface.\n'
+                                      'Must have an output named %s, with type %s\n'
+                                      'This cells output at %s has type %s'%(x, 'cv::Mat',x,type_name))
+
+
 
 ########################################################################################################################
+#FIXME this should not be a black box... More of a function that selects a blackbox
+#based on an argument...
 
 class Source(ecto.BlackBox):
     """

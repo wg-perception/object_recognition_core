@@ -19,9 +19,6 @@ class Publisher(ecto.BlackBox):
     _pose_pub = PoseArrayPub
     _object_ids_pub = StringPub
 
-    def __init__(self, *args, **kwargs):
-        ecto.BlackBox.__init__(self, *args, **kwargs)
-
     def declare_params(self, p):
         p.declare('pose_topic', 'The ROS topic to use for the pose array.', 'poses')
         p.declare('object_ids_topic', 'The ROS topic to use for the object meta info string', 'object_ids')
