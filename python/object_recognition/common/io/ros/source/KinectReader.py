@@ -10,7 +10,6 @@ ImageSub = ecto_sensor_msgs.Subscriber_Image
 CameraInfoSub = ecto_sensor_msgs.Subscriber_CameraInfo
 
 ########################################################################################################################
-
 class KinectReader(BaseSource):
     """Subscribes to an openni device through ROS.
     """

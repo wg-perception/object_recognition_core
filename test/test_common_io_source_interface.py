@@ -16,6 +16,8 @@ outputs = ecto.Tendrils()
 outputs.declare("image","an image", "image image")
 outputs.declare("depth","a depth map", "depth depth")
 outputs.declare("K","a camera matrix", "eye(3)")
+outputs.declare("points3d","A matrix of 3 vectors", "Mat(N,3)")
+
 class Source(object):
     pass
 kr = Source()

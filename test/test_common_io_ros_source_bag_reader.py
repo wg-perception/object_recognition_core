@@ -2,7 +2,7 @@
 from object_recognition.common.io.ros.source import BagReader
 from object_recognition.common.io.source import _assert_source_interface
 br = BagReader()
-
+print br.__doc__
 assert 'image_message' in br.__doc__
 assert 'depth' in br.__doc__
 assert 'image' in br.__doc__
