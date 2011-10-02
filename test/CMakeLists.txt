@@ -28,6 +28,7 @@ pytest(test_import)
 
 pytest(test_common_io_source_interface)
 pytest(test_common_io_ros_source_kinect)
+pytest(test_common_io_ros_source_bag_reader)
 pytest(test_common_io_ros_sink)
 
 desktop_test(view_observations)

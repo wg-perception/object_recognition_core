@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 """
 Module defining several outputs for the object recognition pipeline
 """
@@ -35,8 +34,3 @@ class Publisher(ecto.BlackBox):
         return [self._pose_array_assembler['pose_message'] >> self._pose_pub[:],
                 self._pose_array_assembler['object_ids_message'] >> self._object_ids_pub[:]]
 
-########################################################################################################################
-
-if __name__ == '__main__':
-    p = Publisher()
-    print p.__doc__
