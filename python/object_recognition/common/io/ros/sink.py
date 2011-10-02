@@ -1,68 +1,45 @@
 #!/usr/bin/env python
 """
 Module defining several outputs for the object recognition pipeline
-""" 
+"""
 
 import ecto
-import ecto_geometry_msgs
-import ecto_ros
-import ecto_object_recognition.io_ros as io_ros
+import ecto_geometry_msgs, ecto_std_msgs
+from ecto_object_recognition.io_ros import PoseArrayAssembler
 
 PoseArrayPub = ecto_geometry_msgs.Publisher_PoseArray
-
+StringPub = ecto_std_msgs.Publisher_String
 ########################################################################################################################
 
 class Publisher(ecto.BlackBox):
-    """
-    Class publishing the different results of object recognition as ROS topics
+    """Class publishing the different results of object recognition as ROS topics
     http://ecto.willowgarage.com/releases/amoeba-beta3/ros/geometry_msgs.html#Publisher_PoseArray
     """
-    def __init__(self, plasm, pose_topic_name, obejct_ids_topic_name, latched = False):
-        ecto.BlackBox.__init__(self, plasm)
+    _pose_array_assembler = PoseArrayAssembler
+    _pose_pub = PoseArrayPub
+    _object_ids_pub = StringPub
 
-        self._pose_array_assembler = io_ros.PoseArrayAssembler()
-        self._pose_pub = PoseArrayPub(topic_name=pose_topic_name, latched = latched)
-        self._object_ids_pub = PoseArrayPub(topic_name=object_ids_topic_name, latched = latched)
+    def __init__(self, *args, **kwargs):
+        ecto.BlackBox.__init__(self, *args, **kwargs)
 
-    def expose_inputs(self):
-        return {'object_ids':self._pose_array_assembler['object_ids'],
-                'Rs':self._pose_array_assembler['Rs'],
-                'Ts':self._pose_array_assembler['Ts'],
-                'image_message':self._pose_array_assembler['image_message']}
+    def declare_params(self, p):
+        p.declare('pose_topic', 'The ROS topic to use for the pose array.', 'poses')
+        p.declare('object_ids_topic', 'The ROS topic to use for the object meta info string', 'object_ids')
+        p.declare('latched', 'Determines if the topics will be latched.', True)
 
-    def expose_outputs(self):
-        return {}
+    def declare_io(self, _p, i, _o):
+        i.forward_all('_pose_array_assembler')
 
-    def expose_parameters(self):
-        return {}
-
+    def configure(self, p, _i, _o):
+        self._pose_array_assembler = Publisher._pose_array_assembler()
+        self._pose_pub = Publisher._pose_pub(topic_name=p.pose_topic, latched=p.latched)
+        self._object_ids_pub = Publisher._object_ids_pub(topic_name=p.object_ids_topic, latched=p.latched)
     def connections(self):
         return [self._pose_array_assembler['pose_message'] >> self._pose_pub[:],
-                self._pose_array_assembler['object_ids__message'] >> self._object_ids_pub[:]]
+                self._pose_array_assembler['object_ids_message'] >> self._object_ids_pub[:]]
 
 ########################################################################################################################
 
-class TabletopPublisher(ecto.BlackBox):
-    """
-    Class publishing the different results of object recognition as ROS topics
-    """
-    def __init__(self, plasm, topic_name, latched = False):
-        ecto.BlackBox.__init__(self, plasm)
-
-        self._pose_array_assembler = io_ros.PoseArrayAssembler()
-        self._pose_pub = PoseArrayPub(topic_name=topic_name, latched = latched)
-
-    def expose_inputs(self):
-        return {'object_ids':self._pose_array_assembler['object_ids'],
-                'Rs':self._pose_array_assembler['Rs'],
-                'Ts':self._pose_array_assembler['Ts'],
-                'image_message':self._pose_array_assembler['image_message']}
-
-    def expose_outputs(self):
-        return {}
-
-    def expose_parameters(self):
-        return {}
-
-    def connections(self):
-        return [pose_array_assembler['pose_message'] >> self._pose_pub[:]]
+if __name__ == '__main__':
+    p = Publisher()
+    print p.__doc__
