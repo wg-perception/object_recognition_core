@@ -13,3 +13,10 @@ assert 'boost::shared_ptr<sensor_msgs::Image_<std::allocator<void> > const>' == 
 
 #this should pass our interface check
 _assert_source_interface(br)
+
+
+#test the bag file name parameter
+br = BagReader(bag='testy.bag')
+assert br.params.bag == 'testy.bag'
+assert br._source.params.bag == 'testy.bag'
+_assert_source_interface(br)
