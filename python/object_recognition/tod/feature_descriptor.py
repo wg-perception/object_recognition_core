@@ -45,9 +45,10 @@ class FeatureDescriptor(ecto.BlackBox):
         if self._cell_name == 'ORB_combination':
             #print self._feature_descriptor_params
             self.ORB_combination = self.ORB_combination(**self._feature_descriptor_params)
+            self.cell = self.ORB_combination
 
     def connections(self):
         if self._feature_descriptor_params.has_key('combination'):
-            return []
+            return [ self.cell ]
         else:
-            return []
+            return [ self.cell ]
