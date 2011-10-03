@@ -4,7 +4,13 @@ db:
   root: 'http://localhost:5984'
   collection: 'object_recognition'
 
+source:
+  bag: /home/vrabaud/data/robot_power/poster_01.bag
+sink:
+  type: publisher
+
 pipeline1:
+  type: 'TOD'
   feature_descriptor:
     combination: 'ORB'
     feature:
@@ -16,6 +22,8 @@ pipeline1:
     radius: 50
     ratio: 0.8
     type: 'LSH'
+  guess:
+    n_ransac: 1000
 
 # The list of object_ids to analyze
 object_ids: [ "e2449bdc43fd6d9dd646fcbcd00f89a7", "e2449bdc43fd6d9dd646fcbcd00f89a7" ]
