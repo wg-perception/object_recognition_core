@@ -6,9 +6,9 @@ Using the different trained objects, we can now detect them.
 Short How-to
 ------------
 
-Just run the detection.py script in /apps. The ``--help`` option details the different options/arguments of the script. Those have two types for now:
- - which source to read from (kinect, ROS bag ...)
- - which sink to send the data to (terminal, csv file, ...)
+Just run the detection.py script in /apps. It requires a configuration file through the ``-c`` option. Some of the
+options in there can be overriden by the command line for convenience.
+For now, use the default config_detection.txt.
 
 Sources
 -------
