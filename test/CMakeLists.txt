@@ -33,6 +33,10 @@ pytest(test_common_io_ros_sink)
 pytest(test_common_io_source_interface)
 pytest(test_common_io_source_creation)
 
+#these check that atleast the help completes correctly
+pytest(test_capture_help)
+pytest(test_upload_help)
+
 desktop_test(view_observations)
 
 add_subdirectory(db)
