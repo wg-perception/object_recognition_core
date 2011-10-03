@@ -26,11 +26,19 @@ if __name__ == '__main__':
     parser = ObjectRecognitionParser()
 
     parser.add_argument('-c', help='Config file')
+    parser.add_argument('--object_ids', help='If set, it overrides the list of object_ids in the config file')
 
     args = parser.parse_args()
 
-    # read some parameters
     params = yaml.load(open(args.c))
+
+    # read the object_ids
+    if hasattr(args, 'object_ids') and args.object_ids:
+        object_ids = args.object_ids[1:-1].split(',')
+    else:
+        object_ids = params['object_ids']
+
+    # read some parameters
     db_dict = params['db']
     db_url = db_dict['root']
 
@@ -43,7 +51,7 @@ if __name__ == '__main__':
     if db_dict['type'].lower() == 'couchdb':
         db = dbtools.init_object_databases(couchdb.Server(db_url))
 
-    for object_id in params['object_ids']:
+    for object_id in object_ids:
         object_id = object_id.encode('ascii')
         db_reader = capture.ObservationReader("db_reader", db_url=db_url)
         obs_ids = models.find_all_observations_for_object(db, object_id)
