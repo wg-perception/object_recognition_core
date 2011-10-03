@@ -92,7 +92,7 @@ class Sink(ecto.BlackBox):
     def parse_arguments(self, parser):
         args = parser.parse_args()
         if args.do_csv:
-            self._cells.append(self._cell_factory[Sink.CSV_WRITER](parser))
+            self._cells.append(self._cell_factory[Sink.CSV_WRITER](args))
         if self._do_use_ros:
             if args.ros_topic:
                 #TODO, use the following when working
@@ -100,4 +100,4 @@ class Sink(ecto.BlackBox):
                 from ros.sink import Publisher
                 self._cells.append(Publisher(self._plasm, 'poses', 'object_ids', True))
             if args.ros_tabletop_topic:
-                self._cells.append(self._cell_factory[Sink.ROS_TABLETOP](parser))
+                self._cells.append(self._cell_factory[Sink.ROS_TABLETOP](args))
