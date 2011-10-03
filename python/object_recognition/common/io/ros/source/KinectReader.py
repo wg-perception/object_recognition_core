@@ -28,4 +28,6 @@ class KinectReader(BaseSource):
         #notice that this is not a forward declare
         #its a declaration with the name, and a pointer to a tendril.
         o.declare('image_message', self._source.outputs.at('image'))
-
+        o.declare('depth_message', self._source.outputs.at('depth'))
+        o.declare('image_info_message', self._source.outputs.at('image_info'))
+        o.declare('depth_info_message', self._source.outputs.at('depth_info'))

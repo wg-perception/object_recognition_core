@@ -60,7 +60,7 @@ def compute_for_bag_with_mask_pose(bag, obj, args):
     existing = models.Object.by_object_name(objects, key=obj.object_name)
     store_new = True
     if len(existing) > 0:
-        print "It appears that there are %d object(s) with the same name."%len(existing)
+        print "It appears that there are %d object(s) with the same name." % len(existing)
         for x in existing:
             print x
             use_it = raw_input("Use the object id above? [y,n]")
@@ -128,7 +128,8 @@ def parse_args():
                         help='Turn on visiualization')
     add_db_options(parser)
     from ecto.opts import scheduler_options
-    scheduler_options(parser, default_scheduler='Threadpool')
+    group = parser.add_argument_group('Scheduler Options')
+    scheduler_options(group, default_scheduler='Threadpool')
 
     args = parser.parse_args()
     if len(args.bag) < 1:
