@@ -23,20 +23,22 @@ import ecto_pcl
 if __name__ == '__main__':
     parser = ObjectRecognitionParser()
     dbtools.add_db_arguments(parser)
-    parser.add_argument('object_id', help='The id of the object for which the TOD model will be displayed.')
+    parser.add_argument('--object_id', help='The id of the object for which the TOD model will be displayed.')
 
     # read the object_ids
     args = parser.parse_args()
     if hasattr(args, 'object_id') and args.object_id:
         object_id = args.object_id
     else:
-        object_id = "263739e4f609243242bf5ea553000bad"
+        object_id = "e2449bdc43fd6d9dd646fcbcd00d8197"
 
     #database ritual
+    db_url = args.db_root
+    db_json_params = '{"root": "%s", "type": "CouchDB"}' % args.db_root
     couch = couchdb.Server(db_url)
     dbs = dbtools.init_object_databases(couch)
 
-    tod_models = models.find_tod_model_for_object(dbs, object_id)
+    tod_models = models.find_model_for_object(dbs, object_id, 'TOD')
 
     if len(tod_models) < 1:
         raise RuntimeError("There are no tod models available.")
