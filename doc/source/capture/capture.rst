@@ -97,8 +97,7 @@ For this we will use bag_upload.py. The help:
 .. program-output:: bag_upload.py --help
    :in_srcdir:
 
-A typical command line session will look like:
-::::::::::::::::::::::::::::::::::::::::::::::
+A typical command line session will look like::
 
   % apps/bag_upload.py -i silk_highres.bag -n 'silk' -d 'A carton of Silk brand soy milk.' -a 'Ethan Rublee' -e 'erublee@willowgarage.com' --commit milk, soy, kitchen, tod
   Uploaded bag has id = 46d8611570108b1aa9ea049f7b998687
@@ -108,34 +107,6 @@ Now that the bag is uploaded, into the database, you can see it in the db by bro
   * http://localhost:5984/_utils/database.html?objects
   * http://localhost:5984/_utils/database.html?bags
 
-
-compute_observations.py
------------------------
-This script computes a pose and mask for each frame in the bag. After this step,
-the data is ready to be used by object recognition pipelines.
-
-.. program-output:: compute_observations.py --help
-   :in_srcdir:
-
-Copy the bag id from the previous commend, and run the script with a command line similar to
-the following:
-
-::
-
-  % apps/compute_observations.py -i 46d8611570108b1aa9ea049f7b998687 --visualize --commit
-  Loading bag with id: 920b540328ba37fb6e5c208e5e2f56a0
-  Wrote bag to: /tmp/tmpfqJ3x3
-  running graph
-  Threadpool executing [unlimited] ticks in 8 threads.
-  Opening bag: /tmp/tmpfqJ3x3
-  object_id = d985c4b57d70ea0939fcc8b6cb672439
-  session_id = 93a71c3623fff40388ba7f40f6520369
-  Inserting frame: 0
-  Inserting frame: 1
-  Inserting frame: 2
-  ... etc ...
-
 If you leave off the ``--commit`` the script will run without actually committing anything to
 the database.
-
 
