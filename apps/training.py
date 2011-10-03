@@ -63,7 +63,7 @@ if __name__ == '__main__':
         source_plasm = ecto.Plasm()
         observation_dealer = ecto.Dealer(typer=db_reader.inputs.at('observation'), iterable=obs_ids)
         source_plasm.connect(observation_dealer[:] >> db_reader['observation'])
-        
+
         main_plasm = ecto.Plasm()
         # connect to the model computation
         for pipeline_param in pipeline_params:
@@ -72,14 +72,14 @@ if __name__ == '__main__':
                 trainer = TodTrainer(json_search_params=json_helper.dict_to_cpp_json_str(pipeline_param['search']),
                                      json_feature_descriptor_params=json_helper.dict_to_cpp_json_str(pipeline_param['feature_descriptor']),
                                      display=DISPLAY, source=db_reader, source_plasm=source_plasm)
+                # delete the previous models
+                for model_id in models.find_model_for_object(db, object_id, 'TOD'):
+                    db.delete(model_id)
 
             # define the output
             db_writer = tod_training.ModelInserter("db_writer", collection_models=db_dict['collection'],
                                         db_json_params=json_helper.dict_to_cpp_json_str(db_dict), object_id=object_id,
                                         model_json_params=json_helper.dict_to_cpp_json_str(pipeline_param))
-            orb_params = None
-            # TODO
-            #db_writer.add_misc(pipeline_param)
 
             # connect the output
             main_plasm.connect(trainer['points', 'descriptors'] >> db_writer['points', 'descriptors'])
