@@ -124,7 +124,7 @@ namespace object_recognition
         matcher_->add(descriptors_all);
         matcher_->train();
 
-        // Initialize the ids of each point, ad whether they have been matched to others or not
+        // Initialize the ids of each point, and whether they have been matched to others or not
         std::vector<boost::dynamic_bitset<> > is_done_all(n_images);
         *ids_ = std::vector<std::vector<size_t> >(n_images);
         unsigned int n_points_all = 0;
@@ -134,8 +134,6 @@ namespace object_recognition
           (*ids_)[image_id] = std::vector<size_t>(descriptors.rows);
           is_done_all[image_id] = boost::dynamic_bitset<>(descriptors.rows);
           n_points_all += descriptors.rows;
-          std::cout << descriptors.rows << " " << (*in_points_)[image_id].cols << " " << (*in_points3d_)[image_id].cols
-                    << std::endl;
         }
         // Figure out the physical matches of the input points
         size_t id = 0;
@@ -145,21 +143,21 @@ namespace object_recognition
         {
           // Find the nearest neighbors of all the points in the current image
           const cv::Mat & descriptors = descriptors_all[image_id];
-          const cv::Mat_<cv::Vec3f> & points3d = (*in_points3d_)[image_id];
+          //const cv::Mat_<cv::Vec3f> & points3d = (*in_points3d_)[image_id];
 
           std::vector<std::vector<cv::DMatch> > matches_all;
           matcher_->radiusMatch(descriptors, matches_all, radius_);
           size_t n_points = matches_all.size();
-          std::cout << "G2O: matched " << n_points << " points with radius " << radius_ << std::endl;
+          std::cout << "Prepare G2O: processing image " << image_id << "/" << n_images << std::endl;
 
-          boost::dynamic_bitset<> & is_done = is_done_all[image_id];
+          const boost::dynamic_bitset<> & is_done = is_done_all[image_id];
 
           for (size_t descriptor_id = 0; descriptor_id < n_points; ++descriptor_id)
           {
             // If we've matched the point before, no need to do anything
             if (is_done[descriptor_id])
               continue;
-            const cv::Vec3f & point1 = points3d.at<cv::Vec3f>(0, descriptor_id);
+            //const cv::Vec3f & point1 = points3d.at<cv::Vec3f>(0, descriptor_id);
             BOOST_FOREACH(const cv::DMatch & match, matches_all[descriptor_id])
                 {
                   if (match.imgIdx == int(image_id))
@@ -169,12 +167,13 @@ namespace object_recognition
                   }
                   else
                   {
-                    // make sure the matches are also close to each other physically
-                    const cv::Vec3f & point2 = (*in_points3d_)[match.imgIdx].at<cv::Vec3f>(0, match.trainIdx);
-                    cv::Vec3f diff = point1 - point2;
-                    float norm = diff.val[0] * diff.val[0] + diff.val[1] * diff.val[1] + diff.val[2] * diff.val[2];
-                    if (norm > 0.01 * 0.01)
-                      continue;
+                    // TODO fix the following with some RANSAC probably
+                    /*// make sure the matches are also close to each other physically
+                     const cv::Vec3f & point2 = (*in_points3d_)[match.imgIdx].at<cv::Vec3f>(0, match.trainIdx);
+                     cv::Vec3f diff = point1 - point2;
+                     float norm = diff.val[0] * diff.val[0] + diff.val[1] * diff.val[1] + diff.val[2] * diff.val[2];
+                     if (norm > 0.01 * 0.01)
+                     continue;*/
                     continue;
                   }
 
@@ -187,7 +186,7 @@ namespace object_recognition
         }
 
         // Fill the point data
-        unsigned n_id = id - 1;
+        size_t n_id = id - 1;
         Eigen::DynamicSparseMatrix<int> x(n_images, n_id);
         Eigen::DynamicSparseMatrix<int> y(n_images, n_id);
         Eigen::DynamicSparseMatrix<int> disparity(n_images, n_id);
@@ -206,7 +205,7 @@ namespace object_recognition
                   disparity.coeffRef(image_id_index.first, id) = vec.val[2];
                 }
                 {
-                  const cv::Vec3f & vec = (*in_points_)[image_id].at<cv::Vec3f>(0, index);
+                  const cv::Vec3f & vec = (*in_points3d_)[image_id].at<cv::Vec3f>(0, index);
                   average += Eigen::Vector3d(vec.val[0], vec.val[1], vec.val[2]);
                 }
               }
@@ -216,7 +215,6 @@ namespace object_recognition
         *x_ = Eigen::SparseMatrix<int>(x);
         *y_ = Eigen::SparseMatrix<int>(y);
         *disparity_ = Eigen::SparseMatrix<int>(disparity);
-        outputs.get<std::vector<Eigen::Vector3d> >("points") = *out_points_;
 
         return ecto::OK;
       }
