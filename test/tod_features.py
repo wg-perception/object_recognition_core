@@ -19,7 +19,7 @@ import ecto_pcl
 db_json_params = '''
     {
         "type": "CouchDB",
-        "url": "http://localhost:5984"
+        "root": "http://localhost:5984"
     }
 '''
 db_url = dbtools.DEFAULT_SERVER_URL
@@ -28,14 +28,14 @@ db_url = dbtools.DEFAULT_SERVER_URL
 couch = couchdb.Server(db_url)
 dbs = dbtools.init_object_databases(couch)
 
-object_id = "6279b8c2599f44103e0573e75cfef9da"
+object_id = "263739e4f609243242bf5ea553000bad"
 
-tod_models = models.find_tod_model_for_object(dbs['models'], object_id)
+tod_models = models.find_tod_model_for_object(dbs, object_id)
 print tod_models
 if len(tod_models) < 1:
     raise RuntimeError("There are no tod models available.")
 
-db_reader = tod_detection.ModelReader('db_reader', db_json_params=db_json_params, collection='models')
+db_reader = tod_detection.ModelReader('db_reader', db_json_params=db_json_params, collection='object_recognition')
 #observation dealer will deal out each observation id.
 observation_dealer = ecto.Dealer(typer=db_reader.inputs.at('model_id'), iterable=tod_models)
 to_pcl = conversion.MatToPointCloudXYZ()
