@@ -12,40 +12,49 @@ from object_recognition.common.utils import json_helper
 ########################################################################################################################
 
 class TodDetector(ecto.BlackBox):
-    def __init__(self, plasm, db_json_params, tod_json_params, object_ids, display = False):
-        ecto.BlackBox.__init__(self, plasm)
+    feature_descriptor = FeatureDescriptor
+    descriptor_matcher = tod_detection.DescriptorMatcher
+    guess_generator = tod_detection.GuessGenerator
+    image_duplicator = ecto.Passthrough
 
-        self._object_ids = object_ids
-        self._display = display
+    def __init__(self, **kwargs):
+        self._db_params = kwargs.pop('db_params')
+        self._tod_params = kwargs.pop('feature_descriptor_params')
+        self._guess_params = kwargs.pop('guess_params')
+        self._search_params = kwargs.pop('search_params')
+        self._object_ids = kwargs.pop('object_ids')
+        self._display = kwargs.pop('display')
 
-        # parse the JSON and load the appropriate feature descriptor module
-        self.feature_descriptor = FeatureDescriptor(tod_json_params['feature_descriptor'])
+        ecto.BlackBox.__init__(self, **kwargs)
+
+    def declare_params(self, p):
+        pass
+
+    def declare_io(self, p, i, o):
+        i.forward('image', cell_name = 'image_duplicator', cell_key = 'in')
+        i.forward('mask', cell_name = 'feature_descriptor', cell_key = 'mask')
+        i.forward('points3d', cell_name = 'guess_generator', cell_key = 'points3d')
+
+        o.forward('object_ids', cell_name = 'guess_generator', cell_key = 'object_ids')
+        o.forward('Rs', cell_name = 'guess_generator', cell_key = 'Rs')
+        o.forward('Ts', cell_name = 'guess_generator', cell_key = 'Ts')
+        o.forward('keypoints', cell_name = 'feature_descriptor', cell_key = 'keypoints')
+
+    def configure(self, p, i, o):
+        self.feature_descriptor = FeatureDescriptor(json_helper.dict_to_cpp_json_str(self._tod_params))
         self.descriptor_matcher = tod_detection.DescriptorMatcher("Matcher",
-                                db_json_params=json_helper.dict_to_cpp_json_str(db_json_params), object_ids=object_ids,
-                                search_json_params=json_helper.dict_to_cpp_json_str(tod_json_params['search']))
+                                db_json_params=json_helper.dict_to_cpp_json_str(self._db_params),
+                                object_ids=self._object_ids,
+                                search_json_params=json_helper.dict_to_cpp_json_str(self._search_params))
         self.guess_generator = tod_detection.GuessGenerator("Guess Gen",
-                                                json_params=json_helper.dict_to_cpp_json_str(tod_json_params['guess']))
+                                                json_params=json_helper.dict_to_cpp_json_str(self._guess_params))
 
-        self._image_duplicator = ecto.Passthrough()
-
-    def expose_inputs(self):
-        return {'image': self._image_duplicator['in'],
-                'mask':self.feature_descriptor['mask'],
-                'points3d':self.guess_generator['points3d']}
-
-    def expose_outputs(self):
-        return {'object_ids': self.guess_generator['object_ids'],
-                'Rs': self.guess_generator['Rs'],
-                'Ts': self.guess_generator['Ts'],
-                'keypoints': self.feature_descriptor['keypoints']}
-
-    def expose_parameters(self):
-        return {}
+        self.image_duplicator = ecto.Passthrough()
 
     def connections(self):
         # make sure the inputs reach the right cells
-        connections = [self._image_duplicator[:] >> self.feature_descriptor['image'],
-                       self._image_duplicator[:] >> self.guess_generator['image'],]
+        connections = [self.image_duplicator[:] >> self.feature_descriptor['image'],
+                       self.image_duplicator[:] >> self.guess_generator['image'],]
 
         connections += [self.feature_descriptor['keypoints'] >> self.guess_generator['keypoints'],
                 self.feature_descriptor['descriptors'] >> self.descriptor_matcher['descriptors'],
@@ -58,8 +67,8 @@ class TodDetector(ecto.BlackBox):
             keypoints_view = highgui.imshow(name="Keypoints")
             draw_keypoints = features2d.DrawKeypoints()
 
-            connections += [ self._image_duplicator[:] >> image_view['image'],
-                           self._image_duplicator[:] >> draw_keypoints['image'],
+            connections += [ self.image_duplicator[:] >> image_view['image'],
+                           self.image_duplicator[:] >> draw_keypoints['image'],
                            self.feature_descriptor['keypoints'] >> draw_keypoints['keypoints'],
                            draw_keypoints['image'] >> keypoints_view['image']
                            ]

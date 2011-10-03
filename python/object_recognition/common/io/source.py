@@ -47,17 +47,24 @@ class Source(object):
                             'the source type of, `ros_bag`')
 
     @staticmethod
-    def parse_arguments(args):
-        source = None
-        if getattr(args, 'ros_bag', None):
-            import os.path as path
-            if not path.exists(args.ros_bag):
-                raise RuntimeError("You must supply a valid path to a bag file: %s does not exist." % args.ros_bag)
-            source = Source.create_source(source_type=SourceTypes.ros_bag, bag=args.ros_bag)
-        elif getattr(args, 'source_type', False):
-            source = Source.create_source(source_type=args.source_type)
+    def parse_arguments(obj):
+        """
+        Function parsing a dictionary or an argument object
+        """
+        if type(obj).__name__ == 'dict':
+            dic = obj
         else:
-            raise RuntimeError("Could not create a source from the given args! %s" % str(args))
+            dic = obj.__dict__
+        source = None
+        if dic.get('ros_bag', None):
+            import os.path as path
+            if not path.exists(dic['ros_bag']):
+                raise RuntimeError("You must supply a valid path to a bag file: %s does not exist." % dic['ros_bag'])
+            source = Source.create_source(source_type=SourceTypes.ros_bag, bag=dic['ros_bag'])
+        elif dic.get('source_type', None):
+            source = Source.create_source(source_type=dic['source_type'])
+        else:
+            raise RuntimeError("Could not create a source from the given args! %s" % str(dic))
         return _assert_source_interface(source)
 
 ######################################################################################################

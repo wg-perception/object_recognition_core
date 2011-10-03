@@ -5,7 +5,6 @@ Module defining several inputs for the object recognition pipeline
 
 import ecto
 import ecto.opts
-from ecto_object_recognition.io import GuessCsvWriter
 import sys
 
 ########################################################################################################################
@@ -30,7 +29,7 @@ class Masker(ecto.BlackBox):
         self._cells = []
 
     # common ecto implementation
-    def expose_inputs(self):
+    def declare_io(self, p, i ,o):
         if self._cells:
             return {'points3d': self._cells[0]['points3d']}
         else:
