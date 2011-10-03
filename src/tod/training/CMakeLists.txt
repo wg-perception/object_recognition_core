@@ -1,7 +1,6 @@
 # deal with the training TOD modules
 ectomodule(tod_training
     CameraToWorld.cpp
-    FilteredModelStacker.cpp
     KeypointsToMat.cpp
     KeypointValidator.cpp
     ModelInserter.cpp
