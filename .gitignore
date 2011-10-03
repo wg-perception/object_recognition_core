@@ -12,3 +12,4 @@ bin
 *.pyc
 *.yaml
 *.yml
+*~
