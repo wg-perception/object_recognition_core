@@ -117,7 +117,7 @@ class Model(Document):
     ''')
     by_object_id_and_TOD = ViewField('models', '''\
         function(doc) {
-            if ((doc.Type == "Model") && (doc.parameters.type == "TOD"))
+            if ((doc.Type == "Model") && (doc.model_type == "TOD"))
                 emit(doc.object_id, doc)
         }
     ''')

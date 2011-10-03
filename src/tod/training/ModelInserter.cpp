@@ -2,6 +2,8 @@
 
 #include <boost/foreach.hpp>
 #include <boost/format.hpp>
+#include <boost/property_tree/ptree.hpp>
+#include <boost/property_tree/json_parser.hpp>
 #include <boost/python.hpp>
 #include <boost/python/stl_iterator.hpp>
 
@@ -63,8 +65,18 @@ namespace object_recognition
         doc.set_attachment<cv::Mat>("descriptors", *descriptors_);
         doc.set_attachment<cv::Mat>("points", *points_);
         doc.set_value("object_id", *object_id_);
-        doc.set_value("model_params", params_);
+
+        // Convert the parameters to a property tree and insert them
+        boost::property_tree::ptree params;
+        std::stringstream ssparams;
+        ssparams << params_;
+        boost::property_tree::read_json(ssparams, params);
+        if (params.find("type") != params.not_found())
+          params.erase("type");
+        doc.set_values("parameters", params);
+
         doc.set_value("Type", "Model");
+        doc.set_value("model_type", "TOD");
         std::cout << "Persisting" << std::endl;
         doc.Persist();
 
