@@ -24,14 +24,21 @@ DISPLAY = True
 if __name__ == '__main__':
 
     parser = ObjectRecognitionParser()
-    add_db_arguments(parser)
 
     parser.add_argument('-c', help='Config file')
+    parser.add_argument('--object_ids', help='If set, it overrides the list of object_ids in the config file')
 
     args = parser.parse_args()
 
-    # read some parameters
     params = yaml.load(open(args.c))
+
+    # read the object_ids
+    if hasattr(args, 'object_ids') and args.object_ids:
+        object_ids = args.object_ids[1:-1].split(',')
+    else:
+        object_ids = params['object_ids']
+
+    # read some parameters
     db_dict = params['db']
     db_url = db_dict['root']
 
@@ -41,10 +48,10 @@ if __name__ == '__main__':
             pipeline_params.append(value)
 
     # initialize the DB
-    if db_dict['type'].lower()=='couchdb':
+    if db_dict['type'].lower() == 'couchdb':
         db = dbtools.init_object_databases(couchdb.Server(db_url))
 
-    for object_id in params['object_ids']:
+    for object_id in object_ids:
         object_id = object_id.encode('ascii')
         db_reader = capture.ObservationReader("db_reader", db_url=db_url)
         obs_ids = models.find_all_observations_for_object(db, object_id)
@@ -52,25 +59,35 @@ if __name__ == '__main__':
             print 'no observations found for object %s' % object_id
             continue
 
+        # define the input and connect to it
+        source_plasm = ecto.Plasm()
+        observation_dealer = ecto.Dealer(typer=db_reader.inputs.at('observation'), iterable=obs_ids)
+        source_plasm.connect(observation_dealer[:] >> db_reader['observation'])
+
+        main_plasm = ecto.Plasm()
         # connect to the model computation
         for pipeline_param in pipeline_params:
-            plasm = ecto.Plasm()
-            trainer = TodTrainer(plasm, db_reader, obs_ids, pipeline_param, DISPLAY)
-    
-            # persist to the DB
-            db_writer = tod_training.ModelInserter("db_writer", collection_models=args.db_collection,
+            #define the trainer
+            if pipeline_param['type'] == 'TOD':
+                trainer = TodTrainer(json_search_params=json_helper.dict_to_cpp_json_str(pipeline_param['search']),
+                                     json_feature_descriptor_params=json_helper.dict_to_cpp_json_str(pipeline_param['feature_descriptor']),
+                                     display=DISPLAY, source=db_reader, source_plasm=source_plasm)
+                # delete the previous models
+                for model_id in models.find_model_for_object(db, object_id, 'TOD'):
+                    db.delete(model_id)
+
+            # define the output
+            db_writer = tod_training.ModelInserter("db_writer", collection_models=db_dict['collection'],
                                         db_json_params=json_helper.dict_to_cpp_json_str(db_dict), object_id=object_id,
                                         model_json_params=json_helper.dict_to_cpp_json_str(pipeline_param))
-            orb_params = None
-            # TODO
-            #db_writer.add_misc(pipeline_param)
+
+            # connect the output
+            main_plasm.connect(trainer['points', 'descriptors'] >> db_writer['points', 'descriptors'])
     
-            plasm.connect(trainer['points', 'descriptors'] >> db_writer['points', 'descriptors'])
+        if DEBUG:
+            #render the DAG with dot
+            print main_plasm.viz()
+            ecto.view_plasm(main_plasm)
     
-            if DEBUG:
-                #render the DAG with dot
-                print plasm.viz()
-                ecto.view_plasm(plasm)
-    
-            sched = ecto.schedulers.Singlethreaded(plasm)
-            sched.execute(niter=1)
+        sched = ecto.schedulers.Singlethreaded(main_plasm)
+        sched.execute(niter=1)

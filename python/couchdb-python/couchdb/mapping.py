@@ -186,7 +186,7 @@ class Mapping(object):
 
 
 class ViewField(object):
-    r"""Descriptor that can be used to bind a view definition to a property of
+    """Descriptor that can be used to bind a view definition to a property of
     a `Document` class.
     
     >>> class Person(Document):

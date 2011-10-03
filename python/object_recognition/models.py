@@ -111,7 +111,13 @@ class Model(Document):
     
     by_object_id = ViewField('models', '''\
         function(doc) {
-            if(doc.Type == "Model")
+            if (doc.Type == "Model")
+                emit(doc.object_id, doc)
+        }
+    ''')
+    by_object_id_and_TOD = ViewField('models', '''\
+        function(doc) {
+            if ((doc.Type == "Model") && (doc.parameters.type == "TOD"))
                 emit(doc.object_id, doc)
         }
     ''')
@@ -123,6 +129,7 @@ class Model(Document):
     @classmethod
     def sync(cls, db):
         cls.by_object_id.sync(db)
+        cls.by_object_id_and_TOD.sync(db)
         cls.all.sync(db)
 
 def sync_models(db):
@@ -159,11 +166,15 @@ def find_all_observations_for_object(observation_collection, object_id):
     obs_ids = zip(*sorted(obs_tuples, key=lambda obs: obs[0]))[1]
     return obs_ids
 
-def find_tod_model_for_object(models_collection, object_id):
-    ''' Finds all of the tod models associated with the given object_id
+def find_model_for_object(models_collection, object_id, model_type='all'):
+    ''' Finds all of the models associated with the given object_id
+    The type of the model can be specified through model_type
     '''
     #run the view, keyed on the object id.
-    r = Model.by_object_id(models_collection, key=object_id)
+    if model_type == 'all':
+        r = Model.by_object_id(models_collection, key=object_id)
+    elif model_type == 'TOD':
+        r = Model.by_object_id_and_TOD(models_collection, key=object_id)
     if len(r) == 0 : return []
     return [ m.id for m in r ]
 

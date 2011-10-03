@@ -5,7 +5,6 @@ Module defining several inputs for the object recognition pipeline
 
 import ecto
 import ecto.opts
-from ecto_object_recognition.io import GuessCsvWriter
 import sys
 
 ########################################################################################################################
@@ -15,6 +14,8 @@ class Masker(ecto.BlackBox):
     Blackbox that masks out certain areas of the image
     If a new type of masker is created, add it in the enum list and update the add_arguments and parse_arguments
     """
+    
+    #TODO FIXME
     DEPTH = 'depth'
 
     def __init__(self, plasm):
@@ -28,7 +29,7 @@ class Masker(ecto.BlackBox):
         self._cells = []
 
     # common ecto implementation
-    def expose_inputs(self):
+    def declare_io(self, p, i ,o):
         if self._cells:
             return {'points3d': self._cells[0]['points3d']}
         else:

@@ -1,104 +1,90 @@
-#!/usr/bin/env python
-"""
+''''
 Module defining several inputs for the object recognition pipeline
-""" 
 
-import ecto
-import ecto.opts
-from ecto_object_recognition.io import GuessCsvWriter
-import sys
-import ecto_object_recognition.conversion
-import object_recognition.capture as capture
-from ecto_opencv import calib
+All source cells will have the following outputs:
+ - K [cv::Mat]
+    The camera intrinsics matrix, as a 3x3 double cv::Mat
+ - depth [cv::Mat]
+    The rescaled depth image.
+ - image [cv::Mat]
+    A cv::Mat copy.
+ - points3d [cv::Mat]
+    The 3d points, height by width (or 1 by n_points if mask) with 3 channels (x, y and z)
+'''
 
-########################################################################################################################
+#SourceTypes is dict of name:name that describes the types of sources available
+#append to the dict source types.
+SourceTypes = type('SourceTypes', (object,),
+                   dict(ros_bag='ros_bag',
+                        ros_kinect='ros_kinect',
+                        )
+                   )
 
-class Source(ecto.BlackBox):
-    """
-    Blackbox that can output to anything
-    If a new type of sink is created, add it in the enum list and update the add_arguments and parse_arguments
-    """
-    ROS_BAG = 'ros_bag'
-    ROS_KINECT = 'ros_kinect'
+class Source(object):
+    '''
+    An RGB, Depth Map source.
+    '''
+    @staticmethod
+    def create_source(source_type=SourceTypes.ros_kinect, *args, **kwargs):
+        from .ros.source import KinectReader, BagReader
+        #extend this dict as necessary
+        source = {SourceTypes.ros_bag:BagReader,
+                  SourceTypes.ros_kinect:KinectReader,
+                  #TODO standalone:StandaloneKinectReader
+                  #SourceType : BlackBox
+                  }
+        return source[source_type](*args, **kwargs)
 
-    def __init__(self, plasm):
+    @staticmethod
+    def add_arguments(parser):
+        #--ros_kinect is the default.
+        sources = [x for x in dir(SourceTypes) if not x.startswith('__')]
+        parser.add_argument('--source_type', dest='source_type', choices=(sources), default=SourceTypes.ros_kinect,
+                            help='The source type to use. default(%(default)s)')
+        parser.add_argument('--ros_bag', dest='ros_bag', type=str, default=None,
+                            help='The path of a ROS bag to analyze. '
+                            'If this is specified it will automatically use'
+                            'the source type of, `ros_bag`')
+
+    @staticmethod
+    def parse_arguments(obj):
         """
-        sinks: a list of the sinks to use
+        Function parsing a dictionary or an argument object
         """
-        ecto.BlackBox.__init__(self, plasm)
+        if type(obj).__name__ == 'dict':
+            dic = obj
+        else:
+            dic = obj.__dict__
+        source = None
+        if dic.get('ros_bag', None):
+            import os.path as path
+            if not path.exists(dic['ros_bag']):
+                raise RuntimeError("You must supply a valid path to a bag file: %s does not exist." % dic['ros_bag'])
+            source = Source.create_source(source_type=SourceTypes.ros_bag, bag=dic['ros_bag'])
+        elif dic.get('source_type', None):
+            source = Source.create_source(source_type=dic['source_type'])
+        else:
+            raise RuntimeError("Could not create a source from the given args! %s" % str(dic))
+        return _assert_source_interface(source)
 
-        # try to import ecto_ros
-        self._do_use_ros = True
-        # TODO remove the following line when Blackbox is fully supported
-        self._plasm = plasm
-        try:
-            __import__('ecto_ros')
-        except:
-            self._do_use_ros = False
-        if self._do_use_ros:
-            import ecto_ros
-            ecto_ros.init(sys.argv, "ecto_node")
-
-        # add the different possible outputs
-        self._cell_factory = {}
-        self._cells = []
-        self._outputs = {}
-        self._connections = []
-
-    # common ecto implementation
-    def expose_inputs(self):
-        return {}
-
-    def expose_outputs(self):
-        return self._outputs
-
-    def expose_parameters(self):
-        return {}
-
-    def connections(self):
-        return self._connections
-
-    # Functions to help with the argument parsing
-    def add_arguments(self, parser):
-        if self._do_use_ros:
-            from ros.source import BagReader, KinectReader
-            # TODO only use the following line
-            #self._cell_factory[Source.ROS_BAG] = ecto.opts.cell_options(parser, BagReader, 'ros_bag')
-            parser.add_argument('--ros_bag', dest='ros_bag', help='The path of a ROS bag to analyze.')
-
-            parser.add_argument('--ros_kinect', dest='do_ros_kinect', action='store_true', default = False,
-                                help='If set, read from a ROS bag.')
-            
-            # TODO
-            #self._cell_factory[ROS_KINECT] = ecto.opts.cell_options(parser, KinectReader, 'ros_kinect')
-            self._cell_factory[Source.ROS_KINECT] = KinectReader(self._plasm)
-
-    def parse_arguments(self, parser):
-        args = parser.parse_args()
-        if args.ros_bag:
-            #cell = self._cell_factory[Source.ROS_BAG](parser)
-            #self._cells.append(cell)
-            #self._outputs.update({'image': cell['image'], 'point_cloud': cell['point_cloud']})
-            #TODO fix the following
-            #self._cell_factory[Source.ROS_KINECT] = KinectReader(self._plasm)
-            bag_reader = BagReader(self._plasm, dict(image=ecto_sensor_msgs.Bagger_Image(topic_name='image_mono'),
-                           camera_info=ecto_sensor_msgs.Bagger_CameraInfo(topic_name='camera_info'),
-                           point_cloud=ecto_sensor_msgs.Bagger_PointCloud2(topic_name='points'),
-                           ), args.ros_bag)
-            self._cells.apend(bag_reader)
-            self._connections.extend([bag_reader['point_cloud'] >> point_cloud_to_mat['point_cloud']])
-            point_cloud_to_mat = conversion.PointCloudToMat()
-            self._outputs({'image': bag_reader['image'], 'points': point_cloud_to_mat['points']})
-        if args.do_ros_kinect:
-            #TODO fix the following
-            #cell = self._cell_factory[Source.ROS_KINECT](parser)
-            kinect_reader = self._cell_factory[Source.ROS_KINECT]
-            self._cells.append(kinect_reader)
-            depth_to_3d = calib.DepthTo3d()
-            rescale_depth = capture.RescaledRegisteredDepth()
-            self._cells.append([depth_to_3d, rescale_depth])
-            self._connections.extend([kinect_reader['depth','image'] >> rescale_depth['depth','image'],
-                                      rescale_depth['depth'] >> depth_to_3d['depth'],
-                                      kinect_reader['K'] >> depth_to_3d['K']])
-            self._outputs.update({'image': kinect_reader['image'], 'points3d': depth_to_3d['points3d'],
-                                  'K': kinect_reader['K'], 'image_message': kinect_reader['image_message']})
+######################################################################################################
+#testing user interface interface
+def _assert_source_interface(cell):
+    ''' This ensures that the given cell exhibits the minimal interface to be
+    considered a source for object recogntion
+    '''
+    outputs = dir(cell.outputs)
+    #all sources must produce the following
+    for x in ('K', 'image', 'depth', 'points3d'):
+        if x not in outputs:
+            raise NotImplementedError('This cell does not correctly implement the source interface. Must have an output named %s' % x)
+    #type checks
+    for x in ('K', 'image', 'depth', 'points3d'):
+        type_name = cell.outputs.at(x).type_name
+        #TODO add more explicit types.
+        if type_name != 'cv::Mat':
+            raise NotImplementedError('This cell does not correctly implement the source interface.\n'
+                                      'Must have an output named %s, with type %s\n'
+                                      'This cells output at %s has type %s' % (x, 'cv::Mat', x, type_name))
+    return cell
+###########################################################################################################

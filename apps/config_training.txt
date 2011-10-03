@@ -5,6 +5,7 @@ db:
   collection: 'object_recognition'
 
 pipeline1:
+  type: 'TOD'
   feature_descriptor:
     combination: 'ORB'
     feature:
@@ -18,4 +19,4 @@ pipeline1:
     type: 'LSH'
 
 # The list of object_ids to analyze
-object_ids: [ "e2449bdc43fd6d9dd646fcbcd00f89a7", "e2449bdc43fd6d9dd646fcbcd00f89a7" ]
+object_ids: [ "263739e4f609243242bf5ea553000bad" ]

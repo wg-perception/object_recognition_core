@@ -1,12 +1,8 @@
-#!/usr/bin/env python
-"""
+''''
 Module defining several outputs for the object recognition pipeline
-""" 
+'''
 
-import ecto
-import ecto.opts
 from ecto_object_recognition.io import GuessCsvWriter
-import sys
 
 ########################################################################################################################
 

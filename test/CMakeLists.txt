@@ -25,6 +25,14 @@ macro(data_download PATH_VAR DATA_FILE)
 endmacro()
 
 pytest(test_import)
+
+pytest(test_common_io_ros_source_kinect)
+pytest(test_common_io_ros_source_bag_reader)
+pytest(test_common_io_ros_sink)
+
+pytest(test_common_io_source_interface)
+pytest(test_common_io_source_creation)
+
 desktop_test(view_observations)
 
 add_subdirectory(db)
