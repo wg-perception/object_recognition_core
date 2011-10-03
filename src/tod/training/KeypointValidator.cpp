@@ -76,8 +76,9 @@ namespace
       inputs.declare<cv::Mat>("K", "The calibration matrix").required(true);
       inputs.declare<cv::Mat>("depth", "The depth image (with a size similar to the mask one).").required(true);
 
-      outputs.declare<cv::Mat>("points", "The valid keypoints: (x in pixels, y in pixels, disparity in pixels)");
-      outputs.declare<cv::Mat>("descriptors", "The matching descriptors");
+      outputs.declare<cv::Mat>(
+          "points", "The valid keypoints: 1 x n_points x 3 channels (x in pixels, y in pixels, disparity in pixels)");
+      outputs.declare<cv::Mat>("descriptors", "The matching descriptors, n_points x feature_length");
     }
 
     void
@@ -176,7 +177,7 @@ namespace
         clean_points.colRange(0, clean_row_index).copyTo(final_points);
         clean_descriptors.rowRange(0, clean_row_index).copyTo(final_descriptors);
       }
-      outputs.get<cv::Mat>("points") = final_points;
+      outputs["points"] << final_points;
       outputs.get<cv::Mat>("descriptors") = final_descriptors;
 
       return ecto::OK;
