@@ -1,13 +1,9 @@
 Data Capture
 ============
 
-Object capture tools.
+.. contents::
 
-.. toctree::
-   :maxdepth: 1
-   
-   reference.rst
-   
+Object capture tools.
 
 Capture setup
 -------------
@@ -50,7 +46,7 @@ Start up the ros openni driver:
   % roslaunch openni_launch openni.launch
 
 Please make sure that the depth_registration mode for the driver is set to true.
-::
+::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
   % rosrun dynamic_reconfigure dynparam set /camera/driver depth_registration True
 
@@ -65,7 +61,7 @@ openni_capture.py
 -----------------
 
 You should use the openni_capture.py application to capture a bag of data that may
-be used by object recognition. 
+be used by object recognition.
 
 .. program-output:: openni_capture.py --help
    :in_srcdir:
@@ -102,7 +98,7 @@ For this we will use bag_upload.py. The help:
    :in_srcdir:
 
 A typical command line session will look like:
-::
+::::::::::::::::::::::::::::::::::::::::::::::
 
   % apps/bag_upload.py -i silk_highres.bag -n 'silk' -d 'A carton of Silk brand soy milk.' -a 'Ethan Rublee' -e 'erublee@willowgarage.com' --commit milk, soy, kitchen, tod
   Uploaded bag has id = 46d8611570108b1aa9ea049f7b998687

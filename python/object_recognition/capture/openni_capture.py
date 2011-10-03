@@ -111,8 +111,7 @@ def create_preview_capture_standalone(camera_file):
 
     kinect = KinectReader(plasm, camera_file)
 
-    poser = OpposingDotPoseEstimator(plasm,
-                                     rows=5, cols=3,
+    poser = OpposingDotPoseEstimator(rows=5, cols=3,
                                      pattern_type=calib.ASYMMETRIC_CIRCLES_GRID,
                                      square_size=0.04, debug=True)
 
@@ -159,8 +158,7 @@ def create_capture_plasm_standalone(bag_name, angle_thresh, camera_file):
               cameraInfoMsg[:] >> (bagwriter['image_ci'], bagwriter['depth_ci']),
               ]
 
-    poser = OpposingDotPoseEstimator(plasm,
-                                     rows=5, cols=3,
+    poser = OpposingDotPoseEstimator(rows=5, cols=3,
                                      pattern_type=calib.ASYMMETRIC_CIRCLES_GRID,
                                      square_size=0.04, debug=True)
 
@@ -211,8 +209,7 @@ def create_capture_plasm(bag_name, angle_thresh, z_min=0.01, y_crop=0.10, x_crop
     image = ecto_ros.Image2Mat('rgb -> cv::Mat')
     camera_info = ecto_ros.CameraInfo2Cv('camera_info -> cv::Mat')
 
-    poser = OpposingDotPoseEstimator(plasm,
-                                     rows=5, cols=3,
+    poser = OpposingDotPoseEstimator(rows=5, cols=3,
                                      pattern_type=calib.ASYMMETRIC_CIRCLES_GRID,
                                      square_size=0.04, debug=True)
 
