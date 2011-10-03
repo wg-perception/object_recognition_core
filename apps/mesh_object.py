@@ -13,7 +13,7 @@ import couchdb
 import ecto
 from ecto_opencv import calib, highgui, imgproc
 import object_recognition
-from object_recognition import dbtools, models, capture, observations
+from object_recognition import dbtools, models, capture
 from ecto_object_recognition import reconstruction
 import ecto_pcl
 
@@ -37,10 +37,10 @@ def parse_args():
 
 
 def simple_mesh_session(dbs, session, args):
-    obs_ids = models.find_all_observations_for_session(dbs['observations'], session.id)
+    obs_ids = models.find_all_observations_for_session(dbs, session.id)
     if len(obs_ids) == 0:
         raise RuntimeError("There are no observations available.")
-    db_reader = capture.ObservationReader('db_reader', db_url=args.db_root, collection='observations')
+    db_reader = capture.ObservationReader('db_reader', db_url=args.db_root, db_collection=args.db_collection)
     #observation dealer will deal out each observation id.
     observation_dealer = ecto.Dealer(typer=db_reader.inputs.at('observation'), iterable=obs_ids)
     depthTo3d = calib.DepthTo3d()
@@ -90,7 +90,7 @@ if "__main__" == __name__:
     args = parse_args()
     couch = couchdb.Server(args.db_root)
     dbs = dbtools.init_object_databases(couch)
-    sessions = dbs['sessions']
+    sessions = dbs
     if args.compute_all:
         models.sync_models(dbs)
         results = models.Session.all(sessions)

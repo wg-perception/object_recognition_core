@@ -1,9 +1,10 @@
 #!/usr/bin/env python
 import roscompat
-from object_recognition import models, dbtools
-from object_recognition.ingest.bag_upload import upload_bag
 import argparse
+
+from object_recognition import models, dbtools
 from object_recognition.dbtools import add_db_options
+
 import ecto
 from ecto_opencv import highgui, imgproc
 import ecto_ros, ecto_sensor_msgs, ecto_geometry_msgs

@@ -15,6 +15,8 @@ class Masker(ecto.BlackBox):
     Blackbox that masks out certain areas of the image
     If a new type of masker is created, add it in the enum list and update the add_arguments and parse_arguments
     """
+    
+    #TODO FIXME
     DEPTH = 'depth'
 
     def __init__(self, plasm):

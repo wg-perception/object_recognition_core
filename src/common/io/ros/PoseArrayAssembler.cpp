@@ -58,7 +58,7 @@ namespace object_recognition
   {
     typedef geometry_msgs::PoseArrayConstPtr PoseArrayMsgPtr;
     typedef geometry_msgs::PoseArray PoseArrayMsg;
-    typedef std_msgs::StringPtr ObjectIdsMsgPtr;
+    typedef std_msgs::StringConstPtr ObjectIdsMsgPtr;
     typedef std_msgs::String ObjectIdsMsg;
 
     static void
@@ -150,5 +150,5 @@ namespace object_recognition
   };
 }
 
-ECTO_CELL(ros, object_recognition::PoseArrayAssembler, "PoseArrayAssembler",
+ECTO_CELL(io_ros, object_recognition::PoseArrayAssembler, "PoseArrayAssembler",
           "Given object ids and poses, create PoseArray message.");
