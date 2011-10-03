@@ -1,16 +1,11 @@
-#/usr/bin/env python
-from arbotix import *
-import math
-import time
-
+#!/usr/bin/env python
+from object_recognition.capture.arbotix import *
+import sys
 MY_SERVO = 0xE9
 a = ArbotiX("/dev/ttyUSB0",baud=1e6) #1 meg for e
 a.enableWheelMode(MY_SERVO)
-a.setSpeed(MY_SERVO,64)
-while True:
-    time.sleep(0.01)
-
-a.disableTorque(MY_SERVO)
-
-
+speed = 32
+if len(sys.argv) > 1:
+  speed = sys.argv[1]
+a.setSpeed(MY_SERVO,speed)
 

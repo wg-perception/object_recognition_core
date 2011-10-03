@@ -10,6 +10,7 @@ SinkTypes = type('SourceTypes', (object,),
                    dict(publisher='publisher',
                         csv_writer='csv_writer',
                         )
+
                    )
 
 class Sink(object):

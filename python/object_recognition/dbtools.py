@@ -22,7 +22,7 @@ def add_db_arguments(parser):
     db_type will contain the type of DB (CouchDB, SQL ...).
     db_root will contain the server url.
     '''
-    group = parser.add_argument_group('db', 'DB parameters')
+    group = parser.add_argument_group('Database Parameters')
     group.add_argument('--db_type', metavar='DB_TYPE', dest='db_type', type=str, choices=['CouchDB'], default='CouchDB',
                        help='The type of database used: one of [%(choices)s]. Default: %(default)s')
     group.add_argument('--db_root', metavar='DB_ROOT_URL', dest='db_root', type=str, default=DEFAULT_SERVER_URL,

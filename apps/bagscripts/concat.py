@@ -6,7 +6,7 @@ from rosbag import Bag
 
 if len(sys.argv) < 3:
     print >> sys.stderr, 'Usage: concat.py OUTPUT INPUT1 [INPUT2 ...]'
-    sys.exit(1)
+    sys.exit(0)
 
 output_bag = sys.argv[1]
 input_bags = sys.argv[2:]
