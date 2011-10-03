@@ -74,7 +74,7 @@ if __name__ == '__main__':
                                      display=DISPLAY, source=db_reader, source_plasm=source_plasm)
                 # delete the previous models
                 for model_id in models.find_model_for_object(db, object_id, 'TOD'):
-                    db.delete(model_id)
+                    db.delete(db.get(model_id))
 
             # define the output
             db_writer = tod_training.ModelInserter("db_writer", collection_models=db_dict['collection'],

@@ -41,6 +41,7 @@
 
 #include <boost/archive/binary_iarchive.hpp>
 #include <boost/archive/binary_oarchive.hpp>
+#include <boost/foreach.hpp>
 #include <boost/property_tree/ptree.hpp>
 
 #include <object_recognition/db/utils.h>
@@ -219,6 +220,23 @@ namespace object_recognition
       set_value(const std::string& key, const T& val)
       {
         fields_.put<T>(key, val);
+      }
+
+      /** Set several values by inserting a property tree */
+      void
+      set_values(const boost::property_tree::ptree & property_tree)
+      {
+        fields_.insert(fields_.begin(), property_tree.begin(), property_tree.end());
+      }
+
+      /** Set several values by inserting a property tree at a specific key*/
+      void
+      set_values(const std::string& key, const boost::property_tree::ptree & property_tree)
+      {
+        if (fields_.find(key) == fields_.not_found())
+          fields_.insert(fields_.begin(), std::make_pair(key, property_tree));
+        else
+          fields_.insert(fields_.get_child(key).begin(), property_tree.begin(), property_tree.end());
       }
 
       /** Clear all the fields, there are no fields left after */

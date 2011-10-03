@@ -73,7 +73,12 @@ namespace boost { namespace property_tree { namespace json_parser
             
             // Write value
             Str data = create_escapes(pt.template get_value<Str>(), stream.getloc());
-            stream << Ch('"') << data << Ch('"');
+            std::istringstream val_str(data);
+            double val;
+            if (val_str >> val)
+              stream << data;
+            else
+              stream << Ch('"') << data << Ch('"');
 
         }
         else if (indent > 0 && pt.count(Str()) == pt.size())
