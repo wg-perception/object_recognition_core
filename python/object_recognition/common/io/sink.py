@@ -4,96 +4,66 @@ Module defining several outputs for the object recognition pipeline
 
 from ecto_object_recognition.io import GuessCsvWriter
 
-########################################################################################################################
+#SinkTypes is dict of name:name that describes the types of sinks available
+#append to the dict sink types.
+SinkTypes = type('SourceTypes', (object,),
+                   dict(publisher='publisher',
+                        csv_writer='csv_writer',
+                        )
+                   )
 
-class Sink(ecto.BlackBox):
-    """
-    Blackbox that can output to anything
-    If a new type of sink is created, add it in the enum list and update the add_arguments and parse_arguments
-    """
-    CSV_WRITER = 'csv_writer'
-    ROS = 'ros'
-    ROS_TABLETOP = 'ros_tabletop'
+class Sink(object):
+    '''
+    An RGB, Depth Map source.
+    '''
+    @staticmethod
+    def create_sink(sink_type=SinkTypes.publisher, *args, **kwargs):
+        from .ros.sink import Publisher
+        #extend this dict as necessary
+        sinks = {SinkTypes.publisher:Publisher,
+                 SinkTypes.csv_writer:GuessCsvWriter
+                 }
+        return sinks[sink_type](*args, **kwargs)
 
-    def __init__(self, plasm):
-        """
-        sinks: a list of the sinks to use
-        """
-        ecto.BlackBox.__init__(self, plasm)
+    @staticmethod
+    def add_arguments(parser):
+        #--ros_kinect is the default.
+        sinks = [x for x in dir(SinkTypes) if not x.startswith('__')]
+        parser.add_argument('--sink_type', dest='sink_type', choices=(sinks), default=SinkTypes.publisher,
+                            help='The source type to use. default(%(default)s)')
 
-        self._plasm = plasm
+    @staticmethod
+    def parse_arguments(obj):
+        if type(obj).__name__ == 'dict':
+            dic = obj
+        else:
+            dic = obj.__dict__
 
-        self._object_ids_splitter = ecto.Passthrough()
-        self._Rs_splitter = ecto.Passthrough()
-        self._Ts_splitter = ecto.Passthrough()
+        sink = None
+        if 'sink_type' in dic:
+            sink = Sink.create_sink(sink_type=dic['sink_type'])
+        else:
+            raise RuntimeError("Could not create a sink from the given args! %s" % str(dic))
+        return _assert_sink_interface(sink)
 
-        # try to import ecto_ros
-        self._do_use_ros = True
-        try:
-            __import__('ecto_ros')
-        except:
-            self._do_use_ros = False
-
-        if self._do_use_ros:
-            import ecto_ros
-            ecto_ros.init(sys.argv, "ecto_node")
-            self._image_message_splitter = ecto.Passthrough()
-
-        # add the different possible outputs
-        self._cell_factory = {}
-        self._cells = []
-
-    # common ecto implementation
-    def expose_inputs(self):
-        inputs = {'object_ids':self._object_ids_splitter['in'],
-                'Rs':self._Rs_splitter['in'],
-                'Ts':self._Ts_splitter['in']}
-        if self._do_use_ros:
-            inputs['image_message'] = self._image_message_splitter['in']
-        return inputs
-
-    def expose_outputs(self):
-        return {}
-
-    def expose_parameters(self):
-        return {}
-
-    def connections(self):
-        connections = []
-        for cell in self._cells:
-            connections.extend([self._object_ids_splitter['out'] >> cell['object_ids'],
-                                self._Rs_splitter['out'] >> cell['Rs'],
-                                self._Ts_splitter['out'] >> cell['Ts']])
-            if self._do_use_ros:
-                connections.append(self._image_message_splitter['out'] >> cell['image_message'])
-        return connections
-
-    # Functions to help with the argument parsing
-    def add_arguments(self, parser):
-        parser.add_argument('--csv', dest='do_csv', action='store_true', default = False,
-                            help='If set, output to a CSV NIST file')
-        self._cell_factory[Sink.CSV_WRITER] = ecto.opts.cell_options(parser, GuessCsvWriter, 'csv')
-
-        if self._do_use_ros:
-            from ros.sink import Publisher, TabletopPublisher
-            parser.add_argument('--ros_topic', dest='ros_topic', help='If set, publish to a ROS topic')
-            # TODO
-            #self._cell_factory[Sink.ROS] = ecto.opts.cell_options(parser, Publisher, 'ros')
-    
-            parser.add_argument('--ros_tabletop_topic', dest='ros_tabletop_topic',
-                                help='If set, publish to this ROS topic in the tabletop format')
-            # TODO
-            #self._cell_factory[Sink.ROS_TABLETOP] = ecto.opts.cell_options(parser, TabletopPublisher, 'ros tabletop')
-
-    def parse_arguments(self, parser):
-        args = parser.parse_args()
-        if args.do_csv:
-            self._cells.append(self._cell_factory[Sink.CSV_WRITER](args))
-        if self._do_use_ros:
-            if args.ros_topic:
-                #TODO, use the following when working
-                #self._cells.append(self._cell_factory[Sink.ROS](parser))
-                from ros.sink import Publisher
-                self._cells.append(Publisher(self._plasm, 'poses', 'object_ids', True))
-            if args.ros_tabletop_topic:
-                self._cells.append(self._cell_factory[Sink.ROS_TABLETOP](args))
+######################################################################################################
+#testing user interface interface
+def _assert_sink_interface(cell):
+    ''' This ensures that the given cell exhibits the minimal interface to be
+    considered a source for object recogntion
+    '''
+    inputs = dir(cell.inputs)
+    #all sources must produce the following
+    for x in ('Rs', 'Ts', 'object_ids'):
+        if x not in inputs:
+            raise NotImplementedError('This cell does not correctly implement the sink interface. Must have an input named %s' % x)
+    #type checks
+    for x in ('Rs', 'Ts'):
+        type_name = cell.inputs.at(x).type_name
+        #TODO add more explicit types.
+        if type_name not in ['std::vector<cv::Mat>', 'std::vector<cv::Mat, std::allocator<cv::Mat> >']:
+            raise NotImplementedError('This cell does not correctly implement the sink interface.\n'
+                                      'Must have an output named %s, with type %s\n'
+                                      'This cells input at %s has type %s' % (x, 'std::vector<cv::Mat>', x, type_name))
+    return cell
+###########################################################################################################
