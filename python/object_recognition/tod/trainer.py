@@ -8,7 +8,7 @@ from ecto_opencv import calib, features2d, highgui
 from g2o import SBA
 from feature_descriptor import FeatureDescriptor
 import ecto
-from ecto_X import Executer
+import ecto_X
 from object_recognition.common.utils.json_helper import dict_to_cpp_json_str
 
 ########################################################################################################################
@@ -17,104 +17,115 @@ class Trainer(ecto.BlackBox):
     """
     Depth can be of a different size, it will be resized to fit image and mask
     """
-    def __init__(self, plasm, input_cell, obs_ids, json_params, display=False):
-        ecto.BlackBox.__init__(self, plasm)
+    feature_descriptor = FeatureDescriptor
+    camera_to_world = tod_training.CameraToWorld
+    model_stacker = tod_training.TodModelStacker
+    point_merger = tod_training.PointMerger
+    prepare_for_g2o = tod_training.PrepareForG2O
+    rescale_depth = capture.RescaledRegisteredDepth
+    keypoint_validator = conversion.KeypointsValidator
+    g2o = SBA
+    observation_passthrough = ecto.Passthrough
+    image_duplicator = ecto.Passthrough
+    mask_duplicator = ecto.Passthrough
+    K_duplicator = ecto.Passthrough
+    R_duplicator = ecto.Passthrough
+    T_duplicator = ecto.Passthrough
+    depth_duplicator = ecto.Passthrough
 
-        self._input_cell = input_cell
-        self._display = display
-        self._obs_ids = obs_ids
+    def __init__(self, **kwargs):
+        self.source_plasm = kwargs.pop('source_plasm')
+        self.source = kwargs.pop('source')
+        ecto.BlackBox.__init__(self, **kwargs)
 
-        self._feature_descriptor = FeatureDescriptor(json_params['feature_descriptor'])
-        self._depth_to_3d_sparse = calib.DepthTo3dSparse()
-        self._executer = None
-        self._keypoints_to_mat = tod_training.KeypointsToMat()
-        self._camera_to_world = tod_training.CameraToWorld()
-        self._model_stacker = tod_training.TodModelStacker()
-        self._point_merger = tod_training.PointMerger()
-        self._prepare_for_g2o = tod_training.PrepareForG2O(search_json_params=dict_to_cpp_json_str(json_params['search']))
-        self._rescale_depth = capture.RescaledRegisteredDepth() #this is for SXGA mode scale handling.
-        self._keypoint_validator = conversion.KeypointsValidator()
-        self._g2o = SBA()
+    def declare_params(self, p):
+        p.declare('display', 'If true, displays images at runtime', False)
+        p.forward('json_feature_descriptor_params', cell_name = 'feature_descriptor', cell_key = 'json_params')
+        p.forward('json_search_params', cell_name = 'prepare_for_g2o', cell_key = 'search_json_params')
 
-        self._image_duplicator = ecto.Passthrough()
-        self._mask_duplicator = ecto.Passthrough()
-        self._K_duplicator = ecto.Passthrough()
-        self._R_duplicator = ecto.Passthrough()
-        self._T_duplicator = ecto.Passthrough()
-        self._depth_duplicator = ecto.Passthrough()
+    def declare_io(self, p, i, o):
+        o.forward('points', cell_name='point_merger', cell_key='points')
+        o.forward('descriptors', cell_name='point_merger', cell_key='descriptors')
 
-    def expose_inputs(self):
-        return {}
-
-    def expose_outputs(self):
-        return {'points': self._point_merger['points'],
-                'descriptors': self._point_merger['descriptors']}
-
-    def expose_parameters(self):
-        return {}
+    def configure(self, p, i, o):
+        self.feature_descriptor = self.feature_descriptor()
+        self.depth_to_3d_sparse = calib.DepthTo3dSparse()
+        self.keypoints_to_mat = tod_training.KeypointsToMat()
+        self.camera_to_world = self.camera_to_world()
+        self.model_stacker = self.model_stacker()
+        self.point_merger = self.point_merger()
+        self.prepare_for_g2o = self.prepare_for_g2o(search_json_params=p.json_search_params)
+        self.rescale_depth = self.rescale_depth() #this is for SXGA mode scale handling.
+        self.keypoint_validator = self.keypoint_validator()
+        self.g2o = self.g2o()
+        self.observation_passthrough = self.observation_passthrough()
+        self.image_duplicator = self.image_duplicator()
+        self.mask_duplicator = self.mask_duplicator()
+        self.K_duplicator = self.K_duplicator()
+        self.R_duplicator = self.R_duplicator()
+        self.T_duplicator = self.T_duplicator()
+        self.depth_duplicator = self.depth_duplicator()
+        
+        self._display = p.display
 
     def connections(self):
-        observation_dealer = ecto.Dealer(typer=self._input_cell.inputs.at('observation'), iterable=self._obs_ids)
-        sub_connections = [ observation_dealer[:] >> self._input_cell['observation'] ]
+        sub_connections = [ self.source['image'] >> self.image_duplicator['in'],
+                           self.source['mask'] >> self.mask_duplicator['in'],
+                           self.source['depth'] >> self.depth_duplicator['in'],
+                           self.source['K'] >> self.K_duplicator['in'],
+                           self.source['R'] >> self.R_duplicator['in'],
+                           self.source['T'] >> self.T_duplicator['in'] ]
 
         # connect the input
-        sub_connections += [ self._input_cell['image'] >> self._image_duplicator['in'],
-                           self._input_cell['mask'] >> self._mask_duplicator['in'],
-                           self._input_cell['depth'] >> self._depth_duplicator['in'],
-                           self._input_cell['K'] >> self._K_duplicator['in'],
-                           self._input_cell['R'] >> self._R_duplicator['in'],
-                           self._input_cell['T'] >> self._T_duplicator['in'] ]
-
-        sub_connections += [self._image_duplicator[:] >> self._feature_descriptor['image'],
-                           self._image_duplicator[:] >> self._rescale_depth['image'],
-                           self._mask_duplicator[:] >> self._feature_descriptor['mask'],
-                           self._depth_duplicator[:] >> self._rescale_depth['depth'],
-                           self._K_duplicator[:] >> self._depth_to_3d_sparse['K']]
+        sub_connections += [self.image_duplicator[:] >> self.feature_descriptor['image'],
+                           self.image_duplicator[:] >> self.rescale_depth['image'],
+                           self.mask_duplicator[:] >> self.feature_descriptor['mask'],
+                           self.depth_duplicator[:] >> self.rescale_depth['depth'],
+                           self.K_duplicator[:] >> self.depth_to_3d_sparse['K']]
         # Make sure the keypoints are in the mask and with a valid depth
-        sub_connections += [self._feature_descriptor['keypoints', 'descriptors'] >>
-                            self._keypoint_validator['keypoints', 'descriptors'],
-                            self._K_duplicator[:] >> self._keypoint_validator['K'],
-                            self._mask_duplicator[:] >> self._keypoint_validator['mask'],
-                            self._rescale_depth['depth'] >> self._keypoint_validator['depth'] ]
+        sub_connections += [self.feature_descriptor['keypoints', 'descriptors'] >>
+                            self.keypoint_validator['keypoints', 'descriptors'],
+                            self.K_duplicator[:] >> self.keypoint_validator['K'],
+                            self.mask_duplicator[:] >> self.keypoint_validator['mask'],
+                            self.rescale_depth['depth'] >> self.keypoint_validator['depth'] ]
         # transform the keypoints/depth into 3d points
-        sub_connections += [ self._keypoint_validator['points'] >> self._depth_to_3d_sparse['points'],
-                        self._rescale_depth['depth'] >> self._depth_to_3d_sparse['depth'],
-                        self._R_duplicator[:] >> self._camera_to_world['R'],
-                        self._T_duplicator[:] >> self._camera_to_world['T'],
-                        self._depth_to_3d_sparse['points3d'] >> self._camera_to_world['points']]
+        sub_connections += [ self.keypoint_validator['points'] >> self.depth_to_3d_sparse['points'],
+                        self.rescale_depth['depth'] >> self.depth_to_3d_sparse['depth'],
+                        self.R_duplicator[:] >> self.camera_to_world['R'],
+                        self.T_duplicator[:] >> self.camera_to_world['T'],
+                        self.depth_to_3d_sparse['points3d'] >> self.camera_to_world['points']]
         # store all the info
-        sub_connections += [ self._camera_to_world['points'] >> self._model_stacker['points3d'],
-                        self._keypoint_validator['points'] >> self._model_stacker['points'],
-                        self._keypoint_validator['descriptors'] >> self._model_stacker['descriptors'],
-                        self._K_duplicator[:] >> self._model_stacker['K'],
-                        self._R_duplicator[:] >> self._model_stacker['R'],
-                        self._T_duplicator[:] >> self._model_stacker['T'] ]
+        sub_connections += [ self.camera_to_world['points'] >> self.model_stacker['points3d'],
+                        self.keypoint_validator['points'] >> self.model_stacker['points'],
+                        self.keypoint_validator['descriptors'] >> self.model_stacker['descriptors'],
+                        self.K_duplicator[:] >> self.model_stacker['K'],
+                        self.R_duplicator[:] >> self.model_stacker['R'],
+                        self.T_duplicator[:] >> self.model_stacker['T'] ]
 
         if self._display:
             mask_view = highgui.imshow(name="mask")
-            depth_view = highgui.imshow(name="Depth");
+            depth_view = highgui.imshow(name="depth");
 
-            sub_connections += [ self._mask_duplicator[:] >> mask_view['image'],
-                            self._depth_duplicator[:] >> depth_view['image']]
+            sub_connections += [ self.mask_duplicator[:] >> mask_view['image'],
+                            self.depth_duplicator[:] >> depth_view['image']]
             # draw the keypoints
             keypoints_view = highgui.imshow(name="Keypoints")
             draw_keypoints = features2d.DrawKeypoints()
-            sub_connections += [ self._image_duplicator[:] >> draw_keypoints['image'],
-                            self._feature_descriptor['keypoints'] >> draw_keypoints['keypoints'],
+            sub_connections += [ self.image_duplicator[:] >> draw_keypoints['image'],
+                            self.feature_descriptor['keypoints'] >> draw_keypoints['keypoints'],
                             draw_keypoints['image'] >> keypoints_view['image']]
 
-        plasm = ecto.Plasm()
-        plasm.connect(sub_connections)
-        self._executer = Executer(plasm=plasm, niter=0, outputs={'points3d':self._model_stacker,
-                            'points':self._model_stacker, 'descriptors':self._model_stacker, 'K': self._model_stacker,
-                            'quaternions': self._model_stacker, 'Ts': self._model_stacker})
+        self.source_plasm.connect(sub_connections)
+        executer = ecto_X.Executer(plasm=self.source_plasm, niter=0, outputs={'points3d':self.model_stacker,
+                            'points':self.model_stacker, 'descriptors':self.model_stacker, 'K': self.model_stacker,
+                            'quaternions': self.model_stacker, 'Ts': self.model_stacker})
 
-        connections = [ self._executer['K', 'quaternions', 'Ts'] >> self._g2o['K', 'quaternions', 'Ts'],
-                       self._executer['points3d', 'points', 'descriptors'] >>
-                       self._prepare_for_g2o['points3d', 'points', 'descriptors'],
-                       self._prepare_for_g2o['x', 'y', 'disparity', 'points'] >> self._g2o['x', 'y', 'disparity', 'points'],
-                       self._g2o['points'] >> self._point_merger['points'],
-                       self._prepare_for_g2o['ids'] >> self._point_merger['ids'],
-                       self._executer['descriptors'] >> self._point_merger['descriptors'] ]
+        connections = [ executer['K', 'quaternions', 'Ts'] >> self.g2o['K', 'quaternions', 'Ts'],
+                       executer['points3d', 'points', 'descriptors'] >>
+                       self.prepare_for_g2o['points3d', 'points', 'descriptors'],
+                       self.prepare_for_g2o['x', 'y', 'disparity', 'points'] >> self.g2o['x', 'y', 'disparity', 'points'],
+                       self.g2o['points'] >> self.point_merger['points'],
+                       self.prepare_for_g2o['ids'] >> self.point_merger['ids'],
+                       executer['descriptors'] >> self.point_merger['descriptors'] ]
 
         return connections

@@ -99,11 +99,8 @@ namespace
       cv::Mat clean_descriptors = cv::Mat(descriptors.size(), descriptors.type());
       cv::Mat clean_points = cv::Mat(1, n_points, CV_32FC3);
 
-      cv::Mat_<uchar> mask(in_mask.size());
-      if (in_mask.depth() == (CV_8U))
-        mask = in_mask;
-      else
-        in_mask.convertTo(mask, CV_8U);
+      cv::Mat_<uchar> mask;
+      in_mask.convertTo(mask, CV_8U);
       // Erode just because of the possible rescaling
       cv::erode(mask, mask, cv::Mat(), cv::Point(-1, -1), 3);
 

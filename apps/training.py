@@ -24,7 +24,6 @@ DISPLAY = True
 if __name__ == '__main__':
 
     parser = ObjectRecognitionParser()
-    add_db_arguments(parser)
 
     parser.add_argument('-c', help='Config file')
 
@@ -41,7 +40,7 @@ if __name__ == '__main__':
             pipeline_params.append(value)
 
     # initialize the DB
-    if db_dict['type'].lower()=='couchdb':
+    if db_dict['type'].lower() == 'couchdb':
         db = dbtools.init_object_databases(couchdb.Server(db_url))
 
     for object_id in params['object_ids']:
@@ -52,25 +51,35 @@ if __name__ == '__main__':
             print 'no observations found for object %s' % object_id
             continue
 
+        # define the input and connect to it
+        source_plasm = ecto.Plasm()
+        observation_dealer = ecto.Dealer(typer=db_reader.inputs.at('observation'), iterable=obs_ids)
+        source_plasm.connect(observation_dealer[:] >> db_reader['observation'])
+        
+        main_plasm = ecto.Plasm()
         # connect to the model computation
         for pipeline_param in pipeline_params:
-            plasm = ecto.Plasm()
-            trainer = TodTrainer(plasm, db_reader, obs_ids, pipeline_param, DISPLAY)
-    
-            # persist to the DB
-            db_writer = tod_training.ModelInserter("db_writer", collection_models=args.db_collection,
+            #define the trainer
+            if pipeline_param['type'] == 'TOD':
+                trainer = TodTrainer(json_search_params=json_helper.dict_to_cpp_json_str(pipeline_param['search']),
+                                     json_feature_descriptor_params=json_helper.dict_to_cpp_json_str(pipeline_param['feature_descriptor']),
+                                     display=DISPLAY, source=db_reader, source_plasm=source_plasm)
+
+            # define the output
+            db_writer = tod_training.ModelInserter("db_writer", collection_models=db_dict['collection'],
                                         db_json_params=json_helper.dict_to_cpp_json_str(db_dict), object_id=object_id,
                                         model_json_params=json_helper.dict_to_cpp_json_str(pipeline_param))
             orb_params = None
             # TODO
             #db_writer.add_misc(pipeline_param)
+
+            # connect the output
+            main_plasm.connect(trainer['points', 'descriptors'] >> db_writer['points', 'descriptors'])
     
-            plasm.connect(trainer['points', 'descriptors'] >> db_writer['points', 'descriptors'])
+        if DEBUG:
+            #render the DAG with dot
+            print main_plasm.viz()
+            ecto.view_plasm(main_plasm)
     
-            if DEBUG:
-                #render the DAG with dot
-                print plasm.viz()
-                ecto.view_plasm(plasm)
-    
-            sched = ecto.schedulers.Singlethreaded(plasm)
-            sched.execute(niter=1)
+        sched = ecto.schedulers.Singlethreaded(main_plasm)
+        sched.execute(niter=1)
