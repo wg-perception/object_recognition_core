@@ -6,9 +6,6 @@
  */
 
 #include <ecto/ecto.hpp>
-#include "surfels.h"
-#include "surfel_conversion.h"
-
 #include "boost/foreach.hpp"
 #include "pcl/filters/passthrough.h"
 #include "pcl/filters/impl/passthrough.hpp"
@@ -89,6 +86,7 @@ namespace object_recognition
             *mcloud += *cloud;
             result = mcloud;
           }
+
           return result;
         }
         CloudOutT& previous;

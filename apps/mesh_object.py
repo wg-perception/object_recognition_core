@@ -67,14 +67,14 @@ def simple_mesh_session(dbs, session, args):
     outlier_removal = ecto_pcl.StatisticalOutlierRemoval('Outlier Removal', mean_k=2, stddev=2)
 
     source, sink = ecto.EntangledPair(value=accum.inputs.at('view'), source_name='Feedback Cloud', sink_name='Feedback Cloud')
-    ply_writer = ecto_pcl.PLYWriter()
+    ply_writer = ecto.If('PlyWriter', cell=ecto_pcl.PLYWriter(filename_format='cloud_%s_%%05d.ply' % str(session.id)))
+    ply_writer.inputs.__test__ = False
 
     plasm.connect(source[:] >> accum['previous'],
                   point_cloud_transform['view'] >> accum['view'],
-                          accum[:] >> voxel_grid[:],
-                          voxel_grid[:] >> outlier_removal[:],
-                         # outlier_removal[:] >> normals[:],
-                          outlier_removal[:] >> (sink[:], viewer[:], ply_writer[:]),
+                  accum[:] >> voxel_grid[:],
+                  voxel_grid[:] >> outlier_removal[:],
+                  outlier_removal[:] >> (sink[:], viewer[:], ply_writer['input']),
     )
 
     if args.visualize:
@@ -85,6 +85,9 @@ def simple_mesh_session(dbs, session, args):
           )
     sched = ecto.schedulers.Singlethreaded(plasm)
     sched.execute()
+
+    ply_writer.inputs.__test__ = True
+    ply_writer.process()
 
 if "__main__" == __name__:
     args = parse_args()
