@@ -23,7 +23,8 @@ pipeline1:
     ratio: 0.8
     type: 'LSH'
   guess:
-    n_ransac: 1000
+    n_ransac_iterations: 1000
+    min_inliers: 15
 
 # The list of object_ids to analyze
-object_ids: [ "e2449bdc43fd6d9dd646fcbcd00f89a7", "e2449bdc43fd6d9dd646fcbcd00f89a7" ]
+object_ids: [ "e2449bdc43fd6d9dd646fcbcd00d8197" ]

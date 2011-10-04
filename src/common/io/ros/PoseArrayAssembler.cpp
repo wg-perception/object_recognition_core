@@ -79,7 +79,7 @@ namespace object_recognition
       Rs_ = inputs["Rs"];
       Ts_ = inputs["Ts"];
       image_message_ = inputs["image_message"];
-      object_ids_ = inputs["descriptors"];
+      object_ids_ = inputs["object_ids"];
     }
 
     int

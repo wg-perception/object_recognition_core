@@ -60,9 +60,9 @@ namespace object_recognition
       static void
       declare_params(ecto::tendrils& p)
       {
-        p.declare<std::string>("collection_models", "The collection where the models are stored.", "models");
+        p.declare<std::string>("collection_models", "The collection where the models are stored.").required();
         p.declare<std::string>("db_json_params", "A JSON string describing the db to use").required();
-        p.declare<boost::python::object>("object_ids", "The list of objects ids we should consider.\n").required();
+        p.declare<boost::python::object>("model_ids", "The list of model ids we should consider.\n").required();
         // We can do radius and/or ratio test
         std::stringstream ss;
         ss << "JSON string that can contain the following fields: \"radius\" (for epsilon nearest neighbor search), "
@@ -117,25 +117,25 @@ namespace object_recognition
         }
 
         // Load the list of Object to study
-        const boost::python::object & python_object_ids = params.get<boost::python::object>("object_ids");
-        boost::python::stl_input_iterator<std::string> begin(python_object_ids), end;
-        std::vector<ObjectId> object_ids;
-        std::copy(begin, end, std::back_inserter(object_ids));
+        const boost::python::object & python_model_ids = params.get<boost::python::object>("model_ids");
+        boost::python::stl_input_iterator<std::string> begin(python_model_ids), end;
+        std::vector<ObjectId> model_ids;
+        std::copy(begin, end, std::back_inserter(model_ids));
 
         // load the descriptors from the DB
         db_future::ObjectDb db(params.get<std::string>("db_json_params"));
         collection_models_ = params.get<std::string>("collection_models");
-        features_3d_.reserve(object_ids.size());
+        features_3d_.reserve(model_ids.size());
         std::vector<cv::Mat> all_descriptors;
 
         unsigned int object_opencv_id = 0;
-        BOOST_FOREACH(const ObjectId & object_id, object_ids)
+        BOOST_FOREACH(const ObjectId & model_id, model_ids)
             {
               db_future::DocumentView query;
               query.set_db(db);
               query.set_collection(collection_models_);
-              query.AddView("CouchDB", db_future::couch::WhereDocId(object_id));
-              std::cout << "object_id: " << object_id << std::endl;
+              query.AddView("CouchDB", db_future::couch::WhereDocId(model_id));
+              std::cout << "model_id: " << model_id << std::endl;
               // TODO be robust to missing entries
               for (db_future::DocumentView view = query.begin(), view_end = db_future::DocumentView::end();
                   view != view_end; ++view)
@@ -146,7 +146,7 @@ namespace object_recognition
                 all_descriptors.push_back(descriptors);
 
                 // Store the id conversion
-                id_correspondences_.insert(std::pair<ObjectOpenCVId, ObjectId>(object_opencv_id, object_id));
+                id_correspondences_.insert(std::pair<ObjectOpenCVId, ObjectId>(object_opencv_id, model_id));
                 ++object_opencv_id;
 
                 // Store the 3d positions
@@ -189,8 +189,8 @@ namespace object_recognition
                   max_span_sq = (max_x - min_x) * (max_x - min_x) + (max_y - min_y) * (max_y - min_y)
                                 + (max_z - min_z) * (max_z - min_z);
                 }
-                spans_[object_id] = std::sqrt(max_span_sq);
-                std::cout << "span" << spans_[object_id] << std::endl;
+                spans_[model_id] = std::sqrt(max_span_sq);
+                std::cout << "span: " << spans_[model_id] << " meters" << std::endl;
               }
             }
         matcher_->add(all_descriptors);

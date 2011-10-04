@@ -3,11 +3,13 @@
 Module defining the TOD detector to find objects in a scene
 """
 
+import couchdb
 import ecto
 from feature_descriptor import FeatureDescriptor
 from ecto_object_recognition import tod_detection
 from ecto_opencv import features2d, highgui
 from object_recognition.common.utils import json_helper
+from object_recognition import dbtools, models
 
 ########################################################################################################################
 
@@ -17,13 +19,26 @@ class TodDetector(ecto.BlackBox):
     guess_generator = tod_detection.GuessGenerator
     image_duplicator = ecto.Passthrough
 
-    def __init__(self, **kwargs):
-        self._db_params = kwargs.pop('db_params')
-        self._tod_params = kwargs.pop('feature_descriptor_params')
-        self._guess_params = kwargs.pop('guess_params')
-        self._search_params = kwargs.pop('search_params')
-        self._object_ids = kwargs.pop('object_ids')
-        self._display = kwargs.pop('display')
+    def __init__(self, db_params, collection, feature_descriptor_params, guess_params, search_params, object_ids, display = False,
+                 **kwargs):
+        self._db_params = db_params
+        self._collection = collection
+        self._tod_params = feature_descriptor_params
+        self._guess_params = guess_params
+        self._search_params = search_params
+        self._object_ids = object_ids
+        
+        
+        # initialize the DB
+        if db_params['type'].lower() == 'couchdb':
+            db = dbtools.init_object_databases(couchdb.Server(db_params['root']))
+
+        self._model_ids = []
+        for object_id in object_ids:
+            for model_id in models.find_model_for_object(db, object_id, 'TOD'):
+                self._model_ids.extend([model_id])
+
+        self._display = display
 
         ecto.BlackBox.__init__(self, **kwargs)
 
@@ -43,8 +58,9 @@ class TodDetector(ecto.BlackBox):
     def configure(self, p, i, o):
         self.feature_descriptor = FeatureDescriptor(json_helper.dict_to_cpp_json_str(self._tod_params))
         self.descriptor_matcher = tod_detection.DescriptorMatcher("Matcher",
+                                collection_models = self._collection,
                                 db_json_params=json_helper.dict_to_cpp_json_str(self._db_params),
-                                object_ids=self._object_ids,
+                                model_ids=self._model_ids,
                                 search_json_params=json_helper.dict_to_cpp_json_str(self._search_params))
         self.guess_generator = tod_detection.GuessGenerator("Guess Gen",
                                                 json_params=json_helper.dict_to_cpp_json_str(self._guess_params))
