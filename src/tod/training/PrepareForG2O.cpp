@@ -117,8 +117,6 @@ namespace object_recognition
         std::vector<cv::Mat> descriptors_all;
         inputs["descriptors"] >> descriptors_all;
         size_t n_images = descriptors_all.size();
-        std::cout << "G2O: " << n_images << " images " << in_points_->size() << " " << in_points3d_->size()
-                  << std::endl;
 
         matcher_->clear();
         matcher_->add(descriptors_all);
@@ -141,14 +139,22 @@ namespace object_recognition
         std::vector<std::vector<ImageIdIndex> > id_to_index_set(n_points_all);
         for (size_t image_id = 0; image_id < n_images; ++image_id)
         {
+          // Add some verbosity as this step is slow
+          if (image_id == 0)
+            std::cout << "Prepare G2O: processing image ";
+          else
+            for (unsigned int i = 0; i < 2 * std::log10(n_images) + 1; ++i)
+              std::cout << "\b";
+          std::cout << std::setfill(' ') << std::setw(std::log10(n_images) + 1) << (image_id + 1) << "/" << n_images;
+          std::flush(std::cout);
+
           // Find the nearest neighbors of all the points in the current image
           const cv::Mat & descriptors = descriptors_all[image_id];
-          //const cv::Mat_<cv::Vec3f> & points3d = (*in_points3d_)[image_id];
+          const cv::Mat_<cv::Vec3f> & points3d = (*in_points3d_)[image_id];
 
           std::vector<std::vector<cv::DMatch> > matches_all;
           matcher_->radiusMatch(descriptors, matches_all, radius_);
           size_t n_points = matches_all.size();
-          std::cout << "Prepare G2O: processing image " << image_id << "/" << n_images << std::endl;
 
           const boost::dynamic_bitset<> & is_done = is_done_all[image_id];
 
@@ -157,7 +163,7 @@ namespace object_recognition
             // If we've matched the point before, no need to do anything
             if (is_done[descriptor_id])
               continue;
-            //const cv::Vec3f & point1 = points3d.at<cv::Vec3f>(0, descriptor_id);
+            const cv::Vec3f & point1 = points3d.at<cv::Vec3f>(0, descriptor_id);
             BOOST_FOREACH(const cv::DMatch & match, matches_all[descriptor_id])
                 {
                   if (match.imgIdx == int(image_id))
@@ -168,12 +174,13 @@ namespace object_recognition
                   else
                   {
                     // TODO fix the following with some RANSAC probably
-                    /*// make sure the matches are also close to each other physically
-                     const cv::Vec3f & point2 = (*in_points3d_)[match.imgIdx].at<cv::Vec3f>(0, match.trainIdx);
-                     cv::Vec3f diff = point1 - point2;
-                     float norm = diff.val[0] * diff.val[0] + diff.val[1] * diff.val[1] + diff.val[2] * diff.val[2];
-                     if (norm > 0.01 * 0.01)
-                     continue;*/
+                    // make sure the matches are also close to each other physically
+                    const cv::Vec3f & point2 = (*in_points3d_)[match.imgIdx].at<cv::Vec3f>(0, match.trainIdx);
+                    cv::Vec3f diff = point1 - point2;
+                    float squared_norm = diff.val[0] * diff.val[0] + diff.val[1] * diff.val[1]
+                                         + diff.val[2] * diff.val[2];
+                    if (squared_norm > 0.005 * 0.005)
+                      continue;
                     continue;
                   }
 
@@ -184,6 +191,7 @@ namespace object_recognition
             ++id;
           }
         }
+        std::cout << std::endl;
 
         // Fill the point data
         size_t n_id = id - 1;
