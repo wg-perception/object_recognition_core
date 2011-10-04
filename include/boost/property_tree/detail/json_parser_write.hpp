@@ -12,6 +12,7 @@
 
 #include <boost/property_tree/ptree.hpp>
 #include <boost/next_prior.hpp>
+#include <boost/lexical_cast.hpp>
 #include <string>
 #include <ostream>
 #include <iomanip>
@@ -58,6 +59,13 @@ namespace boost { namespace property_tree { namespace json_parser
         return result;
     }
 
+    inline bool test_is_numeric(const std::string& str) {
+        std::stringstream conv(str);
+        double tmp;
+        conv >> tmp;
+        return conv.eof();
+    }
+
     template<class Ptree>
     void write_json_helper(std::basic_ostream<typename Ptree::key_type::value_type> &stream, 
                            const Ptree &pt, 
@@ -73,12 +81,14 @@ namespace boost { namespace property_tree { namespace json_parser
             
             // Write value
             Str data = create_escapes(pt.template get_value<Str>(), stream.getloc());
-            std::istringstream val_str(data);
-            double val;
-            if (val_str >> val)
+            if(test_is_numeric(data))
+            {
               stream << data;
+            }
             else
+            {
               stream << Ch('"') << data << Ch('"');
+            }
 
         }
         else if (indent > 0 && pt.count(Str()) == pt.size())
