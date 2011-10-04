@@ -33,6 +33,10 @@ pytest(test_common_io_ros_sink)
 pytest(test_common_io_source_interface)
 pytest(test_common_io_source_creation)
 
+# TOD tests
+pytest(test_tod_training)
+pytest(test_tod_detection)
+
 #these check that atleast the help completes correctly
 pytest(test_capture_help)
 pytest(test_upload_help)
