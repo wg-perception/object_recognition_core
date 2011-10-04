@@ -19,6 +19,7 @@ ectomodule(reconstruction
   SurfelReconstruction.cpp
   PointCloudTransform.cpp
   PointCloudAccumulator.cpp
+  PointCloudMesh.cpp
   )
 
 set_target_properties(reconstruction_ectomodule

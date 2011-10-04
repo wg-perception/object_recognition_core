@@ -36,6 +36,7 @@ pytest(test_common_io_source_creation)
 #these check that atleast the help completes correctly
 pytest(test_capture_help)
 pytest(test_upload_help)
+pytest(test_training_help)
 
 desktop_test(view_observations)
 

@@ -68,13 +68,14 @@ def simple_mesh_session(dbs, session, args):
 
     source, sink = ecto.EntangledPair(value=accum.inputs.at('view'), source_name='Feedback Cloud', sink_name='Feedback Cloud')
     ply_writer = ecto.If('PlyWriter', cell=ecto_pcl.PLYWriter(filename_format='cloud_%s_%%05d.ply' % str(session.id)))
+    mesh_writer = ecto.If('MeshWriter', cell=reconstruction.PointCloudMesh())
     ply_writer.inputs.__test__ = False
-
+    mesh_writer.inputs.__test__ = False
     plasm.connect(source[:] >> accum['previous'],
                   point_cloud_transform['view'] >> accum['view'],
                   accum[:] >> voxel_grid[:],
                   voxel_grid[:] >> outlier_removal[:],
-                  outlier_removal[:] >> (sink[:], viewer[:], ply_writer['input']),
+                  outlier_removal[:] >> (sink[:], viewer[:], ply_writer['input'],mesh_writer['input']),
     )
 
     if args.visualize:
@@ -87,7 +88,10 @@ def simple_mesh_session(dbs, session, args):
     sched.execute()
 
     ply_writer.inputs.__test__ = True
+    mesh_writer.inputs.__test__ = True
+
     ply_writer.process()
+    mesh_writer.process()
 
 if "__main__" == __name__:
     args = parse_args()
