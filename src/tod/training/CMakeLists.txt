@@ -2,7 +2,6 @@
 ectomodule(tod_training
     CameraToWorld.cpp
     KeypointsToMat.cpp
-    KeypointValidator.cpp
     ModelInserter.cpp
     ModelStacker.cpp
     module.cpp
