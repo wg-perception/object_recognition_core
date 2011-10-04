@@ -1,8 +1,11 @@
+#include <string>
+
 #include <gtest/gtest.h>
 
 #include <object_recognition/db/db.h>
 #include <object_recognition/db/parameters/couch.hpp>
 #include <boost/property_tree/json_parser.hpp>
+#include <boost/property_tree/ptree.hpp>
 
 const char* db_url = "http://localhost:5984";
 using namespace object_recognition::db_future;
@@ -300,4 +303,26 @@ TEST(OR_db, ObjectDbCopy)
   db.Status(s1);
   db2.Status(s2);
   EXPECT_EQ(s1, s2);
+}
+
+TEST(OR_db, JSONReadWrite)
+{
+  boost::property_tree::ptree params1, params2;
+  std::stringstream ssparams1, ssparams2, ssparams3;
+  ssparams1 << "{\"num1\":2, \"num2\":3.5, \"str\":\"foo\"}";
+  boost::property_tree::read_json(ssparams1, params1);
+
+  // Write it to a JSON string and make sure numbers are persisted as numbers
+  boost::property_tree::write_json(ssparams2, params1);
+  std::string new_json = ssparams2.str();
+  EXPECT_GE(new_json.find("\"2\""), new_json.size());
+  EXPECT_GE(new_json.find("\"3.5\""), new_json.size());
+  EXPECT_LT(new_json.find("\"foo\""), new_json.size());
+
+  // Make sure we can read it back
+  ssparams3 << ssparams2.str();
+  boost::property_tree::read_json(ssparams3, params2);
+  EXPECT_EQ(params1.get<std::string>("num1"), params2.get<std::string>("num1"));
+  EXPECT_EQ(params1.get<std::string>("num2"), params2.get<std::string>("num2"));
+  EXPECT_EQ(params1.get<std::string>("str"), params2.get<std::string>("str"));
 }

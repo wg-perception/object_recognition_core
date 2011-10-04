@@ -88,6 +88,19 @@ namespace object_recognition
         return boost::str(boost::format(STRINGYFY(
             function(doc)
             {
+              if(doc._id == "%s")
+                emit(null,doc);
+            }
+        ))
+                % object_id);
+      }
+
+      std::string
+      WhereObjectId(const std::string & object_id)
+      {
+        return boost::str(boost::format(STRINGYFY(
+            function(doc)
+            {
               if(doc.object_id == "%s")
                 emit(null,doc);
             }

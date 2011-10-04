@@ -66,10 +66,14 @@ namespace object_recognition
     {
       // Utilities for creating queries for CouchDB
 #define STRINGYFY(A) #A
-      std::string WhereDocId(const std::string & object_id);
+      std::string
+      WhereDocId(const std::string & object_id);
 
-      std::string WhereSessionId(const std::string & object_id);
+      std::string
+      WhereObjectId(const std::string & object_id);
 
+      std::string
+      WhereSessionId(const std::string & object_id);
     }
   }
 }

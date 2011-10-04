@@ -11,7 +11,7 @@ import sys
 import time
 from ecto_object_recognition import tod_detection
 from object_recognition.tod.feature_descriptor import FeatureDescriptor
-from object_recognition import dbtools, models
+from object_recognition import dbtools
 from object_recognition.common.io.ros.source import KinectReader, BagReader
 from object_recognition.common.filters.masker import Masker
 from object_recognition.common.io.sink import Sink
@@ -33,16 +33,12 @@ if __name__ == '__main__':
     parser = ArgumentParser()
 
     # add arguments for the source and sink
-    Source.add_arguments(parser)
     Sink.add_arguments(parser)
 
     parser.add_argument('--config_file' , '-c', help='Config file')
 
     # parse the arguments
     args = parser.parse_args()
-
-    source = Source.parse_arguments(args)
-    sink = Sink.parse_arguments(args)
 
     # TODO handle this properly...
     ecto_ros.init(sys.argv, "ecto_node")
@@ -55,6 +51,10 @@ if __name__ == '__main__':
     params = yaml.load(open(args.config_file))
     db_dict = params['db']
     db_url = db_dict['root']
+
+    
+    source = Source.parse_arguments(params['source'])
+    sink = Sink.parse_arguments(args)
 
     pipeline_params = []
     for key , value in params.iteritems():
@@ -77,7 +77,9 @@ if __name__ == '__main__':
     # define the different pipelines
     for pipeline_param in pipeline_params:
         if pipeline_param['type'] == 'TOD':
-            detector = TodDetector(db_params=db_dict, feature_descriptor_params=pipeline_param['feature_descriptor'],
+            # get the model ids
+            detector = TodDetector(collection = db_dict['collection'], db_params=db_dict,
+                                   feature_descriptor_params=pipeline_param['feature_descriptor'],
                                    guess_params=pipeline_param['guess'], search_params=pipeline_param['search'],
                                    object_ids=params['object_ids'], display=DISPLAY)
 
