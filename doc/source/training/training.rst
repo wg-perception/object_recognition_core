@@ -1,5 +1,6 @@
 Training
 ========
+.. highlight:: ectosh
 
 .. contents::
 
