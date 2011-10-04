@@ -39,9 +39,9 @@ class Source(object):
     def add_arguments(parser):
         #--ros_kinect is the default.
         sources = [x for x in dir(SourceTypes) if not x.startswith('__')]
-        parser.add_argument('--source_type', dest='source_type', choices=(sources), default=SourceTypes.ros_kinect,
+        parser.add_argument('--source_type', dest='source_type', choices=(sources),
                             help='The source type to use. default(%(default)s)')
-        parser.add_argument('--ros_bag', dest='ros_bag', type=str, default=None,
+        parser.add_argument('--ros_bag', dest='ros_bag', type=str,
                             help='The path of a ROS bag to analyze. '
                             'If this is specified it will automatically use'
                             'the source type of, `ros_bag`')
@@ -55,14 +55,16 @@ class Source(object):
             dic = obj
         else:
             dic = obj.__dict__
+            dic['bag'] = dic.pop('ros_bag')
+            dic['type'] = dic.pop('source_type')
         source = None
-        if dic.get('ros_bag', None):
+        if dic.get('bag', None):
             import os.path as path
-            if not path.exists(dic['ros_bag']):
-                raise RuntimeError("You must supply a valid path to a bag file: %s does not exist." % dic['ros_bag'])
-            source = Source.create_source(source_type=SourceTypes.ros_bag, bag=dic['ros_bag'])
-        elif dic.get('source_type', None):
-            source = Source.create_source(source_type=dic['source_type'])
+            if not path.exists(dic['bag']):
+                raise RuntimeError("You must supply a valid path to a bag file: %s does not exist." % dic['bag'])
+            source = Source.create_source(source_type=SourceTypes.ros_bag, bag=dic['bag'])
+        elif dic.get('type', None):
+            source = Source.create_source(source_type=dic['type'])
         else:
             raise RuntimeError("Could not create a source from the given args! %s" % str(dic))
         return _assert_source_interface(source)
