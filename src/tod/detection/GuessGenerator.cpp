@@ -74,10 +74,11 @@ namespace object_recognition
     struct GuessGenerator
     {
       static void
-      declare_params(tendrils& p)
+      declare_params(ecto::tendrils& params)
       {
-        p.declare<std::string>("json_params", "The parameters, as a JSON string.\n\"min_inliers\": "
-                               "Minimum number of inliers. \n\"n_ransac_iterations\": Number of RANSAC iterations.\n");
+        params.declare<unsigned int>("min_inliers", "Minimum number of inliers", 15);
+        params.declare<unsigned int>("n_ransac_iterations", "Number of RANSAC iterations.", 1000);
+        params.declare<float>("sensor_error", "The error (in meters) from the Kinect", 0.01);
       }
 
       static void
@@ -102,16 +103,11 @@ namespace object_recognition
       void
       configure(const tendrils& params, const tendrils& inputs, const tendrils& outputs)
       {
-        boost::property_tree::ptree param_tree;
-        std::stringstream ssparams;
-        ssparams << params.get<std::string>("json_params");
-        boost::property_tree::read_json(ssparams, param_tree);
-
-        min_inliers_ = param_tree.get<unsigned int>("min_inliers");
-        n_ransac_iterations_ = param_tree.get<unsigned int>("n_ransac_iterations");
+        min_inliers_ = params.get<unsigned int>("min_inliers");
+        n_ransac_iterations_ = params.get<unsigned int>("n_ransac_iterations");
 
         debug_ = true;
-        sensor_error_ = 0.01;
+        sensor_error_ = params.get<float>("sensor_error");
 
         if (debug_)
         {
@@ -287,6 +283,24 @@ namespace object_recognition
 
                 object_points.InvalidateQueryIndices(query_indices);
                 std::cout << query_indices.size() << " edges deleted" << std::endl;
+
+                // Display the remaining keypoints
+                cv::Mat out_img = initial_image.clone();
+                // Draw the keypoints with a different color per object
+                query_indices.clear();
+                std::vector<int> valid_indices = object_points.valid_indices();
+                std::cout << valid_indices.size() << " valid indices left" << std::endl;
+                BOOST_FOREACH(unsigned int index, valid_indices)
+                      query_indices.push_back(object_points.query_indices(index));
+
+                std::vector<unsigned int>::iterator end = std::unique(query_indices.begin(), query_indices.end());
+                query_indices.resize(end - query_indices.begin());
+                std::vector<cv::KeyPoint> local_keypoints(query_indices.size());
+                for (unsigned int j = 0; j < query_indices.size(); ++j)
+                    local_keypoints[j] = keypoints[query_indices[j]];
+                  cv::drawKeypoints(out_img, local_keypoints, out_img);
+                cv::namedWindow("left keypoints from objects", 0);
+                cv::imshow("left keypoints from objects", out_img);
               }
             }
 

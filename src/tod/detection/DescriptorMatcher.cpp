@@ -42,7 +42,6 @@
 #include <boost/python/stl_iterator.hpp>
 #include <boost/property_tree/json_parser.hpp>
 
-
 #include <opencv2/core/core.hpp>
 #include <opencv2/features2d/features2d.hpp>
 //#include <opencv2/flann/flann.hpp>
@@ -63,6 +62,7 @@ namespace object_recognition
         p.declare<std::string>("collection_models", "The collection where the models are stored.").required();
         p.declare<std::string>("db_json_params", "A JSON string describing the db to use").required();
         p.declare<boost::python::object>("model_ids", "The list of model ids we should consider.\n").required();
+        p.declare<boost::python::object>("object_ids", "The list of model ids we should consider.\n").required();
         // We can do radius and/or ratio test
         std::stringstream ss;
         ss << "JSON string that can contain the following fields: \"radius\" (for epsilon nearest neighbor search), "
@@ -117,10 +117,20 @@ namespace object_recognition
         }
 
         // Load the list of Object to study
-        const boost::python::object & python_model_ids = params.get<boost::python::object>("model_ids");
-        boost::python::stl_input_iterator<std::string> begin(python_model_ids), end;
-        std::vector<ObjectId> model_ids;
-        std::copy(begin, end, std::back_inserter(model_ids));
+        std::vector<ModelId> model_ids;
+        {
+          const boost::python::object & python_model_ids = params.get<boost::python::object>("model_ids");
+          boost::python::stl_input_iterator<std::string> begin(python_model_ids), end;
+          std::copy(begin, end, std::back_inserter(model_ids));
+        }
+
+        // Load the list of Object to study
+        std::vector<ObjectId> object_ids;
+        {
+          const boost::python::object & python_object_ids = params.get<boost::python::object>("object_ids");
+          boost::python::stl_input_iterator<std::string> begin(python_object_ids), end;
+          std::copy(begin, end, std::back_inserter(object_ids));
+        }
 
         // load the descriptors from the DB
         db_future::ObjectDb db(params.get<std::string>("db_json_params"));
@@ -129,70 +139,72 @@ namespace object_recognition
         std::vector<cv::Mat> all_descriptors;
 
         unsigned int object_opencv_id = 0;
-        BOOST_FOREACH(const ObjectId & model_id, model_ids)
+        std::vector<ModelId>::const_iterator model_id = model_ids.begin(), model_id_end = model_ids.end();
+        std::vector<ObjectId>::const_iterator object_id = object_ids.begin();
+        for (; model_id != model_id_end; ++model_id, ++object_id)
+        {
+          db_future::DocumentView query;
+          query.set_db(db);
+          query.set_collection(collection_models_);
+          query.AddView("CouchDB", db_future::couch::WhereDocId(*model_id));
+          std::cout << "object_id: " << *object_id << std::endl;
+          // TODO be robust to missing entries
+          for (db_future::DocumentView view = query.begin(), view_end = db_future::DocumentView::end();
+              view != view_end; ++view)
+          {
+            db_future::Document doc = *view;
+            cv::Mat descriptors;
+            doc.get_attachment<cv::Mat>("descriptors", descriptors);
+            all_descriptors.push_back(descriptors);
+
+            // Store the id conversion
+            id_correspondences_.insert(std::pair<ObjectOpenCVId, ObjectId>(object_opencv_id, *object_id));
+            ++object_opencv_id;
+
+            // Store the 3d positions
+            cv::Mat points3d;
+            doc.get_attachment<cv::Mat>("points", points3d);
+            if (points3d.rows != 1)
+              points3d = points3d.t();
+            features_3d_.push_back(points3d);
+
+            // Compute the span of the object
+            float max_span_sq = 0;
+            cv::MatConstIterator_<cv::Vec3f> i = points3d.begin<cv::Vec3f>(), end = points3d.end<cv::Vec3f>(), j;
+            if (0)
             {
-              db_future::DocumentView query;
-              query.set_db(db);
-              query.set_collection(collection_models_);
-              query.AddView("CouchDB", db_future::couch::WhereDocId(model_id));
-              std::cout << "model_id: " << model_id << std::endl;
-              // TODO be robust to missing entries
-              for (db_future::DocumentView view = query.begin(), view_end = db_future::DocumentView::end();
-                  view != view_end; ++view)
-                  {
-                db_future::Document doc = *view;
-                cv::Mat descriptors;
-                doc.get_attachment<cv::Mat>("descriptors", descriptors);
-                all_descriptors.push_back(descriptors);
-
-                // Store the id conversion
-                id_correspondences_.insert(std::pair<ObjectOpenCVId, ObjectId>(object_opencv_id, model_id));
-                ++object_opencv_id;
-
-                // Store the 3d positions
-                cv::Mat points3d;
-                doc.get_attachment<cv::Mat>("points", points3d);
-                if (points3d.rows != 1)
-                  points3d = points3d.t();
-                features_3d_.push_back(points3d);
-
-                // Compute the span of the object
-                float max_span_sq = 0;
-                cv::MatConstIterator_<cv::Vec3f> i = points3d.begin<cv::Vec3f>(), end = points3d.end<cv::Vec3f>(), j;
-                if (0)
+              // Too slow
+              for (; i != end; ++i)
+              {
+                for (j = i + 1; j != end; ++j)
                 {
-                  // Too slow
-                  for (; i != end; ++i)
-                  {
-                    for (j = i + 1; j != end; ++j)
-                    {
-                      cv::Vec3f vec = *i - *j;
-                      max_span_sq = std::max(
-                          vec.val[0] * vec.val[0] + vec.val[1] * vec.val[1] + vec.val[2] * vec.val[2], max_span_sq);
-                    }
-                  }
+                  cv::Vec3f vec = *i - *j;
+                  max_span_sq = std::max(vec.val[0] * vec.val[0] + vec.val[1] * vec.val[1] + vec.val[2] * vec.val[2],
+                                         max_span_sq);
                 }
-                else
-                {
-                  float min_x = std::numeric_limits<float>::max(), max_x = std::numeric_limits<float>::min(), min_y =
-                      std::numeric_limits<float>::max(), max_y = std::numeric_limits<float>::min(), min_z =
-                      std::numeric_limits<float>::max(), max_z = std::numeric_limits<float>::min();
-                  for (; i != end; ++i)
-                  {
-                    min_x = std::min(min_x, (*i).val[0]);
-                    max_x = std::max(max_x, (*i).val[0]);
-                    min_y = std::min(min_y, (*i).val[1]);
-                    max_y = std::max(max_y, (*i).val[1]);
-                    min_z = std::min(min_z, (*i).val[2]);
-                    max_z = std::max(max_z, (*i).val[2]);
-                  }
-                  max_span_sq = (max_x - min_x) * (max_x - min_x) + (max_y - min_y) * (max_y - min_y)
-                                + (max_z - min_z) * (max_z - min_z);
-                }
-                spans_[model_id] = std::sqrt(max_span_sq);
-                std::cout << "span: " << spans_[model_id] << " meters" << std::endl;
               }
             }
+            else
+            {
+              float min_x = std::numeric_limits<float>::max(), max_x = std::numeric_limits<float>::min(), min_y =
+                  std::numeric_limits<float>::max(), max_y = std::numeric_limits<float>::min(), min_z =
+                  std::numeric_limits<float>::max(), max_z = std::numeric_limits<float>::min();
+              for (; i != end; ++i)
+              {
+                min_x = std::min(min_x, (*i).val[0]);
+                max_x = std::max(max_x, (*i).val[0]);
+                min_y = std::min(min_y, (*i).val[1]);
+                max_y = std::max(max_y, (*i).val[1]);
+                min_z = std::min(min_z, (*i).val[2]);
+                max_z = std::max(max_z, (*i).val[2]);
+              }
+              max_span_sq = (max_x - min_x) * (max_x - min_x) + (max_y - min_y) * (max_y - min_y)
+                            + (max_z - min_z) * (max_z - min_z);
+            }
+            spans_[*object_id] = std::sqrt(max_span_sq);
+            std::cout << "span: " << spans_[*object_id] << " meters" << std::endl;
+          }
+        }
         matcher_->add(all_descriptors);
       }
 

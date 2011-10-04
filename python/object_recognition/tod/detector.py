@@ -27,8 +27,7 @@ class TodDetector(ecto.BlackBox):
         self._guess_params = guess_params
         self._search_params = search_params
         self._object_ids = object_ids
-        
-        
+
         # initialize the DB
         if db_params['type'].lower() == 'couchdb':
             db = dbtools.init_object_databases(couchdb.Server(db_params['root']))
@@ -60,10 +59,13 @@ class TodDetector(ecto.BlackBox):
         self.descriptor_matcher = tod_detection.DescriptorMatcher("Matcher",
                                 collection_models = self._collection,
                                 db_json_params=json_helper.dict_to_cpp_json_str(self._db_params),
-                                model_ids=self._model_ids,
+                                model_ids=self._model_ids, object_ids=self._object_ids,
                                 search_json_params=json_helper.dict_to_cpp_json_str(self._search_params))
-        self.guess_generator = tod_detection.GuessGenerator("Guess Gen",
-                                                json_params=json_helper.dict_to_cpp_json_str(self._guess_params))
+        guess_params = {}
+        for key in [ 'min_inliers', 'n_ransac_iterations', 'sensor_error' ]:
+            if key in self._guess_params:
+                guess_params[key] = self._guess_params[key]
+        self.guess_generator = tod_detection.GuessGenerator("Guess Gen", **guess_params)
 
         self.image_duplicator = ecto.Passthrough()
 
