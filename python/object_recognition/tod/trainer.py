@@ -3,13 +3,12 @@
 Module defining the TOD trainer to train the TOD models
 """
 
-from ecto_object_recognition import capture, tod_training, conversion
+from ecto_object_recognition import capture, tod_training
 from ecto_opencv import calib, features2d, highgui
 from g2o import SBA
 from feature_descriptor import FeatureDescriptor
 import ecto
 import ecto_X
-from object_recognition.common.utils.json_helper import dict_to_cpp_json_str
 
 ########################################################################################################################
 
@@ -18,12 +17,8 @@ class Trainer(ecto.BlackBox):
     Depth can be of a different size, it will be resized to fit image and mask
     """
     feature_descriptor = FeatureDescriptor
-    camera_to_world = tod_training.CameraToWorld
-    model_stacker = tod_training.TodModelStacker
     point_merger = tod_training.PointMerger
     prepare_for_g2o = tod_training.PrepareForG2O
-    rescale_depth = capture.RescaledRegisteredDepth
-    keypoint_validator = conversion.KeypointsValidator
     g2o = SBA
     observation_passthrough = ecto.Passthrough
     image_duplicator = ecto.Passthrough
@@ -51,12 +46,12 @@ class Trainer(ecto.BlackBox):
         self.feature_descriptor = self.feature_descriptor()
         self.depth_to_3d_sparse = calib.DepthTo3dSparse()
         self.keypoints_to_mat = tod_training.KeypointsToMat()
-        self.camera_to_world = self.camera_to_world()
-        self.model_stacker = self.model_stacker()
+        self.camera_to_world = tod_training.CameraToWorld()
+        self.model_stacker = tod_training.TodModelStacker()
         self.point_merger = self.point_merger()
         self.prepare_for_g2o = self.prepare_for_g2o(search_json_params=p.json_search_params)
-        self.rescale_depth = self.rescale_depth() #this is for SXGA mode scale handling.
-        self.keypoint_validator = self.keypoint_validator()
+        self.rescale_depth = capture.RescaledRegisteredDepth() #this is for SXGA mode scale handling.
+        self.keypoint_validator = tod_training.KeypointsValidator()
         self.g2o = self.g2o()
         self.observation_passthrough = self.observation_passthrough()
         self.image_duplicator = self.image_duplicator()
