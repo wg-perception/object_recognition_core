@@ -33,16 +33,12 @@ if __name__ == '__main__':
     parser = ArgumentParser()
 
     # add arguments for the source and sink
-    Source.add_arguments(parser)
     Sink.add_arguments(parser)
 
     parser.add_argument('--config_file' , '-c', help='Config file')
 
     # parse the arguments
     args = parser.parse_args()
-
-    source = Source.parse_arguments(args)
-    sink = Sink.parse_arguments(args)
 
     # TODO handle this properly...
     ecto_ros.init(sys.argv, "ecto_node")
@@ -55,6 +51,10 @@ if __name__ == '__main__':
     params = yaml.load(open(args.config_file))
     db_dict = params['db']
     db_url = db_dict['root']
+
+    
+    source = Source.parse_arguments(params['source'])
+    sink = Sink.parse_arguments(args)
 
     pipeline_params = []
     for key , value in params.iteritems():

@@ -5,7 +5,8 @@ db:
   collection: 'object_recognition'
 
 source:
-  bag: /home/vrabaud/data/robot_power/poster_01.bag
+  type: ros_kinect
+#  bag: /home/vrabaud/data/robot_power/poster_01.bag
 sink:
   type: publisher
 
