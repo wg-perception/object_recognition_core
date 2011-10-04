@@ -59,10 +59,6 @@ namespace object_recognition
       static void
       declare_params(ecto::tendrils& p)
       {
-        p.declare<std::string>("collection_models", "The collection where the models are stored.").required();
-        p.declare<std::string>("db_json_params", "A JSON string describing the db to use").required();
-        p.declare<boost::python::object>("model_ids", "The list of model ids we should consider.\n").required();
-        p.declare<boost::python::object>("object_ids", "The list of model ids we should consider.\n").required();
         // We can do radius and/or ratio test
         std::stringstream ss;
         ss << "JSON string that can contain the following fields: \"radius\" (for epsilon nearest neighbor search), "
@@ -74,14 +70,14 @@ namespace object_recognition
       declare_io(const ecto::tendrils& params, ecto::tendrils& inputs, ecto::tendrils& outputs)
       {
         inputs.declare<cv::Mat>("descriptors", "The descriptors to match to the database");
+        inputs.declare<std::vector<cv::Mat> >("descriptors_db", "The descriptors from the database");
+        inputs.declare<std::vector<cv::Mat> >("features3d_db", "The 3d position of the descriptors from the database");
+        inputs.declare<bool>("do_update", "If true, forces the reload of the search structure");
+
         outputs.declare<std::vector<std::vector<cv::DMatch> > >("matches", "The matches for the input descriptors");
         outputs.declare<std::vector<cv::Mat> >(
             "matches_3d",
             "For each point, the 3d position of the matches, 1 by n matrix with 3 channels for, x, y, and z.");
-        outputs.declare<std::map<ObjectId, float> >("spans",
-                                                    "For each found object, its span based on known features.");
-        outputs.declare<std::map<ObjectOpenCVId, ObjectId> >(
-            "id_correspondences", "Correspondences from OpenCV integer id to the JSON object ids");
       }
 
       void
@@ -116,96 +112,9 @@ namespace object_recognition
           }
         }
 
-        // Load the list of Object to study
-        std::vector<ModelId> model_ids;
-        {
-          const boost::python::object & python_model_ids = params.get<boost::python::object>("model_ids");
-          boost::python::stl_input_iterator<std::string> begin(python_model_ids), end;
-          std::copy(begin, end, std::back_inserter(model_ids));
-        }
-
-        // Load the list of Object to study
-        std::vector<ObjectId> object_ids;
-        {
-          const boost::python::object & python_object_ids = params.get<boost::python::object>("object_ids");
-          boost::python::stl_input_iterator<std::string> begin(python_object_ids), end;
-          std::copy(begin, end, std::back_inserter(object_ids));
-        }
-
-        // load the descriptors from the DB
-        db_future::ObjectDb db(params.get<std::string>("db_json_params"));
-        collection_models_ = params.get<std::string>("collection_models");
-        features_3d_.reserve(model_ids.size());
-        std::vector<cv::Mat> all_descriptors;
-
-        unsigned int object_opencv_id = 0;
-        std::vector<ModelId>::const_iterator model_id = model_ids.begin(), model_id_end = model_ids.end();
-        std::vector<ObjectId>::const_iterator object_id = object_ids.begin();
-        for (; model_id != model_id_end; ++model_id, ++object_id)
-        {
-          db_future::DocumentView query;
-          query.set_db(db);
-          query.set_collection(collection_models_);
-          query.AddView("CouchDB", db_future::couch::WhereDocId(*model_id));
-          std::cout << "object_id: " << *object_id << std::endl;
-          // TODO be robust to missing entries
-          for (db_future::DocumentView view = query.begin(), view_end = db_future::DocumentView::end();
-              view != view_end; ++view)
-          {
-            db_future::Document doc = *view;
-            cv::Mat descriptors;
-            doc.get_attachment<cv::Mat>("descriptors", descriptors);
-            all_descriptors.push_back(descriptors);
-
-            // Store the id conversion
-            id_correspondences_.insert(std::pair<ObjectOpenCVId, ObjectId>(object_opencv_id, *object_id));
-            ++object_opencv_id;
-
-            // Store the 3d positions
-            cv::Mat points3d;
-            doc.get_attachment<cv::Mat>("points", points3d);
-            if (points3d.rows != 1)
-              points3d = points3d.t();
-            features_3d_.push_back(points3d);
-
-            // Compute the span of the object
-            float max_span_sq = 0;
-            cv::MatConstIterator_<cv::Vec3f> i = points3d.begin<cv::Vec3f>(), end = points3d.end<cv::Vec3f>(), j;
-            if (0)
-            {
-              // Too slow
-              for (; i != end; ++i)
-              {
-                for (j = i + 1; j != end; ++j)
-                {
-                  cv::Vec3f vec = *i - *j;
-                  max_span_sq = std::max(vec.val[0] * vec.val[0] + vec.val[1] * vec.val[1] + vec.val[2] * vec.val[2],
-                                         max_span_sq);
-                }
-              }
-            }
-            else
-            {
-              float min_x = std::numeric_limits<float>::max(), max_x = std::numeric_limits<float>::min(), min_y =
-                  std::numeric_limits<float>::max(), max_y = std::numeric_limits<float>::min(), min_z =
-                  std::numeric_limits<float>::max(), max_z = std::numeric_limits<float>::min();
-              for (; i != end; ++i)
-              {
-                min_x = std::min(min_x, (*i).val[0]);
-                max_x = std::max(max_x, (*i).val[0]);
-                min_y = std::min(min_y, (*i).val[1]);
-                max_y = std::max(max_y, (*i).val[1]);
-                min_z = std::min(min_z, (*i).val[2]);
-                max_z = std::max(max_z, (*i).val[2]);
-              }
-              max_span_sq = (max_x - min_x) * (max_x - min_x) + (max_y - min_y) * (max_y - min_y)
-                            + (max_z - min_z) * (max_z - min_z);
-            }
-            spans_[*object_id] = std::sqrt(max_span_sq);
-            std::cout << "span: " << spans_[*object_id] << " meters" << std::endl;
-          }
-        }
-        matcher_->add(all_descriptors);
+        do_update_ = inputs["do_update"];
+        descriptors_db_ = inputs["descriptors_db"];
+        features3d_db_ = inputs["features3d_db"];
       }
 
       /** Get the 2d keypoints and figure out their 3D position from the depth map
@@ -218,6 +127,13 @@ namespace object_recognition
       {
         std::vector<std::vector<cv::DMatch> > &matches = outputs.get<std::vector<std::vector<cv::DMatch> > >("matches");
         const cv::Mat & descriptors = inputs.get<cv::Mat>("descriptors");
+
+        // Reload the search structure if necessary
+        if (*do_update_)
+        {
+          matcher_->clear();
+          matcher_->add(*descriptors_db_);
+        }
 
         // Perform radius search
         if (radius_)
@@ -244,32 +160,28 @@ namespace object_recognition
           unsigned int i = 0;
           BOOST_FOREACH(const cv::DMatch & match, matches[match_index])
               {
-                local_matches_3d.at<cv::Vec3f>(0, i) = features_3d_[match.imgIdx].at<cv::Vec3f>(0, match.trainIdx);
+                local_matches_3d.at<cv::Vec3f>(0, i) = (*features3d_db_)[match.imgIdx].at<cv::Vec3f>(0, match.trainIdx);
                 ++i;
               }
         }
 
         outputs["matches_3d"] << matches_3d;
-        outputs["spans"] << spans_;
-        outputs["id_correspondences"] << id_correspondences_;
 
         return 0;
       }
     private:
-      /** The collection where the models are stored */
-      std::string collection_models_;
       /** The object used to match descriptors to our DB of descriptors */
       cv::Ptr<cv::DescriptorMatcher> matcher_;
       /** The radius for the nearest neighbors (if not using ratio) */
       unsigned int radius_;
       /** The ratio used for k-nearest neighbors, if not using radius search */
       unsigned int ratio_;
-      /** The 3d position of the loaded descriptors (the first index is on the object ID) */
-      std::vector<cv::Mat> features_3d_;
-      /** For each object id, the maximum distance between the known descriptors (span) */
-      std::map<ObjectId, float> spans_;
-      /** Matching between an OpenCV integer ID and the ids found in the JSON */
-      std::map<ObjectOpenCVId, ObjectId> id_correspondences_;
+      /** If true, forces the reload of the search structure */
+      ecto::spore<bool> do_update_;
+      /** The descriptors loaded from the DB */
+      ecto::spore<std::vector<cv::Mat> > descriptors_db_;
+      /** The 3d position of the descriptors loaded from the DB */
+      ecto::spore<std::vector<cv::Mat> > features3d_db_;
     };
   }
 }

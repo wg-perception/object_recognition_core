@@ -17,7 +17,7 @@ from object_recognition.common.filters.masker import Masker
 from object_recognition.common.io.sink import Sink
 from object_recognition.common.io.source import Source
 from object_recognition.common.utils import json_helper
-from object_recognition.tod.detector import TodDetector
+from object_recognition.tod.detector import TodDetector, TodDetectorLoader
 import yaml
 
 DEBUG = False
@@ -77,11 +77,16 @@ if __name__ == '__main__':
     # define the different pipelines
     for pipeline_param in pipeline_params:
         if pipeline_param['type'] == 'TOD':
-            # get the model ids
-            detector = TodDetector(collection = db_dict['collection'], db_params=db_dict,
-                                   feature_descriptor_params=pipeline_param['feature_descriptor'],
+            # create the loader and detector
+            loader = TodDetectorLoader(collection_models = db_dict['collection'],
+                                       db_json_params=json_helper.dict_to_cpp_json_str(db_dict),
+                                       object_ids=params['object_ids'],
+                                       feature_descriptor_params=json_helper.dict_to_cpp_json_str(pipeline_param['feature_descriptor']))
+            detector = TodDetector(feature_descriptor_params=pipeline_param['feature_descriptor'],
                                    guess_params=pipeline_param['guess'], search_params=pipeline_param['search'],
-                                   object_ids=params['object_ids'], display=DISPLAY)
+                                   display=DISPLAY)
+            plasm.connect(loader['descriptors','features3d','spans','id_correspondences','do_update'] >>
+                          detector['descriptors_db','features3d_db','spans','id_correspondences','do_update'])
 
         # Connect the detector to the source
         for key in source.outputs.iterkeys():
