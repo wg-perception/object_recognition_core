@@ -117,7 +117,14 @@ class Model(Document):
     ''')
     by_object_id_and_TOD = ViewField('models', '''\
         function(doc) {
-            if ((doc.Type == "Model") && (doc.model_type == "TOD"))
+            if ((doc.Type == "Model") && (doc.ModelType == "TOD"))
+                emit(doc.object_id, doc)
+        }
+    ''')
+    
+    by_object_id_and_mesh = ViewField('models', '''\
+        function(doc) {
+            if ((doc.Type == "Model") && (doc.ModelType == "mesh"))
                 emit(doc.object_id, doc)
         }
     ''')
@@ -130,6 +137,7 @@ class Model(Document):
     def sync(cls, db):
         cls.by_object_id.sync(db)
         cls.by_object_id_and_TOD.sync(db)
+        cls.by_object_id_and_mesh.sync(db)
         cls.all.sync(db)
 
 def sync_models(db):
@@ -175,6 +183,8 @@ def find_model_for_object(models_collection, object_id, model_type='all'):
         r = Model.by_object_id(models_collection, key=object_id)
     elif model_type == 'TOD':
         r = Model.by_object_id_and_TOD(models_collection, key=object_id)
+    elif model_type == 'mesh':
+        r = Model.by_object_id_and_mesh(models_collection, key=object_id)
     if len(r) == 0 : return []
     return [ m.id for m in r ]
 

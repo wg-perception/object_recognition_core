@@ -18,23 +18,19 @@ from ecto_object_recognition import reconstruction
 import ecto_pcl
 
 
-def parse_args():
-    parser = argparse.ArgumentParser(description='Computes a surface mesh of an object in the database')
-    parser.add_argument('-s', '--session_id', metavar='SESSION_ID', dest='session_id', type=str, default='',
-                       help='The session id to reconstruct.')
-    parser.add_argument('--all', dest='compute_all', action='store_const',
-                        const=True, default=False,
-                        help='Compute meshes for all possible sessions.')
-    parser.add_argument('--visualize', dest='visualize', action='store_const',
-                        const=True, default=False,
-                        help='Turn on visiualization')
-    object_recognition.dbtools.add_db_options(parser)
-    args = parser.parse_args()
-    if args.compute_all == False and args.session_id == '':
-        parser.print_help()
-        sys.exit(1)
-    return args
-
+def upload_mesh(db, session, cloud_file):
+    r = models.find_model_for_object(db, session.object_id, 'mesh')
+    m = None
+    for model in r:
+        m = models.Model.load(db,model)
+        print "updating model:", model
+        break
+    if not m:
+        m = models.Model(object_id=session.object_id, ModelType='mesh')
+        print "creating new model:", str(m.id)
+    m.store(db)
+    with open(cloud_file, 'r') as mesh:
+        db.put_attachment(m, mesh, filename='cloud.ply')
 
 def simple_mesh_session(dbs, session, args):
     obs_ids = models.find_all_observations_for_session(dbs, session.id)
@@ -62,40 +58,56 @@ def simple_mesh_session(dbs, session, args):
 
 
     accum = reconstruction.PointCloudAccumulator()
-    viewer = ecto_pcl.CloudViewer("viewer", window_name="PCD Viewer")
     voxel_grid = ecto_pcl.VoxelGrid("voxel_grid", leaf_size=0.0075)
     outlier_removal = ecto_pcl.StatisticalOutlierRemoval('Outlier Removal', mean_k=2, stddev=2)
-
     source, sink = ecto.EntangledPair(value=accum.inputs.at('view'), source_name='Feedback Cloud', sink_name='Feedback Cloud')
     ply_writer = ecto.If('PlyWriter', cell=ecto_pcl.PLYWriter(filename_format='cloud_%s_%%05d.ply' % str(session.id)))
-    mesh_writer = ecto.If('MeshWriter', cell=reconstruction.PointCloudMesh())
     mls = ecto_pcl.MovingLeastSquares()
     ply_writer.inputs.__test__ = False
-    mesh_writer.inputs.__test__ = False
     plasm.connect(source[:] >> accum['previous'],
                   point_cloud_transform['view'] >> accum['view'],
                   accum[:] >> voxel_grid[:],
                   voxel_grid[:] >> outlier_removal[:],
                   outlier_removal[:] >> (mls[:], sink[:]),
-                  mls[:] >> (viewer[:], ply_writer['input'], mesh_writer['input']),
+                  mls[:] >> ply_writer['input'],
     )
 
     if args.visualize:
         plasm.connect(
+          mls[:] >> ecto_pcl.CloudViewer("viewer", window_name="PCD Viewer")[:],
           db_reader['image'] >> highgui.imshow('image', name='image')[:],
           db_reader['depth'] >> highgui.imshow('depth', name='depth')[:],
           erode['image'] >> highgui.imshow('mask', name='mask')[:],
           )
 
+    ecto.view_plasm(plasm)
 
-    sched = ecto.schedulers.Singlethreaded(plasm)
+    sched = ecto.schedulers.Threadpool(plasm)
     sched.execute()
 
+    #finally write the ply to disk.
     ply_writer.inputs.__test__ = True
-    mesh_writer.inputs.__test__ = True
-
     ply_writer.process()
-    mesh_writer.process()
+
+    upload_mesh(dbs, session, 'cloud_%s_%05d.ply' % (str(session.id), 0))
+
+###################################################################################################################
+def parse_args():
+    parser = argparse.ArgumentParser(description='Computes a surface mesh of an object in the database')
+    parser.add_argument('-s', '--session_id', metavar='SESSION_ID', dest='session_id', type=str, default='',
+                       help='The session id to reconstruct.')
+    parser.add_argument('--all', dest='compute_all', action='store_const',
+                        const=True, default=False,
+                        help='Compute meshes for all possible sessions.')
+    parser.add_argument('--visualize', dest='visualize', action='store_const',
+                        const=True, default=False,
+                        help='Turn on visiualization')
+    object_recognition.dbtools.add_db_options(parser)
+    args = parser.parse_args()
+    if args.compute_all == False and args.session_id == '':
+        parser.print_help()
+        sys.exit(1)
+    return args
 
 if "__main__" == __name__:
     args = parse_args()
@@ -105,8 +117,6 @@ if "__main__" == __name__:
     if args.compute_all:
         models.sync_models(dbs)
         results = models.Session.all(sessions)
-        results = models.Session.all(sessions)
-
         for session in results:
             simple_mesh_session(dbs, session, args)
     else:
