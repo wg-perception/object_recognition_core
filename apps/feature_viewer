@@ -12,16 +12,13 @@ import ecto_pcl
 if __name__ == '__main__':
     parser = ObjectRecognitionParser()
     dbtools.add_db_arguments(parser)
-    parser.add_argument('--object_id', help='The id of the object for which the TOD model will be displayed.')
+    parser.add_argument('object_id', help='The id of the object for which the TOD model will be displayed.')
     from ecto.opts import scheduler_options, run_plasm
     scheduler_options(parser)
 
     # read the object_ids
     args = parser.parse_args()
-    if hasattr(args, 'object_id') and args.object_id:
-        object_id = args.object_id
-    else:
-        object_id = "e2449bdc43fd6d9dd646fcbcd019642a"
+    object_id = args.object_id
 
     #database ritual
     db_url = args.db_root
