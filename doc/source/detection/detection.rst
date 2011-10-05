@@ -1,5 +1,6 @@
 Detection
 =========
+.. highlight:: ectosh
 
 .. contents::
 

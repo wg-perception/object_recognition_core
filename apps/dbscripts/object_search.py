@@ -15,12 +15,11 @@ def parse_args():
 if __name__ == "__main__":
     args = parse_args()
     couch = couchdb.Server(args.db_root)
-    dbs = dbtools.init_object_databases(couch)
-    objects = dbs['objects']
+    db = dbtools.init_object_databases(couch)
     if len(args.tag) > 0:
-        results = models.Object.by_tag(objects, key=args.tag)
+        results = models.Object.by_tag(db, key=args.tag)
     else:
-        results = models.Object.by_object_name(objects)
+        results = models.Object.by_object_name(db)
     for obj in results:
         print "******************************"
         print "Object Name:", obj.object_name
@@ -29,4 +28,4 @@ if __name__ == "__main__":
         print "Author:", obj.author_name
         print "email:", obj.author_email
         print "db id:", obj.id
-        print "session ids:", [session.id for session in models.Session.by_object_id(dbs['sessions'], key=obj.id)]
+        print "session ids:", [session.id for session in models.Session.by_object_id(db, key=obj.id)]

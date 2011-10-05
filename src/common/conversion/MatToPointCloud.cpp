@@ -78,6 +78,76 @@ namespace object_recognition
         return 0;
       }
     };
+
+    struct MatToPointCloudXYZRGB
+    {
+      typedef pcl::PointXYZRGB PointType;
+      // Get the original keypoints and point cloud
+      typedef pcl::PointCloud<PointType> CloudType;
+
+      static void
+      declare_params(tendrils& p)
+      {
+
+      }
+
+      static void
+      declare_io(const tendrils& params, tendrils& inputs, tendrils& outputs)
+      {
+        inputs.declare(&MatToPointCloudXYZRGB::image,"image", "The rgb image.").required(true);
+        inputs.declare(&MatToPointCloudXYZRGB::mask, "mask", "The binary mask for valid points.").required(true);
+        inputs.declare(&MatToPointCloudXYZRGB::cloud_out,"points3d", "The 3d points.").required(true);
+        outputs.declare("point_cloud", "The XYZRGB point cloud");
+      }
+
+      void
+      configure(const tendrils&p, const tendrils&i, const tendrils&o)
+      {
+        R = i["R"];
+        T = i["T"];
+        image = i["image"];
+        mask = i["mask"];
+        points3d = i["points3d"];
+        view = o["view"];
+
+      }
+
+      int
+      process(const tendrils& i, const tendrils& o)
+      {
+
+        typedef pcl::PointCloud<Point> CloudT;
+        typedef pcl::PointCloud<pcl::PointXYZRGBNormal> CloudNormalT;
+
+        //extract the cloud
+        CloudT::Ptr cloud(new CloudT);
+        cvToCloudXYZRGB(*points3d, *cloud, *image, *mask, false);
+        pcl::KdTree<Point>::Ptr tree_;
+        pcl::NormalEstimation<Point, pcl::Normal> impl;
+        pcl::PointCloud<pcl::Normal> normals;
+        tree_.reset(new pcl::KdTreeFLANN<Point>);
+        impl.setSearchMethod(tree_);
+
+        impl.setInputCloud(cloud);
+        impl.setKSearch(50);
+        impl.compute(normals);
+
+        CloudNormalT::Ptr cloud_with_normals(new CloudNormalT);
+        pcl::concatenateFields(*cloud, normals, *cloud_with_normals);
+        {
+          CloudNormalT::Ptr tempc(new CloudNormalT);
+          bool inverse = true;
+          Eigen::Affine3f transform = RT2Transform(*R, *T, inverse); //compute the inverse transform
+          pcl::transformPointCloudWithNormals(*cloud_with_normals, *tempc, transform);
+          cloud_with_normals.swap(tempc);
+        }
+        *view = cloud_with_normals;
+        return ecto::OK;
+      }
+      ecto::spore<cv::Mat> R, T, mask, image, points3d;
+      ecto::spore<CloudOutT> cloud_out;
+
+    };
   }
 }
 

@@ -77,7 +77,6 @@ namespace object_recognition
         typedef pcl::PointCloud<Point> CloudT;
         typedef pcl::PointCloud<pcl::PointXYZRGBNormal> CloudNormalT;
 
-
         //extract the cloud
         CloudT::Ptr cloud(new CloudT);
         cvToCloudXYZRGB(*points3d, *cloud,*image, *mask,false);
