@@ -26,11 +26,14 @@ object sparsely, depending on the angle_thresh setting.'''),
     parser.add_argument('-a', '--angle_thresh', metavar='RADIANS', dest='angle_thresh', type=float,
                        default=math.pi / 36,
                        help='The delta angular threshold in pose.'
-                            'Frames will not be recorded unless they are not closer to any other pose by this amount. defalut(%(default)s)')
+                            'Frames will not be recorded unless they are not closer to any other pose by this amount. default(%(default)s)')
+    parser.add_argument('-n', '--nviews', metavar='NVIEWS', dest='nviews', type=int,
+                       default=72,
+                       help='Number of desired views. default(%(default)s)')
     parser.add_argument('--preview', dest='preview', action='store_true',
                         default=False, help='Preview the pose estimator.')
-    parser.add_argument('--use_turn_table', dest='use_turn_table', action='store_true',
-                        default=False, help='Use an E106 servo based turntable.')
+    #parser.add_argument('--use_turn_table', dest='use_turn_table', action='store_true',
+    #                    default=False, help='Use an E106 servo based turntable.')
     from ecto.opts import scheduler_options, cell_options
     from ecto_opencv.calib import PlanarSegmentation
     segmentation_factory = cell_options(parser, PlanarSegmentation, 'seg')
@@ -56,8 +59,8 @@ if "__main__" == __name__:
     (plasm, segmentation) = openni_capture.create_capture_plasm(bag_name=options.bag,
                                             angle_thresh=options.angle_thresh,
                                             segmentation_cell=segmentation,
-                                            n_desired=72,
+                                            n_desired=options.nviews,
                                             preview=options.preview,
-                                            use_turn_table=options.use_turn_table)
+                                            use_turn_table=False)
     from ecto.opts import run_plasm
     run_plasm(options, plasm, locals=dict(plasm=plasm, segmentation=segmentation))

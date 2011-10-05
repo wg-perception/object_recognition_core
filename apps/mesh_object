@@ -27,7 +27,7 @@ def upload_mesh(db, session, cloud_file):
         break
     if not m:
         m = models.Model(object_id=session.object_id, ModelType='mesh')
-        print "creating new model:", str(m.id)
+        print "creating new model."
     m.store(db)
     with open(cloud_file, 'r') as mesh:
         db.put_attachment(m, mesh, filename='cloud.ply')
