@@ -134,3 +134,9 @@ command line interface
 .. program-output:: apps/upload --help
    :in_srcdir:
    :until: Scheduler Options:
+
+Willow users
+^^^^^^^^^^^^
+Some pre-acquired bags exist internally for now, just rsync them::
+
+   % rsync -vPa /wg/wgss0_shelf1/object_recognition_capture ./
