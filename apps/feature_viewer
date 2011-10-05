@@ -2,35 +2,26 @@
 """
 module that displays a TOD model for a given object_id
 """
-import sys
-import argparse
-import time
-import tempfile
-import os
-import math
-import subprocess
-
-import couchdb
-
-import ecto
-from ecto_opencv import highgui
-import object_recognition
-from object_recognition import dbtools, models, capture
-from object_recognition.common.utils.parser import ObjectRecognitionParser
 from ecto_object_recognition import tod_detection, conversion
+from object_recognition import dbtools, models
+from object_recognition.common.utils.parser import ObjectRecognitionParser
+import couchdb
+import ecto
 import ecto_pcl
 
 if __name__ == '__main__':
     parser = ObjectRecognitionParser()
     dbtools.add_db_arguments(parser)
     parser.add_argument('--object_id', help='The id of the object for which the TOD model will be displayed.')
+    from ecto.opts import scheduler_options, run_plasm
+    scheduler_options(parser)
 
     # read the object_ids
     args = parser.parse_args()
     if hasattr(args, 'object_id') and args.object_id:
         object_id = args.object_id
     else:
-        object_id = "e2449bdc43fd6d9dd646fcbcd00d8197"
+        object_id = "e2449bdc43fd6d9dd646fcbcd019642a"
 
     #database ritual
     db_url = args.db_root
@@ -57,8 +48,8 @@ if __name__ == '__main__':
         to_pcl['point_cloud'] >> pcl_cloud[:],
         pcl_cloud[:] >> cloud_viewer[:]
     )
-    
-    from ecto.opts import doit
-    doit(plasm, "View observations from the database.", locals=vars())
+
+    run_plasm(args, plasm)
+#    doit(plasm, "View observations from the database.", locals=vars())
     
     raw_input()
