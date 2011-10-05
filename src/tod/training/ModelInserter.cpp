@@ -76,7 +76,7 @@ namespace object_recognition
         doc.set_values("parameters", params);
 
         doc.set_value("Type", "Model");
-        doc.set_value("model_type", "TOD");
+        doc.set_value("ModelType", "TOD");
         std::cout << "Persisting" << std::endl;
         doc.Persist();
 
