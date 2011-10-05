@@ -20,7 +20,7 @@ def read_arguments(parser=None):
     if parser is None:
         parser = ObjectRecognitionParser()
 
-    parser.add_argument('-c', help='Config file')
+    parser.add_argument('-c', '--config_file', help='Config file')
     group = parser.add_mutually_exclusive_group()
     group.add_argument('--object_ids', help='If set, it overrides the list of object_ids in the config file')
     group.add_argument('--object_names', help='If set, it overrides the list of object names in the config file')
@@ -33,7 +33,7 @@ def read_arguments(parser=None):
     if args.config_file is None or not os.path.exists(args.config_file):
         raise 'option file does not exist'
 
-    params = yaml.load(open(args.c))
+    params = yaml.load(open(args.config_file))
 
     # read some parameters
     db_dict = params['db']

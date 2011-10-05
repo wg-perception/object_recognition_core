@@ -11,7 +11,7 @@ DEBUG = False
 ########################################################################################################################
 
 if __name__ == '__main__':
-    params, pipeline_params, do_display, db_dict, db = read_arguments()
+    params, args, pipeline_params, do_display, db_dict, db = read_arguments()
 
     for object_id in params['object_ids']:
         object_id = object_id.encode('ascii')
@@ -33,7 +33,7 @@ if __name__ == '__main__':
             if pipeline_param['type'] == 'TOD':
                 trainer = TodTrainer(json_search_params=json_helper.dict_to_cpp_json_str(pipeline_param['search']),
                                      json_feature_descriptor_params=json_helper.dict_to_cpp_json_str(pipeline_param['feature_descriptor']),
-                                     display=DISPLAY, source=db_reader, source_plasm=source_plasm)
+                                     display=do_display, source=db_reader, source_plasm=source_plasm)
                 # delete the previous models
                 for model_id in models.find_model_for_object(db, object_id, 'TOD'):
                     db.delete(db.get(model_id))
