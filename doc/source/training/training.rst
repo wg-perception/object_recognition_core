@@ -10,8 +10,11 @@ use
 ^^^
 
 Just run the training.py script in /apps. It requires a configuration file through the ``-c`` option. Some of the
-options in there can be overriden by the command line for convenience.
-For now, use the default config_training.txt.
+options in there can be overriden through the command line for convenience.
+For now, use the default config_training.txt and change the following parameters to your needs:
+  - the db section can point to a different root, another machine for example
+  - the object_ids should be the list of object ids you want to train on. If you want, you can also use object_names,
+  that are more human readable
 
 A typical command line session might look like::
 
