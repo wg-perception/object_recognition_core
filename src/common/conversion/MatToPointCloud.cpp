@@ -78,7 +78,7 @@ namespace object_recognition
         return 0;
       }
     };
-
+#if 0
     struct MatToPointCloudXYZRGB
     {
       typedef pcl::PointXYZRGB PointType;
@@ -97,7 +97,7 @@ namespace object_recognition
         inputs.declare(&MatToPointCloudXYZRGB::image,"image", "The rgb image.").required(true);
         inputs.declare(&MatToPointCloudXYZRGB::mask, "mask", "The binary mask for valid points.").required(true);
         inputs.declare(&MatToPointCloudXYZRGB::cloud_out,"points3d", "The 3d points.").required(true);
-        outputs.declare("point_cloud", "The XYZRGB point cloud");
+        outputs.declare(&MatToPointCloudXYZRGB::cloud_out,"point_cloud", "The XYZRGB point cloud");
       }
 
       void
@@ -148,6 +148,7 @@ namespace object_recognition
       ecto::spore<CloudOutT> cloud_out;
 
     };
+#endif
   }
 }
 
