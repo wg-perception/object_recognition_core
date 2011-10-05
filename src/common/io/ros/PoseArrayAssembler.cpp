@@ -122,7 +122,10 @@ namespace object_recognition
       // Add the object ids to the message
       {
         boost::property_tree::ptree object_ids_param_tree;
-        object_ids_param_tree.put("object_ids", object_ids_);
+        boost::property_tree::ptree object_ids_array;
+        BOOST_FOREACH(const ObjectId & object_id, *object_ids_)
+              object_ids_array.push_back(std::make_pair("", object_id));
+        object_ids_param_tree.push_back(std::make_pair("object_ids", object_ids_array));
 
         std::stringstream ssparams;
         boost::property_tree::write_json(ssparams, object_ids_param_tree);
