@@ -104,7 +104,7 @@ namespace
       cv::Mat_<uchar> mask;
       in_mask.convertTo(mask, CV_8U);
       // Erode just because of the possible rescaling
-      cv::erode(mask, mask, cv::Mat(), cv::Point(-1, -1), 3);
+      cv::erode(mask, mask, cv::Mat(), cv::Point(-1, -1), 4);
 
       int width = mask.cols, height = mask.rows;
       size_t clean_row_index = 0;
