@@ -33,8 +33,6 @@ class FeatureDescriptor(ecto.BlackBox):
         else:
             self._feature_descriptor_params = {'n_features':1000}
             self._cell_name = 'ORB_combination'
-        self._feature_descriptor_params = {'n_features':1000}
-        self._cell_name = 'ORB_combination'
 
         i.forward('image', cell_name = self._cell_name, cell_key = 'image')
         i.forward('mask', cell_name = self._cell_name, cell_key = 'mask')
