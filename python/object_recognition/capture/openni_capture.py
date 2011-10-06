@@ -116,7 +116,8 @@ def create_capture_plasm(bag_name, angle_thresh, segmentation_cell, n_desired=72
     delta_pose = ecto.If('delta R|T', cell=capture.DeltaRT(angle_thresh=angle_thresh,
                                                           n_desired=n_desired))
 
-    display = highgui.imshow(name='Poses')
+    display = ecto.If('Pose Display', cell=highgui.imshow(name='Poses'))
+    display.inputs.__test__ = True
 
     poseMsg = RT2PoseStamped(frame_id='/camera_rgb_optical_frame')
 
@@ -129,8 +130,8 @@ def create_capture_plasm(bag_name, angle_thresh, segmentation_cell, n_desired=72
               poser['R', 'T'] >> poseMsg['R', 'T'],
               ]
 
-    masker = ecto.If('Planar Segmentation', cell=segmentation_cell)
-    masker.inputs.__test__ = True
+
+    masker = segmentation_cell
     maskMsg = Mat2Image(frame_id='/camera_rgb_optical_frame')
 
     graph += [
@@ -150,6 +151,7 @@ def create_capture_plasm(bag_name, angle_thresh, segmentation_cell, n_desired=72
               mask_and[:] >> highgui.imshow(name='mask')[:],
             ]
     if not preview:
+        display.inputs.__test__ = False
         baggers = dict(image=ImageBagger(topic_name='/camera/rgb/image_color'),
                    depth=ImageBagger(topic_name='/camera/depth/image'),
                    mask=ImageBagger(topic_name='/camera/mask'),
@@ -160,29 +162,28 @@ def create_capture_plasm(bag_name, angle_thresh, segmentation_cell, n_desired=72
         bagwriter = ecto.If('Bag Writer if R|T',
                             cell=ecto_ros.BagWriter(baggers=baggers, bag=bag_name)
                             )
-        
+
         bag_keys = ('image', 'depth', 'image_ci', 'depth_ci')
         source_keys = ('image_message', 'depth_message', 'image_info_message', 'depth_info_message')
-        
+
         graph += [source[source_keys] >> bagwriter[bag_keys],
                   poseMsg['pose'] >> bagwriter['pose'],
                   maskMsg[:] >> bagwriter['mask'],
                   ]
-
+        novel = delta_pose['novel']
         if use_turn_table:
             table = TurnTable(angle_thresh=angle_thresh)
             ander = ecto.And()
             graph += [
                   table['trigger'] >> (delta_pose['__test__'], ander['in2']),
                   delta_pose['novel'] >> ander['in1'],
-                  ander['out'] >> bagwriter['__test__']
                   ]
+            novel = ander['out']
         else:
-            #TODO add still filter:
             delta_pose.inputs.__test__ = True
-            graph += [
-                  delta_pose['novel'] >> bagwriter['__test__']
-                  ]
+
+        graph += [novel >> (bagwriter['__test__'], display['__test__'])]
+
     plasm = ecto.Plasm()
     plasm.connect(graph)
     return (plasm, segmentation_cell) # return segmentation for tuning of parameters.

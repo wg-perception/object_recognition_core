@@ -70,7 +70,7 @@ def compute_for_bag_with_mask_pose(bag, obj, args):
             if 'y' in use_it.lower():
                 store_new = False
                 obj = x
-                break
+                return
     else:
         store_new = True
     if store_new:
