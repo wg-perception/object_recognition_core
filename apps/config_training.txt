@@ -19,4 +19,4 @@ pipeline1:
     type: 'LSH'
 
 # The list of object_ids to analyze
-object_ids: [ "263739e4f609243242bf5ea553000bad" ]
+object_ids: [ "afff0873166324e607c29fb06b40d693" ]

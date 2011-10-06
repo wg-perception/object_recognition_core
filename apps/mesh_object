@@ -14,11 +14,14 @@ import ecto
 from ecto_opencv import calib, highgui, imgproc
 import object_recognition
 from object_recognition import dbtools, models, capture
-from ecto_object_recognition import reconstruction
+from ecto_object_recognition import reconstruction, conversion
 import ecto_pcl
+from tempfile import NamedTemporaryFile
 
-
-def upload_mesh(db, session, cloud_file):
+cloud_view = ecto_pcl.CloudViewer("Cloud Display", window_name="PCD Viewer")[:]
+imshows = dict(image=highgui.imshow('Image Display', name='image')[:], mask=highgui.imshow('Mask Display', name='mask')[:],
+               depth=highgui.imshow('Depth Display', name='depth')[:])
+def upload_mesh(db, session, cloud_file, mesh_file=None):
     r = models.find_model_for_object(db, session.object_id, 'mesh')
     m = None
     for model in r:
@@ -31,18 +34,49 @@ def upload_mesh(db, session, cloud_file):
     m.store(db)
     with open(cloud_file, 'r') as mesh:
         db.put_attachment(m, mesh, filename='cloud.ply')
+    if mesh_file:
+        with open(mesh_file, 'r') as mesh:
+            db.put_attachment(m, mesh, filename='mesh.stl', content_type='application/octet-stream')
+
+FILTER_SCRIPT = '''
+<!DOCTYPE FilterScript>
+<FilterScript>
+ <filter name="Surface Reconstruction: Poisson">
+  <Param type="RichInt" value="8" name="OctDepth"/>
+  <Param type="RichInt" value="6" name="SolverDivide"/>
+  <Param type="RichFloat" value="2" name="SamplesPerNode"/>
+  <Param type="RichFloat" value="1" name="Offset"/>
+ </filter>
+</FilterScript>
+'''
+#meshlabserver -i cloud_44ed68c2b66cc8aefc7df45fd63c4ac8_00000.ply -o mug.stl -s meshlab.xml.mlx 
+
+def meshlab(filename_in, filename_out):
+    import tempfile, subprocess, os
+    f = NamedTemporaryFile(delete=False)
+    script = f.name
+    f.write(FILTER_SCRIPT)
+    f.close()
+    subprocess.check_call((['meshlabserver', '-i', filename_in, '-o', filename_out, '-s', script]))
+    os.unlink(script)
 
 def simple_mesh_session(dbs, session, args):
     obs_ids = models.find_all_observations_for_session(dbs, session.id)
     if len(obs_ids) == 0:
         raise RuntimeError("There are no observations available.")
-    db_reader = capture.ObservationReader('Database Source', db_url=args.db_root, db_collection=args.db_collection)
+    db_reader = capture.ObservationReader('Database Source',
+                                          db_url=args.db_root,
+                                          db_collection=args.db_collection)
+
     #observation dealer will deal out each observation id.
     observation_dealer = ecto.Dealer(typer=db_reader.inputs.at('observation'), iterable=obs_ids)
     depthTo3d = calib.DepthTo3d('Depth ~> 3D')
     erode = imgproc.Erode('Mask Erosion', kernel=3) #-> 7x7
     rescale_depth = capture.RescaledRegisteredDepth('Depth scaling') #this is for SXGA mode scale handling.
     point_cloud_transform = reconstruction.PointCloudTransform('Object Space Transform')
+    point_cloud_converter = conversion.MatToPointCloudXYZRGB('To Point Cloud')
+    pre_voxel = ecto_pcl.VoxelGrid("Pre Voxel Decimation", leaf_size=0.005)
+    to_ecto_pcl = ecto_pcl.PointCloudT2PointCloud('converter', format=ecto_pcl.XYZRGB)
     plasm = ecto.Plasm()
     plasm.connect(
       observation_dealer[:] >> db_reader['observation'],
@@ -50,19 +84,25 @@ def simple_mesh_session(dbs, session, args):
       db_reader['image'] >> rescale_depth['image'],
       db_reader['depth'] >> rescale_depth['depth'],
       rescale_depth[:] >> depthTo3d['depth'],
-      depthTo3d['points3d'] >> point_cloud_transform['points3d'],
+      depthTo3d['points3d'] >> point_cloud_converter['points'],
+      db_reader['image'] >> point_cloud_converter['image'],
+      erode['image'] >> point_cloud_converter['mask'],
       db_reader['mask'] >> erode['image'],
-      db_reader['R', 'T', 'image'] >> point_cloud_transform['R', 'T', 'image'],
-      erode['image'] >> point_cloud_transform['mask'],
-      )
-
+      db_reader['R', 'T'] >> point_cloud_transform['R', 'T'],
+      point_cloud_converter['point_cloud'] >> to_ecto_pcl[:],
+      to_ecto_pcl[:] >> pre_voxel['input'],
+      pre_voxel['output'] >> point_cloud_transform['cloud']
+    )
 
     accum = reconstruction.PointCloudAccumulator('accumulator')
     voxel_grid = ecto_pcl.VoxelGrid("voxel_grid", leaf_size=0.005)
     outlier_removal = ecto_pcl.StatisticalOutlierRemoval('Outlier Removal', mean_k=2, stddev=2)
-    source, sink = ecto.EntangledPair(value=accum.inputs.at('view'), source_name='Feedback Cloud', sink_name='Feedback Cloud')
-    ply_writer = ecto.If('PlyWriter', cell=ecto_pcl.PLYWriter('PLY Saver', filename_format='cloud_%s_%%05d.ply' % str(session.id)))
-    mls = ecto_pcl.MovingLeastSquares('MLS')
+    source, sink = ecto.EntangledPair(value=accum.inputs.at('view'),
+                                      source_name='Feedback Cloud',
+                                      sink_name='Feedback Cloud')
+    ply_writer = ecto.If('PlyWriter', cell=ecto_pcl.PLYWriter('PLY Saver',
+                                      filename_format='cloud_%s_%%05d.ply' % str(session.id)))
+    mls = ecto_pcl.MovingLeastSquares('MLS', search_radius=0.01)
     ply_writer.inputs.__test__ = False
     plasm.connect(source[:] >> accum['previous'],
                   point_cloud_transform['view'] >> accum['view'],
@@ -73,11 +113,12 @@ def simple_mesh_session(dbs, session, args):
     )
 
     if args.visualize:
+        global cloud_view
         plasm.connect(
-          mls[:] >> ecto_pcl.CloudViewer("Cloud Display", window_name="PCD Viewer")[:],
-          db_reader['image'] >> highgui.imshow('Image Display', name='image')[:],
-          db_reader['depth'] >> highgui.imshow('Depth Display', name='depth')[:],
-          erode['image'] >> highgui.imshow('Mask Display', name='mask')[:],
+          mls[:] >> cloud_view,
+          db_reader['image'] >> imshows['image'],
+          db_reader['depth'] >> imshows['depth'],
+          erode['image'] >> imshows['mask'],
           )
 
     from ecto.opts import run_plasm
@@ -86,9 +127,12 @@ def simple_mesh_session(dbs, session, args):
     #finally write the ply to disk.
     ply_writer.inputs.__test__ = True
     ply_writer.process()
+    ply_name = 'cloud_%s_%05d.ply' % (str(session.id), 0)
+    mesh_name = 'cloud_%s.stl' % str(session.id)
+    meshlab(ply_name, mesh_name)
     if args.commit:
-        upload_mesh(dbs, session, 'cloud_%s_%05d.ply' % (str(session.id), 0))
-
+        upload_mesh(dbs, session, ply_name, mesh_name)
+    os.unlink(ply_name,mesh_name)
 ###################################################################################################################
 def parse_args():
     parser = argparse.ArgumentParser(description='Computes a surface mesh of an object in the database')

@@ -18,6 +18,14 @@ DEBUG = False
 
 PoseArrayPub = ecto_geometry_msgs.Publisher_PoseArray
 
+def object_to_models_mapping(db,object_ids):
+    #run a view to get all of the meshes for the given objects.
+    r = models.Model.by_object_id_and_mesh(db)
+    mapping = {}
+    for x in r:
+        mapping[str(x.object_id)] = x.id
+    return mapping 
+
 ########################################################################################################################
 
 if __name__ == '__main__':
@@ -29,13 +37,15 @@ if __name__ == '__main__':
     Sink.add_arguments(parser)
 
     params, args, pipeline_params, do_display, db_dict, db = read_arguments(parser)
-
+ 
     # TODO handle this properly...
     ecto_ros.init(sys.argv, "ecto_node")
 
     source = Source.parse_arguments(params['source'])
-    sink = Sink.parse_arguments(args)
+    
 
+    sink = Sink.parse_arguments(args, db, params['object_ids'])
+    
     # define the input
     if 0:
         bag_reader = BagReader(plasm, dict(image=ecto_sensor_msgs.Bagger_Image(topic_name='image_mono'),

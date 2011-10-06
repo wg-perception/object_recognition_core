@@ -46,6 +46,7 @@
 #include <pcl/point_cloud.h>
 #include <pcl/point_types.h>
 #include <object_recognition/common/conversions.hpp>
+
 using ecto::tendrils;
 
 namespace object_recognition
@@ -61,96 +62,61 @@ namespace object_recognition
       // Get the original keypoints and point cloud
       typedef pcl::PointXYZ PointType;
       typedef pcl::PointCloud<PointType> CloudType;
+      typedef CloudType::ConstPtr CloudOutT;
+
 
       static void
       declare_io(const tendrils& params, tendrils& inputs, tendrils& outputs)
       {
-        inputs.declare<cv::Mat>("points", "The width by height by 3 channels (x, y and z)");
-        outputs.declare<CloudType::ConstPtr>("point_cloud", "The XYZ point cloud");
+        inputs.declare(&MatToPointCloudXYZ::points3d, "points", "The width by height by 3 channels (x, y and z)");
+        outputs.declare(&MatToPointCloudXYZ::cloud_out, "point_cloud", "The XYZ point cloud");
       }
 
       int
       process(const tendrils& inputs, const tendrils& outputs)
       {
         CloudType::Ptr point_cloud(new CloudType);
-        cvToCloud(inputs.get<cv::Mat>("points"), *point_cloud);
-        outputs["point_cloud"] << CloudType::ConstPtr(point_cloud);
-        return 0;
+        cvToCloud(*points3d, *point_cloud);
+        *cloud_out = point_cloud;
+        return ecto::OK;
       }
+      ecto::spore<cv::Mat> points3d;
+      ecto::spore<CloudOutT> cloud_out;
     };
-#if 0
     struct MatToPointCloudXYZRGB
     {
       typedef pcl::PointXYZRGB PointType;
       // Get the original keypoints and point cloud
       typedef pcl::PointCloud<PointType> CloudType;
+      typedef CloudType::ConstPtr CloudOutT;
 
-      static void
-      declare_params(tendrils& p)
-      {
-
-      }
 
       static void
       declare_io(const tendrils& params, tendrils& inputs, tendrils& outputs)
       {
-        inputs.declare(&MatToPointCloudXYZRGB::image,"image", "The rgb image.").required(true);
+        inputs.declare(&MatToPointCloudXYZRGB::image, "image", "The rgb image.").required(true);
         inputs.declare(&MatToPointCloudXYZRGB::mask, "mask", "The binary mask for valid points.").required(true);
-        inputs.declare(&MatToPointCloudXYZRGB::cloud_out,"points3d", "The 3d points.").required(true);
-        outputs.declare(&MatToPointCloudXYZRGB::cloud_out,"point_cloud", "The XYZRGB point cloud");
-      }
-
-      void
-      configure(const tendrils&p, const tendrils&i, const tendrils&o)
-      {
-        R = i["R"];
-        T = i["T"];
-        image = i["image"];
-        mask = i["mask"];
-        points3d = i["points3d"];
-        view = o["view"];
-
+        inputs.declare(&MatToPointCloudXYZRGB::points3d, "points", "The 3d points.").required(true);
+        outputs.declare(&MatToPointCloudXYZRGB::cloud_out, "point_cloud", "The XYZRGB point cloud");
       }
 
       int
       process(const tendrils& i, const tendrils& o)
       {
-
-        typedef pcl::PointCloud<Point> CloudT;
-        typedef pcl::PointCloud<pcl::PointXYZRGBNormal> CloudNormalT;
-
         //extract the cloud
-        CloudT::Ptr cloud(new CloudT);
+        CloudType::Ptr cloud(new CloudType);
         cvToCloudXYZRGB(*points3d, *cloud, *image, *mask, false);
-        pcl::KdTree<Point>::Ptr tree_;
-        pcl::NormalEstimation<Point, pcl::Normal> impl;
-        pcl::PointCloud<pcl::Normal> normals;
-        tree_.reset(new pcl::KdTreeFLANN<Point>);
-        impl.setSearchMethod(tree_);
-
-        impl.setInputCloud(cloud);
-        impl.setKSearch(50);
-        impl.compute(normals);
-
-        CloudNormalT::Ptr cloud_with_normals(new CloudNormalT);
-        pcl::concatenateFields(*cloud, normals, *cloud_with_normals);
-        {
-          CloudNormalT::Ptr tempc(new CloudNormalT);
-          bool inverse = true;
-          Eigen::Affine3f transform = RT2Transform(*R, *T, inverse); //compute the inverse transform
-          pcl::transformPointCloudWithNormals(*cloud_with_normals, *tempc, transform);
-          cloud_with_normals.swap(tempc);
-        }
-        *view = cloud_with_normals;
+        *cloud_out = cloud;
         return ecto::OK;
       }
-      ecto::spore<cv::Mat> R, T, mask, image, points3d;
+      ecto::spore<cv::Mat> mask, image, points3d;
       ecto::spore<CloudOutT> cloud_out;
 
     };
-#endif
   }
 }
 
 ECTO_CELL( conversion, object_recognition::conversion::MatToPointCloudXYZ, "MatToPointCloudXYZ",
           "Given a cv::Mat, convert it to pcl::PointCloud<pcl::PointXYZ>.");
+ECTO_CELL( conversion, object_recognition::conversion::MatToPointCloudXYZRGB, "MatToPointCloudXYZRGB",
+          "Given a cv::Mat, convert it to pcl::PointCloud<pcl::PointXYZRGB>.");
