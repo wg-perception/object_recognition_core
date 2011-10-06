@@ -29,4 +29,4 @@ pipeline1:
     sensor_error: 0.02
 
 # The list of object_ids to analyze
-object_ids: [ "e2449bdc43fd6d9dd646fcbcd00d8197" ]
+object_ids: [ "afff0873166324e607c29fb06b40d693" ]

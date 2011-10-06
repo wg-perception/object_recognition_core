@@ -82,7 +82,7 @@ namespace object_recognition
 
       outputs.declare<PoseArrayMsgPtr>("pose_message", "The poses");
       outputs.declare<ObjectIdsMsgPtr>("object_ids_message", "The poses");
-      outputs.declare<MarkerArrayMsgPtr>("markers", "Visualization markers for ROS.");
+      outputs.declare<MarkerArrayMsgPtr>("marker_message", "Visualization markers for ROS.");
     }
 
     void
@@ -156,6 +156,9 @@ namespace object_recognition
           marker.pose = msg_pose;
           marker.lifetime = ros::Duration(5);
           marker.header = pose_array_msg.header;
+          marker.scale.x = 1;
+          marker.scale.y = 1;
+          marker.scale.z = 1;
           //http://localhost:5984/object_recognition/_design/models/_view/by_object_id_and_mesh?key=%2212a1e6eb663a41f8a4fb9baa060f191c%22
           marker.mesh_resource = "http://localhost:5984/object_recognition/" + get_mesh_id((*object_ids_)[i])
                                  + "/mesh.stl";
@@ -179,7 +182,7 @@ namespace object_recognition
 
       outputs["pose_message"] << PoseArrayMsgPtr(new PoseArrayMsg(pose_array_msg));
       outputs["object_ids_message"] << ObjectIdsMsgPtr(new ObjectIdsMsg(object_ids_msg));
-      outputs["markers"] << MarkerArrayMsgPtr(new MarkerArrayMsg(marker_array));
+      outputs["marker_message"] << MarkerArrayMsgPtr(new MarkerArrayMsg(marker_array));
       return 0;
     }
   private:
