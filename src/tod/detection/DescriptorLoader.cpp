@@ -100,9 +100,10 @@ namespace object_recognition
         }
         if ((model_ids_.size() != object_ids_.size()) || (model_ids_.empty()))
         {
-          std::cerr << object_ids_.size() << " object ids given and " << model_ids_.size() << " model ids given."
+          std::stringstream ss;
+          ss << object_ids_.size() << " object ids given and " << model_ids_.size() << " model ids given."
                     << std::endl;
-          throw;
+          throw std::runtime_error(ss.str());
         }
 
         // load the descriptors from the DB

@@ -13,17 +13,29 @@ SinkTypes = type('SourceTypes', (object,),
 
                    )
 
+def object_to_models_mapping(db,object_ids):
+    from object_recognition import models
+    #run a view to get all of the meshes for the given objects.
+    r = models.Model.by_object_id_and_mesh(db)
+    mapping = {}
+    for x in r:
+        mapping[str(x.object_id)] = x.id
+    return mapping 
+
+
 class Sink(object):
     '''
     An RGB, Depth Map source.
     '''
     @staticmethod
-    def create_sink(sink_type=SinkTypes.publisher, *args, **kwargs):
+    def create_sink(sink_type=SinkTypes.publisher,mapping=None, *args, **kwargs):
         from .ros.sink import Publisher
         #extend this dict as necessary
         sinks = {SinkTypes.publisher:Publisher,
                  SinkTypes.csv_writer:GuessCsvWriter
                  }
+        if sink_type == SinkTypes.publisher:
+            return Publisher(mapping=mapping,**kwargs)
         return sinks[sink_type](*args, **kwargs)
 
     @staticmethod
@@ -34,15 +46,16 @@ class Sink(object):
                             help='The source type to use. default(%(default)s)')
 
     @staticmethod
-    def parse_arguments(obj):
+    def parse_arguments(obj,db,object_ids):
         if type(obj).__name__ == 'dict':
             dic = obj
         else:
             dic = obj.__dict__
 
         sink = None
+        mapping = object_to_models_mapping(db,object_ids)
         if 'sink_type' in dic:
-            sink = Sink.create_sink(sink_type=dic['sink_type'])
+            sink = Sink.create_sink(sink_type=dic['sink_type'],mapping=mapping)
         else:
             raise RuntimeError("Could not create a sink from the given args! %s" % str(dic))
         return _assert_sink_interface(sink)

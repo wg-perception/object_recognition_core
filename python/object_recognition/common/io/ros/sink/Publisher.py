@@ -22,12 +22,13 @@ class Publisher(ecto.BlackBox):
         p.declare('pose_topic', 'The ROS topic to use for the pose array.', 'poses')
         p.declare('object_ids_topic', 'The ROS topic to use for the object meta info string', 'object_ids')
         p.declare('latched', 'Determines if the topics will be latched.', True)
+        p.declare('mapping', 'A mapping from object id to mesh id', {'na':'na'})
 
     def declare_io(self, _p, i, _o):
         i.forward_all('_pose_array_assembler')
 
     def configure(self, p, _i, _o):
-        self._pose_array_assembler = Publisher._pose_array_assembler()
+        self._pose_array_assembler = Publisher._pose_array_assembler(mapping=p.mapping)
         self._pose_pub = Publisher._pose_pub(topic_name=p.pose_topic, latched=p.latched)
         self._object_ids_pub = Publisher._object_ids_pub(topic_name=p.object_ids_topic, latched=p.latched)
     def connections(self):

@@ -53,6 +53,8 @@
 
 #include "object_recognition/common/types.h"
 
+namespace bp = boost::python;
+
 namespace object_recognition
 {
   struct PoseArrayAssembler
@@ -65,6 +67,12 @@ namespace object_recognition
     typedef std_msgs::String ObjectIdsMsg;
 
     static void
+    declare_params(ecto::tendrils& params)
+    {
+      params.declare<bp::object>("mapping", "Mapping from object ids to mesh ids.").required(true);
+    }
+
+    static void
     declare_io(const ecto::tendrils& params, ecto::tendrils& inputs, ecto::tendrils& outputs)
     {
       inputs.declare<std::vector<ObjectId> >("object_ids", "the id's of the found objects");
@@ -74,7 +82,7 @@ namespace object_recognition
 
       outputs.declare<PoseArrayMsgPtr>("pose_message", "The poses");
       outputs.declare<ObjectIdsMsgPtr>("object_ids_message", "The poses");
-      outputs.declare<MarkerArrayMsgPtr>("markers","Visualization markers for ROS.");
+      outputs.declare<MarkerArrayMsgPtr>("markers", "Visualization markers for ROS.");
     }
 
     void
@@ -84,6 +92,23 @@ namespace object_recognition
       Ts_ = inputs["Ts"];
       image_message_ = inputs["image_message"];
       object_ids_ = inputs["object_ids"];
+      bp::object mapping;
+      params["mapping"] >> mapping;
+      bp::list l = bp::dict(mapping).items();
+      for (int j = 0, end = bp::len(l); j < end; ++j)
+      {
+        bp::object key = l[j][0];
+        bp::object value = l[j][1];
+        std::string object_id = bp::extract<std::string>(key);
+        std::string mesh_id = bp::extract<std::string>(value);
+        mapping_[object_id] = mesh_id;
+      }
+    }
+
+    std::string
+    get_mesh_id(const std::string& object_id)
+    {
+      return mapping_[object_id];
     }
 
     int
@@ -96,12 +121,12 @@ namespace object_recognition
       std::string frame_id = (*image_message_)->header.frame_id;
       pose_array_msg.header.stamp = time;
       pose_array_msg.header.frame_id = frame_id;
+      MarkerArrayMsg marker_array;
 
       // Create poses and fill them in the message
       {
         std::vector<geometry_msgs::Pose> &poses = pose_array_msg.poses;
         poses.resize(Rs_->size());
-        MarkerArrayMsg marker_array;
 
         unsigned int i;
         for (i = 0; i < Rs_->size(); ++i)
@@ -132,7 +157,9 @@ namespace object_recognition
           marker.lifetime = ros::Duration(5);
           marker.header = pose_array_msg.header;
           //http://localhost:5984/object_recognition/_design/models/_view/by_object_id_and_mesh?key=%2212a1e6eb663a41f8a4fb9baa060f191c%22
-          marker.mesh_resource = ""
+          marker.mesh_resource = "http://localhost:5984/object_recognition/" + get_mesh_id((*object_ids_)[i])
+                                 + "/mesh.stl";
+          marker_array.markers.push_back(marker);
         }
       }
 
@@ -150,11 +177,9 @@ namespace object_recognition
         object_ids_msg.data = ssparams.str();
       }
 
-
-
       outputs["pose_message"] << PoseArrayMsgPtr(new PoseArrayMsg(pose_array_msg));
       outputs["object_ids_message"] << ObjectIdsMsgPtr(new ObjectIdsMsg(object_ids_msg));
-
+      outputs["markers"] << MarkerArrayMsgPtr(new MarkerArrayMsg(marker_array));
       return 0;
     }
   private:
@@ -162,6 +187,8 @@ namespace object_recognition
     ecto::spore<std::vector<cv::Mat> > Ts_;
     ecto::spore<std::vector<std::string> > object_ids_;
     ecto::spore<sensor_msgs::ImageConstPtr> image_message_;
+
+    std::map<std::string, std::string> mapping_;
   };
 }
 
