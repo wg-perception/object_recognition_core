@@ -7,9 +7,11 @@ import couchdb
 import ecto
 from feature_descriptor import FeatureDescriptor
 from ecto_object_recognition import tod_detection
-from ecto_opencv import features2d, highgui
+from ecto_opencv import features2d, highgui, imgproc
 from object_recognition.common.utils import json_helper
 from object_recognition import dbtools, models
+import ecto_ros, ecto_sensor_msgs
+ImagePub = ecto_sensor_msgs.Publisher_Image
 
 class TodDetectorLoader(ecto.BlackBox):
     """
@@ -108,15 +110,24 @@ class TodDetector(ecto.BlackBox):
                 self.feature_descriptor['descriptors'] >> self.descriptor_matcher['descriptors'],
                 self.descriptor_matcher['matches', 'matches_3d'] >> self.guess_generator['matches', 'matches_3d'] ]
 
+        pub_features = ImagePub("Features Pub", topic_name='features')
+        cvt_color = imgproc.cvtColor(flag=imgproc.RGB2GRAY)
+
+        message_cvt = ecto_ros.Mat2Image(frame_id='/camera_rgb_optical_frame')
+        draw_keypoints = features2d.DrawKeypoints()
+        connections += [   self.image_duplicator[:] >> cvt_color[:],
+                           cvt_color[:] >> draw_keypoints['image'],
+                           self.feature_descriptor['keypoints'] >> draw_keypoints['keypoints'],
+                           draw_keypoints['image'] >> message_cvt[:],
+                           message_cvt[:] >> pub_features[:],
+                           ]
+
         if self._display:
             # display the found keypoints
             image_view = highgui.imshow(name="RGB")
             keypoints_view = highgui.imshow(name="Keypoints")
-            draw_keypoints = features2d.DrawKeypoints()
 
             connections += [ self.image_duplicator[:] >> image_view['image'],
-                           self.image_duplicator[:] >> draw_keypoints['image'],
-                           self.feature_descriptor['keypoints'] >> draw_keypoints['keypoints'],
                            draw_keypoints['image'] >> keypoints_view['image']
                            ]
 

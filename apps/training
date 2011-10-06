@@ -11,7 +11,7 @@ DEBUG = False
 ########################################################################################################################
 
 if __name__ == '__main__':
-    params, args, pipeline_params, do_display, db_dict, db = read_arguments()
+    params, args, pipeline_params, do_display, db_dict, db = read_arguments(training=True)
 
     for object_id in params['object_ids']:
         object_id = object_id.encode('ascii')
@@ -45,11 +45,12 @@ if __name__ == '__main__':
 
             # connect the output
             main_plasm.connect(trainer['points', 'descriptors'] >> db_writer['points', 'descriptors'])
-    
+
         if DEBUG:
             #render the DAG with dot
             print main_plasm.viz()
             ecto.view_plasm(main_plasm)
-    
+
+        print >> open('training.dot', 'wt'), main_plasm.viz()
         sched = ecto.schedulers.Singlethreaded(main_plasm)
         sched.execute(niter=1)

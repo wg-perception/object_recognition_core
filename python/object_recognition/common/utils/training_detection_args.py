@@ -8,7 +8,7 @@ import couchdb
 import os
 import yaml
 
-def read_arguments(parser=None):
+def read_arguments(parser=None, training=False):
     """
     Returns:
     params, pipeline_params, db_dict, db
@@ -25,7 +25,8 @@ def read_arguments(parser=None):
     parser.add_argument('--object_names', help='If set, it overrides the list of object names in the config file')
     parser.add_argument('--do_display', help='If set, it will display some windows with temporary results',
                        default=False, action='store_true')
-
+    if training:
+        parser.add_argument('--recompute', help='If specified then all models requested will be recomputed.', default=False, action='store_true')
     args = parser.parse_args()
 
     # define the input
@@ -43,24 +44,25 @@ def read_arguments(parser=None):
 
     # read the object_ids
     object_ids = []
-    if args.object_ids:
-        object_ids.extend(args.object_ids[1:-1].split(','))
-    if params.get('object_ids', None):
-        object_ids.extend(params['object_ids'])
-
-    object_names = []
-    if args.object_names:
-        object_names.extend(args.object_names[1:-1].split(','))
-    if params.get('object_names', None):
-        object_names.extend(params['object_names'])
-    if object_names:
-        for object_name in args.object_names[1:-1].split(','):
-            object_ids.extend(models.objects_by_name(db, object_name))
-
-    if args.object_ids == 'all' or args.object_names == 'all' or params.get('object_ids', None) == 'all' or \
-                                                params.get('object_names', None) == 'all':
-        object_ids = [ obj.id for obj in models.Object.all(db) ]
-    params['object_ids'] = list(set(object_ids))
+    for obj in (args.__dict__, params):
+        ids = obj.get('object_ids', None)
+        names = obj.get('object_names', None)
+        if 'all' in (ids, names):
+            object_ids = [ str(x.id) for x in models.Object.all(db) ] #unicode without the str()
+        elif ids:
+            object_ids = ids[1:-1].split(',')
+            break
+        elif names:
+            for object_name in names[1:-1].split(','):
+                object_ids += [str(x.id) for x in models.objects_by_name(db, object_name)]
+            break
+    object_ids = list(set(object_ids))
+    if not getattr(args, 'recompute', True): #strip out all precomputed models
+        for m in models.Model.by_object_id_and_TOD(db):
+            if str(m.object_id) in object_ids:
+                object_ids.remove(m.object_id)
+    print "computing for", object_ids
+    params['object_ids'] = object_ids
 
     pipeline_params = []
     for key , value in params.iteritems():

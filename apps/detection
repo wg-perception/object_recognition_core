@@ -92,6 +92,8 @@ if __name__ == '__main__':
         print plasm.viz()
         ecto.view_plasm(plasm)
 
+    print >> open('detection.dot', 'wt'), plasm.viz()
+
     # execute the pipeline
     sched = ecto.schedulers.Threadpool(plasm)
     sched.execute()

@@ -246,7 +246,7 @@ namespace object_recognition
           marker.color.b = 1;
           marker.color.r = 1;
           marker.scale.z = 0.03;
-          marker.lifetime = ros::Duration(5);
+          marker.lifetime = ros::Duration(10);
 
           marker_array.markers.push_back(marker);
         }
