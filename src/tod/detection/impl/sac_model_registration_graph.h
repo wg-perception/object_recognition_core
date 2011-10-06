@@ -210,7 +210,8 @@ namespace object_recognition
         unsigned int minimal_size = 5;
         std::vector<unsigned int> vertices;
         graph.FindClique(vertices, minimal_size);
-        if (vertices.size() < minimal_size) {
+        if (vertices.size() < minimal_size)
+        {
           in_inliers.clear();
           return;
         }
@@ -237,15 +238,19 @@ namespace object_recognition
       BuildNeighbors()
       {
         neighbors_.resize(sample_adjacency_.rows);
+        size_t max_neighbors_size = 10;
         for (int j = 0; j < sample_adjacency_.rows; ++j)
         {
           const uchar * row = sample_adjacency_.ptr(j);
+          std::vector<unsigned int> & neighbors = neighbors_[j];
+          neighbors.reserve(max_neighbors_size);
           for (int i = 0; i < sample_adjacency_.cols; ++i)
           {
             // If two points can belong to the same sample set
             if (row[i])
-              neighbors_[j].push_back(i);
+              neighbors.push_back(i);
           }
+          max_neighbors_size = std::max(max_neighbors_size, neighbors.size());
           if (neighbors_[j].size() >= 3)
             sample_pool_.push_back(j);
         }
