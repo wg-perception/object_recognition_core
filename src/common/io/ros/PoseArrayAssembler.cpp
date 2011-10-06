@@ -154,11 +154,17 @@ namespace object_recognition
 
           visualization_msgs::Marker marker;
           marker.pose = msg_pose;
+          marker.type = visualization_msgs::Marker::MESH_RESOURCE;
+          marker.action = visualization_msgs::Marker::ADD;
           marker.lifetime = ros::Duration(5);
           marker.header = pose_array_msg.header;
           marker.scale.x = 1;
           marker.scale.y = 1;
           marker.scale.z = 1;
+          marker.color.a = 0.75;
+          marker.color.g = 0.2;
+          marker.color.b = 0.70;
+          marker.color.r = 0.75;
           //http://localhost:5984/object_recognition/_design/models/_view/by_object_id_and_mesh?key=%2212a1e6eb663a41f8a4fb9baa060f191c%22
           marker.mesh_resource = "http://localhost:5984/object_recognition/" + get_mesh_id((*object_ids_)[i])
                                  + "/mesh.stl";

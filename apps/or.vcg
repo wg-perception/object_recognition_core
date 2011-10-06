@@ -3,6 +3,12 @@ Background\ ColorG=0
 Background\ ColorB=0
 Fixed\ Frame=/camera_rgb_optical_frame
 Target\ Frame=<Fixed Frame>
+Camera.Enabled=1
+Camera.Image\ Rendering=background & overlay
+Camera.Image\ Topic=/camera/rgb/image_mono
+Camera.Overlay\ Alpha=0.5
+Camera.Transport\ Hint=raw
+Camera.Zoom\ Factor=1
 Grid.Alpha=0.5
 Grid.Cell\ Size=1
 Grid.ColorR=0.5
@@ -18,13 +24,9 @@ Grid.OffsetZ=0
 Grid.Plane=0
 Grid.Plane\ Cell\ Count=50
 Grid.Reference\ Frame=<Fixed Frame>
-Image.Enabled=1
-Image.Image\ Topic=/camera/rgb/image_mono
-Image.Transport\ Hint=raw
-MarkerArray.=1
 MarkerArray.Enabled=1
 MarkerArray.Marker\ Array\ Topic=/markers
-Point\ Cloud2.Alpha=1
+Point\ Cloud2.Alpha=0.5
 Point\ Cloud2.Billboard\ Size=0.01
 Point\ Cloud2.Color\ Transformer=RGB8
 Point\ Cloud2.Decay\ Time=0
@@ -55,8 +57,8 @@ Point\ Cloud2..IntensityUse\ full\ RGB\ spectrum=0
 Tool\ 2D\ Nav\ GoalTopic=move_base_simple/goal
 Tool\ 2D\ Pose\ EstimateTopic=initialpose
 Camera\ Type=rviz::OrbitViewController
-Camera\ Config=3.14059 0.0924118 0.873466 0 0 0
-Property\ Grid\ State=selection=MarkerArray.Enabled.MarkerArray.StatusTopStatus;expanded=.Global Options,Point Cloud2.Enabled,Image.Enabled,MarkerArray.Enabled,MarkerArray.Enabled.MarkerArray.StatusTopStatus,MarkerArray.Enabled.MarkerArray.Namespaces;scrollpos=0,1;splitterpos=301,603;ispageselected=1
+Camera\ Config=3.03101 6.25241 0.696443 0.0807086 0.0589073 0.0507456
+Property\ Grid\ State=selection=Camera.Enabled.Camera.Image Topic;expanded=.Global Options,Point Cloud2.Enabled,MarkerArray.Enabled,MarkerArray.Enabled.MarkerArray.Namespaces,Camera.Enabled;scrollpos=0,3;splitterpos=447,895;ispageselected=1
 [Display0]
 Name=Grid
 Package=rviz
@@ -66,10 +68,10 @@ Name=Point Cloud2
 Package=rviz
 ClassName=rviz::PointCloud2Display
 [Display2]
-Name=Image
-Package=rviz
-ClassName=rviz::ImageDisplay
-[Display3]
 Name=MarkerArray
 Package=rviz
 ClassName=rviz::MarkerArrayDisplay
+[Display3]
+Name=Camera
+Package=rviz
+ClassName=rviz::CameraDisplay
