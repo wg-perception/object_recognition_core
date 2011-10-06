@@ -57,8 +57,8 @@ def read_arguments(parser=None):
         for object_name in args.object_names[1:-1].split(','):
             object_ids.extend(models.objects_by_name(db, object_name))
 
-    if args.object_ids == 'all' or args.object_names == 'all' or params['object_ids'] == 'all' or \
-                                                params['object_names'] == 'all':
+    if args.object_ids == 'all' or args.object_names == 'all' or params.get('object_ids', None) == 'all' or \
+                                                params.get('object_names', None) == 'all':
         object_ids = [ obj.id for obj in models.Object.all(db) ]
     params['object_ids'] = list(set(object_ids))
 
