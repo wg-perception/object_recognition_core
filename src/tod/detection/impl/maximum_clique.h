@@ -67,8 +67,6 @@ namespace object_recognition
       {
         adjacency_ = cv::Mat_<uchar>::zeros(vertex_number, vertex_number);
         n_vertices_ = vertex_number;
-        neighbors_.clear();
-        neighbors_.resize(vertex_number);
       }
 
       /** Add an edge to the graph */
@@ -138,8 +136,6 @@ namespace object_recognition
 
       /** Mask for the edges */
       cv::Mat_<uchar> adjacency_;
-      /** Store the neighbors of each vertex */
-      std::vector<Vertices> neighbors_;
       /** The number of vertices in the graph */
       unsigned int n_vertices_;
 

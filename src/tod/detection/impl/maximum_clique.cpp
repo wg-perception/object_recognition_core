@@ -39,10 +39,6 @@
 
 #include "maximum_clique.h"
 
-#ifdef DEBUG
-#include <valgrind/callgrind.h>
-#endif
-
 namespace object_recognition
 {
   namespace maximum_clique
@@ -113,29 +109,16 @@ namespace object_recognition
     {
       unsigned int R_size = R.size();
       std::vector<std::pair<unsigned int, Vertex> > degrees(R_size);
-      Vertices R_tmp = R;
-      std::sort(R_tmp.begin(), R_tmp.end());
       for (unsigned int i = 0; i < R_size; ++i)
       {
-        // Compute the members of R that are also neighbors of R[i]
-        size_t intersection_size = 0;
-
-        Vertices::const_iterator first1 = R_tmp.begin(), last1 = R_tmp.end(), first2 = neighbors_[R_tmp[i]].begin(),
-            last2 = neighbors_[R_tmp[i]].end();
-        while (first1 != last1 && first2 != last2)
-        {
-          if (*first1 < *first2)
-            ++first1;
-          else if (*first2 < *first1)
-            ++first2;
-          else
+        degrees[i] = std::make_pair(0, R[i]);
+        const uchar * row = adjacency_.ptr(R[i]);
+        for (unsigned int j = 0; j < i; ++j)
+          if (row[R[j]])
           {
-            ++first1;
-            ++first2;
-            ++intersection_size;
+            ++degrees[i].first;
+            ++degrees[j].first;
           }
-        }
-        degrees[i] = std::make_pair(intersection_size, R_tmp[i]);
       }
       // Sort the vertices according to their degree
       std::sort(degrees.begin(), degrees.end());
@@ -180,8 +163,8 @@ namespace object_recognition
             ColorSort(Rp, Cp, QMax, Q);
             ++S[level];
             ++all_steps_;
-            //if (all_steps_ > 100000)
-            //return;
+            if (all_steps_ > 100000)
+              return;
             MaxCliqueDyn(Rp, Cp, level + 1, minimal_size, QMax, Q, S, SOld);
           }
           else if (Q.size() > QMax.size())
@@ -228,13 +211,7 @@ namespace object_recognition
       // +1 as we start at level 1
       std::vector<unsigned int> S(n_vertices_ + 1, 0), SOld(n_vertices_ + 1, 0);
 
-#ifdef DEBUG
-      CALLGRIND_START_INSTRUMENTATION;
-#endif
       MaxCliqueDyn(R, C, 1, minimal_size, QMax, Q, S, SOld);
-#ifdef DEBUG
-      CALLGRIND_STOP_INSTRUMENTATION;
-#endif
     }
 
     void
@@ -248,20 +225,6 @@ namespace object_recognition
     {
       adjacency_(vertex_1, vertex_2) = 1;
       adjacency_(vertex_2, vertex_1) = 1;
-
-      std::vector<Vertex> vec_tmp_1(neighbors_[vertex_1].size() + 1);
-      std::vector<Vertex> vec_tmp_2(neighbors_[vertex_2].size() + 1);
-      std::vector<Vertex> vec_1(1, vertex_1), vec_2(1, vertex_2);
-      vec_tmp_1.resize(
-          std::set_union(neighbors_[vertex_1].begin(), neighbors_[vertex_1].end(), vec_2.begin(), vec_2.end(),
-                         vec_tmp_1.begin())
-          - vec_tmp_1.begin());
-      vec_tmp_2.resize(
-          std::set_union(neighbors_[vertex_2].begin(), neighbors_[vertex_2].end(), vec_1.begin(), vec_1.end(),
-                         vec_tmp_2.begin())
-          - vec_tmp_2.begin());
-      neighbors_[vertex_1] = vec_tmp_1;
-      neighbors_[vertex_2] = vec_tmp_2;
     }
 
     /** Given a vertex, delete all the edges containing it */
@@ -270,14 +233,6 @@ namespace object_recognition
     {
       adjacency_.col(in_vertex).setTo(cv::Scalar(0));
       adjacency_.row(in_vertex).setTo(cv::Scalar(0));
-
-      BOOST_FOREACH(Vertex vertex, neighbors_[in_vertex])
-          {
-            neighbors_[vertex].resize(
-                std::remove(neighbors_[vertex].begin(), neighbors_[vertex].end(), in_vertex)
-                - neighbors_[vertex].begin());
-          }
-      neighbors_[in_vertex].clear();
     }
     /** Given a vertex, delete all the edges containing it */
     void
@@ -285,13 +240,6 @@ namespace object_recognition
     {
       adjacency_(vertex_1, vertex_2) = 0;
       adjacency_(vertex_2, vertex_1) = 0;
-
-      neighbors_[vertex_1].resize(
-          std::remove(neighbors_[vertex_1].begin(), neighbors_[vertex_1].end(), vertex_2)
-          - neighbors_[vertex_1].begin());
-      neighbors_[vertex_2].resize(
-          std::remove(neighbors_[vertex_2].begin(), neighbors_[vertex_2].end(), vertex_1)
-          - neighbors_[vertex_2].begin());
     }
   }
 }

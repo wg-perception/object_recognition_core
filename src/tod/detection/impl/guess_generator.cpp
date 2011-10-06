@@ -46,6 +46,10 @@
 #include "guess_generator.h"
 #include "sac_model_registration_graph.h"
 
+#ifdef DEBUG
+#include <valgrind/callgrind.h>
+#endif
+
 namespace object_recognition
 {
   namespace tod
@@ -313,6 +317,10 @@ namespace object_recognition
     RansacAdjacency(const ObjectPoints & object_points, float sensor_error, unsigned int n_ransac_iterations,
                     std::vector<int>& inliers)
     {
+#ifdef DEBUG
+      CALLGRIND_START_INSTRUMENTATION;
+#endif
+
       // Perform RANSAC on the input clouds, making sure to include adjacent pairs in the samples
       SampleConsensusModelRegistrationGraph<pcl::PointXYZ>::Ptr model(
           new SampleConsensusModelRegistrationGraph<pcl::PointXYZ>(object_points.query_points(),
@@ -402,6 +410,9 @@ namespace object_recognition
         }
 
       }
+#ifdef DEBUG
+      CALLGRIND_STOP_INSTRUMENTATION;
+#endif
       return coefficients;
     }
   }
