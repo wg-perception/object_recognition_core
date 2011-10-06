@@ -102,22 +102,23 @@ namespace object_recognition
       std::vector<unsigned int> indices_to_remove;
       indices_to_remove.reserve(query_indices_.size());
       std::vector<unsigned int>::const_iterator iter = query_indices.begin();
-      for (unsigned int i = 0; i < query_indices_.size(); ++i)
-      {
-        unsigned int query_index = query_indices_[i];
-        if (query_index < *iter)
-          continue;
-        // If the match has a keypoint in the inliers, remove the match
-        if (query_index == *iter)
-        {
-          indices_to_remove.push_back(i);
-          continue;
-        }
-        while ((iter != end) && (query_index > *iter))
-          ++iter;
-        if (iter == end)
-          break;
-      }
+      BOOST_FOREACH(unsigned int index, valid_indices_)
+          {
+            unsigned int query_index = query_indices_[index];
+            if (query_index < *iter)
+              continue;
+            // If the match has a keypoint in the inliers, remove the match
+            while ((iter != end) && (query_index > *iter))
+              ++iter;
+            if (query_index == *iter)
+            {
+              indices_to_remove.push_back(index);
+              continue;
+            }
+
+            if (iter == end)
+              break;
+          }
       InvalidateIndices(indices_to_remove);
     }
 
@@ -290,7 +291,7 @@ namespace object_recognition
         // Draw the keypoints with a different color per object
         for (OpenCVIdToObjectPoints::iterator query_iterator = object_points.begin();
             query_iterator != object_points.end(); ++query_iterator)
-            {
+        {
           std::vector<unsigned int> query_indices = query_iterator->second.query_indices();
           std::vector<unsigned int>::iterator end = std::unique(query_indices.begin(), query_indices.end());
           query_indices.resize(end - query_indices.begin());
@@ -312,7 +313,7 @@ namespace object_recognition
     RansacAdjacency(const ObjectPoints & object_points, float sensor_error, unsigned int n_ransac_iterations,
                     std::vector<int>& inliers)
     {
-
+      // Perform RANSAC on the input clouds, making sure to include adjacent pairs in the samples
       SampleConsensusModelRegistrationGraph<pcl::PointXYZ>::Ptr model(
           new SampleConsensusModelRegistrationGraph<pcl::PointXYZ>(object_points.query_points(),
                                                                    object_points.valid_indices(), sensor_error,
@@ -380,7 +381,7 @@ namespace object_recognition
               if ((p_tr - pt_tgt).squaredNorm() < thresh)
                 extra_inliers.push_back(index);
             }
-        std::cout << " added : " << extra_inliers.size() << std::endl;
+
         // Add those extra inliers to the inliers and remove them from the valid indices
         {
           std::vector<int> tmp_inliers = inliers;
@@ -396,7 +397,6 @@ namespace object_recognition
           break;
         if (extra_inliers.empty())
         {
-          break;
           do_final = true;
           thresh *= 4;
         }
