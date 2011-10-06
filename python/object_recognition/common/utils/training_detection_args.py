@@ -21,10 +21,9 @@ def read_arguments(parser=None):
         parser = ObjectRecognitionParser()
 
     parser.add_argument('-c', '--config_file', help='Config file')
-    group = parser.add_mutually_exclusive_group()
-    group.add_argument('--object_ids', help='If set, it overrides the list of object_ids in the config file')
-    group.add_argument('--object_names', help='If set, it overrides the list of object names in the config file')
-    group.add_argument('--do_display', help='If set, it will display some windows with temporary results',
+    parser.add_argument('--object_ids', help='If set, it overrides the list of object_ids in the config file')
+    parser.add_argument('--object_names', help='If set, it overrides the list of object names in the config file')
+    parser.add_argument('--do_display', help='If set, it will display some windows with temporary results',
                        default=False, action='store_true')
 
     args = parser.parse_args()
@@ -43,16 +42,25 @@ def read_arguments(parser=None):
         db = dbtools.init_object_databases(couchdb.Server(db_dict['root']))
 
     # read the object_ids
-    if hasattr(args, 'object_ids') and args.object_ids:
-        object_ids = args.object_ids[1:-1].split(',')
-    elif hasattr(args, 'object_names') and args.object_names:
-        object_ids = []
+    object_ids = []
+    if args.object_ids:
+        object_ids.extend(args.object_ids[1:-1].split(','))
+    if params.get('object_ids', None):
+        object_ids.extend(params['object_ids'])
+
+    object_names = []
+    if args.object_names:
+        object_names.extend(args.object_names[1:-1].split(','))
+    if params.get('object_names', None):
+        object_names.extend(params['object_names'])
+    if object_names:
         for object_name in args.object_names[1:-1].split(','):
-            object_ids.extend(models.objects_by_name(db['collection'], object_name))
-    else:
-        # just trust params['object_ids']
-        pass
-    params['object_ids'] = params['object_ids']
+            object_ids.extend(models.objects_by_name(db, object_name))
+
+    if args.object_ids == 'all' or args.object_names == 'all' or params['object_ids'] == 'all' or \
+                                                params['object_names'] == 'all':
+        object_ids = [ obj.id for obj in models.Object.all(db) ]
+    params['object_ids'] = list(set(object_ids))
 
     pipeline_params = []
     for key , value in params.iteritems():
