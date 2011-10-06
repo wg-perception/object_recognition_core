@@ -26,7 +26,7 @@ pipeline1:
   guess:
     n_ransac_iterations: 1000
     min_inliers: 25
-    sensor_error: 0.02
+    sensor_error: 0.01
 
 # The list of object_ids to analyze
 object_ids: [ "afff0873166324e607c29fb06b40d693" ]
