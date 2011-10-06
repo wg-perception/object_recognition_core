@@ -25,6 +25,8 @@
 
 namespace boost { namespace property_tree { namespace json_parser
 {
+  boost::spirit::classic::int_parser<long long> const
+      llint_p  = boost::spirit::classic::int_parser<long long>();
 
     ///////////////////////////////////////////////////////////////////////
     // Json parser context
@@ -233,7 +235,7 @@ namespace boost { namespace property_tree { namespace json_parser
                 
                 number 
                     =   strict_real_p 
-                        | int_p
+                        | int_p | uint_p |llint_p
                         ;
                 
                 string 

@@ -326,3 +326,11 @@ TEST(OR_db, JSONReadWrite)
   EXPECT_EQ(params1.get<std::string>("num2"), params2.get<std::string>("num2"));
   EXPECT_EQ(params1.get<std::string>("str"), params2.get<std::string>("str"));
 }
+
+TEST(OR_db, JSONReadBigInteger)
+{
+  boost::property_tree::ptree params1, params2;
+  std::stringstream ssparams1, ssparams2, ssparams3;
+  ssparams1 << "{\"num\":3372036854775808  }";
+  boost::property_tree::read_json(ssparams1, params1);
+}
