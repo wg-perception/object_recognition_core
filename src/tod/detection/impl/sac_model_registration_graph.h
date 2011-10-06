@@ -185,7 +185,7 @@ namespace object_recognition
               BOOST_FOREACH(int sample, samples_)
                   {
                     if (sample == inlier)
-                      continue;
+                      break;
                     if (!row[sample])
                     {
                       is_good = false;

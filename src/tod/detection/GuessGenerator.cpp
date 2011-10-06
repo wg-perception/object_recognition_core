@@ -173,6 +173,16 @@ namespace object_recognition
 
             std::cout << "***Starting object: " << opencv_object_id << std::endl;
 
+            {
+              std::vector<unsigned int> query_indices = object_points.query_indices();
+              std::sort(query_indices.begin(), query_indices.end());
+              std::vector<unsigned int>::iterator end = std::unique(query_indices.begin(), query_indices.end());
+              query_indices.resize(end - query_indices.begin());
+
+              std::cout << query_indices.size() << " keypoints in " << object_points.query_indices().size()
+                        << " matches" << std::endl;
+            }
+
             object_points.FillAdjacency(keypoints, spans.find(object_id)->second, *sensor_error_);
 
             // Keep processing the graph until there is no maximum clique of the right size
@@ -185,11 +195,10 @@ namespace object_recognition
               std::vector<int> inliers;
               Eigen::VectorXf coefficients;
 
-              std::cout << "* starting RANSAC" << std::endl;
               coefficients = RansacAdjacency(object_points, *sensor_error_, *n_ransac_iterations_, inliers);
 
               // If no pose was found, forget about all the connections in that clique
-              std::cout << "* n inliers: " << inliers.size() << std::endl;
+              std::cout << "RANSAC done with " << inliers.size() << " inliers" << std::endl;
 
               if (inliers.size() < *min_inliers_)
               {
@@ -263,31 +272,11 @@ namespace object_recognition
               std::cout << tvec << std::endl;
 
               // Figure out the matches to remove
-                std::vector<unsigned int> query_indices;
-                BOOST_FOREACH(unsigned int inlier, inliers)
+              std::vector<unsigned int> query_indices;
+              BOOST_FOREACH(unsigned int inlier, inliers)
                     query_indices.push_back(object_points.query_indices(inlier));
 
               object_points.InvalidateQueryIndices(query_indices);
-
-              if (*do_display_)
-              {
-                // Display the remaining keypoints
-                cv::Mat out_img = initial_image.clone();
-                // Draw the keypoints with a different color per object
-                query_indices.clear();
-                std::vector<int> valid_indices = object_points.valid_indices();
-                BOOST_FOREACH(unsigned int index, valid_indices)
-                      query_indices.push_back(object_points.query_indices(index));
-
-                std::vector<unsigned int>::iterator end = std::unique(query_indices.begin(), query_indices.end());
-                query_indices.resize(end - query_indices.begin());
-                std::vector<cv::KeyPoint> local_keypoints(query_indices.size());
-                for (unsigned int j = 0; j < query_indices.size(); ++j)
-                  local_keypoints[j] = keypoints[query_indices[j]];
-                cv::drawKeypoints(out_img, local_keypoints, out_img);
-                cv::namedWindow("left keypoints from objects", 0);
-                cv::imshow("left keypoints from objects", out_img);
-              }
             }
 
             // Save all the poses;
