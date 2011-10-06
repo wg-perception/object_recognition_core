@@ -263,14 +263,14 @@ namespace object_recognition
               std::cout << tvec << std::endl;
 
               // Figure out the matches to remove
-              if (*do_display_)
-              {
                 std::vector<unsigned int> query_indices;
                 BOOST_FOREACH(unsigned int inlier, inliers)
-                      query_indices.push_back(object_points.query_indices(inlier));
+                    query_indices.push_back(object_points.query_indices(inlier));
 
-                object_points.InvalidateQueryIndices(query_indices);
+              object_points.InvalidateQueryIndices(query_indices);
 
+              if (*do_display_)
+              {
                 // Display the remaining keypoints
                 cv::Mat out_img = initial_image.clone();
                 // Draw the keypoints with a different color per object
