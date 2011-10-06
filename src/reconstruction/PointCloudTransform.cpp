@@ -40,58 +40,39 @@ namespace object_recognition
     {
       typedef ecto::pcl::PointCloud CloudOutT;
       typedef pcl::PointXYZRGB Point;
-
-      static void
-      declare_params(tendrils& p)
-      {
-
-      }
+      typedef pcl::PointCloud<Point> CloudT;
+      typedef ecto::pcl::PointCloud CloudInT;
 
       static void
       declare_io(const tendrils& params, tendrils& inputs, tendrils& outputs)
       {
-        inputs.declare<cv::Mat>("R", "The the rotation matrix. 3x3.").required(true);
-        inputs.declare<cv::Mat>("T", "The translation vector. 3x1.").required(true);
-        inputs.declare<cv::Mat>("image", "The rgb image.").required(true);
-        inputs.declare<cv::Mat>("mask", "The binary mask for valid points.").required(true);
-        inputs.declare<cv::Mat>("points3d", "The 3d points.").required(true);
-        outputs.declare<CloudOutT>("view", "The current 3d view, masked. and transformed into object coordinates");
-      }
-
-      void
-      configure(const tendrils&p, const tendrils&i, const tendrils&o)
-      {
-        R = i["R"];
-        T = i["T"];
-        image = i["image"];
-        mask = i["mask"];
-        points3d = i["points3d"];
-        view = o["view"];
-
+        inputs.declare(&PointCloudTransform::R, "R", "Rotation matrix.").required(true);
+        inputs.declare(&PointCloudTransform::T, "T", "Translation vector.").required(true);
+        inputs.declare(&PointCloudTransform::cloudin, "cloud", "The input point cloud.").required(true);
+        outputs.declare(&PointCloudTransform::cloudout, "view",
+                        "The current 3d view transformed into object coordinates");
       }
 
       int
       process(const tendrils& i, const tendrils& o)
       {
 
-        typedef pcl::PointCloud<Point> CloudT;
         typedef pcl::PointCloud<pcl::PointXYZRGBNormal> CloudNormalT;
 
         //extract the cloud
-        CloudT::Ptr cloud(new CloudT);
-        cvToCloudXYZRGB(*points3d, *cloud,*image, *mask,false);
+        CloudT::ConstPtr cloud = cloudin->cast<CloudT>();
+
         pcl::KdTree<Point>::Ptr tree_;
         pcl::NormalEstimation<Point, pcl::Normal> impl;
         pcl::PointCloud<pcl::Normal> normals;
         tree_.reset(new pcl::KdTreeFLANN<Point>);
         impl.setSearchMethod(tree_);
-
         impl.setInputCloud(cloud);
         impl.setKSearch(50);
         impl.compute(normals);
 
         CloudNormalT::Ptr cloud_with_normals(new CloudNormalT);
-        pcl::concatenateFields(*cloud,normals,*cloud_with_normals);
+        pcl::concatenateFields(*cloud, normals, *cloud_with_normals);
         {
           CloudNormalT::Ptr tempc(new CloudNormalT);
           bool inverse = true;
@@ -99,11 +80,12 @@ namespace object_recognition
           pcl::transformPointCloudWithNormals(*cloud_with_normals, *tempc, transform);
           cloud_with_normals.swap(tempc);
         }
-        *view = cloud_with_normals;
+        *cloudout = cloud_with_normals;
         return ecto::OK;
       }
-      ecto::spore<cv::Mat> R, T, mask, image, points3d;
-      ecto::spore<CloudOutT> view;
+      ecto::spore<cv::Mat> R, T;
+      ecto::spore<CloudInT> cloudin;
+      ecto::spore<CloudOutT> cloudout;
 
     };
   }

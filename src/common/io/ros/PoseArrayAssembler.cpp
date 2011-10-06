@@ -47,6 +47,7 @@
 #include <std_msgs/String.h>
 #include <geometry_msgs/PoseArray.h>
 #include <sensor_msgs/Image.h>
+#include <visualization_msgs/MarkerArray.h>
 
 #include <opencv2/core/core.hpp>
 
@@ -57,6 +58,8 @@ namespace object_recognition
   struct PoseArrayAssembler
   {
     typedef geometry_msgs::PoseArrayConstPtr PoseArrayMsgPtr;
+    typedef visualization_msgs::MarkerArrayConstPtr MarkerArrayMsgPtr;
+    typedef visualization_msgs::MarkerArray MarkerArrayMsg;
     typedef geometry_msgs::PoseArray PoseArrayMsg;
     typedef std_msgs::StringConstPtr ObjectIdsMsgPtr;
     typedef std_msgs::String ObjectIdsMsg;
@@ -71,6 +74,7 @@ namespace object_recognition
 
       outputs.declare<PoseArrayMsgPtr>("pose_message", "The poses");
       outputs.declare<ObjectIdsMsgPtr>("object_ids_message", "The poses");
+      outputs.declare<MarkerArrayMsgPtr>("markers","Visualization markers for ROS.");
     }
 
     void
@@ -87,11 +91,17 @@ namespace object_recognition
     {
       PoseArrayMsg pose_array_msg;
       ObjectIdsMsg object_ids_msg;
+      // Publish the info
+      ros::Time time = ros::Time::now();
+      std::string frame_id = (*image_message_)->header.frame_id;
+      pose_array_msg.header.stamp = time;
+      pose_array_msg.header.frame_id = frame_id;
 
       // Create poses and fill them in the message
       {
         std::vector<geometry_msgs::Pose> &poses = pose_array_msg.poses;
         poses.resize(Rs_->size());
+        MarkerArrayMsg marker_array;
 
         unsigned int i;
         for (i = 0; i < Rs_->size(); ++i)
@@ -116,6 +126,13 @@ namespace object_recognition
           msg_pose.orientation.y = quaternion.y();
           msg_pose.orientation.z = quaternion.z();
           msg_pose.orientation.w = quaternion.w();
+
+          visualization_msgs::Marker marker;
+          marker.pose = msg_pose;
+          marker.lifetime = ros::Duration(5);
+          marker.header = pose_array_msg.header;
+          //http://localhost:5984/object_recognition/_design/models/_view/by_object_id_and_mesh?key=%2212a1e6eb663a41f8a4fb9baa060f191c%22
+          marker.mesh_resource = ""
         }
       }
 
@@ -130,12 +147,7 @@ namespace object_recognition
         object_ids_msg.data = ssparams.str();
       }
 
-      // Publish the info
-      ros::Time time = ros::Time::now();
 
-      std::string frame_id = (*image_message_)->header.frame_id;
-      pose_array_msg.header.stamp = time;
-      pose_array_msg.header.frame_id = frame_id;
 
       outputs["pose_message"] << PoseArrayMsgPtr(new PoseArrayMsg(pose_array_msg));
       outputs["object_ids_message"] << ObjectIdsMsgPtr(new ObjectIdsMsg(object_ids_msg));
