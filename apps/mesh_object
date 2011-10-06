@@ -132,7 +132,8 @@ def simple_mesh_session(dbs, session, args):
     meshlab(ply_name, mesh_name)
     if args.commit:
         upload_mesh(dbs, session, ply_name, mesh_name)
-    os.unlink(ply_name,mesh_name)
+    os.unlink(ply_name)
+    os.unlink(mesh_name)
 ###################################################################################################################
 def parse_args():
     parser = argparse.ArgumentParser(description='Computes a surface mesh of an object in the database')
