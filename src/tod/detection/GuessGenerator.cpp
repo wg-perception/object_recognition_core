@@ -76,9 +76,12 @@ namespace object_recognition
       static void
       declare_params(ecto::tendrils& params)
       {
-        params.declare<unsigned int>("min_inliers", "Minimum number of inliers", 15);
-        params.declare<unsigned int>("n_ransac_iterations", "Number of RANSAC iterations.", 1000);
-        params.declare<float>("sensor_error", "The error (in meters) from the Kinect", 0.01);
+        params.declare(&GuessGenerator::min_inliers_, "min_inliers", "Minimum number of inliers", 15);
+        params.declare(&GuessGenerator::n_ransac_iterations_, "n_ransac_iterations", "Number of RANSAC iterations.",
+                       1000);
+        params.declare(&GuessGenerator::sensor_error_, "sensor_error", "The error (in meters) from the Kinect", 0.01);
+        params.declare(&GuessGenerator::do_display_, "do_display", "If true, display temporary info through highgui",
+                       false);
       }
 
       static void
@@ -103,13 +106,7 @@ namespace object_recognition
       void
       configure(const tendrils& params, const tendrils& inputs, const tendrils& outputs)
       {
-        min_inliers_ = params.get<unsigned int>("min_inliers");
-        n_ransac_iterations_ = params.get<unsigned int>("n_ransac_iterations");
-
-        debug_ = true;
-        sensor_error_ = params.get<float>("sensor_error");
-
-        if (debug_)
+        if (*do_display_)
         {
           colors_.push_back(cv::Scalar(255, 255, 0));
           colors_.push_back(cv::Scalar(0, 255, 255));
@@ -157,7 +154,8 @@ namespace object_recognition
         {
           // Cluster the matches per object ID
           OpenCVIdToObjectPoints all_object_points;
-          ClusterPerObject(keypoints, point_cloud, matches, matches_3d, debug_, colors_, initial_image, all_object_points);
+          ClusterPerObject(keypoints, point_cloud, matches, matches_3d, *do_display_, colors_, initial_image,
+                           all_object_points);
 
           // For each object, build the connectivity graph between the matches
           std::vector<ObjectId> object_ids_final;
@@ -167,7 +165,7 @@ namespace object_recognition
           OpenCVIdToGraph graphs;
           for (OpenCVIdToObjectPoints::iterator query_iterator = all_object_points.begin();
               query_iterator != all_object_points.end(); ++query_iterator)
-              {
+          {
             // Create a graph for that object
             ObjectPoints & object_points = query_iterator->second;
             ObjectOpenCVId opencv_object_id = query_iterator->first;
@@ -175,7 +173,7 @@ namespace object_recognition
 
             std::cout << "***Starting object: " << opencv_object_id << std::endl;
 
-            object_points.FillAdjacency(keypoints, spans.find(object_id)->second, sensor_error_);
+            object_points.FillAdjacency(keypoints, spans.find(object_id)->second, *sensor_error_);
 
             // Keep processing the graph until there is no maximum clique of the right size
             std::vector<ObjectId> object_ids;
@@ -188,66 +186,55 @@ namespace object_recognition
               Eigen::VectorXf coefficients;
 
               std::cout << "* starting RANSAC" << std::endl;
-              coefficients = RansacAdjacency(object_points, sensor_error_, n_ransac_iterations_, inliers);
+              coefficients = RansacAdjacency(object_points, *sensor_error_, *n_ransac_iterations_, inliers);
 
               // If no pose was found, forget about all the connections in that clique
               std::cout << "* n inliers: " << inliers.size() << std::endl;
 
-              if (inliers.size() < min_inliers_)
+              if (inliers.size() < *min_inliers_)
               {
                 break;
                 continue;
               }
 
               // Store the matches for debug purpose
-              if (debug_)
+              if (*do_display_)
               {
                 matching_query_points[opencv_object_id].push_back(inliers);
 
-                /*
-                 std::vector<unsigned int> maximum_clique;
-                 std::vector<cv::KeyPoint> draw_keypoints;
-                 BOOST_FOREACH(int i, maximum_clique)
-                 draw_keypoints.push_back(keypoints[query_indices[opencv_object_id][i]]);
-                 cv::Mat output_img;
-                 cv::drawKeypoints(initial_image, draw_keypoints, output_img);
-                 cv::namedWindow("max clique", 0);
-                 cv::imshow("max clique", output_img);
-                 }
+                // Check whether other matches could fit that model
+                std::vector<std::vector<int> > neighbors;
+                const cv::Mat_<uchar> & adjacency = object_points.physical_adjacency_;
+                {
+                  neighbors.resize(adjacency.rows);
+                  for (int j = 0; j < adjacency.rows; ++j)
+                  {
+                    const uchar * row = adjacency.ptr<uchar>(j);
+                    for (int i = 0; i < adjacency.cols; ++i)
+                      if (row[i])
+                        neighbors[j].push_back(i);
+                  }
+                }
 
-                 // Check whether other matches could fit that model
-                 std::vector<std::vector<int> > neighbors;
-                 const cv::Mat_<uchar> & adjacency = graph.adjacency();
-                 {
-                 neighbors.resize(adjacency.rows);
-                 for (int j = 0; j < adjacency.rows; ++j)
-                 {
-                 const uchar * row = adjacency.ptr<uchar>(j);
-                 for (int i = 0; i < adjacency.cols; ++i)
-                 if (row[i])
-                 neighbors[j].push_back(i);
-                 }
-                 }
+                std::vector<int> intersection = neighbors[inliers[0]];
+                std::sort(inliers.begin(), inliers.end());
+                std::vector<int>::iterator intersection_end = std::set_difference(neighbors[inliers[0]].begin(),
+                                                                                  neighbors[inliers[0]].end(),
+                                                                                  inliers.begin(), inliers.end(),
+                                                                                  intersection.begin());
+                intersection.resize(intersection_end - intersection.begin());
+                BOOST_FOREACH(int inlier, inliers)
+                    {
+                      intersection_end = std::set_intersection(intersection.begin(), intersection.end(),
+                                                               neighbors[inlier].begin(), neighbors[inlier].end(),
+                                                               intersection.begin());
+                      intersection.resize(intersection_end - intersection.begin());
+                    }
 
-                 std::vector<int> intersection = neighbors[inliers[0]];
-                 std::sort(inliers.begin(), inliers.end());
-                 std::vector<int>::iterator intersection_end = std::set_difference(neighbors[inliers[0]].begin(),
-                 neighbors[inliers[0]].end(),
-                 inliers.begin(), inliers.end(),
-                 intersection.begin());
-                 intersection.resize(intersection_end - intersection.begin());
-                 BOOST_FOREACH(int inlier, inliers)
-                 {
-                 intersection_end = std::set_intersection(intersection.begin(), intersection.end(),
-                 neighbors[inlier].begin(), neighbors[inlier].end(),
-                 intersection.begin());
-                 intersection.resize(intersection_end - intersection.begin());
-                 }
+                // Check why those are not good
+                std::cout << "possible coherent ones: " << intersection.size() << std::endl;
 
-                 // Check why those are not good
-                 std::cout << "possible coherent ones: " << intersection.size();
-
-                 object_recognition::maximum_clique::Graph graph_new(intersection.size());
+                /*object_recognition::maximum_clique::Graph graph_new(intersection.size());
                  for (unsigned int j = 0; j < intersection.size(); ++j)
                  for (unsigned int i = j + 1; i < intersection.size(); ++i)
                  if (adjacency(intersection[j], intersection[i]))
@@ -276,20 +263,19 @@ namespace object_recognition
               std::cout << tvec << std::endl;
 
               // Figure out the matches to remove
+              if (*do_display_)
               {
                 std::vector<unsigned int> query_indices;
                 BOOST_FOREACH(unsigned int inlier, inliers)
                       query_indices.push_back(object_points.query_indices(inlier));
 
                 object_points.InvalidateQueryIndices(query_indices);
-                std::cout << query_indices.size() << " edges deleted" << std::endl;
 
                 // Display the remaining keypoints
                 cv::Mat out_img = initial_image.clone();
                 // Draw the keypoints with a different color per object
                 query_indices.clear();
                 std::vector<int> valid_indices = object_points.valid_indices();
-                std::cout << valid_indices.size() << " valid indices left" << std::endl;
                 BOOST_FOREACH(unsigned int index, valid_indices)
                       query_indices.push_back(object_points.query_indices(index));
 
@@ -297,8 +283,8 @@ namespace object_recognition
                 query_indices.resize(end - query_indices.begin());
                 std::vector<cv::KeyPoint> local_keypoints(query_indices.size());
                 for (unsigned int j = 0; j < query_indices.size(); ++j)
-                    local_keypoints[j] = keypoints[query_indices[j]];
-                  cv::drawKeypoints(out_img, local_keypoints, out_img);
+                  local_keypoints[j] = keypoints[query_indices[j]];
+                cv::drawKeypoints(out_img, local_keypoints, out_img);
                 cv::namedWindow("left keypoints from objects", 0);
                 cv::imshow("left keypoints from objects", out_img);
               }
@@ -310,7 +296,7 @@ namespace object_recognition
             object_ids_final.insert(object_ids_final.end(), object_ids.begin(), object_ids.end());
           }
 
-          if (debug_)
+          if (*do_display_)
           {
             // Draw the different inliers
             cv::Mat output_img = initial_image.clone();
@@ -340,7 +326,7 @@ namespace object_recognition
           outputs["Rs"] << Rs_final;
           outputs["Ts"] << Ts_final;
           outputs["object_ids"] << object_ids_final;
-          std::cout << "********************* found " << object_ids_final.size() << "poses" << std::endl;
+          std::cout << "********************* found " << object_ids_final.size() << " poses" << std::endl;
         }
 
         return 0;
@@ -349,13 +335,13 @@ namespace object_recognition
       /** List of very different colors, for debugging purposes */
       std::vector<cv::Scalar> colors_;
       /** flag indicating whether we run in debug mode */
-      bool debug_;
+      ecto::spore<bool> do_display_;
       /** The minimum number of inliers in order to do pose matching */
-      unsigned int min_inliers_;
+      ecto::spore<unsigned int> min_inliers_;
       /** The number of RANSAC iterations to perform */
-      unsigned int n_ransac_iterations_;
+      ecto::spore<unsigned int> n_ransac_iterations_;
       /** How much can the sensor be wrong at most */
-      float sensor_error_;
+      ecto::spore<float> sensor_error_;
     }
     ;
   }

@@ -87,14 +87,14 @@ class TodDetector(ecto.BlackBox):
         o.forward('keypoints', cell_name='feature_descriptor', cell_key='keypoints')
 
     def configure(self, _p, _i, _o):
-
-        self.feature_descriptor = FeatureDescriptor(json_helper.dict_to_cpp_json_str(self._tod_params))
+        self.feature_descriptor = FeatureDescriptor(json_params=json_helper.dict_to_cpp_json_str(self._tod_params))
         self.descriptor_matcher = tod_detection.DescriptorMatcher("Matcher",
                                 search_json_params=json_helper.dict_to_cpp_json_str(self._search_params))
         guess_params = {}
-        for key in [ 'min_inliers', 'n_ransac_iterations', 'sensor_error' ]:
+        for key in [ 'min_inliers', 'n_ransac_iterations', 'sensor_error']:
             if key in self._guess_params:
                 guess_params[key] = self._guess_params[key]
+        guess_params['do_display'] = self._display
         self.guess_generator = tod_detection.GuessGenerator("Guess Gen", **guess_params)
 
         self.image_duplicator = ecto.Passthrough()

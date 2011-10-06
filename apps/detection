@@ -15,7 +15,6 @@ import ecto_ros
 import sys
 
 DEBUG = False
-DISPLAY = True
 
 PoseArrayPub = ecto_geometry_msgs.Publisher_PoseArray
 
@@ -60,7 +59,7 @@ if __name__ == '__main__':
                                        feature_descriptor_params=json_helper.dict_to_cpp_json_str(pipeline_param['feature_descriptor']))
             detector = TodDetector(feature_descriptor_params=pipeline_param['feature_descriptor'],
                                    guess_params=pipeline_param['guess'], search_params=pipeline_param['search'],
-                                   display=DISPLAY)
+                                   display=do_display)
             plasm.connect(loader['descriptors','features3d','spans','id_correspondences','do_update'] >>
                           detector['descriptors_db','features3d_db','spans','id_correspondences','do_update'])
 
@@ -78,7 +77,7 @@ if __name__ == '__main__':
         plasm.connect(source['image_message'] >> sink['image_message'])
 
     # Display the different poses
-    if DISPLAY:
+    if do_display:
         pose_view = highgui.imshow(name="Pose")
         pose_drawer = calib.PosesDrawer()
 
