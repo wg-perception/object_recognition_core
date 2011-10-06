@@ -26,6 +26,7 @@
     <param name="depth_time_offset" value="0" />
     <param name="image_time_offset" value="0" />
     <remap from="/camera/depth/image" to="/camera/depth_registered/image"/>
+    <remap from="/camera/depth/camera_info" to="/camera/depth_registered/camera_info"/>
   </node>
   <!-- Load reasonable defaults for the relative pose between cameras -->
   <include file="$(find openni_launch)/launch/kinect_frames.launch">
