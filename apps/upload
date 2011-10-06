@@ -1,16 +1,18 @@
 #!/usr/bin/env python
-import roscompat
-import argparse
-
-from object_recognition import models, dbtools
-from object_recognition.dbtools import add_db_options
-
-import ecto
 from ecto_opencv import highgui, imgproc
-import ecto_ros, ecto_sensor_msgs, ecto_geometry_msgs
-
-import object_recognition
 from object_recognition import dbtools, models, capture
+from object_recognition.dbtools import add_db_options
+import argparse
+import ecto
+import ecto_ros
+import ecto_sensor_msgs
+import ecto_geometry_msgs
+import os
+import roscompat
+import sys
+
+
+
 
 def connect_observation_calc_with_mask_pose(sync, commit, object_id, session_id, debug=False):
     plasm = ecto.Plasm()
@@ -63,7 +65,8 @@ def compute_for_bag_with_mask_pose(bag, obj, args):
         print "It appears that there are %d object(s) with the same name." % len(existing)
         for x in existing:
             print x
-            use_it = raw_input("Use the object id above? [y,n]")
+            print 'Use the object id above? [y,n]'
+            use_it = raw_input("")
             if 'y' in use_it.lower():
                 store_new = False
                 obj = x
@@ -110,31 +113,28 @@ def compute_for_bag_with_mask_pose(bag, obj, args):
 def parse_args():
     parser = argparse.ArgumentParser(description='''Uploads a bag, with an object description to the db.''',
                                       fromfile_prefix_chars='@')
-    parser.add_argument('-i', '--input', metavar='BAG_FILE', dest='bag', type=str,
-                       default='',
-                       help='A bagfile to upload.')
-    parser.add_argument('-n', '--object_name', metavar='OBJECT_NAME', dest='object_name', type=str,
-                       default='')
-    parser.add_argument('-d', '--description', metavar='DESCRIPTION', dest='description', type=str,
-                       default='')
-    parser.add_argument('-a', '--author', metavar='AUTHOR_NAME', dest='author_name', type=str,
-                       default='')
-    parser.add_argument('-e', '--email', metavar='EMAIL_ADDRESS', dest='author_email', type=str,
-                       default='')
-    parser.add_argument('tags', metavar='TAGS', type=str, nargs='+',
-                   help='Tags to add to object description.')
-    parser.add_argument('--visualize', dest='visualize', action='store_const',
-                        const=True, default=False,
-                        help='Turn on visiualization')
+    parser.add_argument('-i', '--input', metavar='BAG_FILE', dest='bag', type=str, default='',
+                       help='A bag file to upload.')
+    parser.add_argument('-n', '--object_name', metavar='OBJECT_NAME', dest='object_name', type=str, default='')
+    parser.add_argument('-d', '--description', metavar='DESCRIPTION', dest='description', type=str, default='')
+    parser.add_argument('-a', '--author', metavar='AUTHOR_NAME', dest='author_name', type=str, default='')
+    parser.add_argument('-e', '--email', metavar='EMAIL_ADDRESS', dest='author_email', type=str, default='')
+    parser.add_argument('tags', metavar='TAGS', type=str, nargs='+', help='Tags to add to object description.')
+    parser.add_argument('--visualize', dest='visualize', action='store_const', const=True, default=False,
+                        help='Turn on visualization')
     add_db_options(parser)
     from ecto.opts import scheduler_options
     group = parser.add_argument_group('Scheduler Options')
     scheduler_options(group, default_scheduler='Threadpool')
 
     args = parser.parse_args()
-    if len(args.bag) < 1:
-      parser.print_help()
-      sys.exit(1)
+    if not args.bag:
+        parser.print_help()
+        sys.exit(1)
+    if not os.path.exists(args.bag):
+        sys.stderr.write('bag file does not exist')
+        #raise RuntimeError('bag file does not exist')
+        sys.exit(1)
     return args
 
 if "__main__" == __name__:
