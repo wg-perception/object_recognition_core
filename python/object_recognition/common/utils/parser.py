@@ -4,10 +4,11 @@ Module defining a parser that can read arguments from a file as long as an argum
 It will also ignore every line preceded by //, #
 """
 import argparse
+import sys as _sys
 
 class ObjectRecognitionParser(argparse.ArgumentParser):
     def __init__(self, *args):
-        argparse.ArgumentParser.__init__(self, args, fromfile_prefix_chars='@')
+        argparse.ArgumentParser.__init__(self, *args, fromfile_prefix_chars='@')
 
     # copied and tweaked from http://bugs.python.org/issue10523
     def _read_args_from_files(self, arg_strings):
