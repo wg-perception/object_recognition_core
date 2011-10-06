@@ -153,17 +153,22 @@ namespace object_recognition
         bp::object key = l[j][0];
         bp::object value = l[j][1];
         std::string object_id = bp::extract<std::string>(key);
-        std::string mesh_id = bp::extract<std::string>(value);
-        mapping_[object_id] = mesh_id;
+        std::string mesh_id = bp::extract<std::string>(value[0]);
+        std::string object_name = bp::extract<std::string>(value[1]);
+        mapping_[object_id] = std::make_pair(mesh_id, object_name);
       }
     }
 
     std::string
     get_mesh_id(const std::string& object_id)
     {
-      return mapping_[object_id];
+      return mapping_[object_id].first;
     }
-
+    std::string
+    get_object_name(const std::string& object_id)
+    {
+      return mapping_[object_id].second;
+    }
     int
     process(const ecto::tendrils& inputs, const ecto::tendrils& outputs)
     {
@@ -233,6 +238,15 @@ namespace object_recognition
           marker.mesh_resource = "http://localhost:5984/object_recognition/" + get_mesh_id((*object_ids_)[i])
                                  + "/mesh.stl";
           marker_array.markers.push_back(marker);
+          marker.type = visualization_msgs::Marker::TEXT_VIEW_FACING;
+          marker.text = get_object_name((*object_ids_)[i]);
+          marker.id += Rs_->size();
+          marker.color.a = 1;
+          marker.color.g = 1;
+          marker.color.b = 1;
+          marker.color.r = 1;
+          marker.scale.z = 0.03;
+          marker_array.markers.push_back(marker);
         }
       }
 
@@ -261,7 +275,7 @@ namespace object_recognition
     ecto::spore<std::vector<std::string> > object_ids_;
     ecto::spore<sensor_msgs::ImageConstPtr> image_message_;
 
-    std::map<std::string, std::string> mapping_;
+    std::map<std::string, std::pair<std::string, std::string> > mapping_;
     static std::map<ObjectId, unsigned int> object_id_to_index_;
   };
   std::map<ObjectId, unsigned int> PoseArrayAssembler::object_id_to_index_;
