@@ -55,6 +55,59 @@
 
 namespace bp = boost::python;
 
+namespace
+{
+  // see
+  // http://en.wikipedia.org/wiki/HSL_and_HSV#Converting_to_RGB
+  // for points on a dark background you want somewhat lightened
+  // colors generally... back off the saturation (s)
+  static void
+  hsv2rgb(float h, float s, float v, float& r, float& g, float& b)
+  {
+    float c = v * s;
+    float hprime = h / 60.0;
+    float x = c * (1.0 - fabs(fmodf(hprime, 2.0f) - 1));
+
+    r = g = b = 0;
+
+    if (hprime < 1)
+    {
+      r = c;
+      g = x;
+    }
+    else if (hprime < 2)
+    {
+      r = x;
+      g = c;
+    }
+    else if (hprime < 3)
+    {
+      g = c;
+      b = x;
+    }
+    else if (hprime < 4)
+    {
+      g = x;
+      b = c;
+    }
+    else if (hprime < 5)
+    {
+      r = x;
+      b = c;
+    }
+    else if (hprime < 6)
+    {
+      r = c;
+      b = x;
+    }
+
+    float m = v - c;
+    r += m;
+    g += m;
+    b += m;
+  }
+}
+
 namespace object_recognition
 {
   struct PoseArrayAssembler
@@ -123,6 +176,10 @@ namespace object_recognition
       pose_array_msg.header.frame_id = frame_id;
       MarkerArrayMsg marker_array;
 
+      BOOST_FOREACH(const ObjectId &object_id, *object_ids_)
+            if (object_id_to_index_.find(object_id) == object_id_to_index_.end())
+              object_id_to_index_[object_id] = object_id_to_index_.size();
+
       // Create poses and fill them in the message
       {
         std::vector<geometry_msgs::Pose> &poses = pose_array_msg.poses;
@@ -161,10 +218,16 @@ namespace object_recognition
           marker.scale.x = 1;
           marker.scale.y = 1;
           marker.scale.z = 1;
+
+          float hue = (360.0 / object_id_to_index_.size()) * object_id_to_index_[(*object_ids_)[i]];
+
+          float r, g, b;
+          hsv2rgb(hue, 0.7, 1, r, g, b);
+
           marker.color.a = 0.75;
-          marker.color.g = 0.2;
-          marker.color.b = 0.70;
-          marker.color.r = 0.75;
+          marker.color.g = g;
+          marker.color.b = b;
+          marker.color.r = r;
           marker.id = i;
           //http://localhost:5984/object_recognition/_design/models/_view/by_object_id_and_mesh?key=%2212a1e6eb663a41f8a4fb9baa060f191c%22
           marker.mesh_resource = "http://localhost:5984/object_recognition/" + get_mesh_id((*object_ids_)[i])
@@ -199,7 +262,9 @@ namespace object_recognition
     ecto::spore<sensor_msgs::ImageConstPtr> image_message_;
 
     std::map<std::string, std::string> mapping_;
+    static std::map<ObjectId, unsigned int> object_id_to_index_;
   };
+  std::map<ObjectId, unsigned int> PoseArrayAssembler::object_id_to_index_;
 }
 
 ECTO_CELL(io_ros, object_recognition::PoseArrayAssembler, "PoseArrayAssembler",
