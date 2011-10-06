@@ -95,6 +95,7 @@ Thingiloader = function(event) {
   };
 
   this.ParsePLYString = function(input) {
+	  
     var properties = [];
     var vertices = [];
     var colors = [];
@@ -103,8 +104,8 @@ Thingiloader = function(event) {
     
     var header = /ply\n([\s\S]+)\nend_header/ig.exec(input)[1];
     var data = /end_header\n([\s\S]+)$/ig.exec(input)[1];
-    
-    // workerFacadeMessage({'status':'message', 'content':'header:\n' + header});  
+    //console.info(header);
+    workerFacadeMessage({'status':'message', 'content':'header:\n' + header});  
     // workerFacadeMessage({'status':'message', 'content':'data:\n' + data});  
 
     header_parts = header.split("\n");
@@ -117,7 +118,7 @@ Thingiloader = function(event) {
       }
     }
     
-    // workerFacadeMessage({'status':'message', 'content':'properties: ' + properties});
+    workerFacadeMessage({'status':'message', 'content':'properties: ' + properties});
 
     data_parts = data.split("\n");
     
