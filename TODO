@@ -1,0 +1,38 @@
+Build:
+- no default build of tutorials
+- no default build of tests
+- split the tests (db tests should at least be separated)
+
+Interface:
+- --all should also have a --missing
+- remove --db options
+- meshing should support --all, --mising, --object_ids
+- have a common file for common options (author, db) : split parameters with that file too, even for training/detection/meshing/upload
+- autogeneration of parameter files:autogenerate if it does not exist
+
+Performance:
+- SBA
+- RANSAC
+- Mike's stuff
+
+DB:
+- delete things from the DB, find orphans, find missing components (models ...), find duplicates
+- better object representation (model, inline images, 3d models ...)
+- be able to only replicate models in a DB (to put on the PR2)
+
+Capture:
+- SBA should be a blackbox for pose adjustment: maybe in capture, or in TOD training
+- GUI for capturing obejcts on a dot pattern: the current box is hacky
+- upload through the capture GUI. Also have the triggering of all the other models (RabbitMQ ...)
+- should be a parameter file for the type of fiducials
+
+Doc:
+- API docs
+
+New cells:
+- masks, filters
+- Mike's stuff
+- better interface of several pipeline (actually broken now)
+
+Test:
+- have something for performance. Use NIST.
