@@ -33,7 +33,9 @@
  *
  */
 
+#include<fstream>
 #include <iostream>
+#include <sstream>
 
 #include <boost/foreach.hpp>
 
@@ -43,6 +45,60 @@ namespace object_recognition
 {
   namespace maximum_clique
   {
+    /** Construct from a dimacs file */
+    Graph::Graph(const std::string & name)
+    {
+      std::ifstream f(name.c_str());
+      char buffer[256], token[20];
+      int i, j;
+      int vi, vj;
+      int num_edges = 0;
+
+      if (!f.is_open())
+      {
+        std::cout << "Error opening file!" << std::endl;
+        exit(1);
+      }
+
+      while (!f.eof())
+      {
+        f.getline(buffer, 250);
+        if (buffer[0] == 'p')
+        {
+          unsigned int vertex_number;
+          sscanf(&buffer[7], "%d", &vertex_number);
+          set_vertex_number(vertex_number);
+        }
+        if (buffer[0] == 'e')
+        {
+          num_edges++;
+          i = 2;
+          j = 0;
+          while (buffer[i] != ' ')
+          {
+            token[j++] = buffer[i];
+            i++;
+          }
+          token[j] = '\0';
+          vi = atoi(token);
+          i++;
+          j = 0;
+          while (buffer[i] != ' ')
+          {
+            token[j++] = buffer[i];
+            i++;
+          }
+          token[j] = '\0';
+          vj = atoi(token);
+          vi--;
+          vj--;
+          AddEdge(vi, vj);
+        }
+      }
+      std::cout << "|E| = " << num_edges << "  |V| = " << adjacency_.cols << std::endl;
+      f.close();
+    }
+
     /** Returns true if any element in B is a neighbor of in_vertex
      * but also the set of corresponding neighbors
      * @param in_vertex
@@ -70,14 +126,14 @@ namespace object_recognition
       Ck.reserve(R.size());
 
       unsigned int j = 0;
-      unsigned int maxno = Ck.size();
+      unsigned int maxno = 1;
       BOOST_FOREACH(Vertex p, R)
           {
             unsigned int k = 1;
             while (IsIntersecting(p, Ck[k]))
             {
               ++k;
-              if (k >= maxno)
+              if (k > maxno)
               {
                 ++maxno;
                 Ck.resize(maxno);
@@ -89,9 +145,10 @@ namespace object_recognition
             else
               Ck[k].push_back(p);
           }
-      C.resize(R.size());
       if (j > 0)
         C[j - 1] = 0;
+      if (min_k <= 0)
+        min_k = 1;
       Vertices::iterator R_iter = R.begin() + j;
       Colors::iterator C_iter = C.begin() + j;
       for (unsigned int k = min_k; k < maxno; ++k)
@@ -149,8 +206,6 @@ namespace object_recognition
       {
         Vertex p = R.back();
         Color c = C.back();
-        R.pop_back();
-        C.pop_back();
         if (Q.size() + c > QMax.size())
         {
           Q.push_back(p);
@@ -159,13 +214,12 @@ namespace object_recognition
           {
             if ((double) S[level] / all_steps_ < t_limit_)
               DegreeSort(Rp);
-            Colors Cp;
-            ColorSort(Rp, Cp, QMax, Q);
+            ColorSort(Rp, C, QMax, Q);
             ++S[level];
             ++all_steps_;
             if (all_steps_ > 100000)
               return;
-            MaxCliqueDyn(Rp, Cp, level + 1, minimal_size, QMax, Q, S, SOld);
+            MaxCliqueDyn(Rp, C, level + 1, minimal_size, QMax, Q, S, SOld);
           }
           else if (Q.size() > QMax.size())
           {
@@ -178,6 +232,8 @@ namespace object_recognition
         }
         else
           return;
+        R.pop_back();
+        C.pop_back();
       }
     }
 

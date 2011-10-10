@@ -38,6 +38,8 @@
 // inspired by KONC, Janez, JANEŽIČ, Dušanka. An improved branch and bound algorithm for the maximum clique problem
 #include <set>
 
+#include <boost/foreach.hpp>
+
 #include <opencv2/core/core.hpp>
 
 namespace object_recognition
@@ -61,6 +63,9 @@ namespace object_recognition
       {
         set_vertex_number(vertex_number);
       }
+
+      /** Construct froma dimacs file */
+      Graph(const std::string & name);
 
       void
       set_vertex_number(unsigned int vertex_number)
