@@ -23,7 +23,7 @@ if __name__ == '__main__':
 
         # define the input and connect to it
         source_plasm = ecto.Plasm()
-        observation_dealer = ecto.Dealer(typer=db_reader.inputs.at('observation'), iterable=obs_ids)
+        observation_dealer = ecto.Dealer(tendril=db_reader.inputs.at('observation'), iterable=obs_ids)
         source_plasm.connect(observation_dealer[:] >> db_reader['observation'])
 
         main_plasm = ecto.Plasm()

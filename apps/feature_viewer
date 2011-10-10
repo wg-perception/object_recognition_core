@@ -33,7 +33,7 @@ if __name__ == '__main__':
 
     db_reader = tod_detection.ModelReader('db_reader', db_json_params=db_json_params, collection='object_recognition')
     #observation dealer will deal out each observation id.
-    observation_dealer = ecto.Dealer(typer=db_reader.inputs.at('model_id'), iterable=tod_models)
+    observation_dealer = ecto.Dealer(tendril=db_reader.inputs.at('model_id'), iterable=tod_models)
     to_pcl = conversion.MatToPointCloudXYZ()
     pcl_cloud = ecto_pcl.PointCloudT2PointCloud(format=ecto_pcl.Format.XYZ)
     cloud_viewer = ecto_pcl.CloudViewer()
