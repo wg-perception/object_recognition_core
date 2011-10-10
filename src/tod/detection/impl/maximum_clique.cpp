@@ -126,14 +126,14 @@ namespace object_recognition
       Ck.reserve(R.size());
 
       unsigned int j = 0;
-      unsigned int maxno = 1;
+      unsigned int maxno = Ck.size();
       BOOST_FOREACH(Vertex p, R)
           {
             unsigned int k = 1;
             while (IsIntersecting(p, Ck[k]))
             {
               ++k;
-              if (k > maxno)
+              if (k >= maxno)
               {
                 ++maxno;
                 Ck.resize(maxno);

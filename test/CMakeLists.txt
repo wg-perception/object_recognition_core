@@ -45,3 +45,4 @@ pytest(test_training_help)
 desktop_test(view_observations)
 
 add_subdirectory(db)
+add_subdirectory(tod)
