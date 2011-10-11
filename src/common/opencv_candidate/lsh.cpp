@@ -46,6 +46,8 @@
 
 #include "opencv_candidate/lsh.hpp"
 
+#include "hamming.h"
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 namespace
@@ -568,7 +570,8 @@ namespace lsh
   LshMatcher::match_impl(const cv::Mat& query_descriptors, std::vector<std::vector<cv::DMatch> >& matches, bool is_knn,
                          float param)
   {
-    cv::Hamming hammingDistanceOperator;
+    //cv::Hamming hammingDistanceOperator;
+    HammingOperator hammingDistanceOperator;
     matches.clear();
     matches.resize(query_descriptors.rows);
 
