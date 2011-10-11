@@ -15,18 +15,20 @@ pipeline1:
   feature_descriptor:
     combination: 'ORB'
     feature:
-      n_features: 2000
+      n_features: 5000
+      n_levels: 5
+      scale_factor: 1.2
   search:
-    key_size: 18
+    key_size: 24
     multi_probe_level: 2
-    n_tables: 16
-    radius: 50
+    n_tables: 6
+    radius: 45
     ratio: 0.8
     type: 'LSH'
   guess:
-    n_ransac_iterations: 1000
-    min_inliers: 25
-    sensor_error: 0.01
+    n_ransac_iterations: 250
+    min_inliers: 30
+    sensor_error: 0.005
 
 # The list of object_ids to analyze
 object_ids: "all"
