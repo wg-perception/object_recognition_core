@@ -25,8 +25,6 @@ def read_arguments(parser=None, training=False):
     parser.add_argument('--object_names', help='If set, it overrides the list of object names in the config file')
     parser.add_argument('--do_display', help='If set, it will display some windows with temporary results',
                        default=False, action='store_true')
-    if training:
-        parser.add_argument('--recompute', help='If specified then all models requested will be recomputed.', default=False, action='store_true')
     args = parser.parse_args()
 
     # define the input
@@ -43,24 +41,24 @@ def read_arguments(parser=None, training=False):
         db = dbtools.init_object_databases(couchdb.Server(db_dict['root']))
 
     # read the object_ids
-    object_ids = []
+    object_ids = set()
     for obj in (args.__dict__, params):
         ids = obj.get('object_ids', None)
         names = obj.get('object_names', None)
         if 'all' in (ids, names):
-            object_ids = [ str(x.id) for x in models.Object.all(db) ] #unicode without the str()
-        elif ids:
-            object_ids = ids[1:-1].split(',')
+            object_ids = set([ str(x.id) for x in models.Object.all(db) ]) #unicode without the str()
             break
-        elif names:
+        if 'missing' in (ids, names):
+            tmp_object_ids = set([ str(x.id) for x in models.Object.all(db) ])
+            tmp_object_ids_from_names = set([ str(x.object_id) for x in models.Model.all(db) ])
+            object_ids.update(tmp_object_ids.difference(tmp_object_ids_from_names))
+        if ids and ids != 'missing':
+            object_ids.update(ids[1:-1].split(','))
+        if names and names != 'missing':
             for object_name in names[1:-1].split(','):
-                object_ids += [str(x.id) for x in models.objects_by_name(db, object_name)]
-            break
-    object_ids = list(set(object_ids))
-    if not getattr(args, 'recompute', True): #strip out all precomputed models
-        for m in models.Model.by_object_id_and_TOD(db):
-            if str(m.object_id) in object_ids:
-                object_ids.remove(m.object_id)
+                object_ids.update([str(x.id) for x in models.objects_by_name(db, object_name)])
+
+    object_ids = list(object_ids)
     print "computing for", object_ids
     params['object_ids'] = object_ids
 
