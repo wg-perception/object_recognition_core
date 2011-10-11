@@ -37,6 +37,7 @@
 #include <iomanip>
 #include <list>
 #include <map>
+#include <omp.h>
 #include <set>
 #include <sstream>
 #include <vector>
@@ -203,8 +204,11 @@ namespace lsh
     stats.bucket_size_max_ = stats.bucket_sizes_.back();
 
     cv::Scalar mean, stddev;
-    cv::meanStdDev(cv::Mat(stats.bucket_sizes_), mean, stddev);
-    stats.bucket_size_std_dev = stddev[0];
+    if ((!stats.bucket_sizes_.empty()) && (0))
+    {
+      cv::meanStdDev(cv::Mat(stats.bucket_sizes_), mean, stddev);
+      stats.bucket_size_std_dev = stddev[0];
+    }
 
     // Include a histogram of the buckets
     unsigned int bin_start = 0;
@@ -575,19 +579,20 @@ namespace lsh
     matches.clear();
     matches.resize(query_descriptors.rows);
 
-    std::set<ScoreIndex> score_indices;
-
     //set the static checked_average
     const cv::Mat & descriptors = mergedDescriptors.getDescriptors();
     if (descriptors.empty())
       return;
 
+    // TODO set that as a parameter
+    omp_set_num_threads(2);
+#pragma omp parallel for
     for (int queryIndex = 0; queryIndex < query_descriptors.rows; ++queryIndex)
     {
       const cv::Mat& current_descriptor = query_descriptors.row(queryIndex);
 
       // Figure out a list of unique indices to query
-      score_indices.clear();
+      std::set<ScoreIndex> score_indices;
 
       // Go over each descriptor index
       unsigned int hamming_distance;
