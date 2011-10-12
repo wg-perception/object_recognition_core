@@ -37,7 +37,9 @@
 #include <iomanip>
 #include <list>
 #include <map>
+#ifdef PARALLEL
 #include <omp.h>
+#endif
 #include <set>
 #include <sstream>
 #include <vector>
@@ -585,8 +587,10 @@ namespace lsh
       return;
 
     // TODO set that as a parameter
+#if PARALLEL
     omp_set_num_threads(2);
 #pragma omp parallel for
+#endif
     for (int queryIndex = 0; queryIndex < query_descriptors.rows; ++queryIndex)
     {
       const cv::Mat& current_descriptor = query_descriptors.row(queryIndex);
