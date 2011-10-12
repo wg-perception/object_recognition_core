@@ -22,6 +22,8 @@ class TodDetectorLoader(ecto.BlackBox):
     def declare_params(self, p):
         p.forward('object_ids', cell_name='tod_detection_loader', cell_key='object_ids',
                   doc='The list of objects to load the models from.')
+        p.forward('model_ids', cell_name='tod_detection_loader', cell_key='model_ids',
+                  doc='The list of objects to load the models from.')
         p.forward('db_json_params', cell_name='tod_detection_loader', cell_key='db_json_params',
                   doc='The DB parameters.')
         p.forward('collection_models', cell_name='tod_detection_loader', cell_key='collection_models',
@@ -44,9 +46,12 @@ class TodDetectorLoader(ecto.BlackBox):
             db = dbtools.init_object_databases(couchdb.Server(db_params['root']))
 
         model_ids = []
+        object_ids = []
         for object_id in p.object_ids:
             for model_id in models.find_model_for_object(db, object_id, 'TOD'):
                 model_ids.extend([model_id])
+                object_ids.append(object_id)
+        p.object_ids = object_ids
 
         self.tod_detection_loader = self.tod_detection_loader(model_ids=model_ids)
 

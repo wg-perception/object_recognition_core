@@ -51,6 +51,8 @@ def read_arguments(parser=None, training=False):
         if 'missing' in (ids, names):
             tmp_object_ids = set([ str(x.id) for x in models.Object.all(db) ])
             tmp_object_ids_from_names = set([ str(x.object_id) for x in models.Model.all(db) ])
+            print len(tmp_object_ids)
+            print len(tmp_object_ids_from_names)
             object_ids.update(tmp_object_ids.difference(tmp_object_ids_from_names))
         if ids and ids != 'missing':
             object_ids.update(ids[1:-1].split(','))

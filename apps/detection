@@ -13,6 +13,7 @@ import ecto
 import ecto_geometry_msgs
 import ecto_ros
 import sys
+from object_recognition import dbtools, models
 
 DEBUG = False
 
@@ -35,6 +36,15 @@ if __name__ == '__main__':
     
 
     sink = Sink.parse_arguments(args, db, params['object_ids'])
+
+    model_ids = []
+    object_ids = []
+    for object_id in params['object_ids']:
+        for model_id in models.find_model_for_object(db, object_id, 'TOD'):
+            model_ids.extend([model_id])  
+            object_ids.append(object_id)
+    params['object_ids'] = object_ids
+
     
     # define the input
     if 0:
@@ -55,7 +65,7 @@ if __name__ == '__main__':
             # create the loader and detector
             loader = TodDetectorLoader(collection_models = db_dict['collection'],
                                        db_json_params=json_helper.dict_to_cpp_json_str(db_dict),
-                                       object_ids=params['object_ids'],
+                                       object_ids=params['object_ids'], model_ids=model_ids,
                                        feature_descriptor_params=json_helper.dict_to_cpp_json_str(pipeline_param['feature_descriptor']))
             detector = TodDetector(feature_descriptor_params=pipeline_param['feature_descriptor'],
                                    guess_params=pipeline_param['guess'], search_params=pipeline_param['search'],
@@ -95,5 +105,6 @@ if __name__ == '__main__':
     print >> open('detection.dot', 'wt'), plasm.viz()
 
     # execute the pipeline
-    sched = ecto.schedulers.Threadpool(plasm)
+    #sched = ecto.schedulers.Threadpool(plasm)
+    sched = ecto.schedulers.Singlethreaded(plasm)
     sched.execute()
