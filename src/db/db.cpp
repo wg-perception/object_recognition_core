@@ -421,8 +421,9 @@ namespace object_recognition
       std::stringstream ss;
       get_attachment_stream(attachment_name, ss, "text/x-yaml", do_use_cache);
       std::map<std::string, cv::Mat> ss_map;
-      ss_map[attachment_name] = value;
+      ss_map[attachment_name] = cv::Mat();
       object_recognition::db::yaml2mats(ss_map, ss, true);
+      value = ss_map[attachment_name];
     }
     template<>
     void
