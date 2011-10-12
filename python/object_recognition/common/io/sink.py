@@ -25,8 +25,7 @@ def object_to_models_mapping(db, object_ids):
             if str(x.object_id) == str(y.id):
                 obj_name = str(y.object_name)
                 break
-        mapping[str(x.object_id)] = (x.id, obj_name)
-    print mapping
+        mapping[str(x.object_id)] = (str(x.id), obj_name)
     return mapping
 
 
