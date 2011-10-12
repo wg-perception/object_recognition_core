@@ -67,61 +67,47 @@ namespace object_recognition
         FillParameters(json_params);
       }
     }
-    ObjectDbParameters::ObjectDbParameters(const boost::property_tree::ptree& ptree_parameters)
+    ObjectDbParameters::ObjectDbParameters(const std::map<std::string, std::string>& parameters)
     {
-      FillParameters(ptree_parameters);
+      FillParameters(parameters);
     }
-    boost::property_tree::ptree
-    ObjectDbParameters::JsonToPTree(const std::string& json_params)
-    {
-      boost::property_tree::ptree ptree_params;
-      std::stringstream ssparams;
-      ssparams << json_params;
 
-      try
-      {
-        boost::property_tree::read_json(ssparams, ptree_params);
-      } catch (std::runtime_error& e)
-      {
-        throw std::runtime_error(std::string("Failed to parse json --- ") + e.what());
-      }
-      return ptree_params;
-    }
     void
     ObjectDbParameters::FillParameters(const std::string& json_params)
     {
-      boost::property_tree::ptree ptree_params;
+      boost::property_tree::ptree ptree_parameters;
       std::stringstream ssparams;
       ssparams << json_params;
 
       try
       {
-        boost::property_tree::read_json(ssparams, ptree_params);
+        boost::property_tree::read_json(ssparams, ptree_parameters);
       } catch (std::runtime_error& e)
       {
         throw std::runtime_error(std::string("Failed to parse json --- ") + e.what());
       }
 
-      FillParameters(ptree_params);
+      BOOST_FOREACH(boost::property_tree::ptree::value_type &v, ptree_parameters)
+            all_parameters_.insert(std::make_pair(v.first, v.second.data()));
+      FillParameters(all_parameters_);
     }
-
     void
-    ObjectDbParameters::FillParameters(const boost::property_tree::ptree& ptree_parameters)
+    ObjectDbParameters::FillParameters(const std::map<std::string, std::string>& parameters)
     {
-      if (ptree_parameters.count("type") == 0)
+      all_parameters_ = parameters;
+      if (all_parameters_.find("type") == all_parameters_.end())
       {
         throw std::runtime_error("You must supply a database type. e.g. CouchDB");
       }
-      type_ = ptree_parameters.get<std::string>("type");
+      type_ = all_parameters_.at("type");
 
-      if (ptree_parameters.count("root") == 0)
+      if (all_parameters_.find("root") == all_parameters_.end())
       {
         throw std::runtime_error("You must supply a root . e.g. /home/me, http://localhost:5984");
       }
-      root_ = ptree_parameters.get<std::string>("root");
-      if (ptree_parameters.count("collection") != 0)
-        collection_ = ptree_parameters.get<std::string>("collection");
-      all_parameters_ = ptree_parameters;
+      root_ = all_parameters_.at("root");
+      if (all_parameters_.find("collection") == all_parameters_.end())
+        collection_ = all_parameters_.at("collection");
     }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

@@ -67,10 +67,13 @@ namespace object_recognition
       /**
        * @param json_params Either the DB type for a default constructor for that DB, ot the JSON parameters
        */
+      explicit
       ObjectDbParameters(const std::string& json_params);
-      ObjectDbParameters(const boost::property_tree::ptree& ptree_parameters);
-      static boost::property_tree::ptree
-      JsonToPTree(const std::string& json_params);
+      /**
+       * @param json_params Either the DB type for a default constructor for that DB, ot the JSON parameters
+       */
+      explicit
+      ObjectDbParameters(const std::map<std::string, std::string>& json_params);
 
       /** The collection where the data is stored (or schema in certain naming conventions) */
       std::string collection_;
@@ -79,13 +82,12 @@ namespace object_recognition
       /** The type of the collection 'CouchDB' ... */
       std::string type_;
       /** All the raw parameters */
-      boost::property_tree::ptree all_parameters_;
+      std::map<std::string, std::string> all_parameters_;
     protected:
       void
       FillParameters(const std::string& json_params);
-
       void
-      FillParameters(const boost::property_tree::ptree& ptree_parameters);
+      FillParameters(const std::map<std::string, std::string>& json_params);
     };
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -100,7 +102,6 @@ namespace object_recognition
       /** Constructor
        * @param in_params any class that inherits from ObjectDbBaseParameters
        */
-      ObjectDb(const boost::property_tree::ptree& ptree_parameters);
       ObjectDb(const std::string& json_params);
       ObjectDb(const ObjectDbParameters &in_params);
 

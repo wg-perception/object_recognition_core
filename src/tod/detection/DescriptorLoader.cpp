@@ -59,15 +59,15 @@ namespace object_recognition
       static void
       declare_params(ecto::tendrils& p)
       {
-        p.declare<std::string>("collection_models", "The collection where the models are stored.").required();
-        p.declare<std::string>("db_json_params", "A JSON string describing the db to use").required();
+        p.declare<std::string>("collection_models", "The collection where the models are stored.").required(true);
+        p.declare<db_future::ObjectDbParameters>("db_params", "The DB parameters").required(true);
         p.declare<boost::python::object>("model_ids", "The list of model ids we should consider.\n").required();
-        p.declare<boost::python::object>("object_ids", "The list of model ids we should consider.\n").required();
+        p.declare<boost::python::object>("object_ids", "The list of model ids we should consider.\n").required(true);
         // We can do radius and/or ratio test
         std::stringstream ss;
         ss << "JSON string that can contain the following fields: \"radius\" (for epsilon nearest neighbor search), "
            << "\"ratio\" when applying the ratio criterion like in SIFT";
-        p.declare<std::string>("feature_descriptor_params", ss.str()).required();
+        p.declare<std::string>("feature_descriptor_params", ss.str()).required(true);
       }
 
       static void
@@ -79,7 +79,7 @@ namespace object_recognition
                                                     "For each found object, its span based on known features.");
         outputs.declare<std::map<ObjectOpenCVId, ObjectId> >(
             "id_correspondences", "Correspondences from OpenCV integer id to the JSON object ids");
-        outputs.declare<bool>("do_update", "If true, that measn new descriptors have been loaded");
+        outputs.declare<bool>("do_update", "If true, that means new descriptors have been loaded");
       }
 
       void
@@ -98,16 +98,16 @@ namespace object_recognition
           boost::python::stl_input_iterator<std::string> begin(python_object_ids), end;
           std::copy(begin, end, std::back_inserter(object_ids_));
         }
+
         if ((model_ids_.size() != object_ids_.size()) || (model_ids_.empty()))
         {
           std::stringstream ss;
-          ss << object_ids_.size() << " object ids given and " << model_ids_.size() << " model ids given."
-                    << std::endl;
+          ss << object_ids_.size() << " object ids given and " << model_ids_.size() << " model ids given." << std::endl;
           throw std::runtime_error(ss.str());
         }
 
         // load the descriptors from the DB
-        db_json_params_ = params["db_json_params"];
+        db_params_ = params["db_params"];
         collection_models_ = params["collection_models"];
 
         descriptors_ = outputs["descriptors"];
@@ -129,7 +129,7 @@ namespace object_recognition
         *do_update_out_ = true;
         do_update_ = false;
 
-        db_future::ObjectDb db(*db_json_params_);
+        db_future::ObjectDb db(*db_params_);
         unsigned int object_opencv_id = 0;
         std::vector<ModelId>::const_iterator model_id = model_ids_.begin(), model_id_end = model_ids_.end();
         std::vector<ObjectId>::const_iterator object_id = object_ids_.begin();
@@ -209,7 +209,7 @@ namespace object_recognition
       /** The matching model ids to use */
       std::vector<ModelId> model_ids_;
       /** the DB JSON parameters */
-      ecto::spore<std::string> db_json_params_;
+      ecto::spore<db_future::ObjectDbParameters> db_params_;
 
       /** The loaded descriptors */
       ecto::spore<std::vector<cv::Mat> > descriptors_;

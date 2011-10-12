@@ -22,11 +22,11 @@ add_library(object_recognition_db SHARED
   )
 
 target_link_libraries(object_recognition_db
+  boost_filesystem
+  boost_regex
   boost_system
   boost_serialization
   boost_thread
-  boost_filesystem
-  boost_regex
   ${CURL_LIBRARIES}
   ${OpenCV_LIBS}
   )
@@ -39,6 +39,7 @@ install(TARGETS object_recognition_db
 
 ectomodule(object_recognition_db
     module.cpp
+    wrap_db_parameters.cpp
     )
 link_ecto(object_recognition_db
   object_recognition_db

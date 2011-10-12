@@ -30,8 +30,7 @@ namespace object_recognition
       declare_params(tendrils& params)
       {
         params.declare<std::string>("collection", "The collection where the models are stored.", "models");
-        params.declare<std::string>("db_json_params", "std::string The DB parameters, cf. ObjectDb", "models").required(
-            true);
+        params.declare<db_future::ObjectDbParameters>("db_params", "The DB parameters").required(true);
       }
 
       static void
@@ -46,10 +45,10 @@ namespace object_recognition
       void
       configure(const tendrils& params, const tendrils& inputs, const tendrils& outputs)
       {
-        db_json_params_ = params["db_json_params"];
+        db_params_ = params["db_params"];
         collection_ = params["collection"];
 
-        db_ = db_future::ObjectDb(*db_json_params_);
+        db_ = db_future::ObjectDb(*db_params_);
       }
 
       int
@@ -70,7 +69,7 @@ namespace object_recognition
       }
       object_recognition::db_future::ObjectDb db_;
       ecto::spore<CollectionName> collection_;
-      ecto::spore<std::string> db_json_params_;
+      ecto::spore<db_future::ObjectDbParameters> db_params_;
     };
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     /** Cell that loads a TOD model from the DB
