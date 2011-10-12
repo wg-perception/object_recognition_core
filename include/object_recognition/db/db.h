@@ -53,33 +53,67 @@ namespace object_recognition
   {
     //Forward declare some classes
     class ObjectDbBase;
-    class ObjectDbBaseParameters;
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    /** A class that stores the common parameters for the object DB */
+    class ObjectDbParameters
+    {
+    public:
+      // This is defined in db.cpp
+      static const std::string EMPTY;
+      ObjectDbParameters();
+
+      /**
+       * @param json_params Either the DB type for a default constructor for that DB, ot the JSON parameters
+       */
+      ObjectDbParameters(const std::string& json_params);
+      ObjectDbParameters(const boost::property_tree::ptree& ptree_parameters);
+      static boost::property_tree::ptree
+      JsonToPTree(const std::string& json_params);
+
+      /** The collection where the data is stored (or schema in certain naming conventions) */
+      std::string collection_;
+      /** The base url/path of where the DB is located */
+      std::string root_;
+      /** The type of the collection 'CouchDB' ... */
+      std::string type_;
+      /** All the raw parameters */
+      boost::property_tree::ptree all_parameters_;
+    protected:
+      void
+      FillParameters(const std::string& json_params);
+
+      void
+      FillParameters(const boost::property_tree::ptree& ptree_parameters);
+    };
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     class ObjectDb
     {
     public:
-      static const std::string JSON_PARAMS_EMPTY_DB;
+      ObjectDb()
+      {
+      }
+
       /** Constructor
-       * @param params a JSON string containing the parameters for the DB. Depending on the type of DB, it should have the
-       * following formatting:
-       *    - empty DB: {"type": "empty"}
-       *    - CouchDB: {"type": "CouchDB", "url": "whatever_url_you_want:whatever_port"}
+       * @param in_params any class that inherits from ObjectDbBaseParameters
        */
-      explicit
-      ObjectDb(const std::string & json_params = JSON_PARAMS_EMPTY_DB);
-      explicit
-      ObjectDb(const boost::property_tree::ptree& params);
-
-      /** Set the parameters of the DB.
-       * @param json_params string that follows the conventions of the constructor
-       */
-      void
-      set_params(const std::string & json_params = JSON_PARAMS_EMPTY_DB);
+      ObjectDb(const boost::property_tree::ptree& ptree_parameters);
+      ObjectDb(const std::string& json_params);
+      ObjectDb(const ObjectDbParameters &in_params);
 
       void
-      set_params(const boost::property_tree::ptree& pt);
+      set_params(const boost::property_tree::ptree& ptree_parameters);
+      void
+      set_params(const std::string& json_params);
+      void
+      set_params(const ObjectDbParameters &in_params);
+
+      /*** Get the parameters */
+      const ObjectDbParameters &
+      get_params() const;
 
       void
       get_attachment_stream(const DocumentId & document_id, const CollectionName &collection,
@@ -125,16 +159,10 @@ namespace object_recognition
       DbType
       type();
     private:
-      /** Set the db_ using a property tree
-       * @params the boost property tree containing the different parameters
-       */
-      void
-      set_db(const boost::property_tree::ptree& params);
-
       /** The DB from which we'll get all the info */
       boost::shared_ptr<ObjectDbBase> db_;
       /** The parameters of the current DB */
-      boost::shared_ptr<ObjectDbBaseParameters> db_parameters_;
+      ObjectDbParameters db_parameters_;
     };
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -310,7 +338,7 @@ namespace object_recognition
     // Specializations for cv::Mat
     template<>
     void
-    Document::get_attachment<cv::Mat>(const AttachmentName &attachment_name, cv::Mat  & value, bool do_use_cache);
+    Document::get_attachment<cv::Mat>(const AttachmentName &attachment_name, cv::Mat & value, bool do_use_cache);
     template<>
     void
     Document::set_attachment<cv::Mat>(const AttachmentName &attachment_name, const cv::Mat & value);

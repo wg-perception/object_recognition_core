@@ -11,7 +11,8 @@
 #include <object_recognition/db/opencv.h>
 #include <object_recognition/db/utils.h>
 #include <object_recognition/db/models/observations.hpp>
-#include <object_recognition/db/parameters/couch.hpp>
+
+#include "object_recognition/db/db.h"
 
 #define DEFAULT_COUCHDB_URL "http://localhost:5984"
 using ecto::tendrils;
@@ -49,7 +50,10 @@ namespace object_recognition
         params["db_url"] >> db_url;
         params["db_collection"] >> collection;
         observation = inputs["observation"];
-        db = ObjectDb(db_future::parameters::CouchDB(db_url));
+        object_recognition::db_future::ObjectDbParameters db_params;
+        db_params.root_ = db_url;
+        db_params.collection_ = collection;
+        db = object_recognition::db_future::ObjectDb(db_params);
       }
       int
       process(const tendrils& inputs, const tendrils& outputs)

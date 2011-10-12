@@ -7,7 +7,6 @@
 #include <object_recognition/db/db.h>
 #include <object_recognition/db/opencv.h>
 #include <object_recognition/db/models/observations.hpp>
-#include <object_recognition/db/parameters/couch.hpp>
 
 #define DEFAULT_COUCHDB_URL "http://localhost:5984"
 using ecto::tendrils;
@@ -53,10 +52,10 @@ namespace object_recognition
       void
       configure(const tendrils& params, const tendrils& inputs, const tendrils& outputs)
       {
-        std::string url;
-        params["db_url"] >> url;
+        object_recognition::db_future::ObjectDbParameters db_params("CouchDB");
+        params["db_url"] >> db_params.root_;
         collection_ = params["db_collection"];
-        db = ObjectDb(db_future::parameters::CouchDB(url));
+        db = object_recognition::db_future::ObjectDb(db_params);
         ecto::spore<std::string> object_id = params["object_id"];
         object_id.set_callback(boost::bind(&ObservationInserter::on_object_id_change, this, _1));
         ecto::spore<std::string> session_id = params["session_id"];

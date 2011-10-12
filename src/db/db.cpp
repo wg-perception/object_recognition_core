@@ -45,69 +45,106 @@ namespace object_recognition
 {
   namespace db_future
   {
-    const std::string ObjectDb::JSON_PARAMS_EMPTY_DB = "{\"type\":\"empty\"}";
+    const std::string ObjectDbParameters::EMPTY = "empty";
 
-    ObjectDb::ObjectDb(const boost::property_tree::ptree& params)
+    ObjectDbParameters::ObjectDbParameters()
     {
-      set_db(params);
+      type_ = EMPTY;
     }
 
-    ObjectDb::ObjectDb(const std::string & json_params)
+    /**
+     * @param json_params Either the DB type for a default constructor for that DB, ot the JSON parameters
+     */
+    ObjectDbParameters::ObjectDbParameters(const std::string& json_params)
     {
-      boost::property_tree::ptree params;
+      if (json_params == "CouchDB")
+      {
+        type_ = "CouchDB";
+        root_ = "http://localhost:5984";
+      }
+      else
+      {
+        FillParameters(json_params);
+      }
+    }
+    ObjectDbParameters::ObjectDbParameters(const boost::property_tree::ptree& ptree_parameters)
+    {
+      FillParameters(ptree_parameters);
+    }
+    boost::property_tree::ptree
+    ObjectDbParameters::JsonToPTree(const std::string& json_params)
+    {
+      boost::property_tree::ptree ptree_params;
       std::stringstream ssparams;
       ssparams << json_params;
+
       try
       {
-        boost::property_tree::read_json(ssparams, params);
+        boost::property_tree::read_json(ssparams, ptree_params);
       } catch (std::runtime_error& e)
       {
         throw std::runtime_error(std::string("Failed to parse json --- ") + e.what());
       }
-      set_db(params);
+      return ptree_params;
     }
-
     void
-    ObjectDb::set_params(const std::string & json_params)
+    ObjectDbParameters::FillParameters(const std::string& json_params)
     {
-      boost::property_tree::ptree params;
+      boost::property_tree::ptree ptree_params;
       std::stringstream ssparams;
       ssparams << json_params;
-      boost::property_tree::read_json(ssparams, params);
 
-      set_db(params);
+      try
+      {
+        boost::property_tree::read_json(ssparams, ptree_params);
+      } catch (std::runtime_error& e)
+      {
+        throw std::runtime_error(std::string("Failed to parse json --- ") + e.what());
+      }
+
+      FillParameters(ptree_params);
     }
 
     void
-    ObjectDb::set_params(const boost::property_tree::ptree& params)
+    ObjectDbParameters::FillParameters(const boost::property_tree::ptree& ptree_parameters)
     {
-      set_db(params);
-    }
-
-    /** Set the db_ using a property tree
-     * @params the boost property tree containing the different parameters
-     */
-    void
-    ObjectDb::set_db(const boost::property_tree::ptree& params)
-    {
-      if (params.count("type") == 0)
+      if (ptree_parameters.count("type") == 0)
       {
         throw std::runtime_error("You must supply a database type. e.g. CouchDB");
       }
-      std::string db_type = params.get<std::string>("type");
-      std::transform(db_type.begin(), db_type.end(), db_type.begin(), ::tolower);
+      type_ = ptree_parameters.get<std::string>("type");
 
-      if (db_type == "empty")
+      if (ptree_parameters.count("root") == 0)
       {
+        throw std::runtime_error("You must supply a root . e.g. /home/me, http://localhost:5984");
       }
-      else if (db_type == "couchdb")
-      {
-        db_ = boost::shared_ptr<ObjectDbBase>(new ObjectDbCouch(params.get<std::string>("root")));
-      }
-      else
-      {
-        throw std::runtime_error("Invalid database type: " + db_type);
-      }
+      root_ = ptree_parameters.get<std::string>("root");
+      if (ptree_parameters.count("collection") != 0)
+        collection_ = ptree_parameters.get<std::string>("collection");
+      all_parameters_ = ptree_parameters;
+    }
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    ObjectDb::ObjectDb(const ObjectDbParameters &in_params)
+    {
+      set_params(in_params);
+    }
+    ObjectDb::ObjectDb(const std::string& json_params)
+    {
+      set_params(json_params);
+    }
+
+    void
+    ObjectDb::set_params(const std::string& json_params)
+    {
+      set_params(ObjectDbParameters(json_params));
+    }
+    void
+    ObjectDb::set_params(const ObjectDbParameters &in_params)
+    {
+      db_parameters_ = in_params;
+      db_ = boost::shared_ptr<ObjectDbBase>(new ObjectDbCouch(db_parameters_.root_));
     }
 
     void
@@ -239,7 +276,7 @@ namespace object_recognition
       boost::any nothing_any;
       for (AttachmentMap::const_iterator attachment = attachments_.begin(), attachment_end = attachments_.end();
           attachment != attachment_end; ++attachment)
-          {
+      {
         // Persist the attachment
         db_.set_attachment_stream(document_id_, collection_, attachment->first, attachment->second->type_,
                                   attachment->second->stream_, revision_id_);
@@ -412,11 +449,10 @@ namespace object_recognition
       return Document(db_, collection_, document_ids_.back());
     }
 
-
     // Specializations for cv::Mat
     template<>
     void
-    Document::get_attachment<cv::Mat>(const AttachmentName &attachment_name, cv::Mat  & value, bool do_use_cache)
+    Document::get_attachment<cv::Mat>(const AttachmentName &attachment_name, cv::Mat & value, bool do_use_cache)
     {
       std::stringstream ss;
       get_attachment_stream(attachment_name, ss, "text/x-yaml", do_use_cache);

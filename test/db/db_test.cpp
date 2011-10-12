@@ -3,7 +3,6 @@
 #include <gtest/gtest.h>
 
 #include <object_recognition/db/db.h>
-#include <object_recognition/db/parameters/couch.hpp>
 #include <boost/property_tree/json_parser.hpp>
 #include <boost/property_tree/ptree.hpp>
 
@@ -13,7 +12,7 @@ using namespace object_recognition::db_future;
 using boost::property_tree::ptree;
 using boost::property_tree::json_parser::write_json;
 using boost::property_tree::json_parser::read_json;
-using parameters::CouchDB;
+using object_recognition::db_future::ObjectDbParameters;
 
 std::string
 params_bogus(const std::string& url = db_url)
@@ -59,7 +58,7 @@ delete_c(ObjectDb& db, const std::string& collection)
 
 TEST(OR_db, Status)
 {
-  ObjectDb db(CouchDB());
+  ObjectDb db(ObjectDbParameters("CouchDB"));
   std::string status;
   db.Status(status);
   ptree ps = parse_status(status);
@@ -69,7 +68,7 @@ TEST(OR_db, Status)
 TEST(OR_db, CreateDelete)
 {
   {
-    ObjectDb db(CouchDB());
+    ObjectDb db(ObjectDbParameters("CouchDB"));
     db.CreateCollection("test_it");
     std::string status;
     db.Status("test_it", status);
@@ -77,19 +76,19 @@ TEST(OR_db, CreateDelete)
     EXPECT_EQ(ps.get<std::string>("db_name"), "test_it");
   }
   {
-    ObjectDb db(CouchDB());
+    ObjectDb db(ObjectDbParameters("CouchDB"));
     delete_c(db, "test_it");
   }
 }
 TEST(OR_db, DeleteNonexistant)
 {
-  ObjectDb db(CouchDB());
+  ObjectDb db(ObjectDbParameters("CouchDB"));
   db.DeleteCollection("dgadf");
 }
 
 TEST(OR_db, DocumentPesistLoad)
 {
-  ObjectDb db(CouchDB());
+  ObjectDb db(ObjectDbParameters("CouchDB"));
   delete_c(db, "test_it");
   std::string id;
   {
@@ -109,7 +108,9 @@ TEST(OR_db, DocumentPesistLoad)
 
 TEST(OR_db, NonExistantCouch)
 {
-  ObjectDb db(CouchDB("http://foo:12323"));
+  ObjectDbParameters params("CouchDB");
+  params.root_ = "http://foo:12323";
+  ObjectDb db(params);
   try
   {
     std::string status;
@@ -124,7 +125,9 @@ TEST(OR_db, NonExistantCouch)
 
 TEST(OR_db, StatusCollectionNonExistantDb)
 {
-  ObjectDb db(CouchDB("http://foo:12323"));
+  ObjectDbParameters params("CouchDB");
+  params.root_ = "http://foo:12323";
+  ObjectDb db(params);
   try
   {
     std::string status;
@@ -138,7 +141,9 @@ TEST(OR_db, StatusCollectionNonExistantDb)
 
 TEST(OR_db, DeleteBogus)
 {
-  ObjectDb db(CouchDB("http://foo:12323"));
+  ObjectDbParameters params("CouchDB");
+  params.root_ = "http://foo:12323";
+  ObjectDb db(params);
   try
   {
     db.DeleteCollection("test_it");
@@ -150,7 +155,7 @@ TEST(OR_db, DeleteBogus)
 }
 TEST(OR_db, StatusCollectionNonExistant)
 {
-  ObjectDb db(CouchDB());
+  ObjectDb db(ObjectDbParameters("CouchDB"));
   db.DeleteCollection("test_it");
 
   std::string status;
@@ -162,7 +167,7 @@ TEST(OR_db, StatusCollectionNonExistant)
 
 TEST(OR_db, StatusCollectionExistant)
 {
-  ObjectDb db(CouchDB());
+  ObjectDb db(ObjectDbParameters("CouchDB"));
   db.DeleteCollection("test_it");
   std::string status;
   db.CreateCollection("test_it");
@@ -174,7 +179,7 @@ TEST(OR_db, StatusCollectionExistant)
 
 TEST(OR_db, DocumentBadId)
 {
-  ObjectDb db(CouchDB());
+  ObjectDb db(ObjectDbParameters("CouchDB"));
   try
   {
     Document doc(db, "test_it", "bogus_id");
@@ -188,7 +193,9 @@ TEST(OR_db, DocumentBadId)
 
 TEST(OR_db, DocumentUrl)
 {
-  ObjectDb db(CouchDB("http://foo:12323"));
+  ObjectDbParameters params("CouchDB");
+  params.root_ = "http://foo:12323";
+  ObjectDb db(params);
   try
   {
     Document doc(db, "test_it", "bogus_id");
@@ -201,7 +208,7 @@ TEST(OR_db, DocumentUrl)
 
 TEST(OR_db, DoubleCreate)
 {
-  ObjectDb db(CouchDB());
+  ObjectDb db(ObjectDbParameters("CouchDB"));
   db.CreateCollection("aa");
   db.CreateCollection("aa");
   db.DeleteCollection("aa");
@@ -209,7 +216,7 @@ TEST(OR_db, DoubleCreate)
 
 TEST(OR_db, DoubleDelete)
 {
-  ObjectDb db(CouchDB());
+  ObjectDb db(ObjectDbParameters("CouchDB"));
   db.CreateCollection("aa");
   db.DeleteCollection("aa");
   db.DeleteCollection("aa");
@@ -277,12 +284,14 @@ TEST(OR_db, NonArgsDbInsert)
 TEST(OR_db, InitSeperatelyChangeURL)
 {
   ObjectDb db;
-  db.set_params(CouchDB());
+  db.set_params(ObjectDbParameters("CouchDB"));
   std::string status;
   db.Status(status);
   ptree ps = parse_status(status);
   EXPECT_EQ(ps.count("couchdb"), 1);
-  db.set_params(CouchDB("http://abc"));
+  ObjectDbParameters params("CouchDB");
+  params.root_ = "http://abc";
+  db.set_params(params);
   try
   {
     db.Status(status);
@@ -297,7 +306,7 @@ TEST(OR_db, InitSeperatelyChangeURL)
 
 TEST(OR_db, ObjectDbCopy)
 {
-  ObjectDb db(CouchDB()), db2;
+  ObjectDb db(ObjectDbParameters("CouchDB")), db2;
   db2 = db;
   std::string s1, s2;
   db.Status(s1);
