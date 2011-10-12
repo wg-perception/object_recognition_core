@@ -28,6 +28,14 @@ if __name__ == '__main__':
     Sink.add_arguments(parser)
 
     params, args, pipeline_params, do_display, db_dict, db = read_arguments(parser)
+
+    model_ids = []
+    object_ids = []
+    for object_id in params['object_ids']:
+        for model_id in models.find_model_for_object(db, object_id, 'TOD'):
+            model_ids.extend([str(model_id)])
+            object_ids.append(object_id)
+    params['object_ids'] = object_ids
  
     # TODO handle this properly...
     ecto_ros.init(sys.argv, "ecto_node")
@@ -36,14 +44,6 @@ if __name__ == '__main__':
     
 
     sink = Sink.parse_arguments(args, db, params['object_ids'])
-
-    model_ids = []
-    object_ids = []
-    for object_id in params['object_ids']:
-        for model_id in models.find_model_for_object(db, object_id, 'TOD'):
-            model_ids.extend([model_id])  
-            object_ids.append(object_id)
-    params['object_ids'] = object_ids
 
     
     # define the input
