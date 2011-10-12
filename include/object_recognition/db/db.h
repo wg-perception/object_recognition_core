@@ -53,6 +53,7 @@ namespace object_recognition
   {
     //Forward declare some classes
     class ObjectDbBase;
+    class ObjectDbBaseParameters;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -132,6 +133,8 @@ namespace object_recognition
 
       /** The DB from which we'll get all the info */
       boost::shared_ptr<ObjectDbBase> db_;
+      /** The parameters of the current DB */
+      boost::shared_ptr<ObjectDbBaseParameters> db_parameters_;
     };
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

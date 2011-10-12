@@ -60,6 +60,25 @@ namespace object_recognition
 {
   namespace db_future
   {
+    /** A class that stores the common parametrs for the object DB */
+    class ObjectDbBaseParameters
+    {
+    public:
+      static const std::string EMPTY;
+      ObjectDbBaseParameters()
+      {
+        type_ = EMPTY;
+      }
+      /** The collection where the data is stored (or schema in certain naming conventions) */
+      std::string collection_;
+      /** The base url/path of where the DB is located */
+      std::string root_;
+      /** The type of the collection 'CouchDB' ... */
+      std::string type_;
+    };
+    const std::string ObjectDbBaseParameters::EMPTY = "empty";
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     /** The main class that interact with the db
      * A collection is similar to the term used in CouchDB. It could be a schema/table in SQL
