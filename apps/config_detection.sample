@@ -6,6 +6,7 @@ db:
 
 source:
   type: ros_kinect
+  rgb_frame_id: '/camera_rgb_optical_frame'
 #  bag: /home/vrabaud/data/robot_power/poster_01.bag
 sink:
   type: publisher

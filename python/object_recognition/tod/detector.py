@@ -65,6 +65,7 @@ class TodDetector(ecto.BlackBox):
     descriptor_matcher = tod_detection.DescriptorMatcher
     guess_generator = tod_detection.GuessGenerator
     image_duplicator = ecto.Passthrough
+    message_cvt = ecto_ros.Mat2Image
 
     def __init__(self, feature_descriptor_params, guess_params, search_params, display=False, **kwargs):
         self._tod_params = feature_descriptor_params
@@ -76,7 +77,7 @@ class TodDetector(ecto.BlackBox):
         ecto.BlackBox.__init__(self, **kwargs)
 
     def declare_params(self, p):
-        pass
+        p.forward('rgb_frame_id', cell_name='message_cvt', cell_key='rgb_frame_id')
 
     def declare_io(self, _p, i, o):
         i.forward('image', cell_name='image_duplicator', cell_key='in')
@@ -97,6 +98,8 @@ class TodDetector(ecto.BlackBox):
         self.feature_descriptor = FeatureDescriptor(json_params=json_helper.dict_to_cpp_json_str(self._tod_params))
         self.descriptor_matcher = tod_detection.DescriptorMatcher("Matcher",
                                 search_json_params=json_helper.dict_to_cpp_json_str(self._search_params))
+        self.message_cvt = ecto_ros.Mat2Image()
+
         guess_params = {}
         for key in [ 'min_inliers', 'n_ransac_iterations', 'sensor_error']:
             if key in self._guess_params:
@@ -118,13 +121,12 @@ class TodDetector(ecto.BlackBox):
         pub_features = ImagePub("Features Pub", topic_name='features')
         cvt_color = imgproc.cvtColor(flag=imgproc.RGB2GRAY)
 
-        message_cvt = ecto_ros.Mat2Image(frame_id='/camera_rgb_optical_frame')
         draw_keypoints = features2d.DrawKeypoints()
         connections += [   self.image_duplicator[:] >> cvt_color[:],
                            cvt_color[:] >> draw_keypoints['image'],
                            self.feature_descriptor['keypoints'] >> draw_keypoints['keypoints'],
-                           draw_keypoints['image'] >> message_cvt[:],
-                           message_cvt[:] >> pub_features[:],
+                           draw_keypoints['image'] >> self.message_cvt[:],
+                           self.message_cvt[:] >> pub_features[:],
                            ]
 
         if self._display:
