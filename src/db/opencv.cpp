@@ -12,15 +12,17 @@ namespace fs = boost::filesystem;
 namespace
 {
   std::string
-  gen_temp_yml()
+  gen_temp_yml(bool do_gzip)
   {
     std::string fname;
     {
       char buffer[L_tmpnam];
       char* p = std::tmpnam(buffer);
-      if (p != NULL
-      )
+      if (p != NULL) {
         fname = std::string(buffer) + ".yml";
+        if (do_gzip)
+          fname += ".gz";
+      }
       else
         throw std::runtime_error("Could not create temporary filename!");
     }
@@ -32,9 +34,9 @@ namespace object_recognition
   namespace db
   {
     void
-    mats2yaml(const std::map<std::string, cv::Mat>& mm,std::ostream& out)
+    mats2yaml(const std::map<std::string, cv::Mat>& mm,std::ostream& out, bool do_gzip)
     {
-      std::string fname = gen_temp_yml();
+      std::string fname = gen_temp_yml(do_gzip);
       {
         cv::FileStorage fs(fname, cv::FileStorage::WRITE);
         typedef std::pair<std::string, cv::Mat> pair_t;
@@ -51,9 +53,9 @@ namespace object_recognition
     }
 
     void
-    yaml2mats(std::map<std::string, cv::Mat>& mm,std::istream& in)
+    yaml2mats(std::map<std::string, cv::Mat>& mm,std::istream& in, bool do_gzip)
     {
-      std::string fname = gen_temp_yml();
+      std::string fname = gen_temp_yml(do_gzip);
       {
         std::ofstream writer(fname.c_str());
         writer << in.rdbuf();

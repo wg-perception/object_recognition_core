@@ -45,6 +45,7 @@
 #include <boost/property_tree/ptree.hpp>
 
 #include <object_recognition/db/utils.h>
+#include <opencv2/core/core.hpp>
 
 namespace object_recognition
 {
@@ -302,6 +303,14 @@ namespace object_recognition
       /** contains the fields: they are of integral types */
       boost::property_tree::ptree fields_;
     };
+
+    // Specializations for cv::Mat
+    template<>
+    void
+    Document::get_attachment<cv::Mat>(const AttachmentName &attachment_name, cv::Mat  & value, bool do_use_cache);
+    template<>
+    void
+    Document::set_attachment<cv::Mat>(const AttachmentName &attachment_name, const cv::Mat & value);
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 

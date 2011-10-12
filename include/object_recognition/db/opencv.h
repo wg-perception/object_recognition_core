@@ -14,10 +14,10 @@ namespace object_recognition
   namespace db
   {
     void
-    mats2yaml(const std::map<std::string, cv::Mat>& mm,std::ostream& out);
+    mats2yaml(const std::map<std::string, cv::Mat>& mm,std::ostream& out, bool do_gzip = false);
 
     void
-    yaml2mats(std::map<std::string, cv::Mat>& mm,std::istream& in);
+    yaml2mats(std::map<std::string, cv::Mat>& mm,std::istream& in, bool do_gzip = false);
 
     void
     png_attach(cv::Mat image, db_future::Document& doc, const std::string& name);
@@ -27,6 +27,7 @@ namespace object_recognition
   }
 }
 
+/*
 namespace boost
 {
   namespace serialization
@@ -67,4 +68,4 @@ namespace boost
 } // namespace boost
 
 BOOST_SERIALIZATION_SPLIT_FREE(cv::Mat);
-
+*/

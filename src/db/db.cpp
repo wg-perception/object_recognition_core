@@ -38,6 +38,7 @@
 #include "db_base.h"
 #include "db_couch.h"
 #include "object_recognition/db/db.h"
+#include <object_recognition/db/opencv.h>
 
 #define PRECONDITION_DB() if(!db_) throw std::runtime_error(std::string("This ObjectDb instance is uninitialized."));
 namespace object_recognition
@@ -409,6 +410,29 @@ namespace object_recognition
     DocumentView::operator*() const
     {
       return Document(db_, collection_, document_ids_.back());
+    }
+
+
+    // Specializations for cv::Mat
+    template<>
+    void
+    Document::get_attachment<cv::Mat>(const AttachmentName &attachment_name, cv::Mat  & value, bool do_use_cache)
+    {
+      std::stringstream ss;
+      get_attachment_stream(attachment_name, ss, "text/x-yaml", do_use_cache);
+      std::map<std::string, cv::Mat> ss_map;
+      ss_map[attachment_name] = value;
+      object_recognition::db::yaml2mats(ss_map, ss, true);
+    }
+    template<>
+    void
+    Document::set_attachment<cv::Mat>(const AttachmentName &attachment_name, const cv::Mat & value)
+    {
+      std::stringstream ss;
+      std::map<std::string, cv::Mat> ss_map;
+      ss_map[attachment_name] = value;
+      object_recognition::db::mats2yaml(ss_map, ss, true);
+      set_attachment_stream(attachment_name, ss, "text/x-yaml");
     }
   }
 }
