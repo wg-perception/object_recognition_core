@@ -81,8 +81,7 @@ namespace object_recognition
       {
         params.declare<boost::python::object>("model_ids", "The DB id of the model to load.");
         params.declare<std::string>("collection", "The collection where the models are stored.", "models");
-        params.declare<std::string>("db_json_params", "std::string The DB parameters, cf. ObjectDb", "models").required(
-            true);
+        params.declare<db_future::ObjectDbParameters>("db_params", "The DB parameters").required(true);
       }
 
       static void
@@ -95,9 +94,9 @@ namespace object_recognition
       void
       configure(const tendrils& params, const tendrils& inputs, const tendrils& outputs)
       {
-        db_json_params_ = params["db_json_params"];
+        db_params_ = params["db_params"];
         collection_ = params["collection"];
-        db_ = db_future::ObjectDb(*db_json_params_);
+        db_ = db_future::ObjectDb(*db_params_);
 
         const boost::python::object & python_object_ids = params.get<boost::python::object>("object_ids");
         boost::python::stl_input_iterator<std::string> begin(python_object_ids), end;
@@ -133,7 +132,7 @@ namespace object_recognition
       }
       object_recognition::db_future::ObjectDb db_;
       ecto::spore<CollectionName> collection_;
-      ecto::spore<std::string> db_json_params_;
+      ecto::spore<db_future::ObjectDbParameters> db_params_;
       std::vector<ModelId> model_ids_;
     };
   }
