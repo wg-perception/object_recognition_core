@@ -2,6 +2,7 @@
 Module that creates a function to define/read common arguments for the training/detection pipeline
 """
 
+from ecto_object_recognition.object_recognition_db import ObjectDbParameters
 from object_recognition import models, dbtools
 from object_recognition.common.utils.parser import ObjectRecognitionParser
 import couchdb
@@ -51,14 +52,15 @@ def read_arguments(parser=None, training=False):
         if 'missing' in (ids, names):
             tmp_object_ids = set([ str(x.id) for x in models.Object.all(db) ])
             tmp_object_ids_from_names = set([ str(x.object_id) for x in models.Model.all(db) ])
-            print len(tmp_object_ids)
-            print len(tmp_object_ids_from_names)
             object_ids.update(tmp_object_ids.difference(tmp_object_ids_from_names))
         if ids and ids != 'missing':
             object_ids.update(ids[1:-1].split(','))
         if names and names != 'missing':
             for object_name in names[1:-1].split(','):
                 object_ids.update([str(x.id) for x in models.objects_by_name(db, object_name)])
+        # if we got some ids through the command line, just stop here
+        if object_ids:
+            break
 
     object_ids = list(object_ids)
     print "computing for", object_ids
@@ -69,4 +71,4 @@ def read_arguments(parser=None, training=False):
         if key.startswith('pipeline'):
             pipeline_params.append(value)
 
-    return params, args, pipeline_params, args.do_display, db_dict, db
+    return params, args, pipeline_params, args.do_display, ObjectDbParameters(db_dict), db
