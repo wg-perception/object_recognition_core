@@ -100,13 +100,15 @@ namespace object_recognition
         throw std::runtime_error("You must supply a database type. e.g. CouchDB");
       }
       type_ = all_parameters_.at("type");
+      if (type_ == ObjectDbParameters::EMPTY)
+        return;
 
       if (all_parameters_.find("root") == all_parameters_.end())
       {
         throw std::runtime_error("You must supply a root . e.g. /home/me, http://localhost:5984");
       }
       root_ = all_parameters_.at("root");
-      if (all_parameters_.find("collection") == all_parameters_.end())
+      if (all_parameters_.find("collection") != all_parameters_.end())
         collection_ = all_parameters_.at("collection");
     }
 

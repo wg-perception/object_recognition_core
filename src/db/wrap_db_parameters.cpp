@@ -46,18 +46,25 @@ namespace object_recognition
     typedef boost::shared_ptr<ObjectDbParameters> ObjectDbParametersPtr;
 
     boost::shared_ptr<ObjectDbParameters>
-    options_ctr(bp::dict obj)
+    ObjectDbParametersConstructor(bp::dict obj)
     {
       std::map<std::string, std::string> params;
       bp::list l = bp::dict(obj).items();
+      params.insert(std::make_pair("type", ObjectDbParameters::EMPTY));
       for (int j = 0, end = bp::len(l); j < end; ++j)
       {
         std::string key = bp::extract<std::string>(l[j][0]);
         std::string value = bp::extract<std::string>(l[j][1]);
-        params.insert(std::make_pair(key, value));
+        params[key] = value;
       }
       ObjectDbParametersPtr p(new ObjectDbParameters(params));
       return p;
+    }
+
+    std::string
+    collection(ObjectDbParametersPtr params)
+    {
+      return params->collection_;
     }
 
     std::string
@@ -76,9 +83,10 @@ namespace object_recognition
     wrap_db_options()
     {
       bp::class_<ObjectDbParameters, ObjectDbParametersPtr> ObjectDbParametersClass("ObjectDbParameters"); //"The parameters of any database");
-      ObjectDbParametersClass.def("__init__", bp::make_constructor(options_ctr));
-      ObjectDbParametersClass.add_property("type", type, "The type of the database.");
+      ObjectDbParametersClass.def("__init__", bp::make_constructor(ObjectDbParametersConstructor));
+      ObjectDbParametersClass.add_property("collection", collection, "The collection of the database.");
       ObjectDbParametersClass.add_property("root", root, "The root of the database.");
+      ObjectDbParametersClass.add_property("type", type, "The type of the database.");
     }
   }
 }

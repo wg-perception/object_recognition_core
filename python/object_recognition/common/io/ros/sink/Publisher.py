@@ -5,6 +5,7 @@ Module defining several outputs for the object recognition pipeline
 import ecto
 import ecto_geometry_msgs, ecto_std_msgs
 from ecto_object_recognition.io_ros import PoseArrayAssembler, Publisher_MarkerArray
+from ecto_object_recognition.object_recognition_db import ObjectDbParameters
 
 PoseArrayPub = ecto_geometry_msgs.Publisher_PoseArray
 MarkerArrayPub = Publisher_MarkerArray
@@ -26,12 +27,13 @@ class Publisher(ecto.BlackBox):
         p.declare('object_ids_topic', 'The ROS topic to use for the object meta info string', 'object_ids')
         p.declare('latched', 'Determines if the topics will be latched.', True)
         p.declare('mapping', 'A mapping from object id to mesh id', {'na':'na'})
+        p.declare('db_params', 'The DB parameters', ObjectDbParameters({}))
 
     def declare_io(self, _p, i, _o):
         i.forward_all('_pose_array_assembler')
 
     def configure(self, p, _i, _o):
-        self._pose_array_assembler = Publisher._pose_array_assembler(mapping=p.mapping)
+        self._pose_array_assembler = Publisher._pose_array_assembler(mapping=p.mapping, db_params=p.db_params)
         self._pose_pub = Publisher._pose_pub(topic_name=p.pose_topic, latched=p.latched)
         self._object_ids_pub = Publisher._object_ids_pub(topic_name=p.object_ids_topic, latched=p.latched)
         self._marker_pub = Publisher._marker_pub(topic_name=p.markers_topic,latched=p.latched)

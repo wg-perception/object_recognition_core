@@ -52,6 +52,7 @@
 #include <opencv2/core/core.hpp>
 
 #include "object_recognition/common/types.h"
+#include "object_recognition/db/db.h"
 
 namespace bp = boost::python;
 
@@ -123,6 +124,7 @@ namespace object_recognition
     declare_params(ecto::tendrils& params)
     {
       params.declare<bp::object>("mapping", "Mapping from object ids to mesh ids.").required(true);
+      params.declare<db_future::ObjectDbParameters>("db_params", "The DB parameters").required(true);
     }
 
     static void
@@ -141,6 +143,8 @@ namespace object_recognition
     void
     configure(const ecto::tendrils& params, const ecto::tendrils& inputs, const ecto::tendrils& outputs)
     {
+      db_params_ = params["db_params"];
+
       Rs_ = inputs["Rs"];
       Ts_ = inputs["Ts"];
       image_message_ = inputs["image_message"];
@@ -235,8 +239,10 @@ namespace object_recognition
           marker.color.r = r;
           marker.id = i;
           //http://localhost:5984/object_recognition/_design/models/_view/by_object_id_and_mesh?key=%2212a1e6eb663a41f8a4fb9baa060f191c%22
-          marker.mesh_resource = "http://localhost:5984/object_recognition/" + get_mesh_id((*object_ids_)[i])
-                                 + "/mesh.stl";
+          if (db_params_->type_ == "CouchDB")
+            marker.mesh_resource = db_params_->root_ + std::string("/") + db_params_->collection_ + "/"
+                                   + get_mesh_id((*object_ids_)[i])
+                                   + "/mesh.stl";
           marker_array.markers.push_back(marker);
           marker.type = visualization_msgs::Marker::TEXT_VIEW_FACING;
           marker.text = get_object_name((*object_ids_)[i]);
@@ -279,6 +285,7 @@ namespace object_recognition
 
     std::map<std::string, std::pair<std::string, std::string> > mapping_;
     static std::map<ObjectId, unsigned int> object_id_to_index_;
+    ecto::spore<db_future::ObjectDbParameters> db_params_;
   };
   std::map<ObjectId, unsigned int> PoseArrayAssembler::object_id_to_index_;
 }

@@ -52,7 +52,7 @@ class Sink(object):
                             help='The source type to use. default(%(default)s)')
 
     @staticmethod
-    def parse_arguments(obj, db, object_ids):
+    def parse_arguments(obj, db, db_params, object_ids):
         if type(obj).__name__ == 'dict':
             dic = obj
         else:
@@ -61,7 +61,7 @@ class Sink(object):
         sink = None
         mapping = object_to_models_mapping(db, object_ids)
         if 'sink_type' in dic:
-            sink = Sink.create_sink(sink_type=dic['sink_type'], mapping=mapping)
+            sink = Sink.create_sink(sink_type=dic['sink_type'], mapping=mapping, db_params=db_params)
         else:
             raise RuntimeError("Could not create a sink from the given args! %s" % str(dic))
         return _assert_sink_interface(sink)
