@@ -9,7 +9,7 @@ import couchdb
 import os
 import yaml
 
-def read_arguments(parser=None, training=False):
+def read_arguments(parser=None):
     """
     Returns:
     params, pipeline_params, db_dict, db
@@ -35,11 +35,11 @@ def read_arguments(parser=None, training=False):
     params = yaml.load(open(args.config_file))
 
     # read some parameters
-    db_dict = params['db']
+    db_params = ObjectDbParameters(params['db'])
 
     # initialize the DB
-    if db_dict['type'].lower() == 'couchdb':
-        db = dbtools.init_object_databases(couchdb.Server(db_dict['root']))
+    if db_params.type.lower() == 'couchdb':
+        db = dbtools.init_object_databases(couchdb.Server(db_params.root))
 
     # read the object_ids
     object_ids = set()
@@ -71,4 +71,4 @@ def read_arguments(parser=None, training=False):
         if key.startswith('pipeline'):
             pipeline_params.append(value)
 
-    return params, args, pipeline_params, args.do_display, ObjectDbParameters(db_dict), db
+    return params, args, pipeline_params, args.do_display, db_params, db

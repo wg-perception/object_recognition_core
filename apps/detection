@@ -1,9 +1,7 @@
 #!/usr/bin/env python
 from argparse import ArgumentParser
-from ecto_object_recognition import tod_detection
 from ecto_opencv import highgui, calib
 from object_recognition.common.filters.masker import Masker
-from object_recognition.common.io.ros.source import BagReader
 from object_recognition.common.io.sink import Sink
 from object_recognition.common.io.source import Source
 from object_recognition.common.utils import json_helper
@@ -43,19 +41,6 @@ if __name__ == '__main__':
     
 
     sink = Sink.parse_arguments(args, db, db_params, params['object_ids'])
-
-    # define the input
-    if 0:
-        bag_reader = BagReader(plasm, dict(image=ecto_sensor_msgs.Bagger_Image(topic_name='image_mono'),
-                           camera_info=ecto_sensor_msgs.Bagger_CameraInfo(topic_name='camera_info'),
-                           point_cloud=ecto_sensor_msgs.Bagger_PointCloud2(topic_name='points'),
-                           ), options.bag)
-
-        # connect to the model computation
-        point_cloud_to_mat = tod_detection.PointCloudToMat()
-        plasm.connect(bag_reader['image'] >> tod_detector['image'],
-                      bag_reader['point_cloud'] >> point_cloud_to_mat['point_cloud'],
-                      point_cloud_to_mat['points'] >> tod_detector['points'])
 
     # define the different pipelines
     for pipeline_param in pipeline_params:
