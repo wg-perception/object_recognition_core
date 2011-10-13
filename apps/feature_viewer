@@ -23,8 +23,7 @@ if __name__ == '__main__':
 
     #database ritual
     db_url = args.db_root
-    db_params = ObjectDbParameters("CouchDB")
-    db_params.root = args.db_root
+    db_params = ObjectDbParameters({'type':'CouchDB', 'root':db_url})
     couch = couchdb.Server(db_url)
     dbs = dbtools.init_object_databases(couch)
 
