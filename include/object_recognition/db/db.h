@@ -64,16 +64,17 @@ namespace object_recognition
       static const std::string EMPTY;
       ObjectDbParameters();
 
-      /**
-       * @param json_params Either the DB type for a default constructor for that DB, ot the JSON parameters
+      /** Default constructor for certain types
+       * @param type Default type
        */
       explicit
-      ObjectDbParameters(const std::string& json_params);
+      ObjectDbParameters(const std::string& type);
+
       /**
-       * @param json_params Either the DB type for a default constructor for that DB, ot the JSON parameters
+       * @param params A map between some db parameters and their value
        */
       explicit
-      ObjectDbParameters(const std::map<std::string, std::string>& json_params);
+      ObjectDbParameters(const std::map<std::string, std::string>& params);
 
       /** The collection where the data is stored (or schema in certain naming conventions) */
       std::string collection_;
@@ -84,8 +85,6 @@ namespace object_recognition
       /** All the raw parameters */
       std::map<std::string, std::string> all_parameters_;
     protected:
-      void
-      FillParameters(const std::string& json_params);
       void
       FillParameters(const std::map<std::string, std::string>& json_params);
     };

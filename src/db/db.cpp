@@ -52,8 +52,8 @@ namespace object_recognition
       type_ = EMPTY;
     }
 
-    /**
-     * @param json_params Either the DB type for a default constructor for that DB, ot the JSON parameters
+    /** Default constructor for certain types
+     * @param type Default type
      */
     ObjectDbParameters::ObjectDbParameters(const std::string& json_params)
     {
@@ -62,35 +62,12 @@ namespace object_recognition
         type_ = "CouchDB";
         root_ = "http://localhost:5984";
       }
-      else
-      {
-        FillParameters(json_params);
-      }
     }
     ObjectDbParameters::ObjectDbParameters(const std::map<std::string, std::string>& parameters)
     {
       FillParameters(parameters);
     }
 
-    void
-    ObjectDbParameters::FillParameters(const std::string& json_params)
-    {
-      boost::property_tree::ptree ptree_parameters;
-      std::stringstream ssparams;
-      ssparams << json_params;
-
-      try
-      {
-        boost::property_tree::read_json(ssparams, ptree_parameters);
-      } catch (std::runtime_error& e)
-      {
-        throw std::runtime_error(std::string("Failed to parse json --- ") + e.what());
-      }
-
-      BOOST_FOREACH(boost::property_tree::ptree::value_type &v, ptree_parameters)
-            all_parameters_.insert(std::make_pair(v.first, v.second.data()));
-      FillParameters(all_parameters_);
-    }
     void
     ObjectDbParameters::FillParameters(const std::map<std::string, std::string>& parameters)
     {
