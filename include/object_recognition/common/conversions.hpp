@@ -21,11 +21,18 @@ namespace object_recognition
     cloud.clear();
     cv::Mat_<cv::Point3f>::const_iterator point_it = points3d.begin(), point_end = points3d.end();
     cv::Mat_<cv::Vec3b>::const_iterator rgb_it = rgb.begin<cv::Vec3b>();
-    cv::Mat_<uchar>::const_iterator mask_it = mask.begin<uchar>();
-    for (; point_it != point_end; ++point_it, ++mask_it, ++rgb_it)
+    cv::Mat_<uchar>::const_iterator mask_it;
+    if(!mask.empty())
+      mask_it = mask.begin<uchar>();
+    for (; point_it != point_end; ++point_it, ++rgb_it)
     {
-      if (!*mask_it)
-        continue;
+      if(!mask.empty())
+      {
+        ++mask_it;
+        if (!*mask_it)
+          continue;
+      }
+
       cv::Point3f p = *point_it;
       if (p.x != p.x && p.y != p.y && p.z != p.z) //throw out NANs
         continue;

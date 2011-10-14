@@ -95,8 +95,8 @@ namespace object_recognition
       declare_io(const tendrils& params, tendrils& inputs, tendrils& outputs)
       {
         inputs.declare(&MatToPointCloudXYZRGB::image, "image", "The rgb image.").required(true);
-        inputs.declare(&MatToPointCloudXYZRGB::mask, "mask", "The binary mask for valid points.").required(true);
         inputs.declare(&MatToPointCloudXYZRGB::points3d, "points", "The 3d points.").required(true);
+        inputs.declare(&MatToPointCloudXYZRGB::mask, "mask", "The binary mask for valid points.");
         outputs.declare(&MatToPointCloudXYZRGB::cloud_out, "point_cloud", "The XYZRGB point cloud");
       }
 
