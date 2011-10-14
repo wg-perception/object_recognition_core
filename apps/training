@@ -11,11 +11,11 @@ DEBUG = False
 ########################################################################################################################
 
 if __name__ == '__main__':
-    params, args, pipeline_params, do_display, db_params, db = read_arguments(training=True)
+    params, args, pipeline_params, do_display, db_params, db = read_arguments()
 
     for object_id in params['object_ids']:
         object_id = object_id.encode('ascii')
-        db_reader = capture.ObservationReader("db_reader", db_url=db_dict['root'])
+        db_reader = capture.ObservationReader("db_reader", db_url=db_params.root)
         obs_ids = models.find_all_observations_for_object(db, object_id)
         if not obs_ids:
             print 'no observations found for object %s' % object_id
