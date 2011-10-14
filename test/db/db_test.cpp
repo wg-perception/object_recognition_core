@@ -14,14 +14,12 @@ using boost::property_tree::json_parser::write_json;
 using boost::property_tree::json_parser::read_json;
 using object_recognition::db_future::ObjectDbParameters;
 
-std::string
+ObjectDbParameters
 params_bogus(const std::string& url = db_url)
 {
-  ptree db_p;
-  db_p.add("urld", url);
-  std::stringstream ss;
-  write_json(ss, db_p);
-  return ss.str();
+  std::map<std::string, std::string> params;
+  params["urld"] = url;
+  return ObjectDbParameters(params);
 }
 
 std::string
@@ -243,7 +241,7 @@ TEST(OR_db, ParamsGarbage)
   } catch (std::runtime_error& e)
   {
     std::string error(e.what());
-    EXPECT_EQ(std::string("Failed to parse json --- <unspecified file>(2): expected object name"), error);
+    EXPECT_EQ(std::string("Invalid type."), error);
   }
 }
 

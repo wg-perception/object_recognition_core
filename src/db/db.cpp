@@ -61,7 +61,8 @@ namespace object_recognition
       {
         type_ = "CouchDB";
         root_ = "http://localhost:5984";
-      }
+      } else
+        throw std::runtime_error("Invalid type.");
     }
     ObjectDbParameters::ObjectDbParameters(const std::map<std::string, std::string>& parameters)
     {
