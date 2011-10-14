@@ -32,15 +32,49 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  *
  */
+#include <map>
+#include <string>
+
 #include <boost/python.hpp>
 #include <boost/shared_ptr.hpp>
 #include <object_recognition/db/db.h>
+
+namespace bp = boost::python;
+
+namespace
+{
+  std::map<std::string, std::string>
+  BpDictToMap(const bp::dict &bp_dict)
+  {
+    std::map<std::string, std::string> params;
+    bp::list l = bp_dict.items();
+    for (int j = 0, end = bp::len(l); j < end; ++j)
+    {
+      std::string key = bp::extract<std::string>(l[j][0]);
+      std::string value = bp::extract<std::string>(l[j][1]);
+      params[key] = value;
+    }
+    return params;
+  }
+
+  bp::dict
+  MapToBpDict(const std::map<std::string, std::string> & map)
+  {
+    bp::dict bp_dict;
+    for (std::map<std::string, std::string>::const_iterator iter = map.begin(), end = map.end(); iter != end; ++iter)
+    {
+      std::cerr << iter->second;
+      std::cerr << iter->first << " " << iter->second << std::endl;
+      bp_dict[iter->first] = iter->second;
+    }
+    return bp_dict;
+  }
+}
 
 namespace object_recognition
 {
   namespace db
   {
-    namespace bp = boost::python;
     using namespace db_future;
 
     typedef boost::shared_ptr<ObjectDbParameters> ObjectDbParametersPtr;
@@ -48,19 +82,48 @@ namespace object_recognition
     boost::shared_ptr<ObjectDbParameters>
     ObjectDbParametersConstructor(bp::dict obj)
     {
-      std::map<std::string, std::string> params;
-      bp::list l = bp::dict(obj).items();
-      params.insert(std::make_pair("type", ObjectDbParameters::EMPTY));
-      for (int j = 0, end = bp::len(l); j < end; ++j)
-      {
-        std::string key = bp::extract<std::string>(l[j][0]);
-        std::string value = bp::extract<std::string>(l[j][1]);
-        params[key] = value;
-      }
+      std::map<std::string, std::string> params = BpDictToMap(bp::dict(obj));
+      if (params.empty())
+        params.insert(std::make_pair("type", ObjectDbParameters::EMPTY));
       ObjectDbParametersPtr p(new ObjectDbParameters(params));
       return p;
     }
 
+    // Define the pickling of the object
+    struct db_parameters_pickle_suite: boost::python::pickle_suite
+    {
+      static boost::python::tuple
+      getinitargs(const ObjectDbParameters& db_params)
+      {
+        return boost::python::make_tuple();
+      }
+
+      static boost::python::tuple
+      getstate(const ObjectDbParameters& db_params)
+      {
+        return boost::python::make_tuple(db_params.type_, db_params.root_, db_params.collection_,
+                                         MapToBpDict(db_params.all_parameters_));
+      }
+
+      static
+      void
+      setstate(ObjectDbParameters& db_params, boost::python::tuple state)
+      {
+        using namespace boost::python;
+        if (len(state) != 4)
+        {
+          PyErr_SetObject(PyExc_ValueError, ("expected 4-item tuple in call to __setstate__; got %s" % state).ptr());
+          throw_error_already_set();
+        }
+
+        db_params.type_ = extract<std::string>(state[0]);
+        db_params.root_ = extract<std::string>(state[1]);
+        db_params.collection_ = extract<std::string>(state[2]);
+        db_params.all_parameters_ = BpDictToMap(extract<bp::dict>(state[3]));
+      }
+    };
+
+    // Define some fucntions to access the members
     std::string
     collection(ObjectDbParametersPtr params)
     {
@@ -87,6 +150,7 @@ namespace object_recognition
       ObjectDbParametersClass.add_property("collection", collection, "The collection of the database.");
       ObjectDbParametersClass.add_property("root", root, "The root of the database.");
       ObjectDbParametersClass.add_property("type", type, "The type of the database.");
+      ObjectDbParametersClass.def_pickle(db_parameters_pickle_suite());
     }
   }
 }
