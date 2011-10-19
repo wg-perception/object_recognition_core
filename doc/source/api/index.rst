@@ -3,6 +3,11 @@ Object Recognition Api
 
 Object Recognition is built on top of ecto and ROS. Here lay the innards.
 
+.. toctree::
+   :maxdepth: 2
+   
+   pipelines.rst
+
 
 Cells
 ^^^^^

@@ -41,6 +41,7 @@ pytest(test_tod_detection)
 pytest(test_capture_help)
 pytest(test_upload_help)
 pytest(test_training_help)
+pytest(test_mesh_object_help)
 
 desktop_test(view_observations)
 

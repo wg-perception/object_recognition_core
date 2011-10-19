@@ -9,7 +9,7 @@ import couchdb
 import os
 import yaml
 
-def read_arguments(parser=None):
+def read_arguments(parser=None, argv=None):
     """
     Returns:
     params, pipeline_params, db_dict, db
@@ -26,7 +26,7 @@ def read_arguments(parser=None):
     parser.add_argument('--object_names', help='If set, it overrides the list of object names in the config file')
     parser.add_argument('--do_display', help='If set, it will display some windows with temporary results',
                        default=False, action='store_true')
-    args = parser.parse_args()
+    args = parser.parse_args(args=argv)
 
     # define the input
     if args.config_file is None or not os.path.exists(args.config_file):

@@ -46,6 +46,8 @@ namespace object_recognition
   namespace db_future
   {
     const std::string ObjectDbParameters::EMPTY = "empty";
+    const std::string ObjectDbParameters::COUCHDB = "CouchDB";
+    const std::string DEFAULT_COUCHDB_URL = "http://localhost:5984";
 
     ObjectDbParameters::ObjectDbParameters()
     {
@@ -57,10 +59,10 @@ namespace object_recognition
      */
     ObjectDbParameters::ObjectDbParameters(const std::string& json_params)
     {
-      if (json_params == "CouchDB")
+      if (json_params == ObjectDbParameters::COUCHDB)
       {
-        type_ = "CouchDB";
-        root_ = "http://localhost:5984";
+        type_ = ObjectDbParameters::COUCHDB;
+        root_ = DEFAULT_COUCHDB_URL;
       } else
         throw std::runtime_error("Invalid type.");
     }

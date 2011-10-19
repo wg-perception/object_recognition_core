@@ -22,12 +22,12 @@ namespace object_recognition
     insert_mesh(const std::string& db_url, const std::string& object_id, const std::string& session_id,
                 const std::string& mesh_file, const std::string& surfel_file)
     {
-      object_recognition::db_future::ObjectDb db;
-      boost::property_tree::ptree db_p;
-      db_p.add("type", "CouchDB");
-      db_p.add("url", db_url);
-      db.set_params(db_p);
-      db_future::Document doc(db, "meshes");
+      using namespace object_recognition::db_future;
+      ObjectDbParameters params;
+      params.root_ = db_url;
+      params.type_ = ObjectDbParameters::COUCHDB;
+      ObjectDb db(params);
+      Document doc(db, "meshes");
       std::ifstream mesh_stream(mesh_file.c_str());
       doc.set_attachment_stream("mesh.ply", mesh_stream);
       std::ifstream surfel_stream(surfel_file.c_str());

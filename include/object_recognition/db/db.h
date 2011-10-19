@@ -62,6 +62,7 @@ namespace object_recognition
     public:
       // This is defined in db.cpp
       static const std::string EMPTY;
+      static const std::string COUCHDB;
       ObjectDbParameters();
 
       /** Default constructor for certain types
@@ -104,8 +105,6 @@ namespace object_recognition
       ObjectDb(const std::string& json_params);
       ObjectDb(const ObjectDbParameters &in_params);
 
-      void
-      set_params(const boost::property_tree::ptree& ptree_parameters);
       void
       set_params(const std::string& json_params);
       void
