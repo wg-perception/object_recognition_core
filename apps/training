@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+import roscompat
 from ecto_object_recognition import capture, tod_training
 from object_recognition import models
 from object_recognition.common.utils import json_helper
