@@ -19,6 +19,7 @@ DB:
 - delete things from the DB, find orphans, find missing components (models ...), find duplicates
 - better object representation (model, inline images, 3d models ...)
 - be able to only replicate models in a DB (to put on the PR2)
+- add meta data that is missing (meet with everybody). We want: timestamp of the session, the sensor id
 
 Capture:
 - SBA should be a blackbox for pose adjustment: maybe in capture, or in TOD training
