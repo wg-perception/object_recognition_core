@@ -14,29 +14,30 @@ def parse_args():
     args = parser.parse_args()
     return args
 
-def delete_object(dbs, object_ids, commit):
-    sessions = dbs['sessions']
-    observations = dbs['observations']
-    objects = dbs['objects']
-    bags = dbs['bags']
-    for object_id in object_ids:
-        ids = [session.id for session in models.Session.by_object_id(sessions, key=object_id)]
-        delete_observations(dbs, ids, commit)
-        for bag in models.Bag.by_object_id(dbs['bags'], key=object_id):
-            print "deleting bag: ", bag.id
-            if commit:
-                bags.delete(bag)
-        print "deleting object: ", object_id
-        if commit:
-            object = models.Object.load(objects, object_id)
-            if object:
-                objects.delete(object)
+def deletion_view(db):
+    view = couchdb.design.ViewDefinition('object_recognition', 'refer_object_id', '''function(doc) {
+         if (doc.object_id)
+             emit(doc.object_id, null);
+    }''')
+    view.sync(db)
 
+def delete_object(db, object_ids, commit):
+    for object_id in object_ids:
+        for row in db.view('object_recognition/refer_object_id', key=object_id):
+            print "Deleting doc:", row.id, 'referring to object:', row.key
+            if commit:
+                del db[row.id]
+        if not db.get(object_id):
+             print "No object by id", object_id, "found!"
+        elif commit:
+            print "Deleting object:", object_id
+            del db[object_id]
 
 if __name__ == "__main__":
     args = parse_args()
     couch = couchdb.Server(args.db_root)
-    dbs = dbtools.init_object_databases(couch)
-    delete_object(dbs, args.objects, args.commit)
+    db = dbtools.init_object_databases(couch)
+    deletion_view(db)
+    delete_object(db, args.objects, args.commit)
     if not args.commit:
         print 'just kidding. --commit to actually do it.'

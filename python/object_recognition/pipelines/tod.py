@@ -37,7 +37,7 @@ class TODDetection(DetectionPipeline):
         # TODO handle this properly...
         ecto_ros.init(argv, "tod_detection", False)#not anonymous.
 
-        source = Source.parse_arguments(params['source'], argv=argv)
+        source = Source.parse_arguments(params['source'])
 
 
         sink = Sink.parse_arguments(args, db, db_params, params['object_ids'])

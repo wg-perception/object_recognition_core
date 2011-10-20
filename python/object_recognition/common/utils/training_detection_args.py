@@ -63,7 +63,6 @@ def read_arguments(parser=None, argv=None):
             break
 
     object_ids = list(object_ids)
-    print "computing for", object_ids
     params['object_ids'] = object_ids
 
     pipeline_params = []
