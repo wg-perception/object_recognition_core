@@ -43,6 +43,9 @@
 
 #include <opencv2/core/core.hpp>
 
+#include <pcl/sample_consensus/ransac.h>
+#include <pcl/sample_consensus/sac_model_registration.h>
+
 #include "opencv_candidate/lsh.hpp"
 
 #include <Eigen/Core>
@@ -52,6 +55,21 @@
 #include <Eigen/StdVector>
 
 using ecto::tendrils;
+
+namespace
+{
+  struct IndexMatch
+  {
+    IndexMatch(unsigned int descriptor_index, unsigned int training_index)
+        :
+          query_index_(descriptor_index),
+          training_index_(training_index)
+    {
+    }
+    unsigned int query_index_;
+    unsigned int training_index_;
+  };
+}
 
 namespace object_recognition
 {
@@ -123,75 +141,150 @@ namespace object_recognition
         matcher_->train();
 
         // Initialize the ids of each point, and whether they have been matched to others or not
-        std::vector<boost::dynamic_bitset<> > is_done_all(n_images);
+        std::vector<boost::dynamic_bitset<> > is_matched_all(n_images);
         *ids_ = std::vector<std::vector<size_t> >(n_images);
         unsigned int n_points_all = 0;
         for (size_t image_id = 0; image_id < n_images; ++image_id)
         {
           const cv::Mat & descriptors = descriptors_all[image_id];
-          (*ids_)[image_id] = std::vector<size_t>(descriptors.rows);
-          is_done_all[image_id] = boost::dynamic_bitset<>(descriptors.rows);
+          (*ids_)[image_id] = std::vector<size_t>(descriptors.rows, 0);
+          is_matched_all[image_id] = boost::dynamic_bitset<>(descriptors.rows);
           n_points_all += descriptors.rows;
         }
         // Figure out the physical matches of the input points
         size_t id = 0;
         typedef std::pair<size_t, size_t> ImageIdIndex;
         std::vector<std::vector<ImageIdIndex> > id_to_index_set(n_points_all);
-        for (size_t image_id = 0; image_id < n_images; ++image_id)
+        for (size_t query_image_id = 0; query_image_id < n_images; ++query_image_id)
         {
           // Add some verbosity as this step is slow
-          if (image_id == 0)
-            std::cout << "Prepare G2O: processing image ";
-          else
-            for (unsigned int i = 0; i < 2 * std::log10(n_images) + 1; ++i)
-              std::cout << "\b";
-          std::cout << std::setfill(' ') << std::setw(std::log10(n_images) + 1) << (image_id + 1) << "/" << n_images;
-          std::flush(std::cout);
+          /*if (image_id == 0)
+           std::cout << "Prepare G2O: processing image ";
+           else
+           for (unsigned int i = 0; i < 2 * std::log10(n_images) + 1; ++i)
+           std::cout << "\b";
+           std::cout << std::setfill(' ') << std::setw(std::log10(n_images) + 1) << (image_id + 1) << "/" << n_images;
+           std::flush(std::cout);*/
 
           // Find the nearest neighbors of all the points in the current image
-          const cv::Mat & descriptors = descriptors_all[image_id];
-          const cv::Mat_<cv::Vec3f> & points3d = (*in_points3d_)[image_id];
-
+          const cv::Mat & descriptors = descriptors_all[query_image_id];
+          const cv::Mat_<cv::Vec3f> & points3d = (*in_points3d_)[query_image_id];
           std::vector<std::vector<cv::DMatch> > matches_all;
-          matcher_->radiusMatch(descriptors, matches_all, radius_);
-          size_t n_points = matches_all.size();
 
-          const boost::dynamic_bitset<> & is_done = is_done_all[image_id];
+          matcher_->knnMatch(descriptors, matches_all, 2);
+
+          // Cluster the matches per view
+          typedef std::vector<IndexMatch> MatchesPerView;
+          std::map<unsigned int, MatchesPerView> matches_per_view;
+          size_t n_points = matches_all.size();
 
           for (size_t descriptor_id = 0; descriptor_id < n_points; ++descriptor_id)
           {
-            // If we've matched the point before, no need to do anything
-            if (is_done[descriptor_id])
-              continue;
-            const cv::Vec3f & point1 = points3d.at<cv::Vec3f>(0, descriptor_id);
             BOOST_FOREACH(const cv::DMatch & match, matches_all[descriptor_id])
                 {
-                  if (match.imgIdx == int(image_id))
-                  {
-                    if (match.trainIdx != int(descriptor_id))
-                      continue;
-                  }
-                  else
-                  {
-                    // TODO fix the following with some RANSAC probably
-                    // make sure the matches are also close to each other physically
-                    const cv::Vec3f & point2 = (*in_points3d_)[match.imgIdx].at<cv::Vec3f>(0, match.trainIdx);
-                    cv::Vec3f diff = point1 - point2;
-                    float squared_norm = diff.val[0] * diff.val[0] + diff.val[1] * diff.val[1]
-                                         + diff.val[2] * diff.val[2];
-                    if (squared_norm > 0.005 * 0.005)
-                      continue;
+                  if ((match.imgIdx == int(query_image_id)) && (match.trainIdx != int(descriptor_id)))
                     continue;
-                  }
-
-                  is_done_all[match.imgIdx].set(match.trainIdx);
-                  (*ids_)[match.imgIdx][match.trainIdx] = id;
-                  id_to_index_set[id].push_back(ImageIdIndex(match.imgIdx, match.trainIdx));
+                  if (match.distance < radius_)
+                    matches_per_view[match.imgIdx].push_back(IndexMatch(descriptor_id, match.trainIdx));
                 }
+          }
+
+          // Find the best 5 views (no need to perform RANSAC on all the views)
+          /*{
+           std::vector<std::pair<unsigned int, unsigned int> > lengths;
+           lengths.reserve(n_images);
+           std::map<unsigned int, std::set<unsigned int> > unique_ids;
+           for (std::map<unsigned int, MatchesPerView>::const_iterator iter = matches_per_view.begin(), end =
+           matches_per_view.end(); iter != end; ++iter)
+           lengths.push_back(std::make_pair(iter->second.size(), iter->first));
+           std::sort(lengths.begin(), lengths.end());
+           for (std::vector<std::pair<unsigned int, unsigned int> >::const_iterator iter = std::max(lengths.begin(),
+           lengths.end() - 5),
+           end = lengths.end(); iter != end; ++iter)
+           {
+           unsigned int training_image_id = iter->second;
+
+           // Perform RANSAC for each of those matched views
+
+           // Fill the point clouds with the matches
+           pcl::SampleConsensusModelRegistration<pcl::PointXYZ>::PointCloudPtr point_cloud_query(
+           new pcl::PointCloud<pcl::PointXYZ>()), point_cloud_training(new pcl::PointCloud<pcl::PointXYZ>());
+           point_cloud_query->points.reserve(matches_per_view[training_image_id].size());
+           point_cloud_training->points.reserve(matches_per_view[training_image_id].size());
+           BOOST_FOREACH(const IndexMatch & index_match, matches_per_view[training_image_id])
+           {
+           const cv::Vec3f & point_query = (*in_points3d_)[query_image_id].at<cv::Vec3f>(
+           0, index_match.query_index_), &point_training =
+           (*in_points3d_)[training_image_id].at<cv::Vec3f>(0, index_match.training_index_);
+           point_cloud_query->points.push_back(
+           pcl::PointXYZ(point_query.val[0], point_query.val[1], point_query.val[2]));
+           point_cloud_training->points.push_back(
+           pcl::PointXYZ(point_training.val[0], point_training.val[1], point_training.val[2]));
+           }
+
+           pcl::SampleConsensusModelRegistration<pcl::PointXYZ>::Ptr model(
+           new pcl::SampleConsensusModelRegistration<pcl::PointXYZ>(point_cloud_query));
+           pcl::RandomSampleConsensus<pcl::PointXYZ> sample_consensus(model);
+           Eigen::VectorXf coefficients;
+           model->setInputTarget(point_cloud_training);
+           sample_consensus.setDistanceThreshold(0.005);
+           sample_consensus.setMaxIterations(200);
+
+           if (!sample_consensus.computeModel())
+           continue;
+
+           std::vector<int> inliers;
+           sample_consensus.getInliers(inliers);
+           std::sort(inliers.begin(), inliers.end());
+           sample_consensus.getModelCoefficients(coefficients);
+
+           // Take the inliers and give them an id
+           BOOST_FOREACH(int inlier, inliers)
+           {
+           // Get all the ids of the matching points (there should be none (0) or only one)
+
+           }
+           }
+           }*/
+          /*
+           const cv::Vec3f & point1 = points3d.at<cv::Vec3f>(0, descriptor_id);
+           BOOST_FOREACH(const cv::DMatch & match, matches_all[descriptor_id])
+           {
+           if (is_matched_all[match.imgIdx].test(match.trainIdx))
+           continue;
+
+           if (match.imgIdx == int(image_id))
+           {
+           if (match.trainIdx != int(descriptor_id))
+           continue;
+           }
+           else
+           {
+           // TODO fix the following with some RANSAC probably
+           // make sure the matches are also close to each other physically
+           const cv::Vec3f & point2 = (*in_points3d_)[match.imgIdx].at<cv::Vec3f>(0, match.trainIdx);
+           cv::Vec3f diff = point1 - point2;
+           float squared_norm = diff.val[0] * diff.val[0] + diff.val[1] * diff.val[1]
+           + diff.val[2] * diff.val[2];
+           if (squared_norm > 0.01 * 0.01)
+           continue;
+           ++n_points_ethan;
+           }
+
+           is_matched_all[match.imgIdx].set(match.trainIdx);
+           (*ids_)[match.imgIdx][match.trainIdx] = id;
+           id_to_index_set[id].push_back(ImageIdIndex(match.imgIdx, match.trainIdx));
+           }
+           ++id;
+           }*/
+
+          for (size_t descriptor_id = 0; descriptor_id < n_points; ++descriptor_id)
+          {
+            (*ids_)[query_image_id][descriptor_id] = id;
+            id_to_index_set[id].push_back(ImageIdIndex(query_image_id, descriptor_id));
             ++id;
           }
         }
-        std::cout << std::endl;
 
         // Fill the point data
         size_t n_id = id - 1;
@@ -207,10 +300,10 @@ namespace object_recognition
                 size_t image_id = image_id_index.first;
                 size_t index = image_id_index.second;
                 {
-                  const cv::Vec3i & vec = (*in_points_)[image_id].at<cv::Vec3i>(0, index);
-                  x.coeffRef(image_id_index.first, id) = vec.val[0];
-                  y.coeffRef(image_id_index.first, id) = vec.val[1];
-                  disparity.coeffRef(image_id_index.first, id) = vec.val[2];
+                  const cv::Vec3f & vec = (*in_points_)[image_id].at<cv::Vec3f>(0, index);
+                  x.coeffRef(image_id, id) = vec.val[0];
+                  y.coeffRef(image_id, id) = vec.val[1];
+                  disparity.coeffRef(image_id, id) = vec.val[2];
                 }
                 {
                   const cv::Vec3f & vec = (*in_points3d_)[image_id].at<cv::Vec3f>(0, index);

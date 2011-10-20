@@ -5,7 +5,7 @@ Module defining the TOD trainer to train the TOD models
 
 from ecto_object_recognition import capture, tod_training
 from ecto_opencv import calib, features2d, highgui
-from g2o import Sba
+from g2o import SbaDisparity
 from feature_descriptor import FeatureDescriptor
 import ecto
 import ecto_X
@@ -19,7 +19,7 @@ class Trainer(ecto.BlackBox):
     feature_descriptor = FeatureDescriptor
     point_merger = tod_training.PointMerger
     prepare_for_g2o = tod_training.PrepareForG2O
-    g2o = Sba
+    g2o = SbaDisparity
     observation_passthrough = ecto.Passthrough
     image_duplicator = ecto.Passthrough
     mask_duplicator = ecto.Passthrough
@@ -99,7 +99,7 @@ class Trainer(ecto.BlackBox):
 
         if self._display:
             mask_view = highgui.imshow(name="mask")
-            depth_view = highgui.imshow(name="depth");
+            depth_view = highgui.imshow(name="depth")
 
             sub_connections += [ self.mask_duplicator[:] >> mask_view['image'],
                             self.depth_duplicator[:] >> depth_view['image']]
@@ -118,7 +118,7 @@ class Trainer(ecto.BlackBox):
         connections = [ executer['K', 'quaternions', 'Ts'] >> self.g2o['K', 'quaternions', 'Ts'],
                        executer['points3d', 'points', 'descriptors'] >>
                        self.prepare_for_g2o['points3d', 'points', 'descriptors'],
-                       self.prepare_for_g2o['x', 'y', 'points'] >> self.g2o['x', 'y', 'points'],
+                       self.prepare_for_g2o['x', 'y', 'disparity', 'points'] >> self.g2o['x', 'y', 'disparity', 'points'],
                        self.g2o['points'] >> self.point_merger['points'],
                        self.prepare_for_g2o['ids'] >> self.point_merger['ids'],
                        executer['descriptors'] >> self.point_merger['descriptors'] ]
