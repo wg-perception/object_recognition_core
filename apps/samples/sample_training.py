@@ -9,7 +9,7 @@ from object_recognition import models, dbtools
 
 def parse_args():
     import argparse
-    parser = argparse.ArgumentParser(description='Train MyAlgorithm on views from thedatabase.')
+    parser = argparse.ArgumentParser(description='Train MyAlgorithm on views from the database.')
     parser.add_argument('objects', metavar='OBJECT', type=str, nargs='+',
                    help='Object ids to train.')
     dbtools.add_db_options(parser)
