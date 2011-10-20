@@ -10,6 +10,7 @@ from object_recognition.common.io.source import Source
 from object_recognition.common.utils import json_helper
 from object_recognition.common.utils.training_detection_args import read_arguments
 from object_recognition.tod.detector import TodDetector, TodDetectorLoader
+from ecto_object_recognition.tod_detection import DescriptorLoader
 import ecto
 import ecto_ros
 import sys
@@ -37,7 +38,7 @@ class TODDetection(DetectionPipeline):
         # TODO handle this properly...
         ecto_ros.init(argv, "tod_detection", False)#not anonymous.
 
-        source = Source.parse_arguments(params['source'], argv=argv)
+        source = Source.parse_arguments(params['source'])
 
 
         sink = Sink.parse_arguments(args, db, db_params, params['object_ids'])
@@ -46,7 +47,7 @@ class TODDetection(DetectionPipeline):
         for pipeline_param in pipeline_params:
             if pipeline_param['type'] == 'TOD':
                 # create the loader and detector
-                loader = TodDetectorLoader(collection_models=db_params.collection,
+                loader = DescriptorLoader(collection_models=db_params.collection,
                                            db_params=db_params,
                                            object_ids=object_ids, model_ids=model_ids,
                                            feature_descriptor_params=json_helper.dict_to_cpp_json_str(pipeline_param['feature_descriptor']))

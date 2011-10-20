@@ -68,6 +68,8 @@ namespace object_recognition
         ss << "JSON string that can contain the following fields: \"radius\" (for epsilon nearest neighbor search), "
            << "\"ratio\" when applying the ratio criterion like in SIFT";
         p.declare<std::string>("feature_descriptor_params", ss.str()).required(true);
+        p.declare(&DescriptorLoader::do_update_, "do_update", "Update the matcher from the database, expensive.",
+                  false);
       }
 
       static void
@@ -112,23 +114,23 @@ namespace object_recognition
 
         descriptors_ = outputs["descriptors"];
         features_3d_ = outputs["features3d"];
-        do_update_ = true;
         do_update_out_ = outputs["do_update"];
         spans_ = outputs["spans"];
         id_correspondences_ = outputs["id_correspondences"];
+        do_update_.set_callback(boost::bind(&DescriptorLoader::on_do_update, this, _1));
+        *do_update_ = true;
+        do_update_.dirty(true);
+        do_update_.notify();
       }
-
-      int
-      process(const ecto::tendrils& inputs, const ecto::tendrils& outputs)
+      void
+      on_do_update(bool on_do_update)
       {
-        if (!do_update_)
-        {
-          *do_update_out_ = false;
-          return ecto::OK;
-        }
-        *do_update_out_ = true;
-        do_update_ = false;
+        if (!on_do_update)
+          return;
 
+        std::cout << "Loading models. This may take some time..." << std::endl;
+
+        *do_update_out_ = true;
         db_future::ObjectDb db(*db_params_);
         unsigned int object_opencv_id = 0;
         std::vector<ModelId>::const_iterator model_id = model_ids_.begin(), model_id_end = model_ids_.end();
@@ -136,72 +138,69 @@ namespace object_recognition
         descriptors_->reserve(model_ids_.size());
         for (; model_id != model_id_end; ++model_id, ++object_id)
         {
-          db_future::DocumentView query;
-          query.set_db(db);
-          query.set_collection(*collection_models_);
-          query.AddView("CouchDB", db_future::couch::WhereDocId(*model_id));
-          std::cout << "object_id: " << *object_id << std::endl;
-          // TODO be robust to missing entries
-          for (db_future::DocumentView view = query.begin(), view_end = db_future::DocumentView::end();
-              view != view_end; ++view)
+          std::cout << "Loading model for object id: " << *object_id << std::endl;
+          db_future::Document doc(db, *collection_models_, *model_id);
+          cv::Mat descriptors;
+          doc.get_attachment<cv::Mat>("descriptors", descriptors);
+          descriptors_->push_back(descriptors);
+
+          // Store the id conversion
+          id_correspondences_->insert(std::pair<ObjectOpenCVId, ObjectId>(object_opencv_id, *object_id));
+          ++object_opencv_id;
+
+          // Store the 3d positions
+          cv::Mat points3d;
+          doc.get_attachment<cv::Mat>("points", points3d);
+          if (points3d.rows != 1)
+            points3d = points3d.t();
+          features_3d_->push_back(points3d);
+
+          // Compute the span of the object
+          float max_span_sq = 0;
+          cv::MatConstIterator_<cv::Vec3f> i = points3d.begin<cv::Vec3f>(), end = points3d.end<cv::Vec3f>(), j;
+          if (0)
           {
-            db_future::Document doc = *view;
-            cv::Mat descriptors;
-            doc.get_attachment<cv::Mat>("descriptors", descriptors);
-            descriptors_->push_back(descriptors);
-
-            // Store the id conversion
-            id_correspondences_->insert(std::pair<ObjectOpenCVId, ObjectId>(object_opencv_id, *object_id));
-            ++object_opencv_id;
-
-            // Store the 3d positions
-            cv::Mat points3d;
-            doc.get_attachment<cv::Mat>("points", points3d);
-            if (points3d.rows != 1)
-              points3d = points3d.t();
-            features_3d_->push_back(points3d);
-
-            // Compute the span of the object
-            float max_span_sq = 0;
-            cv::MatConstIterator_<cv::Vec3f> i = points3d.begin<cv::Vec3f>(), end = points3d.end<cv::Vec3f>(), j;
-            if (0)
+            // Too slow
+            for (; i != end; ++i)
             {
-              // Too slow
-              for (; i != end; ++i)
+              for (j = i + 1; j != end; ++j)
               {
-                for (j = i + 1; j != end; ++j)
-                {
-                  cv::Vec3f vec = *i - *j;
-                  max_span_sq = std::max(vec.val[0] * vec.val[0] + vec.val[1] * vec.val[1] + vec.val[2] * vec.val[2],
-                                         max_span_sq);
-                }
+                cv::Vec3f vec = *i - *j;
+                max_span_sq = std::max(vec.val[0] * vec.val[0] + vec.val[1] * vec.val[1] + vec.val[2] * vec.val[2],
+                                       max_span_sq);
               }
             }
-            else
-            {
-              float min_x = std::numeric_limits<float>::max(), max_x = std::numeric_limits<float>::min(), min_y =
-                  std::numeric_limits<float>::max(), max_y = std::numeric_limits<float>::min(), min_z =
-                  std::numeric_limits<float>::max(), max_z = std::numeric_limits<float>::min();
-              for (; i != end; ++i)
-              {
-                min_x = std::min(min_x, (*i).val[0]);
-                max_x = std::max(max_x, (*i).val[0]);
-                min_y = std::min(min_y, (*i).val[1]);
-                max_y = std::max(max_y, (*i).val[1]);
-                min_z = std::min(min_z, (*i).val[2]);
-                max_z = std::max(max_z, (*i).val[2]);
-              }
-              max_span_sq = (max_x - min_x) * (max_x - min_x) + (max_y - min_y) * (max_y - min_y)
-                            + (max_z - min_z) * (max_z - min_z);
-            }
-            (*spans_)[*object_id] = std::sqrt(max_span_sq);
-            std::cout << "span: " << (*spans_)[*object_id] << " meters" << std::endl;
           }
+          else
+          {
+            float min_x = std::numeric_limits<float>::max(), max_x = std::numeric_limits<float>::min(), min_y =
+                std::numeric_limits<float>::max(), max_y = std::numeric_limits<float>::min(), min_z =
+                std::numeric_limits<float>::max(), max_z = std::numeric_limits<float>::min();
+            for (; i != end; ++i)
+            {
+              min_x = std::min(min_x, (*i).val[0]);
+              max_x = std::max(max_x, (*i).val[0]);
+              min_y = std::min(min_y, (*i).val[1]);
+              max_y = std::max(max_y, (*i).val[1]);
+              min_z = std::min(min_z, (*i).val[2]);
+              max_z = std::max(max_z, (*i).val[2]);
+            }
+            max_span_sq = (max_x - min_x) * (max_x - min_x) + (max_y - min_y) * (max_y - min_y)
+                          + (max_z - min_z) * (max_z - min_z);
+          }
+          (*spans_)[*object_id] = std::sqrt(max_span_sq);
+          std::cout << "span: " << (*spans_)[*object_id] << " meters" << std::endl;
         }
+      }
 
+      int
+      process(const ecto::tendrils& inputs, const ecto::tendrils& outputs)
+      {
+        *do_update_out_ = *do_update_;
+        *do_update_ = false;
         return ecto::OK;
       }
-    private:
+
       /** The collection where the models are stored */
       ecto::spore<std::string> collection_models_;
       /** The objects ids to use */
@@ -218,7 +217,7 @@ namespace object_recognition
       /** If True, that means we got new data */
       ecto::spore<bool> do_update_out_;
       /** If True, load from the db */
-      bool do_update_;
+      ecto::spore<bool> do_update_;
       /** For each object id, the maximum distance between the known descriptors (span) */
       ecto::spore<std::map<ObjectId, float> > spans_;
       /** Matching between an OpenCV integer ID and the ids found in the JSON */

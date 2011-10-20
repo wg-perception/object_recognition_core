@@ -44,6 +44,12 @@ namespace object_recognition
       typedef ecto::pcl::PointCloud CloudInT;
 
       static void
+      declare_params(tendrils& params)
+      {
+        params.declare(&PointCloudTransform::do_transform, "do_transform",
+                       "If this is false, then the cloud will remain in the camera coordinate system.", true);
+      }
+      static void
       declare_io(const tendrils& params, tendrils& inputs, tendrils& outputs)
       {
         inputs.declare(&PointCloudTransform::R, "R", "Rotation matrix.").required(true);
@@ -73,19 +79,24 @@ namespace object_recognition
 
         CloudNormalT::Ptr cloud_with_normals(new CloudNormalT);
         pcl::concatenateFields(*cloud, normals, *cloud_with_normals);
+
+        bool inverse = true;
+        Eigen::Affine3f transform = RT2Transform(*R, *T, inverse); //compute the inverse transform
+        if (*do_transform)
         {
           CloudNormalT::Ptr tempc(new CloudNormalT);
-          bool inverse = true;
-          Eigen::Affine3f transform = RT2Transform(*R, *T, inverse); //compute the inverse transform
           pcl::transformPointCloudWithNormals(*cloud_with_normals, *tempc, transform);
           cloud_with_normals.swap(tempc);
         }
+        cloud_with_normals->sensor_origin_.block(0, 0, 3, 1) = transform.translation();
+        cloud_with_normals->sensor_orientation_ = transform.rotation();
         *cloudout = cloud_with_normals;
         return ecto::OK;
       }
       ecto::spore<cv::Mat> R, T;
       ecto::spore<CloudInT> cloudin;
       ecto::spore<CloudOutT> cloudout;
+      ecto::spore<bool> do_transform;
 
     };
   }
@@ -97,4 +108,4 @@ ECTO_CELL(
     reconstruction,
     PointCloudTransform,
     "PointCloudTransform",
-    "Transform an pcl point cloud into the object cordinate, with a mask, and image to determine which points to transform.");
+    "Transform an pcl point cloud into object coordinate system, and set the sensor positino and orientation in the output cloud.");
