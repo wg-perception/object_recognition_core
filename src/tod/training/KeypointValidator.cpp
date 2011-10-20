@@ -92,10 +92,11 @@ namespace
     process(const tendrils& inputs, const tendrils& outputs)
     {
       const std::vector<cv::KeyPoint> & in_keypoints = inputs.get<std::vector<cv::KeyPoint> >("keypoints");
-      cv::Mat in_mask, depth, descriptors, K;
+      cv::Mat in_mask, depth, descriptors, in_K, K;
       inputs["mask"] >> in_mask;
       inputs["depth"] >> depth;
-      inputs["K"] >> K;
+      inputs["K"] >> in_K;
+      in_K.convertTo(K, CV_32FC1);
       inputs["descriptors"] >> descriptors;
       size_t n_points = descriptors.rows;
       cv::Mat clean_descriptors = cv::Mat(descriptors.size(), descriptors.type());
