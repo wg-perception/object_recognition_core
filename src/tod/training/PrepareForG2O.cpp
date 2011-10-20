@@ -190,7 +190,7 @@ namespace object_recognition
           }
 
           // Find the best 5 views (no need to perform RANSAC on all the views)
-#if 1
+#if 0
           {
             std::vector<std::pair<unsigned int, unsigned int> > lengths;
             lengths.reserve(n_images);
