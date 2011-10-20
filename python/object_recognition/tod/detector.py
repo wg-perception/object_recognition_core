@@ -12,39 +12,9 @@ from object_recognition.common.utils import json_helper
 from object_recognition import dbtools, models
 import ecto_ros, ecto_sensor_msgs
 ImagePub = ecto_sensor_msgs.Publisher_Image
+from ecto_object_recognition.tod_detection import DescriptorLoader
 
-class TodDetectorLoader(ecto.BlackBox):
-    """
-    Blackbox that loads the descriptors from the db
-    """
-    tod_detection_loader = tod_detection.DescriptorLoader
-
-    def declare_params(self, p):
-        p.forward('object_ids', cell_name='tod_detection_loader', cell_key='object_ids',
-                  doc='The list of objects to load the models from.')
-        p.forward('model_ids', cell_name='tod_detection_loader', cell_key='model_ids',
-                  doc='The list of objects to load the models from.')
-        p.forward('db_params', cell_name='tod_detection_loader', cell_key='db_params',
-                  doc='The DB parameters.')
-        p.forward('collection_models', cell_name='tod_detection_loader', cell_key='collection_models',
-                  doc='The collection where the models are.')
-        p.forward('feature_descriptor_params', cell_name='tod_detection_loader', cell_key='feature_descriptor_params',
-                  doc='The parameters of the feature/descriptor, to find the right models (unused now).')
-
-    def declare_io(self, _p, _i, o):
-        o.forward('descriptors', cell_name='tod_detection_loader', cell_key='descriptors')
-        o.forward('do_update', cell_name='tod_detection_loader', cell_key='do_update')
-        o.forward('features3d', cell_name='tod_detection_loader', cell_key='features3d')
-        o.forward('id_correspondences', cell_name='tod_detection_loader', cell_key='id_correspondences')
-        o.forward('spans', cell_name='tod_detection_loader', cell_key='spans')
-
-    def configure(self, p, _i, _o):
-        pass
-
-    def connections(self):
-        return [ self.tod_detection_loader ]
-
-########################################################################################################################
+TodDetectorLoader = DescriptorLoader
 
 class TodDetector(ecto.BlackBox):
     feature_descriptor = FeatureDescriptor
