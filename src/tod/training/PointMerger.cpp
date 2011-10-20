@@ -44,6 +44,8 @@
 
 #include <opencv2/core/core.hpp>
 
+#include "object_recognition/common/types_eigen.h"
+
 namespace object_recognition
 {
   namespace tod
@@ -57,7 +59,7 @@ namespace object_recognition
       declare_io(const ecto::tendrils& params, ecto::tendrils& inputs, ecto::tendrils& outputs)
       {
         inputs.declare<std::vector<cv::Mat> >("descriptors", "The descriptors per image.").required(true);
-        inputs.declare<std::vector<Eigen::Vector3d> >("points", "The 3d points.").required(true);
+        inputs.declare<VectorVector3d>("points", "The 3d points.").required(true);
         inputs.declare<std::vector<std::vector<size_t> > >(
             "ids", "The SBA id of each input point, the first vector is per image.").required(true);
 
@@ -106,7 +108,7 @@ namespace object_recognition
         return ecto::OK;
       }
     private:
-      ecto::spore<std::vector<Eigen::Vector3d> > in_points_;
+      ecto::spore<VectorVector3d> in_points_;
       ecto::spore<std::vector<cv::Mat> > descriptors_;
       ecto::spore<std::vector<std::vector<size_t> > > ids_;
       ecto::spore<cv::Mat> out_points_;

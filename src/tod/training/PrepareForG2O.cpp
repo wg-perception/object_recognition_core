@@ -52,6 +52,7 @@
 #include <Eigen/StdVector>
 
 #include "adjacency_ransac.h"
+#include "object_recognition/common/types_eigen.h"
 
 using ecto::tendrils;
 
@@ -99,7 +100,7 @@ namespace object_recognition
         outputs.declare<Eigen::SparseMatrix<int> >("x", "The measured x of the points.");
         outputs.declare<Eigen::SparseMatrix<int> >("y", "The measured y of the points.");
         outputs.declare<Eigen::SparseMatrix<int> >("disparity", "The disparity of the points.");
-        outputs.declare<std::vector<Eigen::Vector3d> >("points", "The 3d points.");
+        outputs.declare<VectorVector3d>("points", "The 3d points.");
         outputs.declare<std::vector<std::vector<size_t> > >(
             "ids", "The SBA id of each input point, the first vector is per image.");
       }
@@ -257,7 +258,7 @@ namespace object_recognition
         Eigen::DynamicSparseMatrix<int> x(n_images, n_id);
         Eigen::DynamicSparseMatrix<int> y(n_images, n_id);
         Eigen::DynamicSparseMatrix<int> disparity(n_images, n_id);
-        *out_points_ = std::vector<Eigen::Vector3d>(n_id);
+        *out_points_ = VectorVector3d(n_id);
         for (size_t id = 0; id < n_id; ++id)
         {
           Eigen::Vector3d average(0, 0, 0);
@@ -297,7 +298,7 @@ namespace object_recognition
       ecto::spore<Eigen::SparseMatrix<int> > x_;
       ecto::spore<Eigen::SparseMatrix<int> > y_;
       ecto::spore<Eigen::SparseMatrix<int> > disparity_;
-      ecto::spore<std::vector<Eigen::Vector3d> > out_points_;
+      ecto::spore<VectorVector3d> out_points_;
       ecto::spore<std::vector<std::vector<size_t> > > ids_;
     }
     ;
