@@ -43,7 +43,7 @@
 #include <opencv2/features2d/features2d.hpp>
 #include <opencv2/highgui/highgui.hpp>
 
-#include "guess_generator.h"
+#include "adjacency_ransac.h"
 #include "sac_model_registration_graph.h"
 
 #ifdef DEBUG
@@ -314,8 +314,7 @@ namespace object_recognition
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     Eigen::VectorXf
-    RansacAdjacency(const ObjectPoints & object_points, float sensor_error, unsigned int n_ransac_iterations,
-                    std::vector<int>& inliers)
+    ObjectPoints::Ransac(float sensor_error, unsigned int n_ransac_iterations, std::vector<int>& inliers)
     {
 #ifdef DEBUG
       CALLGRIND_START_INSTRUMENTATION;
@@ -323,13 +322,11 @@ namespace object_recognition
 
       // Perform RANSAC on the input clouds, making sure to include adjacent pairs in the samples
       SampleConsensusModelRegistrationGraph<pcl::PointXYZ>::Ptr model(
-          new SampleConsensusModelRegistrationGraph<pcl::PointXYZ>(object_points.query_points(),
-                                                                   object_points.valid_indices(), sensor_error,
-                                                                   object_points.physical_adjacency_,
-                                                                   object_points.sample_adjacency_));
+          new SampleConsensusModelRegistrationGraph<pcl::PointXYZ>(query_points_, valid_indices(), sensor_error,
+                                                                   physical_adjacency_, sample_adjacency_));
       pcl::RandomSampleConsensus<pcl::PointXYZ> sample_consensus(model);
       Eigen::VectorXf coefficients;
-      model->setInputTarget(object_points.training_points(), object_points.valid_indices());
+      model->setInputTarget(training_points_, valid_indices());
       sample_consensus.setDistanceThreshold(sensor_error);
       sample_consensus.setMaxIterations(n_ransac_iterations);
 
@@ -353,10 +350,11 @@ namespace object_recognition
       sample_consensus.getInliers(inliers);
       std::sort(inliers.begin(), inliers.end());
       sample_consensus.getModelCoefficients(coefficients);
-      std::vector<int> valid_indices = object_points.valid_indices();
-      std::vector<int>::iterator valid_end = std::set_difference(valid_indices.begin(), valid_indices.end(),
-                                                                 inliers.begin(), inliers.end(), valid_indices.begin());
-      valid_indices.resize(valid_end - valid_indices.begin());
+      std::vector<int> valid_indices_vect = valid_indices();
+      std::vector<int>::iterator valid_end = std::set_difference(valid_indices_vect.begin(), valid_indices_vect.end(),
+                                                                 inliers.begin(), inliers.end(),
+                                                                 valid_indices_vect.begin());
+      valid_indices_vect.resize(valid_end - valid_indices_vect.begin());
 
       bool do_final = false;
       double thresh = sensor_error * sensor_error;
@@ -366,7 +364,7 @@ namespace object_recognition
       {
         {
           Eigen::VectorXf new_coefficients = coefficients;
-          model->optimizeModelCoefficients(object_points.training_points(), inliers, coefficients, new_coefficients);
+          model->optimizeModelCoefficients(training_points_, inliers, coefficients, new_coefficients);
           coefficients = new_coefficients;
         }
 
@@ -378,12 +376,10 @@ namespace object_recognition
         transform.row(3) = coefficients.segment<4>(12);
 
         std::vector<int> extra_inliers;
-        BOOST_FOREACH(int index, valid_indices)
+        BOOST_FOREACH(int index, valid_indices_vect)
             {
-              const Eigen::Map<Eigen::Vector4f, Eigen::Aligned> &pt_src =
-                  object_points.query_points(index).getVector4fMap();
-              const Eigen::Map<Eigen::Vector4f, Eigen::Aligned> &pt_tgt =
-                  object_points.training_points(index).getVector4fMap();
+              const Eigen::Map<Eigen::Vector4f, Eigen::Aligned> &pt_src = query_points(index).getVector4fMap();
+              const Eigen::Map<Eigen::Vector4f, Eigen::Aligned> &pt_tgt = training_points(index).getVector4fMap();
               Eigen::Vector4f p_tr = transform * pt_src;
               // Calculate the distance from the transformed point to its correspondence
               if ((p_tr - pt_tgt).squaredNorm() < thresh)
@@ -397,9 +393,9 @@ namespace object_recognition
           std::merge(tmp_inliers.begin(), tmp_inliers.end(), extra_inliers.begin(), extra_inliers.end(),
                      inliers.begin());
         }
-        valid_end = std::set_difference(valid_indices.begin(), valid_indices.end(), extra_inliers.begin(),
-                                        extra_inliers.end(), valid_indices.begin());
-        valid_indices.resize(valid_end - valid_indices.begin());
+        valid_end = std::set_difference(valid_indices_vect.begin(), valid_indices_vect.end(), extra_inliers.begin(),
+                                        extra_inliers.end(), valid_indices_vect.begin());
+        valid_indices_vect.resize(valid_end - valid_indices_vect.begin());
 
         if (do_final)
           break;

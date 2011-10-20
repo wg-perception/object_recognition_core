@@ -50,9 +50,7 @@
 #include <opencv2/highgui/highgui.hpp>
 
 #include "object_recognition/common/types.h"
-#include "impl/guess_generator.h"
-#include "impl/maximum_clique.h"
-#include "impl/sac_model_registration_graph.h"
+#include "adjacency_ransac.h"
 
 using ecto::tendrils;
 
@@ -195,7 +193,7 @@ namespace object_recognition
               std::vector<int> inliers;
               Eigen::VectorXf coefficients;
 
-              coefficients = RansacAdjacency(object_points, *sensor_error_, *n_ransac_iterations_, inliers);
+              coefficients = object_points.Ransac(*sensor_error_, *n_ransac_iterations_, inliers);
 
               // If no pose was found, forget about all the connections in that clique
               std::cout << "RANSAC done with " << inliers.size() << " inliers" << std::endl;

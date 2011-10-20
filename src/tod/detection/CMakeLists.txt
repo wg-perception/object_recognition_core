@@ -1,12 +1,14 @@
 # deal with the detection TOD module
+
+
+include_directories(${CMAKE_CURRENT_LIST_DIR}/../common)
+
 ectomodule(tod_detection
   DescriptorMatcher.cpp
   GuessGenerator.cpp
   DescriptorLoader.cpp
   ModelReader.cpp
   module.cpp
-  impl/maximum_clique.cpp
-  impl/guess_generator.cpp
   )
 
 link_ecto(tod_detection

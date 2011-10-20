@@ -123,6 +123,9 @@ namespace object_recognition
         return valid_indices;
       }
 
+      Eigen::VectorXf
+      Ransac(float sensor_error, unsigned int n_ransac_iterations, std::vector<int>& inliers);
+
       ObjectId object_id_;
       ObjectOpenCVId object_opencv_id_;
       object_recognition::maximum_clique::Graph graph_;
@@ -151,10 +154,6 @@ namespace object_recognition
                      OpenCVIdToObjectPoints &object_points);
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-    Eigen::VectorXf
-    RansacAdjacency(const ObjectPoints & object_points, float sensor_error, unsigned int n_ransac_iterations,
-                    std::vector<int>& inliers);
   }
 }
 #endif /* GUESS_GENERATOR_H_ */

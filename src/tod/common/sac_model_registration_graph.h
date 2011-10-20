@@ -207,7 +207,7 @@ namespace object_recognition
               graph.AddEdge(j, i);
 
         // If we cannot even find enough points well distributed in the sample, stop here
-        unsigned int minimal_size = 5;
+        unsigned int minimal_size = 8;
         std::vector<unsigned int> vertices;
         graph.FindClique(vertices, minimal_size);
         if (vertices.size() < minimal_size)
