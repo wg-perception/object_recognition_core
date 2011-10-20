@@ -58,8 +58,8 @@ namespace object_recognition
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     void
-    ObjectPoints::AddPoints(const pcl::PointXYZ &training_point, const pcl::PointXYZ & query_point,
-                            unsigned int query_index)
+    AdjacencyRansac::AddPoints(const pcl::PointXYZ &training_point, const pcl::PointXYZ & query_point,
+                               unsigned int query_index)
     {
       valid_indices_.push_back(query_indices_.size());
 
@@ -71,7 +71,7 @@ namespace object_recognition
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     void
-    ObjectPoints::InvalidateIndices(std::vector<unsigned int> &indices)
+    AdjacencyRansac::InvalidateIndices(std::vector<unsigned int> &indices)
     {
       std::sort(indices.begin(), indices.end());
       indices.resize(std::unique(indices.begin(), indices.end()) - indices.begin());
@@ -94,7 +94,7 @@ namespace object_recognition
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     void
-    ObjectPoints::InvalidateQueryIndices(std::vector<unsigned int> &query_indices)
+    AdjacencyRansac::InvalidateQueryIndices(std::vector<unsigned int> &query_indices)
     {
       if (query_indices.empty())
         return;
@@ -132,7 +132,7 @@ namespace object_recognition
      * @param query_indices indices to remove from the data structure
      */
     void
-    ObjectPoints::DeleteQueryIndices(std::vector<unsigned int> &query_indices)
+    AdjacencyRansac::DeleteQueryIndices(std::vector<unsigned int> &query_indices)
     {
       std::sort(query_indices.begin(), query_indices.end());
       std::vector<unsigned int>::iterator end = std::unique(query_indices.begin(), query_indices.end());
@@ -203,7 +203,7 @@ namespace object_recognition
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     void
-    ObjectPoints::FillAdjacency(const std::vector<cv::KeyPoint> & keypoints, float object_span, float sensor_error)
+    AdjacencyRansac::FillAdjacency(const std::vector<cv::KeyPoint> & keypoints, float object_span, float sensor_error)
     {
       // The error the 3d sensor makes, distance wise
       unsigned int n_matches = training_points_->size();
@@ -314,7 +314,7 @@ namespace object_recognition
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     Eigen::VectorXf
-    ObjectPoints::Ransac(float sensor_error, unsigned int n_ransac_iterations, std::vector<int>& inliers)
+    AdjacencyRansac::Ransac(float sensor_error, unsigned int n_ransac_iterations, std::vector<int>& inliers)
     {
 #ifdef DEBUG
       CALLGRIND_START_INSTRUMENTATION;

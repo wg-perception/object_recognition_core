@@ -165,23 +165,23 @@ namespace object_recognition
               query_iterator != all_object_points.end(); ++query_iterator)
           {
             // Create a graph for that object
-            ObjectPoints & object_points = query_iterator->second;
+            AdjacencyRansac & adjacency_ransac = query_iterator->second;
             ObjectOpenCVId opencv_object_id = query_iterator->first;
             ObjectId object_id = id_correspondences.find(opencv_object_id)->second;
 
             std::cout << "***Starting object: " << opencv_object_id << std::endl;
 
             {
-              std::vector<unsigned int> query_indices = object_points.query_indices();
+              std::vector<unsigned int> query_indices = adjacency_ransac.query_indices();
               std::sort(query_indices.begin(), query_indices.end());
               std::vector<unsigned int>::iterator end = std::unique(query_indices.begin(), query_indices.end());
               query_indices.resize(end - query_indices.begin());
 
-              std::cout << query_indices.size() << " keypoints in " << object_points.query_indices().size()
+              std::cout << query_indices.size() << " keypoints in " << adjacency_ransac.query_indices().size()
                         << " matches" << std::endl;
             }
 
-            object_points.FillAdjacency(keypoints, spans.find(object_id)->second, *sensor_error_);
+            adjacency_ransac.FillAdjacency(keypoints, spans.find(object_id)->second, *sensor_error_);
 
             // Keep processing the graph until there is no maximum clique of the right size
             std::vector<ObjectId> object_ids;
@@ -193,7 +193,7 @@ namespace object_recognition
               std::vector<int> inliers;
               Eigen::VectorXf coefficients;
 
-              coefficients = object_points.Ransac(*sensor_error_, *n_ransac_iterations_, inliers);
+              coefficients = adjacency_ransac.Ransac(*sensor_error_, *n_ransac_iterations_, inliers);
 
               // If no pose was found, forget about all the connections in that clique
               std::cout << "RANSAC done with " << inliers.size() << " inliers" << std::endl;
@@ -211,7 +211,7 @@ namespace object_recognition
 
                 // Check whether other matches could fit that model
                 std::vector<std::vector<int> > neighbors;
-                const cv::Mat_<uchar> & adjacency = object_points.physical_adjacency_;
+                const cv::Mat_<uchar> & adjacency = adjacency_ransac.physical_adjacency_;
                 {
                   neighbors.resize(adjacency.rows);
                   for (int j = 0; j < adjacency.rows; ++j)
@@ -272,9 +272,9 @@ namespace object_recognition
               // Figure out the matches to remove
               std::vector<unsigned int> query_indices;
               BOOST_FOREACH(unsigned int inlier, inliers)
-                    query_indices.push_back(object_points.query_indices(inlier));
+                    query_indices.push_back(adjacency_ransac.query_indices(inlier));
 
-              object_points.InvalidateQueryIndices(query_indices);
+              adjacency_ransac.InvalidateQueryIndices(query_indices);
             }
 
             // Save all the poses;

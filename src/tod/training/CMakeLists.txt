@@ -15,6 +15,7 @@ link_ecto(tod_training
   ${OpenCV_LIBS}
   opencv_candidate
   ${pcl_LIBRARIES}
+  tod_common
   )
 
 install_ecto_module(tod_training)

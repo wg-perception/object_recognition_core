@@ -17,6 +17,7 @@ link_ecto(tod_detection
   ${pcl_LIBRARIES}
   ${Boost_LIBRARIES}
   opencv_candidate
+  tod_common
 )
 
 install_ecto_module(tod_detection)

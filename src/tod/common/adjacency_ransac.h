@@ -49,10 +49,10 @@ namespace object_recognition
   namespace tod
   {
 
-    class ObjectPoints
+    class AdjacencyRansac
     {
     public:
-      ObjectPoints()
+      AdjacencyRansac()
       {
         query_points_ = boost::shared_ptr<pcl::PointCloud<pcl::PointXYZ> >(new pcl::PointCloud<pcl::PointXYZ>());
         training_points_ = boost::shared_ptr<pcl::PointCloud<pcl::PointXYZ> >(new pcl::PointCloud<pcl::PointXYZ>());
@@ -145,7 +145,7 @@ namespace object_recognition
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    typedef std::map<ObjectOpenCVId, ObjectPoints> OpenCVIdToObjectPoints;
+    typedef std::map<ObjectOpenCVId, AdjacencyRansac> OpenCVIdToObjectPoints;
 
     void
     ClusterPerObject(const std::vector<cv::KeyPoint> & keypoints, const cv::Mat &point_cloud,
