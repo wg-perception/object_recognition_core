@@ -6,7 +6,7 @@ if(NOT GTEST_FOUND)
 endif()
 
 include_directories(${GTEST_INCLUDE_DIRS})
-include_directories(${object_recognition_SOURCE_DIR}/src/tod/detection/impl)
+include_directories(${object_recognition_SOURCE_DIR}/src/tod/common)
 
 add_executable(or-tod-test
   main.cpp

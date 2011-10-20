@@ -1,8 +1,4 @@
 # deal with the detection TOD module
-
-
-include_directories(${CMAKE_CURRENT_LIST_DIR}/../common)
-
 ectomodule(tod_detection
   DescriptorMatcher.cpp
   GuessGenerator.cpp

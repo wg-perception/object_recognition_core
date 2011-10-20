@@ -152,8 +152,9 @@ namespace object_recognition
         {
           // Cluster the matches per object ID
           OpenCVIdToObjectPoints all_object_points;
-          ClusterPerObject(keypoints, point_cloud, matches, matches_3d, *do_display_, colors_, initial_image,
-                           all_object_points);
+          ClusterPerObject(keypoints, point_cloud, matches, matches_3d, all_object_points);
+          if (*do_display_)
+            DrawClustersPerObject(keypoints, colors_, initial_image, all_object_points);
 
           // For each object, build the connectivity graph between the matches
           std::vector<ObjectId> object_ids_final;

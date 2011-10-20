@@ -257,10 +257,8 @@ namespace object_recognition
     void
     ClusterPerObject(const std::vector<cv::KeyPoint> & keypoints, const cv::Mat &point_cloud,
                      const std::vector<std::vector<cv::DMatch> > & matches, const std::vector<cv::Mat> & matches_3d,
-                     bool debug, const std::vector<cv::Scalar> & colors, const cv::Mat & initial_image,
                      OpenCVIdToObjectPoints &object_points)
     {
-      std::vector<int> histo_count;
       for (unsigned int query_index = 0; query_index < matches.size(); ++query_index)
       {
         // Figure out the 3d query point
@@ -287,28 +285,30 @@ namespace object_recognition
           object_points[opencv_object_id].AddPoints(training_point, query_point, query_index);
         }
       }
+    }
 
-      if (debug)
+    void
+    DrawClustersPerObject(const std::vector<cv::KeyPoint> & keypoints, const std::vector<cv::Scalar> & colors,
+                          const cv::Mat & initial_image, const OpenCVIdToObjectPoints &object_points)
+    {
+      cv::Mat out_img = initial_image.clone();
+      unsigned int i = 0;
+      // Draw the keypoints with a different color per object
+      for (OpenCVIdToObjectPoints::const_iterator query_iterator = object_points.begin();
+          query_iterator != object_points.end(); ++query_iterator)
       {
-        cv::Mat out_img = initial_image.clone();
-        unsigned int i = 0;
-        // Draw the keypoints with a different color per object
-        for (OpenCVIdToObjectPoints::iterator query_iterator = object_points.begin();
-            query_iterator != object_points.end(); ++query_iterator)
-        {
-          std::vector<unsigned int> query_indices = query_iterator->second.query_indices();
-          std::vector<unsigned int>::iterator end = std::unique(query_indices.begin(), query_indices.end());
-          query_indices.resize(end - query_indices.begin());
-          std::vector<cv::KeyPoint> local_keypoints(query_indices.size());
-          for (unsigned int j = 0; j < query_indices.size(); ++j)
-            local_keypoints[j] = keypoints[query_indices[j]];
-          cv::drawKeypoints(out_img, local_keypoints, out_img, colors[i]);
-          ++i;
-          std::cout << i << std::endl;
-        }
-        cv::namedWindow("keypoints from objects", 0);
-        cv::imshow("keypoints from objects", out_img);
+        std::vector<unsigned int> query_indices = query_iterator->second.query_indices();
+        std::vector<unsigned int>::iterator end = std::unique(query_indices.begin(), query_indices.end());
+        query_indices.resize(end - query_indices.begin());
+        std::vector<cv::KeyPoint> local_keypoints(query_indices.size());
+        for (unsigned int j = 0; j < query_indices.size(); ++j)
+          local_keypoints[j] = keypoints[query_indices[j]];
+        cv::drawKeypoints(out_img, local_keypoints, out_img, colors[i]);
+        ++i;
+        std::cout << i << std::endl;
       }
+      cv::namedWindow("keypoints from objects", 0);
+      cv::imshow("keypoints from objects", out_img);
     }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
