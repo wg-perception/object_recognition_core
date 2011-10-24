@@ -25,7 +25,7 @@ class TODDetection(DetectionPipeline):
         # add arguments for the source and sink
         Sink.add_arguments(parser)
 
-        params, args, pipeline_params, do_display, db_params, db = read_arguments(parser)
+        params, args, pipeline_params, do_display, db_params, db = read_arguments(parser,argv)
 
         model_ids = []
         object_ids = []
