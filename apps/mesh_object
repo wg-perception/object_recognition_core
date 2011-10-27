@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-import roscompat
+#import roscompat
 import sys
 import argparse
 import time
@@ -113,7 +113,7 @@ def simple_mesh_session(dbs, session, args):
                                       sink_name='Feedback Cloud')
     ply_writer = ecto.If('PlyWriter', cell=ecto_pcl.PLYWriter('PLY Saver',
                                       filename_format='cloud_%s_%%05d.ply' % str(session.id)))
-    mls = ecto_pcl.MovingLeastSquares('MLS', search_radius=0.01)
+    mls = ecto_pcl.MovingLeastSquares('MLS', search_radius=0.0075)
     ply_writer.inputs.__test__ = False
     plasm.connect(source[:] >> accum['previous'],
                   point_cloud_transform['view'] >> accum['view'],
@@ -143,8 +143,8 @@ def simple_mesh_session(dbs, session, args):
     meshlab(ply_name, mesh_name)
     if args.commit:
         upload_mesh(dbs, session, ply_name, mesh_name)
-    os.unlink(ply_name)
-    os.unlink(mesh_name)
+        os.unlink(ply_name)
+        os.unlink(mesh_name)
 ###################################################################################################################
 def parse_args():
     parser = argparse.ArgumentParser(description='Computes a surface mesh of an object in the database')

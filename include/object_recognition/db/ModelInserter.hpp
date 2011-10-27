@@ -55,9 +55,11 @@ namespace object_recognition
         process(const ecto::tendrils& inputs, const ecto::tendrils& outputs)
         {
           Document doc = ModelInserterUtils::populate_doc(db_,*collection_name_, *object_id_, *model_params_, T::model_type());
+          std::cout << "persisting " << doc.id() << std::endl;
           int rval = T::process(inputs, outputs, doc);
           if (rval == ecto::OK)
             doc.Persist();
+          std::cout << "done persisting " << doc.id() << std::endl;
           return rval;
         }
       private:

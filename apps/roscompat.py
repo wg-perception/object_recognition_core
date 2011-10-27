@@ -1,6 +1,9 @@
 try:
-    import roslib; roslib.load_manifest('object_recognition')
+    import rospkg
+    import os
+    if rospkg.on_ros_path(os.path.dirname(__file__)):
+        import roslib; roslib.load_manifest('object_recognition')
 except ImportError:
     pass
-except Exception, e :
+except Exception as e :
     pass

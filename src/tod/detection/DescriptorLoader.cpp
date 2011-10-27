@@ -59,7 +59,7 @@ namespace object_recognition
       static void
       declare_params(ecto::tendrils& p)
       {
-        p.declare<std::string>("collection_models", "The collection where the models are stored.").required(true);
+        p.declare<std::string>("collection", "The collection where the models are stored.").required(true);
         p.declare<db::ObjectDbParameters>("db_params", "The DB parameters").required(true);
         p.declare<boost::python::object>("model_ids", "The list of model ids we should consider.\n").required();
         p.declare<boost::python::object>("object_ids", "The list of model ids we should consider.\n").required(true);
@@ -110,7 +110,7 @@ namespace object_recognition
 
         // load the descriptors from the DB
         db_params_ = params["db_params"];
-        collection_models_ = params["collection_models"];
+        collection_ = params["collection"];
 
         descriptors_ = outputs["descriptors"];
         features_3d_ = outputs["features3d"];
@@ -139,7 +139,7 @@ namespace object_recognition
         for (; model_id != model_id_end; ++model_id, ++object_id)
         {
           std::cout << "Loading model for object id: " << *object_id << std::endl;
-          db::Document doc(db, *collection_models_, *model_id);
+          db::Document doc(db, *collection_, *model_id);
           cv::Mat descriptors;
           doc.get_attachment<cv::Mat>("descriptors", descriptors);
           descriptors_->push_back(descriptors);
@@ -202,7 +202,7 @@ namespace object_recognition
       }
 
       /** The collection where the models are stored */
-      ecto::spore<std::string> collection_models_;
+      ecto::spore<std::string> collection_;
       /** The objects ids to use */
       std::vector<ObjectId> object_ids_;
       /** The matching model ids to use */

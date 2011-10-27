@@ -1,5 +1,6 @@
 #include <object_recognition/db/ModelInserter.hpp>
 #include <boost/property_tree/ptree.hpp>
+#include <boost/property_tree/json_parser.hpp>
 namespace object_recognition
 {
   namespace db

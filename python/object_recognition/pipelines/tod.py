@@ -25,7 +25,7 @@ class TODDetection(DetectionPipeline):
         # add arguments for the source and sink
         Sink.add_arguments(parser)
 
-        params, args, pipeline_params, do_display, db_params, db = read_arguments(parser,argv)
+        params, args, pipeline_params, do_display, db_params, db = read_arguments(parser, argv)
 
         model_ids = []
         object_ids = []
@@ -47,7 +47,7 @@ class TODDetection(DetectionPipeline):
         for pipeline_param in pipeline_params:
             if pipeline_param['type'] == 'TOD':
                 # create the loader and detector
-                loader = DescriptorLoader(collection_models=db_params.collection,
+                loader = DescriptorLoader(collection=db_params.collection,
                                            db_params=db_params,
                                            object_ids=object_ids, model_ids=model_ids,
                                            feature_descriptor_params=json_helper.dict_to_cpp_json_str(pipeline_param['feature_descriptor']))
