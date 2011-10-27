@@ -19,6 +19,7 @@ add_library(object_recognition_db SHARED
   db_couch.cpp
   opencv.cpp
   utils.cpp
+  ModelInserter.cpp
   )
 
 target_link_libraries(object_recognition_db
@@ -29,6 +30,7 @@ target_link_libraries(object_recognition_db
   boost_thread
   ${CURL_LIBRARIES}
   ${OpenCV_LIBS}
+  ecto
   )
 
 #install the main shared lib

@@ -15,8 +15,8 @@ namespace object_recognition
 {
   namespace capture
   {
-    using db_future::Document;
-    using db_future::ObjectDb;
+    using db::Document;
+    using db::ObjectDb;
     struct ObservationInserter
     {
       static void
@@ -52,10 +52,10 @@ namespace object_recognition
       void
       configure(const tendrils& params, const tendrils& inputs, const tendrils& outputs)
       {
-        object_recognition::db_future::ObjectDbParameters db_params("CouchDB");
+        object_recognition::db::ObjectDbParameters db_params("CouchDB");
         params["db_url"] >> db_params.root_;
         collection_ = params["db_collection"];
-        db = object_recognition::db_future::ObjectDb(db_params);
+        db = object_recognition::db::ObjectDb(db_params);
         ecto::spore<std::string> object_id = params["object_id"];
         object_id.set_callback(boost::bind(&ObservationInserter::on_object_id_change, this, _1));
         ecto::spore<std::string> session_id = params["session_id"];
@@ -78,7 +78,7 @@ namespace object_recognition
       int frame_number;
       std::string object_id, session_id;
       ecto::spore<std::string> collection_;
-      db_future::ObjectDb db;
+      db::ObjectDb db;
     };
   }
 }

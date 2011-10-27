@@ -7,12 +7,12 @@
 #include <boost/property_tree/ptree.hpp>
 
 const char* db_url = "http://localhost:5984";
-using namespace object_recognition::db_future;
+using namespace object_recognition::db;
 
 using boost::property_tree::ptree;
 using boost::property_tree::json_parser::write_json;
 using boost::property_tree::json_parser::read_json;
-using object_recognition::db_future::ObjectDbParameters;
+using object_recognition::db::ObjectDbParameters;
 
 ObjectDbParameters
 params_bogus(const std::string& url = db_url)

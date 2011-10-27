@@ -49,7 +49,7 @@
 
 namespace object_recognition
 {
-  namespace db_future
+  namespace db
   {
     //Forward declare some classes
     class ObjectDbBase;

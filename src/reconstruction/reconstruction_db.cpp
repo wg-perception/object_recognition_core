@@ -22,7 +22,7 @@ namespace object_recognition
     insert_mesh(const std::string& db_url, const std::string& object_id, const std::string& session_id,
                 const std::string& mesh_file, const std::string& surfel_file)
     {
-      using namespace object_recognition::db_future;
+      using namespace object_recognition::db;
       ObjectDbParameters params;
       params.root_ = db_url;
       params.type_ = ObjectDbParameters::COUCHDB;

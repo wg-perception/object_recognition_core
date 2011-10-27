@@ -41,16 +41,16 @@
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-using object_recognition::db_future::AttachmentName;
-using object_recognition::db_future::CollectionName;
-using object_recognition::db_future::DocumentId;
-using object_recognition::db_future::DbType;
-using object_recognition::db_future::MimeType;
-using object_recognition::db_future::RevisionId;
+using object_recognition::db::AttachmentName;
+using object_recognition::db::CollectionName;
+using object_recognition::db::DocumentId;
+using object_recognition::db::DbType;
+using object_recognition::db::MimeType;
+using object_recognition::db::RevisionId;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-class ObjectDbCouch: public object_recognition::db_future::ObjectDbBase
+class ObjectDbCouch: public object_recognition::db::ObjectDbBase
 {
 public:
   ObjectDbCouch(const std::string &url);

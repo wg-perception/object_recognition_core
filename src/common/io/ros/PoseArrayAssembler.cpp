@@ -124,7 +124,7 @@ namespace object_recognition
     declare_params(ecto::tendrils& params)
     {
       params.declare<bp::object>("mapping", "Mapping from object ids to mesh ids.").required(true);
-      params.declare<db_future::ObjectDbParameters>("db_params", "The DB parameters").required(true);
+      params.declare<db::ObjectDbParameters>("db_params", "The DB parameters").required(true);
     }
 
     static void
@@ -285,7 +285,7 @@ namespace object_recognition
 
     std::map<std::string, std::pair<std::string, std::string> > mapping_;
     static std::map<ObjectId, unsigned int> object_id_to_index_;
-    ecto::spore<db_future::ObjectDbParameters> db_params_;
+    ecto::spore<db::ObjectDbParameters> db_params_;
   };
   std::map<ObjectId, unsigned int> PoseArrayAssembler::object_id_to_index_;
 }

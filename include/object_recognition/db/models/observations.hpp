@@ -24,9 +24,9 @@ namespace object_recognition
     };
 
     void
-    operator>>(Observation& o, db_future::Document& doc);
+    operator>>(Observation& o, db::Document& doc);
     void
-    operator<<(Observation& o, db_future::Document& doc);
+    operator<<(Observation& o, db::Document& doc);
     void
     operator>>(Observation& obs, const ecto::tendrils& o);
     void
