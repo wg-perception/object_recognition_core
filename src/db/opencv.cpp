@@ -86,7 +86,7 @@ namespace object_recognition
     get_png_attachment(cv::Mat& image, db::Document& doc, const std::string& name)
     {
       std::stringstream ss;
-      doc.get_attachment_stream(name, ss);
+      doc.get_attachment_stream_and_cache(name, ss);
       std::streampos length = ss.tellp();
       std::vector<uint8_t> buffer(length);
       ss.read((char*) buffer.data(), length);

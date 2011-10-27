@@ -190,12 +190,31 @@ namespace object_recognition
        */
       template<typename T>
       void
-      get_attachment(const AttachmentName &attachment_name, T & value, bool do_use_cache = true)
+      get_attachment(const AttachmentName &attachment_name, T & value) const
       {
         typedef boost::archive::binary_iarchive InputArchive;
         std::stringstream stream;
         std::string tmp_mime_type;
-        get_attachment_stream(attachment_name, stream, tmp_mime_type, do_use_cache);
+        get_attachment_stream(attachment_name, stream, tmp_mime_type);
+        stream.seekg(0);
+        InputArchive ar(stream);
+        ar & value;
+      }
+
+      /** Extract a specific attachment from a document in the DB
+       * @param db the db to read from
+       * @param attachment_name
+       * @param value
+       * @param do_use_cache if true, try to load and store data in the object itself
+       */
+      template<typename T>
+      void
+      get_attachment_and_cache(const AttachmentName &attachment_name, T & value)
+      {
+        typedef boost::archive::binary_iarchive InputArchive;
+        std::stringstream stream;
+        std::string tmp_mime_type;
+        get_attachment_stream_and_cache(attachment_name, stream, tmp_mime_type);
         stream.seekg(0);
         InputArchive ar(stream);
         ar & value;
@@ -210,8 +229,18 @@ namespace object_recognition
        */
       void
       get_attachment_stream(const AttachmentName &attachment_name, std::ostream& stream, MimeType mime_type =
-          MIME_TYPE_DEFAULT,
-                            bool do_use_cache = true);
+          MIME_TYPE_DEFAULT) const;
+
+      /** Extract the stream of a specific attachment for a Document from the DB
+       * @param db the db to read from
+       * @param attachment_name the name of the attachment
+       * @param stream the string of data to write to
+       * @param mime_type the MIME type as stored in the DB
+       * @param do_use_cache if true, try to load and store data in the object itself
+       */
+      void
+      get_attachment_stream_and_cache(const AttachmentName &attachment_name, std::ostream& stream, MimeType mime_type =
+          MIME_TYPE_DEFAULT);
 
       /** Add a specific field to a Document (that has been pre-loaded or not)
        * @param attachment_name the name of the attachment
@@ -337,7 +366,12 @@ namespace object_recognition
     // Specializations for cv::Mat
     template<>
     void
-    Document::get_attachment<cv::Mat>(const AttachmentName &attachment_name, cv::Mat & value, bool do_use_cache);
+    Document::get_attachment<cv::Mat>(const AttachmentName &attachment_name, cv::Mat & value) const;
+
+    template<>
+    void
+    Document::get_attachment_and_cache<cv::Mat>(const AttachmentName &attachment_name, cv::Mat & value);
+
     template<>
     void
     Document::set_attachment<cv::Mat>(const AttachmentName &attachment_name, const cv::Mat & value);

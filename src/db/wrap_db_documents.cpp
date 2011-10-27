@@ -45,7 +45,7 @@ namespace object_recognition
 {
   namespace db
   {
-    using namespace db_future;
+    using namespace db;
 
     typedef boost::shared_ptr<Documents> DocumentsPtr;
 
@@ -65,7 +65,7 @@ namespace object_recognition
       // Create the Documents from the ids
       DocumentsPtr p(new Documents());
       p->resize(document_ids.size());
-      object_recognition::db_future::ObjectDb db(db_params);
+      object_recognition::db::ObjectDb db(db_params);
 
       BOOST_FOREACH(const DocumentId & document_id, document_ids)
           {

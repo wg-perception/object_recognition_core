@@ -50,12 +50,85 @@
 #include "object_recognition/db/db.h"
 #include "object_recognition/db/opencv.h"
 #include "opencv_candidate/lsh.hpp"
+
+using object_recognition::db::Documents;
+
 namespace object_recognition
 {
   namespace tod
   {
     struct DescriptorMatcher
     {
+      void
+      DocumentsCallback(const Documents & db_documents)
+      {
+        descriptors_db_.resize(db_documents.size());
+        features3d_db_.resize(db_documents.size());
+
+        // Re-load the data from the DB
+        std::cout << "Loading models. This may take some time..." << std::endl;
+        unsigned int index = 0;
+        BOOST_FOREACH(const object_recognition::db::Document & document, db_documents)
+            {
+              ObjectId object_id = document.get_value<std::string>("object_id");
+              std::cout << "Loading model for object id: " << object_id << std::endl;
+              cv::Mat descriptors;
+              document.get_attachment<cv::Mat>("descriptors", descriptors);
+              descriptors_db_[index] = descriptors;
+
+              // Store the id conversion
+              object_ids_[index] = object_id;
+
+              // Store the 3d positions
+              cv::Mat points3d;
+              document.get_attachment<cv::Mat>("points", points3d);
+              if (points3d.rows != 1)
+                points3d = points3d.t();
+              features3d_db_[index] = points3d;
+
+              // Compute the span of the object
+              float max_span_sq = 0;
+              cv::MatConstIterator_<cv::Vec3f> i = points3d.begin<cv::Vec3f>(), end = points3d.end<cv::Vec3f>(), j;
+              if (0)
+              {
+                // Too slow
+                for (; i != end; ++i)
+                {
+                  for (j = i + 1; j != end; ++j)
+                  {
+                    cv::Vec3f vec = *i - *j;
+                    max_span_sq = std::max(vec.val[0] * vec.val[0] + vec.val[1] * vec.val[1] + vec.val[2] * vec.val[2],
+                                           max_span_sq);
+                  }
+                }
+              }
+              else
+              {
+                float min_x = std::numeric_limits<float>::max(), max_x = std::numeric_limits<float>::min(), min_y =
+                    std::numeric_limits<float>::max(), max_y = std::numeric_limits<float>::min(), min_z =
+                    std::numeric_limits<float>::max(), max_z = std::numeric_limits<float>::min();
+                for (; i != end; ++i)
+                {
+                  min_x = std::min(min_x, (*i).val[0]);
+                  max_x = std::max(max_x, (*i).val[0]);
+                  min_y = std::min(min_y, (*i).val[1]);
+                  max_y = std::max(max_y, (*i).val[1]);
+                  min_z = std::min(min_z, (*i).val[2]);
+                  max_z = std::max(max_z, (*i).val[2]);
+                }
+                max_span_sq = (max_x - min_x) * (max_x - min_x) + (max_y - min_y) * (max_y - min_y)
+                              + (max_z - min_z) * (max_z - min_z);
+              }
+              spans_[object_id] = std::sqrt(max_span_sq);
+              std::cout << "span: " << spans_[object_id] << " meters" << std::endl;
+              ++index;
+            }
+
+        // Clear the matcher and re-train it
+        matcher_->clear();
+        matcher_->add(descriptors_db_);
+      }
+
       static void
       declare_params(ecto::tendrils& p)
       {
@@ -63,26 +136,28 @@ namespace object_recognition
         std::stringstream ss;
         ss << "JSON string that can contain the following fields: \"radius\" (for epsilon nearest neighbor search), "
            << "\"ratio\" when applying the ratio criterion like in SIFT";
-        p.declare<std::string>("search_json_params", ss.str()).required();
+        p.declare<std::string>("search_json_params", ss.str()).required(true);
       }
 
       static void
       declare_io(const ecto::tendrils& params, ecto::tendrils& inputs, ecto::tendrils& outputs)
       {
         inputs.declare<cv::Mat>("descriptors", "The descriptors to match to the database");
-        inputs.declare<std::vector<cv::Mat> >("descriptors_db", "The descriptors from the database");
-        inputs.declare<std::vector<cv::Mat> >("features3d_db", "The 3d position of the descriptors from the database");
-        inputs.declare<bool>("do_update", "If true, forces the reload of the search structure");
 
         outputs.declare<std::vector<std::vector<cv::DMatch> > >("matches", "The matches for the input descriptors");
         outputs.declare<std::vector<cv::Mat> >(
             "matches_3d",
             "For each point, the 3d position of the matches, 1 by n matrix with 3 channels for, x, y, and z.");
+        outputs.declare<std::vector<ObjectId> >("object_ids", "The ids of the objects");
+        outputs.declare<std::map<ObjectId, float> >("spans", "The ids of the objects");
       }
 
       void
       configure(const ecto::tendrils& params, const ecto::tendrils& inputs, const ecto::tendrils& outputs)
       {
+        *db_documents_ = params.get<Documents>("db_documents");
+        db_documents_.set_callback(boost::bind(&DescriptorMatcher::DocumentsCallback, this, _1));
+
         // get some parameters
         {
           boost::property_tree::ptree search_param_tree;
@@ -111,10 +186,6 @@ namespace object_recognition
             throw;
           }
         }
-
-        do_update_ = inputs["do_update"];
-        descriptors_db_ = inputs["descriptors_db"];
-        features3d_db_ = inputs["features3d_db"];
       }
 
       /** Get the 2d keypoints and figure out their 3D position from the depth map
@@ -127,13 +198,6 @@ namespace object_recognition
       {
         std::vector<std::vector<cv::DMatch> > &matches = outputs.get<std::vector<std::vector<cv::DMatch> > >("matches");
         const cv::Mat & descriptors = inputs.get<cv::Mat>("descriptors");
-
-        // Reload the search structure if necessary
-        if (*do_update_)
-        {
-          matcher_->clear();
-          matcher_->add(*descriptors_db_);
-        }
 
         // Perform radius search
         if (radius_)
@@ -160,12 +224,14 @@ namespace object_recognition
           unsigned int i = 0;
           BOOST_FOREACH(const cv::DMatch & match, matches[match_index])
               {
-                local_matches_3d.at<cv::Vec3f>(0, i) = (*features3d_db_)[match.imgIdx].at<cv::Vec3f>(0, match.trainIdx);
+                local_matches_3d.at<cv::Vec3f>(0, i) = features3d_db_[match.imgIdx].at<cv::Vec3f>(0, match.trainIdx);
                 ++i;
               }
         }
 
         outputs["matches_3d"] << matches_3d;
+        outputs["object_ids"] << object_ids_;
+        outputs["spans"] << spans_;
 
         return 0;
       }
@@ -176,12 +242,16 @@ namespace object_recognition
       unsigned int radius_;
       /** The ratio used for k-nearest neighbors, if not using radius search */
       unsigned int ratio_;
-      /** If true, forces the reload of the search structure */
-      ecto::spore<bool> do_update_;
       /** The descriptors loaded from the DB */
-      ecto::spore<std::vector<cv::Mat> > descriptors_db_;
+      std::vector<cv::Mat> descriptors_db_;
       /** The 3d position of the descriptors loaded from the DB */
-      ecto::spore<std::vector<cv::Mat> > features3d_db_;
+      std::vector<cv::Mat> features3d_db_;
+      /** For each object id, the maximum distance between the known descriptors (span) */
+      std::map<ObjectId, float> spans_;
+
+      ecto::spore<Documents> db_documents_;
+      /** The matching object ids */
+      std::vector<ObjectId> object_ids_;
     };
   }
 }

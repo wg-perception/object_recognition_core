@@ -63,7 +63,8 @@ namespace object_recognition
       {
         type_ = ObjectDbParameters::COUCHDB;
         root_ = DEFAULT_COUCHDB_URL;
-      } else
+      }
+      else
         throw std::runtime_error("Invalid type.");
     }
     ObjectDbParameters::ObjectDbParameters(const std::map<std::string, std::string>& parameters)
@@ -260,18 +261,43 @@ namespace object_recognition
      * @param do_use_cache if true, try to load and store data in the object itself
      */
     void
-    Document::get_attachment_stream(const AttachmentName &attachment_name, std::ostream& stream, MimeType mime_type,
-                                    bool do_use_cache)
+    Document::get_attachment_stream(const AttachmentName &attachment_name, std::ostream& stream,
+                                    MimeType mime_type) const
     {
       // check if it is loaded
-      if (do_use_cache)
+      AttachmentMap::const_iterator val = attachments_.find(attachment_name);
+      if (val != attachments_.end())
       {
-        AttachmentMap::const_iterator val = attachments_.find(attachment_name);
-        if (val != attachments_.end())
-        {
-          stream << val->second->stream_.rdbuf();
-          return;
-        }
+        stream << val->second->stream_.rdbuf();
+        return;
+      }
+
+      StreamAttachment::ptr stream_attachment(new StreamAttachment(mime_type));
+      // Otherwise, load it from the DB
+      RevisionId revision_id;
+      db_.get_attachment_stream(document_id_, collection_, attachment_name, mime_type, stream_attachment->stream_,
+                                revision_id);
+      stream << stream_attachment->stream_.rdbuf();
+    }
+
+    /** Extract the stream of a specific attachment for a Document from the DB
+     * Not const because it might change the revision_id_
+     * @param db the db to read from
+     * @param attachment_name the name of the attachment
+     * @param stream the string of data to write to
+     * @param mime_type the MIME type as stored in the DB
+     * @param do_use_cache if true, try to load and store data in the object itself
+     */
+    void
+    Document::get_attachment_stream_and_cache(const AttachmentName &attachment_name, std::ostream& stream,
+                                              MimeType mime_type)
+    {
+      // check if it is loaded
+      AttachmentMap::const_iterator val = attachments_.find(attachment_name);
+      if (val != attachments_.end())
+      {
+        stream << val->second->stream_.rdbuf();
+        return;
       }
 
       StreamAttachment::ptr stream_attachment(new StreamAttachment(mime_type));
@@ -279,10 +305,8 @@ namespace object_recognition
       db_.get_attachment_stream(document_id_, collection_, attachment_name, mime_type, stream_attachment->stream_,
                                 revision_id_);
       stream << stream_attachment->stream_.rdbuf();
-      if (do_use_cache)
-      {
-        attachments_[attachment_name] = stream_attachment;
-      }
+
+      attachments_[attachment_name] = stream_attachment;
     }
 
     /** Add a stream attachment to a a Document
@@ -420,15 +444,28 @@ namespace object_recognition
     // Specializations for cv::Mat
     template<>
     void
-    Document::get_attachment<cv::Mat>(const AttachmentName &attachment_name, cv::Mat & value, bool do_use_cache)
+    Document::get_attachment<cv::Mat>(const AttachmentName &attachment_name, cv::Mat & value) const
     {
       std::stringstream ss;
-      get_attachment_stream(attachment_name, ss, "text/x-yaml", do_use_cache);
+      get_attachment_stream(attachment_name, ss, "text/x-yaml");
       std::map<std::string, cv::Mat> ss_map;
       ss_map[attachment_name] = cv::Mat();
       object_recognition::db::yaml2mats(ss_map, ss, true);
       value = ss_map[attachment_name];
     }
+
+    template<>
+    void
+    Document::get_attachment_and_cache<cv::Mat>(const AttachmentName &attachment_name, cv::Mat & value)
+    {
+      std::stringstream ss;
+      get_attachment_stream_and_cache(attachment_name, ss, "text/x-yaml");
+      std::map<std::string, cv::Mat> ss_map;
+      ss_map[attachment_name] = cv::Mat();
+      object_recognition::db::yaml2mats(ss_map, ss, true);
+      value = ss_map[attachment_name];
+    }
+
     template<>
     void
     Document::set_attachment<cv::Mat>(const AttachmentName &attachment_name, const cv::Mat & value)

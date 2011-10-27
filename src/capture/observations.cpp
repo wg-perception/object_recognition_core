@@ -58,8 +58,8 @@ namespace object_recognition
       object_recognition::db::get_png_attachment(o.depth, doc, "depth");
       object_recognition::db::get_png_attachment(o.mask, doc, "mask");
       std::stringstream intr_ss, extr_ss;
-      doc.get_attachment_stream("intrinsics.yml", intr_ss);
-      doc.get_attachment_stream("extrinsics.yml", extr_ss);
+      doc.get_attachment_stream_and_cache("intrinsics.yml", intr_ss);
+      doc.get_attachment_stream_and_cache("extrinsics.yml", extr_ss);
       std::map<std::string, cv::Mat> intrinsics, extrinsics;
       intrinsics["K"] = cv::Mat();
       extrinsics["R"] = cv::Mat();
