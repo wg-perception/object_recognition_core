@@ -40,6 +40,7 @@ install(TARGETS object_recognition_db
 ectomodule(object_recognition_db
     module.cpp
     wrap_db_parameters.cpp
+    wrap_db_documents.cpp
     )
 link_ecto(object_recognition_db
   object_recognition_db

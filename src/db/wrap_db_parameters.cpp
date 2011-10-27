@@ -80,7 +80,7 @@ namespace object_recognition
     typedef boost::shared_ptr<ObjectDbParameters> ObjectDbParametersPtr;
 
     boost::shared_ptr<ObjectDbParameters>
-    ObjectDbParametersConstructor(bp::dict obj)
+    ObjectDbParametersConstructor(const bp::dict &obj)
     {
       std::map<std::string, std::string> params = BpDictToMap(bp::dict(obj));
       if (params.empty())
@@ -125,25 +125,25 @@ namespace object_recognition
 
     // Define some fucntions to access the members
     std::string
-    collection(ObjectDbParametersPtr params)
+    collection(const ObjectDbParametersPtr &params)
     {
       return params->collection_;
     }
 
     std::string
-    root(ObjectDbParametersPtr params)
+    root(const ObjectDbParametersPtr &params)
     {
       return params->root_;
     }
 
     std::string
-    type(ObjectDbParametersPtr params)
+    type(const ObjectDbParametersPtr &params)
     {
       return params->type_;
     }
 
     void
-    wrap_db_options()
+    wrap_db_parameters()
     {
       bp::class_<ObjectDbParameters, ObjectDbParametersPtr> ObjectDbParametersClass("ObjectDbParameters"); //"The parameters of any database");
       ObjectDbParametersClass.def("__init__", bp::make_constructor(ObjectDbParametersConstructor));
