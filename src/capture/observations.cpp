@@ -27,7 +27,7 @@ namespace object_recognition
       t.declare<cv::Mat>("K", "The camera intrinsic matrix").required(required);
     }
     void
-    operator>>(Observation& o, db_future::Document& doc)
+    operator>>(Observation& o, db::Document& doc)
     {
       std::map<std::string, cv::Mat> intrinsics, extrinsics;
       intrinsics["K"] = o.K;
@@ -49,7 +49,7 @@ namespace object_recognition
     }
 
     void
-    operator<<(Observation& o, db_future::Document& doc)
+    operator<<(Observation& o, db::Document& doc)
     {
       o.object_id = doc.get_value<std::string>("object_id");
       o.session_id = doc.get_value<std::string>("session_id");

@@ -15,8 +15,8 @@
 #include "object_recognition/db/db.h"
 #include "object_recognition/db/opencv.h"
 
-using object_recognition::db_future::CollectionName;
-using object_recognition::db_future::DocumentId;
+using object_recognition::db::CollectionName;
+using object_recognition::db::DocumentId;
 
 namespace object_recognition
 {
@@ -32,7 +32,7 @@ namespace object_recognition
         params.declare<std::string>("collection_models",
                                     "std::string The collection in which to store the models on the db", "models").required(
             true);
-        params.declare<db_future::ObjectDbParameters>("db_params", "The DB parameters").required(true);
+        params.declare<db::ObjectDbParameters>("db_params", "The DB parameters").required(true);
         params.declare<std::string>("object_id", "The object id, to associate this frame with.").required(true);
         params.declare<std::string>("model_json_params", "The parameters used for the model, as JSON.").required(true);
       }
@@ -48,7 +48,7 @@ namespace object_recognition
       configure(const ecto::tendrils& params, const ecto::tendrils& inputs, const ecto::tendrils& outputs)
       {
         object_id_ = params["object_id"];
-        db_.set_params(params.get<db_future::ObjectDbParameters>("db_params"));
+        db_.set_params(params.get<db::ObjectDbParameters>("db_params"));
         collection_models_ = params.get<std::string>("collection_models");
         params_ = params.get<std::string>("model_json_params");
 
@@ -59,7 +59,7 @@ namespace object_recognition
       int
       process(const ecto::tendrils& inputs, const ecto::tendrils& outputs)
       {
-        object_recognition::db_future::Document doc(db_, collection_models_);
+        object_recognition::db::Document doc(db_, collection_models_);
 
         doc.set_attachment<cv::Mat>("descriptors", *descriptors_);
         doc.set_attachment<cv::Mat>("points", *points_);
@@ -82,7 +82,7 @@ namespace object_recognition
         return ecto::OK;
       }
     private:
-      object_recognition::db_future::ObjectDb db_;
+      object_recognition::db::ObjectDb db_;
       ecto::spore<DocumentId> object_id_;
       CollectionName collection_models_;
       /** The JSON parameters used to compute the model */

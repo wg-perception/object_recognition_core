@@ -21,8 +21,8 @@ namespace object_recognition
   namespace capture
   {
 
-    using db_future::Document;
-    using db_future::ObjectDb;
+    using db::Document;
+    using db::ObjectDb;
 
     struct ObservationReader
     {
@@ -50,10 +50,10 @@ namespace object_recognition
         params["db_url"] >> db_url;
         params["db_collection"] >> collection;
         observation = inputs["observation"];
-        object_recognition::db_future::ObjectDbParameters db_params;
+        object_recognition::db::ObjectDbParameters db_params;
         db_params.root_ = db_url;
         db_params.collection_ = collection;
-        db = object_recognition::db_future::ObjectDb(db_params);
+        db = object_recognition::db::ObjectDb(db_params);
       }
       int
       process(const tendrils& inputs, const tendrils& outputs)
