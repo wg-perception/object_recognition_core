@@ -73,7 +73,7 @@ namespace object_recognition
     }
 
     void
-    png_attach(cv::Mat image, db_future::Document& doc, const std::string& name)
+    png_attach(cv::Mat image, db::Document& doc, const std::string& name)
     {
       std::vector<uint8_t> buffer;
       std::stringstream ss;
@@ -83,7 +83,7 @@ namespace object_recognition
     }
 
     void
-    get_png_attachment(cv::Mat& image, db_future::Document& doc, const std::string& name)
+    get_png_attachment(cv::Mat& image, db::Document& doc, const std::string& name)
     {
       std::stringstream ss;
       doc.get_attachment_stream(name, ss);

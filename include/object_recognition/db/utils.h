@@ -39,16 +39,7 @@
 
 namespace object_recognition
 {
-  std::string
-  name_of(const std::type_info &ti);
-  template<typename T>
-  std::string
-  name_of()
-  {
-    return name_of(typeid(T));
-  }
-
-  namespace db_future
+  namespace db
   {
 
     typedef std::string AttachmentName;

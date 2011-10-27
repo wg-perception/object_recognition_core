@@ -43,7 +43,7 @@
 #define PRECONDITION_DB() if(!db_) throw std::runtime_error(std::string("This ObjectDb instance is uninitialized."));
 namespace object_recognition
 {
-  namespace db_future
+  namespace db
   {
     const std::string ObjectDbParameters::EMPTY = "empty";
     const std::string ObjectDbParameters::COUCHDB = "CouchDB";

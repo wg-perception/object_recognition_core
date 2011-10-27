@@ -76,7 +76,7 @@ namespace object_recognition
 
 namespace object_recognition
 {
-  namespace db_future
+  namespace db
   {
     namespace couch
     {

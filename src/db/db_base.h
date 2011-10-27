@@ -58,7 +58,7 @@
 
 namespace object_recognition
 {
-  namespace db_future
+  namespace db
   {
     /** The main class that interact with the db
      * A collection is similar to the term used in CouchDB. It could be a schema/table in SQL

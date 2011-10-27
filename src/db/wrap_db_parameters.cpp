@@ -75,7 +75,7 @@ namespace object_recognition
 {
   namespace db
   {
-    using namespace db_future;
+    using namespace db;
 
     typedef boost::shared_ptr<ObjectDbParameters> ObjectDbParametersPtr;
 
