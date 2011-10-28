@@ -53,18 +53,14 @@ namespace object_recognition
 
     const std::string MIME_TYPE_DEFAULT = "application/octet-stream";
 
-    namespace couch
-    {
-      // Utilities for creating queries for CouchDB
-#define STRINGYFY(A) #A
-      std::string
-      WhereDocId(const std::string & object_id);
+    // Utilities for creating queries for CouchDB
+    std::string
+    WhereDocId(const std::string & object_id);
 
-      std::string
-      WhereObjectId(const std::string & object_id);
+    std::string
+    WhereObjectId(const std::string & object_id);
 
-      std::string
-      WhereSessionId(const std::string & object_id);
-    }
+    std::string
+    WhereSessionId(const std::string & object_id);
   }
 }

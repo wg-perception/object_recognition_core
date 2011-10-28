@@ -54,7 +54,16 @@ namespace object_recognition
         int
         process(const ecto::tendrils& inputs, const ecto::tendrils& outputs)
         {
-          Document doc = ModelInserterUtils::populate_doc(db_,*collection_name_, *object_id_, *model_params_, T::model_type());
+          Document doc_new = ModelInserterUtils::populate_doc(db_, *collection_name_, *object_id_, *model_params_,
+                                                          T::model_type());
+
+          // Find all the models with the same parameters
+          object_recognition::db::DocumentView view;
+          view.AddView(db_.type(), );
+
+
+
+
           std::cout << "persisting " << doc.id() << std::endl;
           int rval = T::process(inputs, outputs, doc);
           if (rval == ecto::OK)
