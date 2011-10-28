@@ -9,6 +9,7 @@ from ecto_object_recognition import tod_detection
 from ecto_opencv import features2d, highgui, imgproc
 from object_recognition.common.utils import json_helper
 import ecto_ros, ecto_sensor_msgs
+from ecto_object_recognition.object_recognition_db import DbDocuments
 ImagePub = ecto_sensor_msgs.Publisher_Image
 
 class TodDetector(ecto.BlackBox):
