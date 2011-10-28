@@ -9,16 +9,15 @@ from object_recognition.common.io.sink import Sink
 from object_recognition.common.io.source import Source
 from object_recognition.common.utils import json_helper
 from object_recognition.common.utils.training_detection_args import read_arguments
-from object_recognition.tod.detector import TodDetector, TodDetectorLoader
+from object_recognition.tod.detector import TodDetector
 from ecto_object_recognition.tod_detection import DescriptorLoader
 import ecto
 import ecto_ros
-import sys
 from object_recognition import models
-
+from ecto_object_recognition.object_recognition_db import DbDocuments
 
 class TODDetection(DetectionPipeline):
-    def create_pipeline(self, argv=None):
+    def create_pipeline(self, argv=[]):
         plasm = ecto.Plasm()
         parser = ArgumentParser()
 
@@ -28,12 +27,10 @@ class TODDetection(DetectionPipeline):
         params, args, pipeline_params, do_display, db_params, db = read_arguments(parser, argv)
 
         model_ids = []
-        object_ids = []
         for object_id in params['object_ids']:
             for model_id in models.find_model_for_object(db, object_id, 'TOD'):
                 model_ids.append(str(model_id))
-                object_ids.append(object_id)
-        params['object_ids'] = object_ids
+        model_documents = DbDocuments(model_ids)
 
         # TODO handle this properly...
         ecto_ros.init(argv, "tod_detection", False)#not anonymous.
