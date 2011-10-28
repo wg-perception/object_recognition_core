@@ -5,7 +5,7 @@ import ecto
 if __name__ == '__main__':
     from object_recognition.pipelines import DetectionPipeline
     import sys
-    plasm = DetectionPipeline.create(sys.argv)
+    plasm = DetectionPipeline.create(sys.argv[1:])
     plasm.configure_all()
     sched = ecto.schedulers.Singlethreaded(plasm)
     sched.execute()

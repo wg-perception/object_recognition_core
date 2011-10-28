@@ -3,13 +3,11 @@
 Module defining the TOD detector to find objects in a scene
 """
 
-import couchdb
 import ecto
 from feature_descriptor import FeatureDescriptor
 from ecto_object_recognition import tod_detection
 from ecto_opencv import features2d, highgui, imgproc
 from object_recognition.common.utils import json_helper
-from object_recognition import dbtools, models
 import ecto_ros, ecto_sensor_msgs
 ImagePub = ecto_sensor_msgs.Publisher_Image
 from ecto_object_recognition.tod_detection import DescriptorLoader
@@ -34,16 +32,12 @@ class TodDetector(ecto.BlackBox):
 
     def declare_params(self, p):
         p.forward('rgb_frame_id', cell_name='message_cvt', cell_key='frame_id')
+        p.forward('model_documents', cell_name='descriptor_matcher', cell_key='model_documents')
 
     def declare_io(self, _p, i, o):
         i.forward('image', cell_name='image_duplicator', cell_key='in')
         i.forward('mask', cell_name='feature_descriptor', cell_key='mask')
         i.forward('points3d', cell_name='guess_generator', cell_key='points3d')
-        i.forward('spans', cell_name='guess_generator', cell_key='spans')
-        i.forward('id_correspondences', cell_name='guess_generator', cell_key='id_correspondences')
-        i.forward('descriptors_db', cell_name='descriptor_matcher', cell_key='descriptors_db')
-        i.forward('features3d_db', cell_name='descriptor_matcher', cell_key='features3d_db')
-        i.forward('do_update', cell_name='descriptor_matcher', cell_key='do_update')
 
         o.forward('object_ids', cell_name='guess_generator', cell_key='object_ids')
         o.forward('Rs', cell_name='guess_generator', cell_key='Rs')
@@ -70,6 +64,9 @@ class TodDetector(ecto.BlackBox):
         connections = [self.image_duplicator[:] >> self.feature_descriptor['image'],
                        self.image_duplicator[:] >> self.guess_generator['image'], ]
 
+        connections += [ self.descriptor_matcher['spans'] >> self.guess_generator['spans'],
+                       self.descriptor_matcher['ids'] >> self.guess_generator['ids'] ]
+
         connections += [ self.feature_descriptor['keypoints'] >> self.guess_generator['keypoints'],
                 self.feature_descriptor['descriptors'] >> self.descriptor_matcher['descriptors'],
                 self.descriptor_matcher['matches', 'matches_3d'] >> self.guess_generator['matches', 'matches_3d'] ]
@@ -78,7 +75,7 @@ class TodDetector(ecto.BlackBox):
         cvt_color = imgproc.cvtColor(flag=imgproc.RGB2GRAY)
 
         draw_keypoints = features2d.DrawKeypoints()
-        connections += [   self.image_duplicator[:] >> cvt_color[:],
+        connections += [ self.image_duplicator[:] >> cvt_color[:],
                            cvt_color[:] >> draw_keypoints['image'],
                            self.feature_descriptor['keypoints'] >> draw_keypoints['keypoints'],
                            draw_keypoints['image'] >> self.message_cvt[:],

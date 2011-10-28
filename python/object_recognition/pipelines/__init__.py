@@ -30,7 +30,7 @@ class DetectionPipeline:
         return NotImplemented
 
     @classmethod
-    def create(cls, argv=None):
+    def create(cls, argv=[]):
         from .tod import TODDetection
         td = TODDetection()
         return td.create_pipeline(argv)

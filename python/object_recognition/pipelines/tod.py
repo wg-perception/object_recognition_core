@@ -42,17 +42,11 @@ class TODDetection(DetectionPipeline):
 
         # define the different pipelines
         for pipeline_param in pipeline_params:
-            if pipeline_param['type'] == 'TOD':
-                # create the loader and detector
-                loader = DescriptorLoader(collection=db_params.collection,
-                                           db_params=db_params,
-                                           object_ids=object_ids, model_ids=model_ids,
-                                           feature_descriptor_params=json_helper.dict_to_cpp_json_str(pipeline_param['feature_descriptor']))
-                detector = TodDetector(feature_descriptor_params=pipeline_param['feature_descriptor'],
-                                       guess_params=pipeline_param['guess'], search_params=pipeline_param['search'],
-                                       display=do_display, rgb_frame_id=params['source']['rgb_frame_id'])
-                plasm.connect(loader['descriptors', 'features3d', 'spans', 'id_correspondences', 'do_update'] >>
-                              detector['descriptors_db', 'features3d_db', 'spans', 'id_correspondences', 'do_update'])
+            # create the loader and detector
+            detector = TodDetector(feature_descriptor_params=pipeline_param['feature_descriptor'],
+                                   model_documents=model_documents, guess_params=pipeline_param['guess'],
+                                   search_params=pipeline_param['search'], display=do_display,
+                                   rgb_frame_id=params['source']['rgb_frame_id'])
 
             # Connect the detector to the source
             for key in source.outputs.iterkeys():
