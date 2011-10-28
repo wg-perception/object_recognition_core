@@ -268,9 +268,9 @@ namespace object_recognition
                 size_t index = image_id_index.second;
                 {
                   const cv::Vec3f & vec = (*in_points_)[image_id].at<cv::Vec3f>(0, index);
-                  x.insert(image_id, id) = vec.val[0];
-                  y.insert(image_id, id) = vec.val[1];
-                  disparity.insert(image_id, id) = vec.val[2];
+                  x.coeffRef(image_id, id) = vec.val[0];
+                  y.coeffRef(image_id, id) = vec.val[1];
+                  disparity.coeffRef(image_id, id) = vec.val[2];
                 }
                 {
                   const cv::Vec3f & vec = (*in_points3d_)[image_id].at<cv::Vec3f>(0, index);
