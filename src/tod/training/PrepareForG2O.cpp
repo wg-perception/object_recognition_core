@@ -168,7 +168,6 @@ namespace object_recognition
 
           // Find the nearest neighbors of all the points in the current image
           const cv::Mat & descriptors = descriptors_all[query_image_id];
-          const cv::Mat_<cv::Vec3f> & points3d = (*in_points3d_)[query_image_id];
           std::vector<std::vector<cv::DMatch> > matches_all;
 
           matcher_->knnMatch(descriptors, matches_all, 2);
@@ -191,6 +190,7 @@ namespace object_recognition
 
           // Find the best 5 views (no need to perform RANSAC on all the views)
 #if 0
+          const cv::Mat_<cv::Vec3f> & points3d = (*in_points3d_)[query_image_id];
           {
             std::vector<std::pair<unsigned int, unsigned int> > lengths;
             lengths.reserve(n_images);

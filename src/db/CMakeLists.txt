@@ -36,7 +36,6 @@ target_link_libraries(object_recognition_db
 #install the main shared lib
 install(TARGETS object_recognition_db
   DESTINATION lib
-  COMPONENT main
   )
 
 ectomodule(object_recognition_db
@@ -44,6 +43,10 @@ ectomodule(object_recognition_db
     wrap_db_parameters.cpp
     wrap_db_documents.cpp
     )
+
 link_ecto(object_recognition_db
   object_recognition_db
   )
+
+install_ecto_module(object_recognition_db)
+  
