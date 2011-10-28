@@ -2,7 +2,6 @@
 ectomodule(tod_detection
   DescriptorMatcher.cpp
   GuessGenerator.cpp
-  DescriptorLoader.cpp
   ModelReader.cpp
   module.cpp
   )
