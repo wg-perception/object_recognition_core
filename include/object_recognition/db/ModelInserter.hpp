@@ -59,16 +59,16 @@ namespace object_recognition
 
           // Find all the models with the same parameters
           object_recognition::db::DocumentView view;
-          view.AddView(db_.type(), );
+          //view.AddView(db_.type(), );
 
 
 
 
-          std::cout << "persisting " << doc.id() << std::endl;
-          int rval = T::process(inputs, outputs, doc);
+          std::cout << "persisting " << doc_new.id() << std::endl;
+          int rval = T::process(inputs, outputs, doc_new);
           if (rval == ecto::OK)
-            doc.Persist();
-          std::cout << "done persisting " << doc.id() << std::endl;
+            doc_new.Persist();
+          std::cout << "done persisting " << doc_new.id() << std::endl;
           return rval;
         }
       private:
