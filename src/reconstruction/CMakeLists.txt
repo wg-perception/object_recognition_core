@@ -3,7 +3,7 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 find_ros_package(pcl) #find the ros version of pcl for now.
 
 if(NOT pcl_FOUND)
-message(STATUS "pcl could not be found, so not building surfels.")
+message(STATUS "pcl could not be found, so not building reconstruction.")
 return()
 endif()
 
@@ -34,5 +34,3 @@ link_ecto(reconstruction
   )
 
 install_ecto_module(reconstruction)
-
-#add_subdirectory(Poisson)

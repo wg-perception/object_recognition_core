@@ -1,4 +1,0 @@
-Exporting/import for vtk
-  http://www.vtk.org/Wiki/VTK/FAQ#What_3D_file_formats_can_VTK_import_and_export.3F
-
-vtkPLYReader

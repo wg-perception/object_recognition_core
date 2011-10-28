@@ -42,3 +42,22 @@ if(BUILD_TEST)
   enable_testing()
   add_subdirectory(test)
 endif()
+
+install(DIRECTORY apps/
+        DESTINATION bin
+        USE_SOURCE_PERMISSIONS
+        PATTERN "*.bag" EXCLUDE
+        PATTERN "*.pyc" EXCLUDE
+        )
+
+
+#install targets for all things python
+install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/python/
+  DESTINATION ${PYTHON_PACKAGES_PATH}
+  COMPONENT main
+)
+
+install(FILES ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/__init__.py
+        DESTINATION ${PYTHON_PACKAGES_PATH}/ecto_object_recognition
+        )
+
