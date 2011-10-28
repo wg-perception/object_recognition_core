@@ -10,9 +10,6 @@ from ecto_opencv import features2d, highgui, imgproc
 from object_recognition.common.utils import json_helper
 import ecto_ros, ecto_sensor_msgs
 ImagePub = ecto_sensor_msgs.Publisher_Image
-from ecto_object_recognition.tod_detection import DescriptorLoader
-
-TodDetectorLoader = DescriptorLoader
 
 class TodDetector(ecto.BlackBox):
     feature_descriptor = FeatureDescriptor
@@ -44,10 +41,11 @@ class TodDetector(ecto.BlackBox):
         o.forward('Ts', cell_name='guess_generator', cell_key='Ts')
         o.forward('keypoints', cell_name='feature_descriptor', cell_key='keypoints')
 
-    def configure(self, _p, _i, _o):
+    def configure(self, p, _i, _o):
         self.feature_descriptor = FeatureDescriptor(json_params=json_helper.dict_to_cpp_json_str(self._tod_params))
         self.descriptor_matcher = tod_detection.DescriptorMatcher("Matcher",
-                                search_json_params=json_helper.dict_to_cpp_json_str(self._search_params))
+                                search_json_params=json_helper.dict_to_cpp_json_str(self._search_params),
+                                model_documents=p.model_documents)
         self.message_cvt = ecto_ros.Mat2Image()
 
         guess_params = {}
@@ -65,7 +63,7 @@ class TodDetector(ecto.BlackBox):
                        self.image_duplicator[:] >> self.guess_generator['image'], ]
 
         connections += [ self.descriptor_matcher['spans'] >> self.guess_generator['spans'],
-                       self.descriptor_matcher['ids'] >> self.guess_generator['ids'] ]
+                       self.descriptor_matcher['object_ids'] >> self.guess_generator['object_ids'] ]
 
         connections += [ self.feature_descriptor['keypoints'] >> self.guess_generator['keypoints'],
                 self.feature_descriptor['descriptors'] >> self.descriptor_matcher['descriptors'],

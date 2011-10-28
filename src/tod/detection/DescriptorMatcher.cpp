@@ -64,6 +64,7 @@ namespace object_recognition
       {
         descriptors_db_.resize(db_documents.size());
         features3d_db_.resize(db_documents.size());
+        object_ids_.resize(db_documents.size());
 
         // Re-load the data from the DB
         std::cout << "Loading models. This may take some time..." << std::endl;
@@ -137,6 +138,7 @@ namespace object_recognition
         ss << "JSON string that can contain the following fields: \"radius\" (for epsilon nearest neighbor search), "
            << "\"ratio\" when applying the ratio criterion like in SIFT";
         p.declare<std::string>("search_json_params", ss.str()).required(true);
+        p.declare(&DescriptorMatcher::db_documents_, "model_documents", ss.str()).required(true);
       }
 
       static void
@@ -155,8 +157,8 @@ namespace object_recognition
       void
       configure(const ecto::tendrils& params, const ecto::tendrils& inputs, const ecto::tendrils& outputs)
       {
-        *db_documents_ = params.get<Documents>("db_documents");
         db_documents_.set_callback(boost::bind(&DescriptorMatcher::DocumentsCallback, this, _1));
+        db_documents_.dirty(true);
 
         // get some parameters
         {
@@ -196,7 +198,7 @@ namespace object_recognition
       int
       process(const ecto::tendrils& inputs, const ecto::tendrils& outputs)
       {
-        std::vector<std::vector<cv::DMatch> > &matches = outputs.get<std::vector<std::vector<cv::DMatch> > >("matches");
+        std::vector<std::vector<cv::DMatch> > matches;
         const cv::Mat & descriptors = inputs.get<cv::Mat>("descriptors");
 
         // Perform radius search
@@ -229,6 +231,7 @@ namespace object_recognition
               }
         }
 
+        outputs["matches"] << matches;
         outputs["matches_3d"] << matches_3d;
         outputs["object_ids"] << object_ids_;
         outputs["spans"] << spans_;

@@ -64,7 +64,7 @@ namespace object_recognition
 
       // Create the Documents from the ids
       DocumentsPtr p(new Documents());
-      p->resize(document_ids.size());
+      p->reserve(document_ids.size());
       object_recognition::db::ObjectDb db(db_params);
 
       BOOST_FOREACH(const DocumentId & document_id, document_ids)

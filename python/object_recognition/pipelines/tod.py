@@ -7,10 +7,8 @@ from ecto_opencv import highgui, calib
 from object_recognition.common.filters.masker import Masker
 from object_recognition.common.io.sink import Sink
 from object_recognition.common.io.source import Source
-from object_recognition.common.utils import json_helper
 from object_recognition.common.utils.training_detection_args import read_arguments
 from object_recognition.tod.detector import TodDetector
-from ecto_object_recognition.tod_detection import DescriptorLoader
 import ecto
 import ecto_ros
 from object_recognition import models
@@ -30,7 +28,7 @@ class TODDetection(DetectionPipeline):
         for object_id in params['object_ids']:
             for model_id in models.find_model_for_object(db, object_id, 'TOD'):
                 model_ids.append(str(model_id))
-        model_documents = DbDocuments(model_ids)
+        model_documents = DbDocuments(db_params, model_ids)
 
         # TODO handle this properly...
         ecto_ros.init(argv, "tod_detection", False)#not anonymous.

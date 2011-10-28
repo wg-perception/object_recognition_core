@@ -93,7 +93,7 @@ namespace object_recognition
             "matches_3d",
             "The corresponding 3d position of those matches. For each point, a 1 by n 3 channel matrix (for x,y and z)");
         inputs.declare<std::map<ObjectId, float> >("spans", "For each found object, its span based on known features.");
-        inputs.declare<std::vector<ObjectId> >("ids", "The ids used in the matches");
+        inputs.declare<std::vector<ObjectId> >("object_ids", "The ids used in the matches");
 
         outputs.declare<std::vector<ObjectId> >("object_ids", "the id's of the found objects");
         outputs.declare<std::vector<cv::Mat> >("Rs", "The rotations of the poses of the found objects");
@@ -134,7 +134,7 @@ namespace object_recognition
         // Get the original keypoints and point cloud
         const std::vector<cv::KeyPoint> & keypoints = inputs.get<std::vector<cv::KeyPoint> >("keypoints");
         const cv::Mat point_cloud = inputs.get<cv::Mat>("points3d");
-        const std::vector<ObjectId> & ids = inputs.get<std::vector<ObjectId> >("ids");
+        const std::vector<ObjectId> & object_ids_in = inputs.get<std::vector<ObjectId> >("object_ids");
         const std::map<ObjectId, float> & spans = inputs.get<std::map<ObjectId, float> >("spans");
 
         const cv::Mat & initial_image = inputs.get<cv::Mat>("image");
@@ -166,7 +166,7 @@ namespace object_recognition
             // Create a graph for that object
             AdjacencyRansac & adjacency_ransac = query_iterator->second;
             ObjectOpenCVId opencv_object_id = query_iterator->first;
-            ObjectId object_id = ids[opencv_object_id];
+            ObjectId object_id = object_ids_in[opencv_object_id];
 
             std::cout << "***Starting object: " << opencv_object_id << std::endl;
 

@@ -311,14 +311,14 @@ namespace object_recognition
       void
       SetIdRev(const std::string& id, const std::string& rev);
 
-      std::string
-      id()
+      const std::string &
+      id() const
       {
         return document_id_;
       }
 
-      std::string
-      rev()
+      const std::string &
+      rev() const
       {
         return revision_id_;
       }
