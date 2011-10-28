@@ -16,6 +16,8 @@ Performance:
 - Mike's stuff
 
 DB:
+- make a base calss ModelLoader
+- create a boost binded object containing the db::Document's for several object_ids/model_ids
 - delete things from the DB, find orphans, find missing components (models ...), find duplicates
 - better object representation (model, inline images, 3d models ...)
 - be able to only replicate models in a DB (to put on the PR2)
