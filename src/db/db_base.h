@@ -53,6 +53,7 @@
 #include <boost/shared_ptr.hpp>
 
 #include "object_recognition/db/utils.h"
+#include "object_recognition/db/view_types.h"
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -81,6 +82,12 @@ namespace object_recognition
       virtual void
       load_fields(const DocumentId & document_id, const CollectionName &collection,
                   boost::property_tree::ptree &fields) = 0;
+
+      virtual
+      void
+      Query(const ViewType & type, const boost::property_tree::ptree &view_ptree,
+             const CollectionName & collection_name, int limit_rows, int start_offset, int& total_rows, int& offset,
+             std::vector<DocumentId> & document_ids) = 0;
 
       virtual void
       Query(const std::vector<std::string> & queries, const CollectionName & collection_name, int limit_rows,

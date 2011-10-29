@@ -59,6 +59,7 @@ namespace object_recognition
 
           // Find all the models with the same parameters
           object_recognition::db::DocumentView view;
+          // TODO
           //view.AddView(db_.type(), );
 
 

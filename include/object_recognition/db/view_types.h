@@ -1,7 +1,7 @@
 /*
  * Software License Agreement (BSD License)
  *
- *  Copyright (c) 2011, Willow Garage, Inc.
+ *  Copyright (c) 2009, Willow Garage, Inc.
  *  All rights reserved.
  *
  *  Redistribution and use in source and binary forms, with or without
@@ -33,23 +33,52 @@
  *
  */
 
-#pragma once
-#include <string>
-#include <typeinfo>
+#ifndef VIEW_TYPES_H_
+#define VIEW_TYPES_H_
+
+#include <boost/property_tree/ptree.hpp>
+
+#include "object_recognition/common/types.h"
 
 namespace object_recognition
 {
   namespace db
   {
-    typedef std::string AttachmentName;
-    typedef std::string CollectionName;
-    typedef std::string DocumentId;
-    typedef std::string DbType;
-    typedef std::string Field;
-    typedef std::string MimeType;
-    typedef std::string RevisionId;
-    typedef std::string View;
+    enum ViewType
+    {
+      VIEW_BASE
+    };
 
-    const std::string MIME_TYPE_DEFAULT = "application/octet-stream";
+    // Forward declare the base class
+    class ObjectDbBase;
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    class ViewBase
+    {
+      friend class ObjectDbBase;
+    protected:
+      ViewType type_;
+      boost::property_tree::ptree parameters_;
+    };
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    class ViewGeneric
+    {
+
+    };
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    class ViewModelWhereObjectIdAndType: ViewBase
+    {
+      ViewModelWhereObjectIdAndType(const ObjectId & object_id, const ModelType * model_type)
+      {
+        //TODO
+
+      }
+    };
   }
 }
+#endif /* VIEW_TYPES_H_ */

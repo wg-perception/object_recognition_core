@@ -239,7 +239,7 @@ namespace object_recognition
           marker.color.r = r;
           marker.id = i;
           //http://localhost:5984/object_recognition/_design/models/_view/by_object_id_and_mesh?key=%2212a1e6eb663a41f8a4fb9baa060f191c%22
-          if (db_params_->type_ == "CouchDB")
+          if (db_params_->type_ == db::ObjectDbParameters::COUCHDB)
             marker.mesh_resource = db_params_->root_ + std::string("/") + db_params_->collection_ + "/"
                                    + get_mesh_id((*object_ids_)[i])
                                    + "/mesh.stl";

@@ -42,6 +42,7 @@
 #include <boost/archive/binary_iarchive.hpp>
 #include <boost/archive/binary_oarchive.hpp>
 #include <boost/foreach.hpp>
+#include <boost/function.hpp>
 #include <boost/property_tree/ptree.hpp>
 
 #include <object_recognition/db/utils.h>
@@ -53,6 +54,7 @@ namespace object_recognition
   {
     //Forward declare some classes
     class ObjectDbBase;
+    class DocumentView;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -60,9 +62,10 @@ namespace object_recognition
     class ObjectDbParameters
     {
     public:
-      // This is defined in db.cpp
-      static const std::string EMPTY;
-      static const std::string COUCHDB;
+      enum ObjectDbType
+      {
+        EMPTY, COUCHDB
+      };
       ObjectDbParameters();
 
       /** Default constructor for certain types
@@ -77,12 +80,18 @@ namespace object_recognition
       explicit
       ObjectDbParameters(const std::map<std::string, std::string>& params);
 
+      static ObjectDbType
+      StringToType(const std::string & type);
+
+      static std::string
+      TypeToString(const ObjectDbParameters::ObjectDbType & type);
+
       /** The collection where the data is stored (or schema in certain naming conventions) */
       std::string collection_;
       /** The base url/path of where the DB is located */
       std::string root_;
       /** The type of the collection 'CouchDB' ... */
-      std::string type_;
+      ObjectDbType type_;
       /** All the raw parameters */
       std::map<std::string, std::string> all_parameters_;
     protected:
@@ -95,6 +104,9 @@ namespace object_recognition
     class ObjectDb
     {
     public:
+      typedef boost::function<std::vector<DocumentId>
+      (const CollectionName & collection_name, int limit_rows, int start_offset, int& total_rows, int& offset)> QueryFunction;
+
       ObjectDb()
       {
       }
@@ -136,6 +148,12 @@ namespace object_recognition
       persist_fields(const DocumentId & document_id, const CollectionName &collection,
                      const boost::property_tree::ptree &fields, RevisionId & revision_id) const;
 
+      template<typename ViewClass>
+      QueryFunction
+      Query(const ViewClass &view_class)
+      {
+        return boost::bind(&ObjectDb::Query_<ViewClass>, *this, view_class, _1, _2, _3, _4, _5, _6);
+      }
       void
       Query(const std::vector<std::string> & queries, const CollectionName & collection_name, int limit_rows,
             int start_offset, int& total_rows, int& offset, std::vector<DocumentId> & document_ids) const;
@@ -158,6 +176,11 @@ namespace object_recognition
       DbType
       type();
     private:
+      template<typename ViewClass>
+      void
+      Query_(const ViewClass &view_class, const CollectionName & collection_name, int limit_rows, int start_offset,
+            int& total_rows, int& offset, std::vector<DocumentId> & document_ids);
+
       /** The DB from which we'll get all the info */
       boost::shared_ptr<ObjectDbBase> db_;
       /** The parameters of the current DB */
@@ -386,28 +409,16 @@ namespace object_recognition
     {
     public:
       static const unsigned int BATCH_SIZE;
-
       DocumentView();
 
-      /** Add collections that should be checked for specific fields
-       * @param collection
-       */
-      void
-      set_db(const ObjectDb & db);
-
-      /** Set the collection on which to perform the Query. This might be part of the views_
-       * and unnecessary for certain DB's
-       * @param collection The collection on which the query is performed
-       */
-      void
-      set_collection(const CollectionName & collection);
-
-      /** Add requirements for the documents to retrieve
-       * @param db_type the type of the db that will be used
-       * @param view a View that will filter the Documents. The format depends on your ObjectDb
-       */
-      void
-      AddView(const DbType &db_type, const View & view);
+      template<typename ViewType>
+      DocumentView(const ViewType &view_type, ObjectDb& db, const CollectionName & collection_name)
+          :
+            collection_(collection_name),
+            query_(db.Query(view_type, collection_name)),
+            db_(db)
+      {
+      }
 
       /** Perform the query itself
        * @param db The db on which the query is performed
@@ -426,33 +437,34 @@ namespace object_recognition
       DocumentView &
       operator++();
 
+      /** Set the db on which to perform the Query
+       * @param db The db on which the query is performed
+       */
+      void
+      set_db(const ObjectDb & db);
+
+      /** Set the collection on which to perform the Query. This might be part of the views_
+       * and unnecessary for certain DB's
+       * @param collection The collection on which the query is performed
+       */
+      void
+      set_collection(const CollectionName & collection);
+
       bool
       operator!=(const DocumentView & document_view) const;
 
       Document
       operator*() const;
     private:
-      ObjectDb db_;
-      CollectionName collection_;
       std::vector<DocumentId> document_ids_;
       int start_offset_;
       int total_rows_;
-      /** The strings to send to the db_ to perform the query, as well as for which db they are meant */
-      struct PodView
-      {
-        PodView(const DbType &db_type, const View &view)
-            :
-              view_(view),
-              db_type_(db_type)
-        {
-        }
-        View view_;
-        DbType db_type_;
-      };
-      std::vector<PodView> pod_views_;
       /** The strings to send to the db_ to perform the query */
-      std::vector<View> views_;
+      ObjectDb::QueryFunction query_;
+      std::string collection_;
+      ObjectDb db_;
     };
+
   }
 }
 

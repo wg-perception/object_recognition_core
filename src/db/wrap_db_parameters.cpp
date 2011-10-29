@@ -79,17 +79,22 @@ namespace object_recognition
 
     typedef boost::shared_ptr<ObjectDbParameters> ObjectDbParametersPtr;
 
+    /** Constructor for the ObjectDbParameters class from a python dictionary
+     * @param obj
+     * @return
+     */
     boost::shared_ptr<ObjectDbParameters>
     ObjectDbParametersConstructor(const bp::dict &obj)
     {
       std::map<std::string, std::string> params = BpDictToMap(bp::dict(obj));
       if (params.empty())
-        params.insert(std::make_pair("type", ObjectDbParameters::EMPTY));
+        params.insert(std::make_pair("type", ObjectDbParameters::TypeToString(ObjectDbParameters::EMPTY)));
       ObjectDbParametersPtr p(new ObjectDbParameters(params));
       return p;
     }
 
-    // Define the pickling of the object
+    /** Define the pickling of the object
+     */
     struct db_parameters_pickle_suite: boost::python::pickle_suite
     {
       static boost::python::tuple
@@ -116,7 +121,7 @@ namespace object_recognition
           throw_error_already_set();
         }
 
-        db_params.type_ = extract<std::string>(state[0]);
+        db_params.type_ = ObjectDbParameters::StringToType(extract<std::string>(state[0]));
         db_params.root_ = extract<std::string>(state[1]);
         db_params.collection_ = extract<std::string>(state[2]);
         db_params.all_parameters_ = BpDictToMap(extract<bp::dict>(state[3]));
@@ -139,7 +144,7 @@ namespace object_recognition
     std::string
     type(const ObjectDbParametersPtr &params)
     {
-      return params->type_;
+      return ObjectDbParameters::TypeToString(params->type_);
     }
 
     void

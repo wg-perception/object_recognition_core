@@ -41,6 +41,9 @@ typedef std::string ObjectId;
 /** The unique identifier of a model in the DB */
 typedef std::string ModelId;
 
+/** The type of a model in the DB */
+typedef std::string ModelType;
+
 /** The unique identifier of an object once translated from the DB and as contained in a cv::Match */
 typedef unsigned int ObjectOpenCVId;
 

@@ -78,49 +78,82 @@ namespace object_recognition
 {
   namespace db
   {
-    namespace couch
+    // Utilities for creating queries for CouchDB
+/*#define STRINGYFY(A) #A
+    std::string
+    ModelWhereObjectIdAndType(ObjectDbParameters::ObjectDbType db_type, const std::string & object_id,
+                              const std::string & model_type)
     {
-      // Utilities for creating queries for CouchDB
-#define STRINGYFY(A) #A
-      std::string
-      ModelWhereObjectIdAndType(const std::string & object_id, const std::string & model_type)
+      DocumentView x = ModelWhereObjectIdAndType(db,options);
+      switch (db_type)
       {
-        return boost::str(boost::format(STRINGYFY(
-            function(doc)
-            {
-              if ((doc.Type == "Model") && (doc.ModelType == "%s")&& (doc.object_id == "%s"))
-              emit(doc.object_id, doc)
-            }}
-      ) )
-                          % (model_type, object_id));
+        case ObjectDbParameters::COUCHDB:
+        {
+          return boost::str(boost::format(STRINGYFY(
+              function(doc)
+              {
+                if ((doc.Type == "Model") && (doc.ModelType == "%s")&& (doc.object_id == "%s"))
+                emit(doc.object_id, doc)
+              }}
+        ) )
+                            % (model_type, object_id));
+        }
       }
-
-      std::string
-      WhereObjectId(const std::string & object_id)
-      {
-        return boost::str(boost::format(STRINGYFY(
-            function(doc)
-            {
-              if(doc.object_id == "%s")
-                emit(null,doc);
-            }
-        ))
-                % object_id);
-      }
-
-      std::string
-      WhereSessionId(const std::string& session_id)
-      {
-        return boost::str(boost::format(STRINGYFY(
-            function(doc)
-            {
-              if(doc.session_id == "%s")
-              emit("frame_number",doc.frame_number);
-            }
-        ))
-                % session_id);
-      }
-
     }
+  struct
+  GenericView
+  {
+    WhereObjectId(std::string objectid):objectid(objectid)
+    {
+    }
+    std::string objectid;
+  };
+  struct
+  WhereObjectId
+  {
+    WhereObjectId(std::string objectid):objectid(objectid)
+    {
+    }
+    std::string objectid;
+  };
+  DocumentView
+  WhereObjectId(ObjectDb& db, const std::string & object_id)
+  {
+    db.Query(WhereObjectId(object_id));
+    switch(db.type())
+    {
+      case COUCHDB:
+        return db.Query("where object id == id");
+      case FILESYSTEM:
+        return db.Query("/where/object/id");
+      case DEFUALT:
+        throw std::runtime_error("not implemented");
+    }
+  }
+    std::string
+    WhereObjectId(const std::string & object_id)
+    {
+      return boost::str(boost::format(STRINGYFY(
+          function(doc)
+          {
+            if(doc.object_id == "%s")
+            emit(null,doc);
+          }
+      ))
+                        % object_id);
+    }
+
+    std::string
+    WhereSessionId(const std::string& session_id)
+    {
+      return boost::str(boost::format(STRINGYFY(
+          function(doc)
+          {
+            if(doc.session_id == "%s")
+            emit("frame_number",doc.frame_number);
+          }
+      ))
+                        % session_id);
+    }*/
   }
 }

@@ -153,6 +153,14 @@ ObjectDbCouch::GetRevisionId(RevisionId & revision_id)
 }
 
 void
+ObjectDbCouch::Query(const object_recognition::db::ViewType & type, const boost::property_tree::ptree &view_ptree,
+                     const CollectionName & collection_name, int limit_rows, int start_offset, int& total_rows,
+                     int& offset, std::vector<DocumentId> & document_ids)
+{
+//TODO
+}
+
+void
 ObjectDbCouch::Query(const std::vector<std::string> & queries, const CollectionName & collection_name, int limit_rows,
                      int start_offset, int& total_rows, int& offset, std::vector<DocumentId> & document_ids)
 {

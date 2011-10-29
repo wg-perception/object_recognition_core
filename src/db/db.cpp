@@ -45,8 +45,6 @@ namespace object_recognition
 {
   namespace db
   {
-    const std::string ObjectDbParameters::EMPTY = "empty";
-    const std::string ObjectDbParameters::COUCHDB = "CouchDB";
     const std::string DEFAULT_COUCHDB_URL = "http://localhost:5984";
 
     ObjectDbParameters::ObjectDbParameters()
@@ -57,19 +55,50 @@ namespace object_recognition
     /** Default constructor for certain types
      * @param type Default type
      */
-    ObjectDbParameters::ObjectDbParameters(const std::string& json_params)
+    ObjectDbParameters::ObjectDbParameters(const std::string& type_str)
     {
-      if (json_params == ObjectDbParameters::COUCHDB)
+      ObjectDbParameters::ObjectDbType type = StringToType(type_str);
+      switch (type)
       {
-        type_ = ObjectDbParameters::COUCHDB;
-        root_ = DEFAULT_COUCHDB_URL;
+        case ObjectDbParameters::COUCHDB:
+        {
+          type_ = ObjectDbParameters::COUCHDB;
+          root_ = DEFAULT_COUCHDB_URL;
+          break;
+        }
+        case ObjectDbParameters::EMPTY:
+        {
+          break;
+        }
       }
-      else
-        throw std::runtime_error("Invalid type.");
     }
     ObjectDbParameters::ObjectDbParameters(const std::map<std::string, std::string>& parameters)
     {
       FillParameters(parameters);
+    }
+
+    ObjectDbParameters::ObjectDbType
+    ObjectDbParameters::StringToType(const std::string & type_str)
+    {
+      if (type_str == "CouchDB")
+        return COUCHDB;
+      else if (type_str == "empty")
+        return EMPTY;
+      else
+        throw std::runtime_error(type_str + "Invalid type. Possible are 'CouchDB', 'empty'");
+    }
+
+    std::string
+    ObjectDbParameters::TypeToString(const ObjectDbParameters::ObjectDbType & type)
+    {
+      switch (type)
+      {
+        case COUCHDB:
+          return "CouchDB";
+        case EMPTY:
+          return "empty";
+      }
+      return "";
     }
 
     void
@@ -80,7 +109,7 @@ namespace object_recognition
       {
         throw std::runtime_error("You must supply a database type. e.g. CouchDB");
       }
-      type_ = all_parameters_.at("type");
+      type_ = StringToType(all_parameters_.at("type"));
       if (type_ == ObjectDbParameters::EMPTY)
         return;
 
@@ -113,7 +142,11 @@ namespace object_recognition
     ObjectDb::set_params(const ObjectDbParameters &in_params)
     {
       db_parameters_ = in_params;
-      db_ = boost::shared_ptr<ObjectDbBase>(new ObjectDbCouch(db_parameters_.root_));
+      switch (db_parameters_.type_) {
+        case ObjectDbParameters::COUCHDB:
+          db_ = boost::shared_ptr<ObjectDbBase>(new ObjectDbCouch(db_parameters_.root_));
+          return;
+      }
     }
 
     void
@@ -156,6 +189,15 @@ namespace object_recognition
     {
       PRECONDITION_DB()
       db_->persist_fields(document_id, collection, fields, revision_id);
+    }
+
+    template<typename ViewClass>
+    void
+    ObjectDb::Query_(const ViewClass &view_class, const CollectionName & collection_name, int limit_rows,
+                    int start_offset, int& total_rows, int& offset, std::vector<DocumentId> & document_ids)
+    {
+      db_->Query(view_class.type_, view_class.parameters_, collection_name, limit_rows, start_offset, total_rows, offset,
+                  document_ids);
     }
 
     void
@@ -353,16 +395,6 @@ namespace object_recognition
     {
     }
 
-    /** Add requirements for the documents to retrieve
-     * @param db_type the type of the db that will be used
-     * @param view a View that will filter the Documents. The format depends on your ObjectDb
-     */
-    void
-    DocumentView::AddView(const DbType &db_type, const View & view)
-    {
-      pod_views_.push_back(PodView(db_type, view));
-    }
-
     /** Set the db on which to perform the Query
      * @param db The db on which the query is performed
      */
@@ -388,13 +420,8 @@ namespace object_recognition
     DocumentView &
     DocumentView::begin()
     {
-      BOOST_FOREACH(const PodView & view_pod, pod_views_)
-            if (view_pod.db_type_ == db_.type())
-              views_.push_back(view_pod.view_);
-
       // Process the query and get the ids of several objects
-      std::vector<DocumentId> document_ids;
-      db_.Query(views_, collection_, BATCH_SIZE, start_offset_, total_rows_, start_offset_, document_ids_);
+      document_ids_ = query_(collection_, BATCH_SIZE, start_offset_, total_rows_, start_offset_);
       return *this;
     }
 
@@ -414,7 +441,7 @@ namespace object_recognition
       {
         // Figure out if we need to query for more document ids
         if (start_offset_ < total_rows_)
-          db_.Query(views_, collection_, BATCH_SIZE, start_offset_, total_rows_, start_offset_, document_ids_);
+          document_ids_ = query_(collection_, BATCH_SIZE, start_offset_, total_rows_, start_offset_);
       }
       else
       {

@@ -47,6 +47,7 @@ using object_recognition::db::DocumentId;
 using object_recognition::db::DbType;
 using object_recognition::db::MimeType;
 using object_recognition::db::RevisionId;
+using object_recognition::db::ViewType;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -75,6 +76,12 @@ public:
   set_attachment_stream(const DocumentId & document_id, const CollectionName &collection,
                         const AttachmentName& attachment_name, const MimeType& mime_type, const std::istream& stream,
                         RevisionId & revision_id);
+
+  virtual
+  void
+  Query(const ViewType & type, const boost::property_tree::ptree &view_ptree,
+        const CollectionName & collection_name, int limit_rows, int start_offset, int& total_rows, int& offset,
+        std::vector<DocumentId> & document_ids);
 
   virtual void
   Query(const std::vector<std::string> & queries, const CollectionName & collection_name, int limit_rows,
