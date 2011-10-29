@@ -52,7 +52,7 @@
 
 #include <boost/shared_ptr.hpp>
 
-#include "object_recognition/db/utils.h"
+#include "object_recognition/common/types.h"
 #include "object_recognition/db/view_types.h"
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

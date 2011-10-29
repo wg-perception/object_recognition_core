@@ -45,8 +45,9 @@
 #include <boost/function.hpp>
 #include <boost/property_tree/ptree.hpp>
 
-#include <object_recognition/db/utils.h>
 #include <opencv2/core/core.hpp>
+
+#include "object_recognition/common/types.h"
 
 namespace object_recognition
 {

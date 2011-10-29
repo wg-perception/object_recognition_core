@@ -8,12 +8,11 @@
 
 #include <ecto/ecto.hpp>
 
+#include "object_recognition/common/types.h"
 #include "object_recognition/db/db.h"
 #include "object_recognition/db/opencv.h"
 
 using ecto::tendrils;
-
-using object_recognition::db::CollectionName;
 
 typedef std::string ModelId;
 

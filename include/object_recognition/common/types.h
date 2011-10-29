@@ -47,4 +47,15 @@ typedef std::string ModelType;
 /** The unique identifier of an object once translated from the DB and as contained in a cv::Match */
 typedef unsigned int ObjectOpenCVId;
 
+typedef std::string AttachmentName;
+typedef std::string CollectionName;
+typedef std::string DocumentId;
+typedef std::string DbType;
+typedef std::string Field;
+typedef std::string MimeType;
+typedef std::string RevisionId;
+typedef std::string View;
+
+const std::string MIME_TYPE_DEFAULT = "application/octet-stream";
+
 #endif /* TYPES_H_ */

@@ -7,9 +7,9 @@
 #include <boost/lexical_cast.hpp>
 #include <string>
 
+#include "object_recognition/common/types.h"
 #include <object_recognition/db/db.h>
 #include <object_recognition/db/opencv.h>
-#include <object_recognition/db/utils.h>
 #include <object_recognition/db/models/observations.hpp>
 
 #include "object_recognition/db/db.h"

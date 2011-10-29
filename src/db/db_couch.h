@@ -38,15 +38,8 @@
 
 #include "curl_interface.h"
 #include "db_base.h"
+#include "object_recognition/common/types.h"
 
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-using object_recognition::db::AttachmentName;
-using object_recognition::db::CollectionName;
-using object_recognition::db::DocumentId;
-using object_recognition::db::DbType;
-using object_recognition::db::MimeType;
-using object_recognition::db::RevisionId;
 using object_recognition::db::ViewType;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
