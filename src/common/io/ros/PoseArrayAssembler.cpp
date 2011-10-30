@@ -143,6 +143,8 @@ namespace object_recognition
     void
     configure(const ecto::tendrils& params, const ecto::tendrils& inputs, const ecto::tendrils& outputs)
     {
+      ecto::py::scoped_call_back_to_python scb;
+
       db_params_ = params["db_params"];
 
       Rs_ = inputs["Rs"];
