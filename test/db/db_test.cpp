@@ -241,7 +241,7 @@ TEST(OR_db, ParamsGarbage)
   } catch (std::runtime_error& e)
   {
     std::string error(e.what());
-    EXPECT_EQ(std::string("Invalid type."), error);
+    EXPECT_TRUE(error.find(std::string("Invalid type.")) != std::string::npos);
   }
 }
 

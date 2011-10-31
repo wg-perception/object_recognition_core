@@ -85,7 +85,7 @@ namespace object_recognition
       else if (type_str == "empty")
         return EMPTY;
       else
-        throw std::runtime_error(type_str + "Invalid type. Possible are 'CouchDB', 'empty'");
+        throw std::runtime_error(type_str + ": Invalid type. Possible are 'CouchDB', 'empty'");
     }
 
     std::string

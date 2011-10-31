@@ -106,7 +106,8 @@ namespace object_recognition
       static boost::python::tuple
       getstate(const ObjectDbParameters& db_params)
       {
-        return boost::python::make_tuple(db_params.type_, db_params.root_, db_params.collection_,
+        return boost::python::make_tuple(ObjectDbParameters::TypeToString(db_params.type_),
+                                         db_params.root_, db_params.collection_,
                                          MapToBpDict(db_params.all_parameters_));
       }
 
