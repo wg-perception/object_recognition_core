@@ -35,7 +35,7 @@
 
 #include <opencv2/core/core.hpp>
 #include <opencv2/features2d/features2d.hpp>
-
+namespace{
 struct HammingOperator
 {
   unsigned int
@@ -83,3 +83,4 @@ struct HammingOperator
 #endif
   }
 };
+}

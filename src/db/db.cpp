@@ -146,6 +146,8 @@ namespace object_recognition
         case ObjectDbParameters::COUCHDB:
           db_ = boost::shared_ptr<ObjectDbBase>(new ObjectDbCouch(db_parameters_.root_));
           return;
+        case ObjectDbParameters::EMPTY:
+          return;
       }
     }
 
