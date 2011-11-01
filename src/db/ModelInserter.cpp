@@ -1,5 +1,4 @@
 #include <object_recognition/db/ModelInserter.hpp>
-#include <boost/property_tree/ptree.hpp>
 
 #include "object_recognition/common/json_spirit/json_spirit_reader_template.h"
 

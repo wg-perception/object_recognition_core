@@ -38,8 +38,6 @@
 
 #include <boost/filesystem.hpp>
 #include <boost/foreach.hpp>
-#include <boost/property_tree/json_parser.hpp>
-#include <boost/property_tree/ptree.hpp>
 #include <boost/shared_ptr.hpp>
 
 #include <ecto/ecto.hpp>

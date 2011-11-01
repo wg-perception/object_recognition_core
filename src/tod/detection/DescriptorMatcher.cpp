@@ -40,12 +40,12 @@
 #include <boost/foreach.hpp>
 #include <boost/python.hpp>
 #include <boost/python/stl_iterator.hpp>
-#include <boost/property_tree/json_parser.hpp>
 
 #include <opencv2/core/core.hpp>
 #include <opencv2/features2d/features2d.hpp>
 //#include <opencv2/flann/flann.hpp>
 
+#include "object_recognition/common/json_spirit/json_spirit.h"
 #include "object_recognition/common/types.h"
 #include "object_recognition/db/db.h"
 #include "object_recognition/db/opencv.h"
@@ -163,25 +163,30 @@ namespace object_recognition
 
         // get some parameters
         {
-          boost::property_tree::ptree search_param_tree;
+          json_spirit::mObject search_param_tree;
           std::stringstream ssparams;
           ssparams << params.get<std::string>("search_json_params");
-          boost::property_tree::read_json(ssparams, search_param_tree);
 
-          radius_ = search_param_tree.get<float>("radius");
-          ratio_ = search_param_tree.get<float>("ratio");
+          {
+            json_spirit::mValue value;
+            json_spirit::read(ssparams, value);
+            search_param_tree = value.get_obj();
+          }
+
+          radius_ = search_param_tree["radius"].get_real();
+          ratio_ = search_param_tree["ratio"].get_real();
 
           // Create the matcher depending on the type of descriptors
-          std::string search_type = search_param_tree.get<std::string>("type", "none");
+          std::string search_type = search_param_tree["type"].get_str();
           if (search_type == "LSH")
           {
             /*cv::flann::LshIndexParams lsh_params(search_param_tree.get<unsigned int>("n_tables"),
              search_param_tree.get<unsigned int>("key_size"),
              search_param_tree.get<unsigned int>("multi_probe_level"));
              matcher_ = new cv::FlannBasedMatcher(&lsh_params);*/
-            matcher_ = new lsh::LshMatcher(search_param_tree.get<unsigned int>("n_tables"),
-                                           search_param_tree.get<unsigned int>("key_size"),
-                                           search_param_tree.get<unsigned int>("multi_probe_level"));
+            matcher_ = new lsh::LshMatcher(search_param_tree["n_tables"].get_uint64(),
+                                           search_param_tree["key_size"].get_uint64(),
+                                           search_param_tree["multi_probe_level"].get_uint64());
           }
           else
           {

@@ -2,16 +2,12 @@
 
 #include <gtest/gtest.h>
 
+#include "object_recognition/common/json_spirit/json_spirit.h"
 #include <object_recognition/db/db.h>
-#include <boost/property_tree/json_parser.hpp>
-#include <boost/property_tree/ptree.hpp>
 
 const char* db_url = "http://localhost:5984";
 using namespace object_recognition::db;
 
-using boost::property_tree::ptree;
-using boost::property_tree::json_parser::write_json;
-using boost::property_tree::json_parser::read_json;
 using object_recognition::db::ObjectDbParameters;
 
 ObjectDbParameters
@@ -28,14 +24,13 @@ params_garbage(const std::string& url = db_url)
   return "{\ndfkja:dkfj, dfkjak, dfkjalksf.dfj ---\ndfjkasdf";
 }
 
-ptree
+json_spirit::mObject
 parse_status(const std::string& status)
 {
-
-  ptree p;
+  json_spirit::mValue value;
   std::stringstream ss(status);
-  boost::property_tree::json_parser::read_json(ss, p);
-  return p;
+  json_spirit::read(ss, value);
+  return value.get_obj();
 }
 
 void
@@ -43,8 +38,8 @@ expect_not_found(ObjectDb& db, const std::string& collection)
 {
   std::string status;
   db.Status(collection, status);
-  ptree ps = parse_status(status);
-  EXPECT_EQ(ps.get<std::string>("error"), "not_found");
+  json_spirit::mObject ps = parse_status(status);
+  EXPECT_EQ(ps["error"].get_str(), "not_found");
 }
 
 void
@@ -59,7 +54,7 @@ TEST(OR_db, Status)
   ObjectDb db(ObjectDbParameters("CouchDB"));
   std::string status;
   db.Status(status);
-  ptree ps = parse_status(status);
+  json_spirit::mObject ps = parse_status(status);
   EXPECT_EQ(ps.count("couchdb"), 1);
 }
 
@@ -70,8 +65,8 @@ TEST(OR_db, CreateDelete)
     db.CreateCollection("test_it");
     std::string status;
     db.Status("test_it", status);
-    ptree ps = parse_status(status);
-    EXPECT_EQ(ps.get<std::string>("db_name"), "test_it");
+    json_spirit::mObject ps = parse_status(status);
+    EXPECT_EQ(ps["db_name"].get_str(), "test_it");
   }
   {
     ObjectDb db(ObjectDbParameters("CouchDB"));
@@ -158,9 +153,9 @@ TEST(OR_db, StatusCollectionNonExistant)
 
   std::string status;
   db.Status("test_it", status);
-  ptree ps = parse_status(status);
-  EXPECT_EQ(ps.get<std::string>("error"), "not_found");
-  EXPECT_EQ(ps.get<std::string>("reason"), "no_db_file");
+  json_spirit::mObject ps = parse_status(status);
+  EXPECT_EQ(ps["error"].get_str(), "not_found");
+  EXPECT_EQ(ps["reason"].get_str(), "no_db_file");
 }
 
 TEST(OR_db, StatusCollectionExistant)
@@ -170,8 +165,8 @@ TEST(OR_db, StatusCollectionExistant)
   std::string status;
   db.CreateCollection("test_it");
   db.Status("test_it", status);
-  ptree ps = parse_status(status);
-  EXPECT_EQ(ps.get<std::string>("db_name"), "test_it");
+  json_spirit::mObject ps = parse_status(status);
+  EXPECT_EQ(ps["db_name"].get_str(), "test_it");
   db.DeleteCollection("test_it");
 }
 
@@ -285,7 +280,7 @@ TEST(OR_db, InitSeperatelyChangeURL)
   db.set_params(ObjectDbParameters("CouchDB"));
   std::string status;
   db.Status(status);
-  ptree ps = parse_status(status);
+  json_spirit::mObject ps = parse_status(status);
   EXPECT_EQ(ps.count("couchdb"), 1);
   ObjectDbParameters params("CouchDB");
   params.root_ = "http://abc";
@@ -314,13 +309,16 @@ TEST(OR_db, ObjectDbCopy)
 
 TEST(OR_db, JSONReadWrite)
 {
-  boost::property_tree::ptree params1, params2;
+  json_spirit::mObject params1, params2;
   std::stringstream ssparams1, ssparams2, ssparams3;
   ssparams1 << "{\"num1\":2, \"num2\":3.5, \"str\":\"foo\"}";
-  boost::property_tree::read_json(ssparams1, params1);
+  json_spirit::mValue value;
+  json_spirit::read(ssparams1, value);
+  params1 = value.get_obj();
 
   // Write it to a JSON string and make sure numbers are persisted as numbers
-  boost::property_tree::write_json(ssparams2, params1);
+  value = json_spirit::mValue(params1);
+  json_spirit::write(value, ssparams2);
   std::string new_json = ssparams2.str();
   EXPECT_GE(new_json.find("\"2\""), new_json.size());
   EXPECT_GE(new_json.find("\"3.5\""), new_json.size());
@@ -328,16 +326,19 @@ TEST(OR_db, JSONReadWrite)
 
   // Make sure we can read it back
   ssparams3 << ssparams2.str();
-  boost::property_tree::read_json(ssparams3, params2);
-  EXPECT_EQ(params1.get<std::string>("num1"), params2.get<std::string>("num1"));
-  EXPECT_EQ(params1.get<std::string>("num2"), params2.get<std::string>("num2"));
-  EXPECT_EQ(params1.get<std::string>("str"), params2.get<std::string>("str"));
+  json_spirit::read(ssparams3, value);
+  params2 = value.get_obj();
+  EXPECT_EQ(params1["num1"].get_uint64(), params2["num1"].get_uint64());
+  EXPECT_EQ(params1["num2"].get_real(), params2["num2"].get_real());
+  EXPECT_EQ(params1["str"].get_str(), params2["str"].get_str());
 }
 
 TEST(OR_db, JSONReadBigInteger)
 {
-  boost::property_tree::ptree params1, params2;
+  json_spirit::mObject params1, params2;
   std::stringstream ssparams1, ssparams2, ssparams3;
   ssparams1 << "{\"num\":3372036854775808  }";
-  boost::property_tree::read_json(ssparams1, params1);
+  json_spirit::mValue value;
+  json_spirit::read(ssparams1, value);
+  params1 = value.get_obj();
 }

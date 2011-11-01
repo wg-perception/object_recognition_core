@@ -37,7 +37,6 @@
 
 #include <boost/dynamic_bitset.hpp>
 #include <boost/foreach.hpp>
-#include <boost/property_tree/json_parser.hpp>
 
 #include <ecto/ecto.hpp>
 
@@ -52,6 +51,7 @@
 #include <Eigen/StdVector>
 
 #include "adjacency_ransac.h"
+#include "object_recognition/common/json_spirit/json_spirit.h"
 #include "object_recognition/common/types_eigen.h"
 
 using ecto::tendrils;
@@ -108,15 +108,20 @@ namespace object_recognition
       void
       configure(const ecto::tendrils& params, const ecto::tendrils& inputs, const ecto::tendrils& outputs)
       {
-        boost::property_tree::ptree search_param_tree;
+        json_spirit::mObject search_param_tree;
         std::stringstream ssparams;
         ssparams << params.get<std::string>("search_json_params");
-        boost::property_tree::read_json(ssparams, search_param_tree);
 
-        radius_ = search_param_tree.get<float>("radius");
-        matcher_ = new lsh::LshMatcher(search_param_tree.get<unsigned int>("n_tables"),
-                                       search_param_tree.get<unsigned int>("key_size"),
-                                       search_param_tree.get<unsigned int>("multi_probe_level"));
+        {
+          json_spirit::mValue value;
+          json_spirit::read(ssparams, value);
+          search_param_tree = value.get_obj();
+        }
+
+        radius_ = search_param_tree["radius"].get_real();
+        matcher_ = new lsh::LshMatcher(search_param_tree["n_tables"].get_uint64(),
+                                       search_param_tree["key_size"].get_uint64(),
+                                       search_param_tree["multi_probe_level"].get_uint64());
 
         in_points_ = inputs["points"];
         in_points3d_ = inputs["points3d"];

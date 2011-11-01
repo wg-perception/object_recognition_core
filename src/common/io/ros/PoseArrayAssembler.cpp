@@ -36,7 +36,6 @@
 #include <vector>
 
 #include <boost/foreach.hpp>
-#include <boost/property_tree/json_parser.hpp>
 
 #include <ecto/ecto.hpp>
 
@@ -263,15 +262,17 @@ namespace object_recognition
 
       // Add the object ids to the message
       {
-        boost::property_tree::ptree object_ids_param_tree;
-        boost::property_tree::ptree object_ids_array;
+        json_spirit::mObject object_ids_param_tree;
+
+        std::vector<json_spirit::mValue> object_ids_array;
         BOOST_FOREACH(const ObjectId & object_id, *object_ids_)
-              object_ids_array.push_back(std::make_pair("", object_id));
-        object_ids_param_tree.push_back(std::make_pair("object_ids", object_ids_array));
+              object_ids_array.push_back(json_spirit::mValue(object_id));
+        object_ids_param_tree["object_ids"] = json_spirit::mValue(object_ids_array);
 
         std::stringstream ssparams;
-        boost::property_tree::write_json(ssparams, object_ids_param_tree);
 
+        json_spirit::mValue value(object_ids_param_tree);
+        json_spirit::write(value, ssparams);
         object_ids_msg.data = ssparams.str();
       }
 

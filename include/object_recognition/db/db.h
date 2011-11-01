@@ -307,20 +307,20 @@ namespace object_recognition
 
       /** Set several values by inserting a property tree */
       void
-      set_values(const json_spirit::mObject & property_tree)
+      set_values(const json_spirit::mObject & json_tree)
       {
-        fields_.insert(property_tree.begin(), property_tree.end());
+        fields_.insert(json_tree.begin(), json_tree.end());
       }
 
       /** Set several values by inserting a property tree at a specific key*/
       void
-      set_values(const std::string& key, const json_spirit::mObject & property_tree)
+      set_values(const std::string& key, const json_spirit::mObject & json_tree)
       {
         json_spirit::mObject::const_iterator iter = fields_.find(key);
         if (iter == fields_.end())
-          fields_.insert(std::make_pair(key, property_tree));
+          fields_.insert(std::make_pair(key, json_tree));
         else
-          iter->second.get_value<json_spirit::mObject>().insert(property_tree.begin(), property_tree.end());
+          iter->second.get_value<json_spirit::mObject>().insert(json_tree.begin(), json_tree.end());
       }
 
       /** Clear all the fields, there are no fields left after */

@@ -233,7 +233,7 @@ ObjectDbCouch::CreateCollection(const CollectionName &collection)
     {
       throw std::runtime_error(curl_.get_response_reason_phrase() + " : " + curl_.getURL());
     }
-    read_json(json_writer_stream_, value);
+    read_json(json_writer_stream_, params);
 
     iter = params.find("ok");
     if ((iter == params.end()) || (!iter->second.get_bool()))
@@ -311,12 +311,12 @@ ObjectDbCouch::DeleteCollection(const CollectionName &collection)
 
 }
 void
-ObjectDbCouch::upload_json(const json_spirit::mObject &ptree, const std::string& url, const std::string& request)
+ObjectDbCouch::upload_json(const json_spirit::mObject &params, const std::string& url, const std::string& request)
 {
   curl_.reset();
   json_writer_stream_.str("");
   json_reader_stream_.str("");
-  write_json(ptree, json_reader_stream_);
+  write_json(params, json_reader_stream_);
   curl_.setWriter(&json_writer_);
   curl_.setReader(&json_reader_);
 //couch db post to the db
