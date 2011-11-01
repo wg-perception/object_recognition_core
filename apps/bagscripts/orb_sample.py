@@ -111,6 +111,19 @@ plasm.connect(orb_test['keypoints'] >> draw_kpts['keypoints'],
 #training 
 orb_train = ecto.If("ORB training", cell=FeatureFinder(n_features=n_features_train, scale_factor=1.1, n_levels=10).__impl)
 latch = LatchMat()
+R_latch = LatchMat()
+T_latch = LatchMat()
+
+orb_train = ecto.If("ORB training", cell=FeatureFinder(n_features=n_features_train, scale_factor=1.1, n_levels=10).__impl)
+latch = LatchMat()
+R_writer = ecto.If("R writer", cell=MatWriter(filename='R.yaml'))
+T_writer = ecto.If("T writer", cell=MatWriter(filename='T.yaml'))
+
+plasm.connect(orb_display['save'] >> (latch['set'], orb_train['__test__']),
+              source['points3d'] >> orb_train['points3d'],
+              img_src >> latch['input'],
+              latch['output'] >> orb_train['image'],
+              )
 plasm.connect(orb_display['save'] >> (latch['set'], orb_train['__test__']),
               source['points3d'] >> orb_train['points3d'],
               img_src >> latch['input'],
