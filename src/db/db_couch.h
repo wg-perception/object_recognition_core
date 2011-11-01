@@ -41,6 +41,13 @@
 #include "object_recognition/common/types.h"
 
 using object_recognition::db::View;
+using object_recognition::db::AttachmentName;
+using object_recognition::db::CollectionName;
+using object_recognition::db::DbType;
+using object_recognition::db::DocumentId;
+using object_recognition::db::ObjectId;
+using object_recognition::db::MimeType;
+using object_recognition::db::RevisionId;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -50,15 +57,15 @@ public:
   ObjectDbCouch(const std::string &url);
 
   virtual void
-  insert_object(const CollectionName &collection, const boost::property_tree::ptree &fields, DocumentId & document_id,
+  insert_object(const CollectionName &collection, const json_spirit::mObject &fields, DocumentId & document_id,
                 RevisionId & revision_id);
 
   virtual void
-  persist_fields(const DocumentId & document_id, const CollectionName &collection,
-                 const boost::property_tree::ptree &fields, RevisionId & revision_id);
+  persist_fields(const DocumentId & document_id, const CollectionName &collection, const json_spirit::mObject &fields,
+                 RevisionId & revision_id);
 
   virtual void
-  load_fields(const DocumentId & document_id, const CollectionName &collection, boost::property_tree::ptree &fields);
+  load_fields(const DocumentId & document_id, const CollectionName &collection, json_spirit::mObject &fields);
 
   virtual void
   get_attachment_stream(const DocumentId & document_id, const CollectionName &collection,
@@ -117,7 +124,24 @@ private:
   }
 
   void
-  upload_json(const boost::property_tree::ptree &ptree, const std::string& url, const std::string& request);
+  upload_json(const json_spirit::mObject &ptree, const std::string& url, const std::string& request);
+
+  template<typename T>
+  void
+  read_json(T &reader, json_spirit::mObject& object)
+  {
+    json_spirit::mValue value;
+    json_spirit: read(reader, value);
+    object = value.get_obj();
+  }
+
+  template<typename T>
+  void
+  write_json(const json_spirit::mObject& object, T &writer)
+  {
+    json_spirit::mValue value(object);
+    json_spirit::write(value, writer);
+  }
 
   inline std::string
   url_id(const CollectionName & collection_name, const DocumentId & id) const

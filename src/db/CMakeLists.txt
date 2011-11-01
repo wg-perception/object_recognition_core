@@ -18,6 +18,9 @@ add_library(object_recognition_db SHARED
   db.cpp
   db_couch.cpp
   opencv.cpp
+  ../../include/object_recognition/common/json_spirit/json_spirit_reader.cpp
+  ../../include/object_recognition/common/json_spirit/json_spirit_value.cpp
+  ../../include/object_recognition/common/json_spirit/json_spirit_writer.cpp
   ModelInserter.cpp
   )
 

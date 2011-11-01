@@ -1,1 +1,0 @@
-boost property_tree 1.46.1 with a patched json_parser_write.hpp so that it persists JSON properly

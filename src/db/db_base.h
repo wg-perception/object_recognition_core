@@ -47,12 +47,11 @@
 #include <boost/archive/binary_oarchive.hpp>
 #include <boost/archive/text_oarchive.hpp>
 #include <boost/archive/text_iarchive.hpp>
-#include <boost/property_tree/ptree.hpp>
-#include <boost/property_tree/json_parser.hpp>
 
 #include <boost/shared_ptr.hpp>
 
 #include "object_recognition/common/types.h"
+#include "object_recognition/common/json_spirit/json_spirit.h"
 #include "object_recognition/db/view_types.h"
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -72,16 +71,15 @@ namespace object_recognition
       {
       }
       virtual void
-      insert_object(const CollectionName &collection, const boost::property_tree::ptree &fields,
-                    DocumentId & document_id, RevisionId & revision_id) = 0;
+      insert_object(const CollectionName &collection, const json_spirit::mObject &fields, DocumentId & document_id,
+                    RevisionId & revision_id) = 0;
 
       virtual void
       persist_fields(const DocumentId & document_id, const CollectionName &collection,
-                     const boost::property_tree::ptree &fields, RevisionId & revision_id) = 0;
+                     const json_spirit::mObject &fields, RevisionId & revision_id) = 0;
 
       virtual void
-      load_fields(const DocumentId & document_id, const CollectionName &collection,
-                  boost::property_tree::ptree &fields) = 0;
+      load_fields(const DocumentId & document_id, const CollectionName &collection, json_spirit::mObject &fields) = 0;
 
       virtual void
       Delete(const ObjectId & id, const CollectionName & collection_name) = 0;

@@ -36,10 +36,6 @@
 #ifndef VIEW_TYPES_H_
 #define VIEW_TYPES_H_
 
-#include <cstdarg>
-
-#include <boost/property_tree/ptree.hpp>
-
 #include "object_recognition/common/types.h"
 
 namespace object_recognition
@@ -75,8 +71,8 @@ namespace object_recognition
         {
           case VIEW_MODEL_WHERE_OBJECT_ID_AND_MODEL_TYPE:
             //TODO
-            parameters_.put("object_id", arg1);
-            parameters_.put("model_type", arg2);
+            parameters_["object_id"] = json_spirit::mValue(arg1);
+            parameters_["model_type"] = json_spirit::mValue(arg2);
             break;
           default:
             throw std::runtime_error("Not a valid View type for initialization arguments: std::string, std::string");
@@ -86,7 +82,7 @@ namespace object_recognition
       friend class ObjectDbBase;
     protected:
       ViewType type_;
-      boost::property_tree::ptree parameters_;
+      json_spirit::mObject parameters_;
     };
   }
 }

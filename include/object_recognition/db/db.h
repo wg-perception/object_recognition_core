@@ -43,11 +43,11 @@
 #include <boost/archive/binary_oarchive.hpp>
 #include <boost/foreach.hpp>
 #include <boost/function.hpp>
-#include <boost/property_tree/ptree.hpp>
 
 #include <opencv2/core/core.hpp>
 
 #include "object_recognition/common/types.h"
+#include "object_recognition/common/json_spirit/json_spirit.h"
 #include "object_recognition/db/view_types.h"
 
 namespace object_recognition
@@ -139,16 +139,15 @@ namespace object_recognition
                             const std::istream& stream, RevisionId & revision_id) const;
 
       void
-      insert_object(const CollectionName &collection, const boost::property_tree::ptree &fields,
-                    DocumentId & document_id, RevisionId & revision_id) const;
+      insert_object(const CollectionName &collection, const json_spirit::mObject &fields, DocumentId & document_id,
+                    RevisionId & revision_id) const;
 
       void
-      load_fields(const DocumentId & document_id, const CollectionName &collection,
-                  boost::property_tree::ptree &fields) const;
+      load_fields(const DocumentId & document_id, const CollectionName &collection, json_spirit::mObject &fields) const;
 
       void
       persist_fields(const DocumentId & document_id, const CollectionName &collection,
-                     const boost::property_tree::ptree &fields, RevisionId & revision_id) const;
+                     const json_spirit::mObject &fields, RevisionId & revision_id) const;
 
       void
       Delete(const ObjectId & id, const CollectionName & collection_name) const;
@@ -291,7 +290,11 @@ namespace object_recognition
       T
       get_value(const std::string& key) const
       {
-        return fields_.get<T>(key);
+        json_spirit::mObject::const_iterator iter = fields_.find(key);
+        if (iter != fields_.end())
+          return iter->second.get_value<T>();
+        else
+          throw std::runtime_error("Not a valid key for that JSON tree");
       }
 
       /** Set a specific value */
@@ -299,24 +302,25 @@ namespace object_recognition
       void
       set_value(const std::string& key, const T& val)
       {
-        fields_.put<T>(key, val);
+        fields_[key] = json_spirit::mValue(val);
       }
 
       /** Set several values by inserting a property tree */
       void
-      set_values(const boost::property_tree::ptree & property_tree)
+      set_values(const json_spirit::mObject & property_tree)
       {
-        fields_.insert(fields_.begin(), property_tree.begin(), property_tree.end());
+        fields_.insert(property_tree.begin(), property_tree.end());
       }
 
       /** Set several values by inserting a property tree at a specific key*/
       void
-      set_values(const std::string& key, const boost::property_tree::ptree & property_tree)
+      set_values(const std::string& key, const json_spirit::mObject & property_tree)
       {
-        if (fields_.find(key) == fields_.not_found())
-          fields_.insert(fields_.begin(), std::make_pair(key, property_tree));
+        json_spirit::mObject::const_iterator iter = fields_.find(key);
+        if (iter == fields_.end())
+          fields_.insert(std::make_pair(key, property_tree));
         else
-          fields_.insert(fields_.get_child(key).begin(), property_tree.begin(), property_tree.end());
+          iter->second.get_value<json_spirit::mObject>().insert(property_tree.begin(), property_tree.end());
       }
 
       /** Clear all the fields, there are no fields left after */
@@ -380,7 +384,7 @@ namespace object_recognition
       typedef std::map<AttachmentName, StreamAttachment::ptr> AttachmentMap;
       AttachmentMap attachments_;
       /** contains the fields: they are of integral types */
-      boost::property_tree::ptree fields_;
+      json_spirit::mObject fields_;
     };
 
     // Specializations for cv::Mat

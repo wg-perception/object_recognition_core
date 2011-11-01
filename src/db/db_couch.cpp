@@ -33,7 +33,6 @@
  *
  */
 
-#include <boost/property_tree/json_parser.hpp>
 #include <sstream>
 #include "db_couch.h"
 
@@ -50,7 +49,7 @@ ObjectDbCouch::ObjectDbCouch(const std::string &url)
 }
 
 void
-ObjectDbCouch::insert_object(const CollectionName &collection, const boost::property_tree::ptree &fields,
+ObjectDbCouch::insert_object(const CollectionName &collection, const json_spirit::mObject &fields,
                              DocumentId & document_id, RevisionId & revision_id)
 {
   CreateCollection(collection);
@@ -61,7 +60,7 @@ ObjectDbCouch::insert_object(const CollectionName &collection, const boost::prop
 
 void
 ObjectDbCouch::persist_fields(const DocumentId & document_id, const CollectionName &collection,
-                              const boost::property_tree::ptree &fields, RevisionId & revision_id)
+                              const json_spirit::mObject &fields, RevisionId & revision_id)
 {
   precondition_id(document_id);
   upload_json(fields, url_id(collection, document_id), "PUT");
@@ -71,7 +70,7 @@ ObjectDbCouch::persist_fields(const DocumentId & document_id, const CollectionNa
 
 void
 ObjectDbCouch::load_fields(const DocumentId & document_id, const CollectionName &collection,
-                           boost::property_tree::ptree &fields)
+                           json_spirit::mObject &fields)
 {
   precondition_id(document_id);
   curl_.reset();
@@ -88,7 +87,7 @@ ObjectDbCouch::load_fields(const DocumentId & document_id, const CollectionName 
     throw std::runtime_error(curl_.get_response_reason_phrase() + " : " + curl_.getURL());
   }
   //update the object from the result.
-  boost::property_tree::read_json(json_writer_stream_, fields);
+  read_json(json_writer_stream_, fields);
 }
 
 void
@@ -132,10 +131,10 @@ ObjectDbCouch::get_attachment_stream(const DocumentId & document_id, const Colle
 void
 ObjectDbCouch::GetObjectRevisionId(DocumentId& document_id, RevisionId & revision_id)
 {
-  boost::property_tree::ptree params;
-  boost::property_tree::read_json(json_writer_stream_, params);
-  document_id = params.get<std::string>("id", "");
-  revision_id = params.get<std::string>("rev", "");
+  json_spirit::mObject params;
+  read_json(json_writer_stream_, params);
+  document_id = params["id"].get_str();
+  revision_id = params["rev"].get_str();
   if (document_id.empty())
     throw std::runtime_error("Could not find the document id");
   if (revision_id.empty())
@@ -145,9 +144,9 @@ ObjectDbCouch::GetObjectRevisionId(DocumentId& document_id, RevisionId & revisio
 void
 ObjectDbCouch::GetRevisionId(RevisionId & revision_id)
 {
-  boost::property_tree::ptree params;
-  boost::property_tree::read_json(json_writer_stream_, params);
-  revision_id = params.get<std::string>("rev", "");
+  json_spirit::mObject params;
+  read_json(json_writer_stream_, params);
+  revision_id = params["rev"].get_str();
   if (revision_id.empty())
     throw std::runtime_error("Could not find the revision number, from GetRevisionId");
 }
@@ -172,13 +171,13 @@ ObjectDbCouch::Query(const std::vector<std::string> & queries, const CollectionN
   if (limit_rows <= 0)
     limit_rows = std::numeric_limits<int>::max();
   {
-    boost::property_tree::ptree fields;
+    json_spirit::mObject fields;
     BOOST_FOREACH(const std::string& query, queries)
         {
-          fields.add<std::string>("map", query);
+          fields["map"] = json_spirit::mValue(query);
         }
     json_reader_stream_.str("");
-    boost::property_tree::write_json(json_reader_stream_, fields);
+    write_json(fields, json_reader_stream_);
   }
   json_writer_stream_.str("");
   curl_.reset();
@@ -199,28 +198,30 @@ ObjectDbCouch::Query(const std::vector<std::string> & queries, const CollectionN
 
   json_reader_stream_.seekg(0);
   json_writer_stream_.seekg(0);
-  boost::property_tree::ptree fields;
-  boost::property_tree::read_json(json_writer_stream_, fields);
+  json_spirit::mObject fields;
+  read_json(json_writer_stream_, fields);
 
-  total_rows = fields.get<unsigned int>("total_rows");
+  total_rows = fields["total_rows"].get_int();
   document_ids.clear();
-  BOOST_FOREACH(const boost::property_tree::ptree::value_type & v, fields.get_child("rows"))
+  BOOST_FOREACH(json_spirit::mValue & v, fields["rows"].get_array())
       {
         // values are: id, key, value
-        document_ids.push_back(v.second.get<std::string>("id"));
+        document_ids.push_back(v.get_obj()["id"].get_str());
       }
-  offset = fields.get<unsigned int>("offset") + document_ids.size();
+  offset = fields["offset"].get_int() + document_ids.size();
 }
 
 void
 ObjectDbCouch::CreateCollection(const CollectionName &collection)
 {
-  boost::property_tree::ptree params;
+  json_spirit::mObject params;
   std::string status;
   Status(collection, status);
   std::stringstream ss(status);
-  boost::property_tree::read_json(ss, params);
-  if (params.count("error") && params.count("reason") && params.get<std::string>("reason") == "no_db_file")
+  read_json(ss, params);
+
+  json_spirit::mObject::const_iterator iter = params.find("reason");
+  if ((params.find("error") != params.end()) && (iter != params.end()) && (iter->second.get_str() == "no_db_file"))
   {
     json_writer_stream_.str("");
     json_reader_stream_.str("");
@@ -232,19 +233,22 @@ ObjectDbCouch::CreateCollection(const CollectionName &collection)
     {
       throw std::runtime_error(curl_.get_response_reason_phrase() + " : " + curl_.getURL());
     }
-    boost::property_tree::read_json(json_writer_stream_, params);
-    if (!params.count("ok") || !params.get<bool>("ok"))
+    read_json(json_writer_stream_, value);
+
+    iter = params.find("ok");
+    if ((iter == params.end()) || (!iter->second.get_bool()))
     {
       std::stringstream ss;
-      boost::property_tree::write_json(ss, params);
+      write_json(params, ss);
       throw std::runtime_error("Could not create to database.\n" + ss.str());
     }
     return;
   }
-  if (!params.count("db_name") || params.get<std::string>("db_name") != collection)
+  iter = params.find("db_name");
+  if ((iter == params.end()) || (iter->second.get_str() != collection))
   {
     std::stringstream ss;
-    boost::property_tree::write_json(ss, params);
+    write_json(params, ss);
     throw std::runtime_error("Could not connect to database.\n" + ss.str());
   }
 }
@@ -288,7 +292,7 @@ ObjectDbCouch::Status(const CollectionName& collection, std::string& status)
 void
 ObjectDbCouch::DeleteCollection(const CollectionName &collection)
 {
-  boost::property_tree::ptree params;
+  json_spirit::mObject params;
   std::string status;
   Status(collection, status);
   if (curl_.get_response_code() == object_recognition::curl::cURL::OK)
@@ -307,12 +311,12 @@ ObjectDbCouch::DeleteCollection(const CollectionName &collection)
 
 }
 void
-ObjectDbCouch::upload_json(const boost::property_tree::ptree &ptree, const std::string& url, const std::string& request)
+ObjectDbCouch::upload_json(const json_spirit::mObject &ptree, const std::string& url, const std::string& request)
 {
   curl_.reset();
   json_writer_stream_.str("");
   json_reader_stream_.str("");
-  boost::property_tree::write_json(json_reader_stream_, ptree);
+  write_json(ptree, json_reader_stream_);
   curl_.setWriter(&json_writer_);
   curl_.setReader(&json_reader_);
 //couch db post to the db

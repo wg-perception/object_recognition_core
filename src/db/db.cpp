@@ -34,6 +34,7 @@
  */
 
 #include <string>
+#include <boost/bind.hpp>
 
 #include "db_base.h"
 #include "db_couch.h"
@@ -153,7 +154,7 @@ namespace object_recognition
     }
 
     void
-    ObjectDb::insert_object(const CollectionName &collection, const boost::property_tree::ptree &fields,
+    ObjectDb::insert_object(const CollectionName &collection, const json_spirit::mObject &fields,
                             DocumentId & document_id, RevisionId & revision_id) const
     {
       PRECONDITION_DB()
@@ -180,7 +181,7 @@ namespace object_recognition
 
     void
     ObjectDb::load_fields(const DocumentId & document_id, const CollectionName &collection,
-                          boost::property_tree::ptree &fields) const
+                          json_spirit::mObject &fields) const
     {
       PRECONDITION_DB()
       db_->load_fields(document_id, collection, fields);
@@ -188,7 +189,7 @@ namespace object_recognition
 
     void
     ObjectDb::persist_fields(const DocumentId & document_id, const CollectionName &collection,
-                             const boost::property_tree::ptree &fields, RevisionId & revision_id) const
+                             const json_spirit::mObject &fields, RevisionId & revision_id) const
     {
       PRECONDITION_DB()
       db_->persist_fields(document_id, collection, fields, revision_id);

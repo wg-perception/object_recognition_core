@@ -1,9 +1,8 @@
 #pragma once
 
-#include <boost/property_tree/json_parser.hpp>
-
 #include <ecto/ecto.hpp>
 
+#include "object_recognition/common/json_spirit/json_spirit_reader_template.h"
 #include "object_recognition/common/types.h"
 #include "object_recognition/db/db.h"
 #include "object_recognition/db/view_types.h"
@@ -61,11 +60,11 @@ namespace object_recognition
         {
           Document doc_new = ModelInserterUtils::populate_doc(db_, *collection_name_, *object_id_, *model_params_,
                                                               T::model_type());
-          boost::property_tree::ptree in_parameters;
+          json_spirit::mObject in_parameters;
           {
-            std::stringstream ssparams;
-            ssparams << *model_params_;
-            boost::property_tree::read_json(ssparams, in_parameters);
+            json_spirit::mValue value;
+            json_spirit::read(*model_params_, value);
+            in_parameters = value.get_obj();
           }
 
           std::cout << "persisting " << doc_new.id() << std::endl;
@@ -81,7 +80,7 @@ namespace object_recognition
             for (; iter != end; ++iter)
             {
               // Compare the parameters
-              //boost::property_tree::ptree db_parameters = (*iter).get_value<boost::property_tree::ptree>("parameters");
+              //json_spirit::mObject db_parameters = (*iter).get_value<json_spirit::mObject>("parameters");
               //TODO
               bool is_same = true;
 
