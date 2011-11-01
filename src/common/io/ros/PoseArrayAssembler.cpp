@@ -55,6 +55,7 @@
 #include "object_recognition/db/db.h"
 
 namespace bp = boost::python;
+using object_recognition::db::ObjectId;
 
 namespace
 {

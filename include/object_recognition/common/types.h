@@ -35,26 +35,29 @@
 #ifndef TYPES_H_
 #define TYPES_H_
 
-/** The unique identifier of an object in the DB */
-typedef std::string ObjectId;
+namespace object_recognition
+{
+  namespace db
+  {
+    /** The unique identifier of an object in the DB */
+    typedef std::string ObjectId;
 
-/** The unique identifier of a model in the DB */
-typedef std::string ModelId;
+    /** The unique identifier of a model in the DB */
+    typedef std::string ModelId;
 
-/** The type of a model in the DB */
-typedef std::string ModelType;
+    typedef std::string AttachmentName;
+    typedef std::string CollectionName;
+    typedef std::string DocumentId;
+    typedef std::string DbType;
+    typedef std::string Field;
+    typedef std::string MimeType;
+    typedef std::string RevisionId;
 
-/** The unique identifier of an object once translated from the DB and as contained in a cv::Match */
-typedef unsigned int ObjectOpenCVId;
+    const std::string MIME_TYPE_DEFAULT = "application/octet-stream";
 
-typedef std::string AttachmentName;
-typedef std::string CollectionName;
-typedef std::string DocumentId;
-typedef std::string DbType;
-typedef std::string Field;
-typedef std::string MimeType;
-typedef std::string RevisionId;
-
-const std::string MIME_TYPE_DEFAULT = "application/octet-stream";
+    /** The type of a model in the DB */
+    typedef std::string ModelType;
+  }
+}
 
 #endif /* TYPES_H_ */

@@ -53,6 +53,7 @@
 #include "adjacency_ransac.h"
 
 using ecto::tendrils;
+using object_recognition::db::ObjectId;
 
 namespace object_recognition
 {
@@ -157,15 +158,15 @@ namespace object_recognition
           // For each object, build the connectivity graph between the matches
           std::vector<ObjectId> object_ids_final;
           std::vector<cv::Mat> Rs_final, Ts_final;
-          std::map<ObjectOpenCVId, std::vector<std::vector<int> > > matching_query_points;
-          typedef std::map<ObjectOpenCVId, object_recognition::maximum_clique::Graph> OpenCVIdToGraph;
+          std::map<size_t, std::vector<std::vector<int> > > matching_query_points;
+          typedef std::map<size_t, object_recognition::maximum_clique::Graph> OpenCVIdToGraph;
           OpenCVIdToGraph graphs;
           for (OpenCVIdToObjectPoints::iterator query_iterator = all_object_points.begin();
               query_iterator != all_object_points.end(); ++query_iterator)
           {
             // Create a graph for that object
             AdjacencyRansac & adjacency_ransac = query_iterator->second;
-            ObjectOpenCVId opencv_object_id = query_iterator->first;
+            size_t opencv_object_id = query_iterator->first;
             ObjectId object_id = object_ids_in[opencv_object_id];
 
             std::cout << "***Starting object: " << opencv_object_id << std::endl;
@@ -288,7 +289,7 @@ namespace object_recognition
             cv::Mat output_img = initial_image.clone();
 
             unsigned int i = 0;
-            for (std::map<ObjectOpenCVId, std::vector<std::vector<int> > >::const_iterator query_iterator =
+            for (std::map<size_t, std::vector<std::vector<int> > >::const_iterator query_iterator =
                 matching_query_points.begin(); query_iterator != matching_query_points.end(); ++query_iterator)
             {
               BOOST_FOREACH(const std::vector<int> & indices, query_iterator->second)

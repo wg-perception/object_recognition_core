@@ -1,6 +1,8 @@
 #include <object_recognition/db/ModelInserter.hpp>
 #include <boost/property_tree/ptree.hpp>
-#include <boost/property_tree/json_parser.hpp>
+
+#include "object_recognition/common/json_spirit/json_spirit_reader_template.h"
+
 namespace object_recognition
 {
   namespace db
@@ -17,12 +19,16 @@ namespace object_recognition
         Document doc(db, collection_name);
         doc.set_value("object_id", object_id);
         // Convert the parameters to a property tree and insert them
-        boost::property_tree::ptree params;
-        std::stringstream ssparams;
-        ssparams << model_params;
-        boost::property_tree::read_json(ssparams, params);
-        if (params.find("type") != params.not_found())
-          params.erase("type");
+        json_spirit::mObject params;
+        {
+          json_spirit::mValue value;
+          std::stringstream ssparams;
+          ssparams << model_params;
+          json_spirit::read(ssparams, value);
+          params = value.get_obj();
+        }
+
+        params.erase("type");
         doc.set_values("parameters", params);
         doc.set_value("Type", "Model");
         doc.set_value("ModelType", model_type);

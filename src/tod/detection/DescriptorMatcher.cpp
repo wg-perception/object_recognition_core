@@ -52,6 +52,7 @@
 #include "opencv_candidate/lsh.hpp"
 
 using object_recognition::db::Documents;
+using object_recognition::db::ObjectId;
 
 namespace object_recognition
 {

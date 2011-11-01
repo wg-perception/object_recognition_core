@@ -13,6 +13,7 @@
 #include "object_recognition/db/opencv.h"
 
 using ecto::tendrils;
+using object_recognition::db::CollectionName;
 
 typedef std::string ModelId;
 

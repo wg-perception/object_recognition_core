@@ -281,7 +281,7 @@ namespace object_recognition
           pcl::PointXYZ training_point(val[0], val[1], val[2]);
 
           // Fill in the clouds
-          ObjectOpenCVId opencv_object_id = local_matches[match_index].imgIdx;
+          size_t opencv_object_id = local_matches[match_index].imgIdx;
           object_points[opencv_object_id].AddPoints(training_point, query_point, query_index);
         }
       }

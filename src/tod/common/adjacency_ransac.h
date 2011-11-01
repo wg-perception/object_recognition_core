@@ -126,8 +126,8 @@ namespace object_recognition
       Eigen::VectorXf
       Ransac(float sensor_error, unsigned int n_ransac_iterations, std::vector<int>& inliers);
 
-      ObjectId object_id_;
-      ObjectOpenCVId object_opencv_id_;
+      db::ObjectId object_id_;
+      size_t object_index_;
       object_recognition::maximum_clique::Graph graph_;
       /** matrix indicating whether two points are close enough physically */
       cv::Mat_<uchar> physical_adjacency_;
@@ -145,7 +145,7 @@ namespace object_recognition
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    typedef std::map<ObjectOpenCVId, AdjacencyRansac> OpenCVIdToObjectPoints;
+    typedef std::map<size_t, AdjacencyRansac> OpenCVIdToObjectPoints;
 
     void
     ClusterPerObject(const std::vector<cv::KeyPoint> & keypoints, const cv::Mat &point_cloud,
