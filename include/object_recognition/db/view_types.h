@@ -36,6 +36,8 @@
 #ifndef VIEW_TYPES_H_
 #define VIEW_TYPES_H_
 
+#include <cstdarg>
+
 #include <boost/property_tree/ptree.hpp>
 
 #include "object_recognition/common/types.h"
@@ -44,40 +46,47 @@ namespace object_recognition
 {
   namespace db
   {
-    enum ViewType
-    {
-      VIEW_BASE
-    };
-
     // Forward declare the base class
     class ObjectDbBase;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    class ViewBase
+    /** A view can be of different type, and for each, the Initialize function needs to be called with the right
+     * arguments
+     * VIEW_MODEL_WHERE_OBJECT_ID_AND_MODEL_TYPE: Initialize(std::string object_id, st::string model_type)
+     */
+    class View
     {
+    public:
+      enum ViewType
+      {
+        VIEW_MODEL_WHERE_OBJECT_ID_AND_MODEL_TYPE
+      };
+
+      View(ViewType type)
+      {
+        type_ = type;
+      }
+
+      void
+      Initialize(const std::string & arg1, const std::string &arg2)
+      {
+        switch (type_)
+        {
+          case VIEW_MODEL_WHERE_OBJECT_ID_AND_MODEL_TYPE:
+            //TODO
+            parameters_.put("object_id", arg1);
+            parameters_.put("model_type", arg2);
+            break;
+          default:
+            throw std::runtime_error("Not a valid View type for initialization arguments: std::string, std::string");
+            break;
+        }
+      }
       friend class ObjectDbBase;
     protected:
       ViewType type_;
       boost::property_tree::ptree parameters_;
-    };
-
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-    class ViewGeneric
-    {
-
-    };
-
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-    class ViewModelWhereObjectIdAndType: ViewBase
-    {
-      ViewModelWhereObjectIdAndType(const ObjectId & object_id, const ModelType * model_type)
-      {
-        //TODO
-
-      }
     };
   }
 }

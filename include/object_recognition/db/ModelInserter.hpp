@@ -1,8 +1,13 @@
 #pragma once
 
+#include <boost/property_tree/json_parser.hpp>
+
 #include <ecto/ecto.hpp>
-#include <object_recognition/db/db.h>
-#include <object_recognition/common/types.h>
+
+#include "object_recognition/common/types.h"
+#include "object_recognition/db/db.h"
+#include "object_recognition/db/view_types.h"
+
 namespace object_recognition
 {
   namespace db
@@ -55,20 +60,40 @@ namespace object_recognition
         process(const ecto::tendrils& inputs, const ecto::tendrils& outputs)
         {
           Document doc_new = ModelInserterUtils::populate_doc(db_, *collection_name_, *object_id_, *model_params_,
-                                                          T::model_type());
-
-          // Find all the models with the same parameters
-          object_recognition::db::DocumentView view;
-          // TODO
-          //view.AddView(db_.type(), );
-
-
-
+                                                              T::model_type());
+          boost::property_tree::ptree in_parameters;
+          {
+            std::stringstream ssparams;
+            ssparams << *model_params_;
+            boost::property_tree::read_json(ssparams, in_parameters);
+          }
 
           std::cout << "persisting " << doc_new.id() << std::endl;
           int rval = T::process(inputs, outputs, doc_new);
           if (rval == ecto::OK)
+          {
+            // Find all the models of that type for that object
+            object_recognition::db::View view(object_recognition::db::View::VIEW_MODEL_WHERE_OBJECT_ID_AND_MODEL_TYPE);
+            view.Initialize(*object_id_, T::model_type());
+            ViewIterator view_iterator(view, db_, *collection_name_);
+
+            ViewIterator iter = view_iterator.begin(), end = view_iterator.end();
+            for (; iter != end; ++iter)
+            {
+              // Compare the parameters
+              //boost::property_tree::ptree db_parameters = (*iter).get_value<boost::property_tree::ptree>("parameters");
+              //TODO
+              bool is_same = true;
+
+              // If they are the same, delete the current model in the database
+              if (is_same) {
+                db_.Delete((*iter).id(), *collection_name_);
+                break;
+              }
+            }
+
             doc_new.Persist();
+          }
           std::cout << "done persisting " << doc_new.id() << std::endl;
           return rval;
         }

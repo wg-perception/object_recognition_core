@@ -40,7 +40,7 @@
 #include "db_base.h"
 #include "object_recognition/common/types.h"
 
-using object_recognition::db::ViewType;
+using object_recognition::db::View;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -72,9 +72,12 @@ public:
 
   virtual
   void
-  Query(const ViewType & type, const boost::property_tree::ptree &view_ptree,
-        const CollectionName & collection_name, int limit_rows, int start_offset, int& total_rows, int& offset,
-        std::vector<DocumentId> & document_ids);
+  Delete(const ObjectId & id, const CollectionName & collection_name);
+
+  virtual
+  void
+  Query(const View & view, const CollectionName & collection_name, int limit_rows, int start_offset, int& total_rows,
+        int& offset, std::vector<DocumentId> & document_ids);
 
   virtual void
   Query(const std::vector<std::string> & queries, const CollectionName & collection_name, int limit_rows,

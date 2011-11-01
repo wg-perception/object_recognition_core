@@ -142,7 +142,8 @@ namespace object_recognition
     ObjectDb::set_params(const ObjectDbParameters &in_params)
     {
       db_parameters_ = in_params;
-      switch (db_parameters_.type_) {
+      switch (db_parameters_.type_)
+      {
         case ObjectDbParameters::COUCHDB:
           db_ = boost::shared_ptr<ObjectDbBase>(new ObjectDbCouch(db_parameters_.root_));
           return;
@@ -193,21 +194,25 @@ namespace object_recognition
       db_->persist_fields(document_id, collection, fields, revision_id);
     }
 
-    template<typename ViewClass>
     void
-    ObjectDb::Query_(const ViewClass &view_class, const CollectionName & collection_name, int limit_rows,
-                    int start_offset, int& total_rows, int& offset, std::vector<DocumentId> & document_ids)
+    ObjectDb::Delete(const ObjectId & id, const CollectionName & collection_name) const
     {
-      db_->Query(view_class.type_, view_class.parameters_, collection_name, limit_rows, start_offset, total_rows, offset,
-                  document_ids);
+      PRECONDITION_DB()
+      db_->Delete(id, collection_name);
+    }
+
+    ObjectDb::QueryFunction
+    ObjectDb::Query(const View &view, const CollectionName & collection_name) const
+    {
+      return boost::bind(&ObjectDb::Query_, *this, view, collection_name, _1, _2, _3, _4, _5);
     }
 
     void
-    ObjectDb::Query(const std::vector<std::string> & queries, const CollectionName & collection_name, int limit_rows,
-                    int start_offset, int& total_rows, int& offset, std::vector<DocumentId> & document_ids) const
+    ObjectDb::Query_(const View &view, const CollectionName & collection_name, int limit_rows, int start_offset,
+                     int& total_rows, int& offset, std::vector<DocumentId> & document_ids)
     {
       PRECONDITION_DB()
-      db_->Query(queries, collection_name, limit_rows, start_offset, total_rows, offset, document_ids);
+      db_->Query(view, collection_name, limit_rows, start_offset, total_rows, offset, document_ids);
     }
 
     void
@@ -389,9 +394,9 @@ namespace object_recognition
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    const unsigned int DocumentView::BATCH_SIZE = 100;
+    const unsigned int ViewIterator::BATCH_SIZE = 100;
 
-    DocumentView::DocumentView()
+    ViewIterator::ViewIterator()
         :
           start_offset_(0)
     {
@@ -401,7 +406,7 @@ namespace object_recognition
      * @param db The db on which the query is performed
      */
     void
-    DocumentView::set_db(const ObjectDb & db)
+    ViewIterator::set_db(const ObjectDb & db)
     {
       db_ = db;
     }
@@ -411,7 +416,7 @@ namespace object_recognition
      * @param collection The collection on which the query is performed
      */
     void
-    DocumentView::set_collection(const CollectionName & collection)
+    ViewIterator::set_collection(const CollectionName & collection)
     {
       collection_ = collection;
     }
@@ -419,22 +424,22 @@ namespace object_recognition
     /** Perform the query itself
      * @return an Iterator that will iterate over each result
      */
-    DocumentView &
-    DocumentView::begin()
+    ViewIterator &
+    ViewIterator::begin()
     {
       // Process the query and get the ids of several objects
-      document_ids_ = query_(collection_, BATCH_SIZE, start_offset_, total_rows_, start_offset_);
+      query_(BATCH_SIZE, start_offset_, total_rows_, start_offset_, document_ids_);
       return *this;
     }
 
-    DocumentView
-    DocumentView::end()
+    ViewIterator
+    ViewIterator::end()
     {
-      return DocumentView();
+      return ViewIterator();
     }
 
-    DocumentView &
-    DocumentView::operator++()
+    ViewIterator &
+    ViewIterator::operator++()
     {
       // Move forward in the list of Objects to check
       document_ids_.pop_back();
@@ -443,7 +448,7 @@ namespace object_recognition
       {
         // Figure out if we need to query for more document ids
         if (start_offset_ < total_rows_)
-          document_ids_ = query_(collection_, BATCH_SIZE, start_offset_, total_rows_, start_offset_);
+          query_(BATCH_SIZE, start_offset_, total_rows_, start_offset_, document_ids_);
       }
       else
       {
@@ -454,7 +459,7 @@ namespace object_recognition
     }
 
     bool
-    DocumentView::operator!=(const DocumentView & document_view) const
+    ViewIterator::operator!=(const ViewIterator & document_view) const
     {
       if (document_view.document_ids_.empty())
         return (!document_ids_.empty());
@@ -465,7 +470,7 @@ namespace object_recognition
     }
 
     Document
-    DocumentView::operator*() const
+    ViewIterator::operator*() const
     {
       return Document(db_, collection_, document_ids_.back());
     }

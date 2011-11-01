@@ -48,6 +48,7 @@
 #include <opencv2/core/core.hpp>
 
 #include "object_recognition/common/types.h"
+#include "object_recognition/db/view_types.h"
 
 namespace object_recognition
 {
@@ -55,7 +56,7 @@ namespace object_recognition
   {
     //Forward declare some classes
     class ObjectDbBase;
-    class DocumentView;
+    class ViewIterator;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -105,8 +106,8 @@ namespace object_recognition
     class ObjectDb
     {
     public:
-      typedef boost::function<std::vector<DocumentId>
-      (const CollectionName & collection_name, int limit_rows, int start_offset, int& total_rows, int& offset)> QueryFunction;
+      typedef boost::function<void
+      (int limit_rows, int start_offset, int& total_rows, int& offset, std::vector<DocumentId> &)> QueryFunction;
 
       ObjectDb()
       {
@@ -149,15 +150,11 @@ namespace object_recognition
       persist_fields(const DocumentId & document_id, const CollectionName &collection,
                      const boost::property_tree::ptree &fields, RevisionId & revision_id) const;
 
-      template<typename ViewClass>
-      QueryFunction
-      Query(const ViewClass &view_class)
-      {
-        return boost::bind(&ObjectDb::Query_<ViewClass>, *this, view_class, _1, _2, _3, _4, _5, _6);
-      }
       void
-      Query(const std::vector<std::string> & queries, const CollectionName & collection_name, int limit_rows,
-            int start_offset, int& total_rows, int& offset, std::vector<DocumentId> & document_ids) const;
+      Delete(const ObjectId & id, const CollectionName & collection_name) const;
+
+      QueryFunction
+      Query(const View &view, const CollectionName & collection_name) const;
 
       void
       Status(std::string& status);
@@ -177,10 +174,9 @@ namespace object_recognition
       DbType
       type();
     private:
-      template<typename ViewClass>
       void
-      Query_(const ViewClass &view_class, const CollectionName & collection_name, int limit_rows, int start_offset,
-            int& total_rows, int& offset, std::vector<DocumentId> & document_ids);
+      Query_(const View &view, const CollectionName & collection_name, int limit_rows, int start_offset,
+             int& total_rows, int& offset, std::vector<DocumentId> & document_ids);
 
       /** The DB from which we'll get all the info */
       boost::shared_ptr<ObjectDbBase> db_;
@@ -406,17 +402,16 @@ namespace object_recognition
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    class DocumentView
+    class ViewIterator
     {
     public:
       static const unsigned int BATCH_SIZE;
-      DocumentView();
+      ViewIterator();
 
-      template<typename ViewType>
-      DocumentView(const ViewType &view_type, ObjectDb& db, const CollectionName & collection_name)
+      ViewIterator(const View &view, ObjectDb& db, const CollectionName & collection_name)
           :
+            query_(db.Query(view, collection_name)),
             collection_(collection_name),
-            query_(db.Query(view_type, collection_name)),
             db_(db)
       {
       }
@@ -425,17 +420,17 @@ namespace object_recognition
        * @param db The db on which the query is performed
        * @return an Iterator that will iterate over each result
        */
-      DocumentView &
+      ViewIterator &
       begin();
 
       /** Perform the query itself
        * @param db The db on which the query is performed
        * @return an Iterator that will iterate over each result
        */
-      static DocumentView
+      static ViewIterator
       end();
 
-      DocumentView &
+      ViewIterator &
       operator++();
 
       /** Set the db on which to perform the Query
@@ -452,7 +447,7 @@ namespace object_recognition
       set_collection(const CollectionName & collection);
 
       bool
-      operator!=(const DocumentView & document_view) const;
+      operator!=(const ViewIterator & document_view) const;
 
       Document
       operator*() const;
@@ -462,7 +457,7 @@ namespace object_recognition
       int total_rows_;
       /** The strings to send to the db_ to perform the query */
       ObjectDb::QueryFunction query_;
-      std::string collection_;
+      CollectionName collection_;
       ObjectDb db_;
     };
 

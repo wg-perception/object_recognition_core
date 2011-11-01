@@ -83,11 +83,13 @@ namespace object_recognition
       load_fields(const DocumentId & document_id, const CollectionName &collection,
                   boost::property_tree::ptree &fields) = 0;
 
+      virtual void
+      Delete(const ObjectId & id, const CollectionName & collection_name) = 0;
+
       virtual
       void
-      Query(const ViewType & type, const boost::property_tree::ptree &view_ptree,
-             const CollectionName & collection_name, int limit_rows, int start_offset, int& total_rows, int& offset,
-             std::vector<DocumentId> & document_ids) = 0;
+      Query(const View & view, const CollectionName & collection_name, int limit_rows, int start_offset,
+            int& total_rows, int& offset, std::vector<DocumentId> & document_ids) = 0;
 
       virtual void
       Query(const std::vector<std::string> & queries, const CollectionName & collection_name, int limit_rows,

@@ -54,7 +54,6 @@ typedef std::string DbType;
 typedef std::string Field;
 typedef std::string MimeType;
 typedef std::string RevisionId;
-typedef std::string View;
 
 const std::string MIME_TYPE_DEFAULT = "application/octet-stream";
 

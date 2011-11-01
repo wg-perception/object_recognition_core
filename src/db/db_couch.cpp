@@ -153,9 +153,14 @@ ObjectDbCouch::GetRevisionId(RevisionId & revision_id)
 }
 
 void
-ObjectDbCouch::Query(const object_recognition::db::ViewType & type, const boost::property_tree::ptree &view_ptree,
-                     const CollectionName & collection_name, int limit_rows, int start_offset, int& total_rows,
-                     int& offset, std::vector<DocumentId> & document_ids)
+ObjectDbCouch::Delete(const ObjectId & id, const CollectionName & collection_name)
+{
+  //TODO
+}
+
+void
+ObjectDbCouch::Query(const object_recognition::db::View & view, const CollectionName & collection_name, int limit_rows,
+                     int start_offset, int& total_rows, int& offset, std::vector<DocumentId> & document_ids)
 {
 //TODO
 }
