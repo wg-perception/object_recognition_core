@@ -7,13 +7,27 @@
 #include "object_recognition/db/db.h"
 #include "object_recognition/db/view_types.h"
 
+namespace
+{
+  /** Function that compares the intersection of two
+   * @param obj1
+   * @param obj2
+   * @return true if the intersection between the keys have the same values
+   */
+  bool
+  CompareJsonIntersection(const json_spirit::mObject &obj1, const json_spirit::mObject &obj2)
+  {
+//TODO
+    return true;
+  }
+}
+
 namespace object_recognition
 {
   namespace db
   {
     namespace bases
     {
-
       struct ModelInserterUtils
       {
         static Document
@@ -80,12 +94,11 @@ namespace object_recognition
             for (; iter != end; ++iter)
             {
               // Compare the parameters
-              //json_spirit::mObject db_parameters = (*iter).get_value<json_spirit::mObject>("parameters");
-              //TODO
-              bool is_same = true;
+              json_spirit::mObject db_parameters = (*iter).get_value<json_spirit::mObject>("parameters");
 
               // If they are the same, delete the current model in the database
-              if (is_same) {
+              if (CompareJsonIntersection(in_parameters, db_parameters))
+              {
                 db_.Delete((*iter).id(), *collection_name_);
                 break;
               }
