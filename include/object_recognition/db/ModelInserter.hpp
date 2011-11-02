@@ -7,27 +7,23 @@
 #include "object_recognition/db/db.h"
 #include "object_recognition/db/view_types.h"
 
-namespace
-{
-  /** Function that compares the intersection of two
-   * @param obj1
-   * @param obj2
-   * @return true if the intersection between the keys have the same values
-   */
-  bool
-  CompareJsonIntersection(const json_spirit::mObject &obj1, const json_spirit::mObject &obj2)
-  {
-//TODO
-    return true;
-  }
-}
-
 namespace object_recognition
 {
   namespace db
   {
     namespace bases
     {
+      /** Function that compares the intersection of two JSON trees
+       * @param obj1
+       * @param obj2
+       * @return true if the intersection between the keys have the same values
+       */
+      bool
+      CompareJsonIntersection(const json_spirit::mObject &obj1, const json_spirit::mObject &obj2);
+
+      /** Base class that inserts models in the DB: we need one for common operations (like checking whether the model
+       * is already in the DB)
+       */
       struct ModelInserterUtils
       {
         static Document
