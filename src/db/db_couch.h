@@ -131,7 +131,7 @@ private:
   read_json(T &reader, json_spirit::mObject& object)
   {
     json_spirit::mValue value;
-    json_spirit: read(reader, value);
+    json_spirit::read(reader, value);
     object = value.get_obj();
   }
 
@@ -148,6 +148,7 @@ private:
   {
     return url_ + "/" + collection_name + (id.empty() ? "" : "/" + id);
   }
+
   inline std::string
   url_id_rev(const CollectionName &collection_name, const DocumentId & id, const RevisionId & rev) const
   {
@@ -160,6 +161,13 @@ private:
   void
   GetRevisionId(RevisionId & revision_id);
 
+  /** Once json_reader_stream_ has been filled, call that function to get the results of the view
+   *
+   */
+  void
+  QueryView(const CollectionName & collection_name, int limit_rows, int start_offset, const std::string &options,
+            int& total_rows, int& offset, std::vector<DocumentId> & document_ids);
+
   /** The URL of the DB, including port */
   std::string url_;
 
@@ -169,7 +177,6 @@ private:
 
   object_recognition::curl::writer json_writer_;
   object_recognition::curl::reader json_reader_;
-
 };
 
 #endif /* DB_COUCH_H_ */

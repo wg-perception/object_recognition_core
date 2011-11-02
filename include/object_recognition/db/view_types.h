@@ -79,8 +79,17 @@ namespace object_recognition
             break;
         }
       }
-      friend class ObjectDbBase;
-    protected:
+      ViewType
+      type() const
+      {
+        return type_;
+      }
+      const json_spirit::mObject &
+      parameters() const
+      {
+        return parameters_;
+      }
+    private:
       ViewType type_;
       json_spirit::mObject parameters_;
     };

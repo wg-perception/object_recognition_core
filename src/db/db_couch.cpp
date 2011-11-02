@@ -154,22 +154,49 @@ ObjectDbCouch::GetRevisionId(RevisionId & revision_id)
 void
 ObjectDbCouch::Delete(const ObjectId & id, const CollectionName & collection_name)
 {
-  //TODO
+  json_spirit::mObject params;
+  std::string status;
+  Status(collection_name + "/" + id, status);
+  if (curl_.get_response_code() == object_recognition::curl::cURL::OK)
+  {
+    curl_.setCustomRequest("DELETE");
+    curl_.perform();
+    if (curl_.get_response_code() != object_recognition::curl::cURL::OK)
+    {
+      throw std::runtime_error(curl_.get_response_reason_phrase() + " : " + curl_.getURL());
+    }
+  }
+  else if (curl_.get_response_code() != 404)
+  {
+    throw std::runtime_error(curl_.get_response_reason_phrase() + " : " + curl_.getURL());
+  }
 }
 
 void
 ObjectDbCouch::Query(const object_recognition::db::View & view, const CollectionName & collection_name, int limit_rows,
                      int start_offset, int& total_rows, int& offset, std::vector<DocumentId> & document_ids)
 {
-//TODO
+  json_reader_stream_.str("");
+  json_spirit::mObject parameters = view.parameters();
+  std::string url;
+  switch (view.type())
+  {
+    case object_recognition::db::View::VIEW_MODEL_WHERE_OBJECT_ID_AND_MODEL_TYPE:
+      url = collection_name + "/_design/models/_view/by_object_id_and_" + parameters["model_type"].get_str();
+      break;
+  }
+
+  ObjectId object_id = parameters["object_id"].get_str();
+  QueryView(url, limit_rows, start_offset, "?startkey=\"" + object_id + "\"?enkey=\"" + object_id + "\"", total_rows,
+            offset, document_ids);
+
+  // Find the document_ids with the right
 }
 
 void
 ObjectDbCouch::Query(const std::vector<std::string> & queries, const CollectionName & collection_name, int limit_rows,
                      int start_offset, int& total_rows, int& offset, std::vector<DocumentId> & document_ids)
 {
-  if (limit_rows <= 0)
-    limit_rows = std::numeric_limits<int>::max();
   {
     json_spirit::mObject fields;
     BOOST_FOREACH(const std::string& query, queries)
@@ -179,13 +206,27 @@ ObjectDbCouch::Query(const std::vector<std::string> & queries, const CollectionN
     json_reader_stream_.str("");
     write_json(fields, json_reader_stream_);
   }
+
+  QueryView(url_ + "/" + collection_name + "/_temp_view", limit_rows, start_offset, "", total_rows, offset,
+            document_ids);
+}
+
+/** Once json_reader_stream_ has been filled, call that function to get the results of the view
+ *
+ */
+void
+ObjectDbCouch::QueryView(const std::string & in_url, int limit_rows, int start_offset, const std::string &options,
+                         int& total_rows, int& offset, std::vector<DocumentId> & document_ids)
+{
+  if (limit_rows <= 0)
+    limit_rows = std::numeric_limits<int>::max();
   json_writer_stream_.str("");
   curl_.reset();
   curl_.setReader(&json_reader_);
   curl_.setWriter(&json_writer_);
-  std::string url = url_ + "/" + collection_name + "/_temp_view?limit=" + boost::lexical_cast<std::string>(limit_rows)
-                    + "&skip="
-                    + boost::lexical_cast<std::string>(start_offset);
+  std::string url = in_url + "?limit=" + boost::lexical_cast<std::string>(limit_rows) + "&skip="
+                    + boost::lexical_cast<std::string>(start_offset)
+                    + options;
   curl_.setURL(url);
   curl_.setHeader("Content-Type: application/json");
   curl_.setCustomRequest("POST");
@@ -198,6 +239,7 @@ ObjectDbCouch::Query(const std::vector<std::string> & queries, const CollectionN
 
   json_reader_stream_.seekg(0);
   json_writer_stream_.seekg(0);
+
   json_spirit::mObject fields;
   read_json(json_writer_stream_, fields);
 
@@ -308,8 +350,8 @@ ObjectDbCouch::DeleteCollection(const CollectionName &collection)
   {
     throw std::runtime_error(curl_.get_response_reason_phrase() + " : " + curl_.getURL());
   }
-
 }
+
 void
 ObjectDbCouch::upload_json(const json_spirit::mObject &params, const std::string& url, const std::string& request)
 {
