@@ -4,8 +4,6 @@ from object_recognition import dbtools, models
 import couchdb
 import argparse
 
-from delete_observations import delete_observations
-
 def parse_args():
     parser = argparse.ArgumentParser(description='Delete objects from the database.')
     parser.add_argument('objects', metavar='OBJECT', type=str, nargs='+',
