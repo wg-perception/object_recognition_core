@@ -32,6 +32,10 @@ object sparsely, depending on the angle_thresh setting.'''),
                        help='Number of desired views. default(%(default)s)')
     parser.add_argument('--preview', dest='preview', action='store_true',
                         default=False, help='Preview the pose estimator.')
+    parser.add_argument('-i,--input', dest='input', type=str, help='The directory of the template to use. Default: %(default)s', default='')
+    parser.add_argument('-m,--matches', dest='matches', action='store_const',
+                        const=True, default=False,
+                        help='Visualize the matches.')
     #parser.add_argument('--use_turn_table', dest='use_turn_table', action='store_true',
     #                    default=False, help='Use an E106 servo based turntable.')
     from ecto.opts import scheduler_options, cell_options
@@ -61,6 +65,8 @@ if "__main__" == __name__:
                                             segmentation_cell=segmentation,
                                             n_desired=options.nviews,
                                             preview=options.preview,
+                                            orb_template=options.input,
+                                            orb_matches=options.matches,
                                             use_turn_table=False)
     from ecto.opts import run_plasm
     run_plasm(options, plasm, locals=dict(plasm=plasm, segmentation=segmentation))
