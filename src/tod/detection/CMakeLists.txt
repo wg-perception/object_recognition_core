@@ -1,6 +1,7 @@
 # deal with the detection TOD module
 ectomodule(tod_detection
   DescriptorMatcher.cpp
+  LshMatcher.cpp
   GuessGenerator.cpp
   ModelReader.cpp
   module.cpp
