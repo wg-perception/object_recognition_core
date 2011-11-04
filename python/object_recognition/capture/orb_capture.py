@@ -99,7 +99,7 @@ class OrbPoseEstimator(ecto.BlackBox):
         self.K = ecto.Passthrough('K')
         self.points3d = ecto.Passthrough('points3d')
         self.depth_mask = ecto.Passthrough('mask')
-        self.pose_estimation = MatchRefinementHSvd('Pose Estimation',reprojection_error=3)
+        self.pose_estimation = MatchRefinementHSvd('Pose Estimation', reprojection_error=3, inlier_thresh=15)
         self.fps = FPSDrawer('FPS')
         self.tr = TransformCompose('Transform Composition')
 
