@@ -1,18 +1,11 @@
 #!/usr/bin/env python
+import roscompat
+import os, sys, argparse
+
 from ecto_opencv import highgui, imgproc
 from object_recognition import dbtools, models, capture
 from object_recognition.dbtools import add_db_options
-import argparse
-import ecto
-import ecto_ros
-import ecto_sensor_msgs
-import ecto_geometry_msgs
-import os
-import roscompat
-import sys
-
-
-
+import ecto, ecto_ros, ecto_sensor_msgs, ecto_geometry_msgs
 
 def connect_observation_calc_with_mask_pose(sync, commit, object_id, session_id, debug=False):
     plasm = ecto.Plasm()
@@ -70,7 +63,7 @@ def compute_for_bag_with_mask_pose(bag, obj, args):
             if 'y' in use_it.lower():
                 store_new = False
                 obj = x
-                return
+                break
     else:
         store_new = True
     if store_new:
