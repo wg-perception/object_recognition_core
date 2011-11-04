@@ -50,7 +50,8 @@ namespace object_recognition
         params["db_url"] >> db_url;
         params["db_collection"] >> collection;
         observation = inputs["observation"];
-        object_recognition::db::ObjectDbParameters db_params;
+        db::ObjectDbParameters db_params;
+        db_params.type_ = db::ObjectDbParameters::COUCHDB;
         db_params.root_ = db_url;
         db_params.collection_ = collection;
         db = object_recognition::db::ObjectDb(db_params);
