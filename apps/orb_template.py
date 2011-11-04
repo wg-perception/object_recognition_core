@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+import roscompat
 import ecto
 from ecto_opencv.highgui import VideoCapture, imshow, FPSDrawer, MatPrinter, MatWriter, ImageSaver
 from ecto_opencv.features2d import ORB, DrawKeypoints, Matcher, MatchRefinement, MatchRefinement3d, DrawMatches
