@@ -172,8 +172,14 @@ def find_all_observations_for_object(observation_collection, object_id):
     of their ids. These are sorted by the frame number,
     so they should be in chronological ordering.
     '''
+    sessions = Session.by_object_id(observation_collection, key=object_id)
+    sessions_by_data = []
+    for x in sessions:
+        sess = observation_collection[x.id]
+        sessions_by_data.append((sess['added'], x.id))
+    sessions_by_data = sorted(sessions_by_data)
     #run the view, keyed on the session id.
-    results = Observation.by_object_id(observation_collection, key=object_id)
+    results = Observation.by_session_id(observation_collection, key=sessions_by_data[-1][1])
     if len(results) == 0 : return []
     #create a list of tuples, so that they can be sorted by frame number
     obs_tuples = [ (obs.frame_number, obs.id) for obs in results]
