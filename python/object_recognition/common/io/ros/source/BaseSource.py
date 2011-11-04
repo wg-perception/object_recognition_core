@@ -17,7 +17,8 @@ class BaseSource(ecto.BlackBox):
     _camera_info = ecto_ros.CameraInfo2Cv
     _rgb_image = ecto_ros.Image2Mat
     _depth_converter = ecto_ros.Image2Mat
-    _depth_map =capture.RescaledRegisteredDepth
+    _depth_map = capture.RescaledRegisteredDepth
+    _depth_mask = calib.DepthMask
     _points3d = calib.DepthTo3d
     _source = None #this should be allocated in by implementers
 
@@ -29,6 +30,7 @@ class BaseSource(ecto.BlackBox):
         o.forward('depth', cell_name='_depth_map',cell_key='depth',doc='The depth map from a OpenNI device. This is a CV_32FC1, with values in meters.')
         o.forward('K', cell_name='_camera_info',cell_key='K',doc='The camera intrinsics matrix.')
         o.forward('points3d', cell_name='_points3d')
+        o.forward('mask',cell_name='_depth_mask')
 
     def configure(self, p, _i, _o):
         #ROS message converters
@@ -39,7 +41,7 @@ class BaseSource(ecto.BlackBox):
         #these transform the depth into something usable
         self._depth_map = BaseSource._depth_map()
         self._points3d = BaseSource._points3d()
-
+        self._depth_mask = BaseSource._depth_mask()
 
     def connections(self):
         #ros message converers
@@ -56,7 +58,8 @@ class BaseSource(ecto.BlackBox):
         #depth ~> 3d calculations
         graph += [
                   self._depth_map['depth'] >> self._points3d['depth'],
-                  self._camera_info['K'] >> self._points3d['K']
+                  self._camera_info['K'] >> self._points3d['K'],
+                  self._depth_map['depth'] >> self._depth_mask['depth']
                  ]
         
         return graph
