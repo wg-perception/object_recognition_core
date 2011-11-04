@@ -45,7 +45,7 @@ class Trainer(ecto.BlackBox):
     def configure(self, p, i, o):
         self.feature_descriptor = self.feature_descriptor()
         self.depth_to_3d_sparse = calib.DepthTo3dSparse()
-        self.keypoints_to_mat = tod_training.KeypointsToMat()
+        self.keypoints_to_mat = features2d.KeypointsToMat()
         self.camera_to_world = tod_training.CameraToWorld()
         self.model_stacker = tod_training.TodModelStacker()
         self.point_merger = self.point_merger()

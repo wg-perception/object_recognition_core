@@ -95,6 +95,8 @@ namespace object_recognition
               // If they are the same, delete the current model in the database
               if (CompareJsonIntersection(in_parameters, db_parameters))
               {
+                std::cout << "Deleting the previous model " << (*iter).id() << " of object " << *object_id_
+                          << std::endl;
                 db_.Delete((*iter).id(), *collection_name_);
                 break;
               }

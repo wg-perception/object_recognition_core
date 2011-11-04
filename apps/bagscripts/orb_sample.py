@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 import ecto
-from ecto_opencv.highgui import VideoCapture, imshow, FPSDrawer, MatPrinter
+from ecto_opencv.highgui import VideoCapture, imshow, FPSDrawer, MatPrinter, MatWriter
 from ecto_opencv.features2d import ORB, DrawKeypoints, Matcher, MatchRefinement, MatchRefinement3d, DrawMatches
 
 from ecto_opencv.imgproc import cvtColor, Conversion
@@ -11,6 +11,7 @@ import argparse
 from ecto.opts import scheduler_options, run_plasm
 import ecto_ros
 import sys
+from orb_capture import *
 
 
 def parse_args():
@@ -20,49 +21,8 @@ def parse_args():
     options = parser.parse_args()
     return options
 
-class FeatureFinder(ecto.BlackBox):
-    orb = ORB
-    keypointsTo2d = KeypointsToMat
-    select3d = Select3d
-
-    def declare_params(self, p):
-        p.forward_all('orb')
-
-    def declare_io(self, p, i, o):
-        i.forward('points3d', 'select3d')
-        i.forward_all('orb')
-        o.forward_all('orb')
-        o.forward_all('keypointsTo2d')
-        o.forward_all('select3d')
-
-    def connections(self):
-        return [self.orb['keypoints'] >> self.keypointsTo2d['keypoints'],
-                self.keypointsTo2d['points'] >> self.select3d['points'],
-                ]
-
-class PlaneEstimator(ecto.BlackBox):
-    #find a plane in the center region of the image.
-    region = Select3dRegion
-    plane_fitter = PlaneFitter
-    flag = ecto.Passthrough
-            
-    def declare_params(self, p):
-        p.forward_all('region')
-
-    def declare_io(self, p, i, o):
-        i.forward_all('region')
-        i.forward('set','flag',cell_key='in')
-        o.forward_all('plane_fitter')
-
-    def connections(self):
-        return [ self.region['points3d'] >> self.plane_fitter['points3d'],
-                self.plane_fitter['R'] >> MatPrinter(name='R')[:],
-                self.plane_fitter['T'] >> MatPrinter(name='T')[:],
-                ]
 
 n_features = 2000
-n_features_train = 5000
-
 
 options = parse_args()
 
@@ -71,16 +31,7 @@ plasm = ecto.Plasm()
 #setup the input source, grayscale conversion
 source = Source.parse_arguments(options)
 rgb2gray = cvtColor (flag=Conversion.RGB2GRAY)
-
 plasm.connect(source['image'] >> rgb2gray ['image'])
-
-plane_est = PlaneEstimator(radius=50)
-pose_draw = PoseDrawer()
-plasm.connect(source['image', 'points3d'] >> plane_est['image', 'points3d'],
-                plane_est['R','T'] >> pose_draw['R', 'T'],
-                source['K', 'image'] >> pose_draw['K', 'image'],
-                pose_draw['output'] >> imshow(name='plane')[:]
-                )
 
 #convenience variable for the grayscale
 img_src = rgb2gray['image']
@@ -90,13 +41,12 @@ plasm.connect(
               source['depth'] >> imshow(name='depth')[:],
               )
 
-
 #connect up the test ORB
 orb_test = FeatureFinder('ORB test', n_features=n_features)
 plasm.connect(img_src >> orb_test['image'],
               source['points3d'] >> orb_test['points3d'],
+              source['mask'] >> orb_test['mask']
               )
-
 
 #display test ORB
 draw_kpts = DrawKeypoints()
