@@ -8,6 +8,7 @@ from ecto_object_recognition import capture
 from fiducial_pose_est import OpposingDotPoseEstimator
 from object_recognition.common.io.source import Source, SourceTypes
 from .arbotix import *
+from .orb_capture import OrbPoseEstimator
 
 ImageSub = ecto_sensor_msgs.Subscriber_Image
 CameraInfoSub = ecto_sensor_msgs.Subscriber_CameraInfo
@@ -93,7 +94,10 @@ class TurnTable(ecto.Cell):
         MY_SERVO = 0xE9
         a.disableTorque(MY_SERVO)
 
-def create_capture_plasm(bag_name, angle_thresh, segmentation_cell, n_desired=72, preview=False, use_turn_table=True):
+def create_capture_plasm(bag_name, angle_thresh, segmentation_cell, n_desired=72,
+                                            orb_template='',
+                                            orb_matches=False,
+                                            preview=False, use_turn_table=True):
     '''
     Creates a plasm that will capture openni data into a bag, using a dot pattern to sparsify views.
     
@@ -110,9 +114,12 @@ def create_capture_plasm(bag_name, angle_thresh, segmentation_cell, n_desired=72
     poser = OpposingDotPoseEstimator(rows=5, cols=3,
                                      pattern_type=calib.ASYMMETRIC_CIRCLES_GRID,
                                      square_size=0.04, debug=True)
-
+    if orb_template != '':
+        poser = OrbPoseEstimator(directory=orb_template, show_matches=orb_matches)
+        graph += [source['points3d'] >> poser['points3d'],
+                  source['mask'] >> poser['mask'],
+                  ]
     rgb2gray = imgproc.cvtColor('rgb -> gray', flag=imgproc.Conversion.RGB2GRAY)
-
     delta_pose = ecto.If('delta R|T', cell=capture.DeltaRT(angle_thresh=angle_thresh,
                                                           n_desired=n_desired))
 
@@ -124,12 +131,11 @@ def create_capture_plasm(bag_name, angle_thresh, segmentation_cell, n_desired=72
     graph += [source['image'] >> rgb2gray[:],
               source['image'] >> poser['color_image'],
               rgb2gray[:] >> poser['image'],
-              poser['debug_image'] >> (display['image'],),
               source['K'] >> poser['K'],
+              poser['debug_image'] >> (display['image'],),
               poser['R', 'T', 'found'] >> delta_pose['R', 'T', 'found'],
               poser['R', 'T'] >> poseMsg['R', 'T'],
               ]
-
 
     masker = segmentation_cell
     maskMsg = Mat2Image(frame_id='/camera_rgb_optical_frame')
@@ -140,6 +146,8 @@ def create_capture_plasm(bag_name, angle_thresh, segmentation_cell, n_desired=72
               poser['R', 'T'] >> masker['R', 'T'],
               masker['mask'] >> maskMsg[:],
               ]
+#    graph += [source['depth'] >> highgui.imshow(name='depth')['image']
+#              ]
 
     #display the mask
     mask_and = imgproc.BitwiseAnd()
@@ -151,7 +159,7 @@ def create_capture_plasm(bag_name, angle_thresh, segmentation_cell, n_desired=72
               mask_and[:] >> highgui.imshow(name='mask')[:],
             ]
     if not preview:
-        display.inputs.__test__ = False
+        display.inputs.__test__ = True
         baggers = dict(image=ImageBagger(topic_name='/camera/rgb/image_color'),
                    depth=ImageBagger(topic_name='/camera/depth/image'),
                    mask=ImageBagger(topic_name='/camera/mask'),
