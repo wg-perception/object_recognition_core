@@ -64,10 +64,12 @@ namespace object_recognition
       {
 
         typedef pcl::PointCloud<pcl::PointXYZRGBNormal> CloudNormalT;
-
+        CloudNormalT::Ptr cloud_with_normals(new CloudNormalT);
+        *cloudout = cloud_with_normals;
         //extract the cloud
         CloudT::ConstPtr cloud = cloudin->cast<CloudT>();
-
+        if(!cloud || cloud->size()<1)
+          return ecto::OK;
         pcl::KdTree<Point>::Ptr tree_;
         pcl::NormalEstimation<Point, pcl::Normal> impl;
         pcl::PointCloud<pcl::Normal> normals;
@@ -77,7 +79,6 @@ namespace object_recognition
         impl.setKSearch(50);
         impl.compute(normals);
 
-        CloudNormalT::Ptr cloud_with_normals(new CloudNormalT);
         pcl::concatenateFields(*cloud, normals, *cloud_with_normals);
 
         bool inverse = true;

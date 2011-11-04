@@ -152,11 +152,12 @@ def create_capture_plasm(bag_name, angle_thresh, segmentation_cell, n_desired=72
     #display the mask
     mask_and = imgproc.BitwiseAnd()
     mask2rgb = imgproc.cvtColor('mask -> rgb', flag=imgproc.Conversion.GRAY2RGB)
+    mask_display = ecto.If(cell=highgui.imshow(name='mask'))
     graph += [
               masker['mask'] >> mask2rgb['image'],
               mask2rgb['image'] >> mask_and['a'],
               source['image'] >> mask_and['b'],
-              mask_and[:] >> highgui.imshow(name='mask')[:],
+              mask_and[:] >> mask_display[:],
             ]
     if not preview:
         display.inputs.__test__ = True
@@ -190,7 +191,7 @@ def create_capture_plasm(bag_name, angle_thresh, segmentation_cell, n_desired=72
         else:
             delta_pose.inputs.__test__ = True
 
-        graph += [novel >> (bagwriter['__test__'], display['__test__'])]
+        graph += [novel >> (bagwriter['__test__'], display['__test__'], mask_display['__test__'])]
 
     plasm = ecto.Plasm()
     plasm.connect(graph)
