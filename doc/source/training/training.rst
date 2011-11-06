@@ -14,7 +14,8 @@ options in there can be overriden through the command line for convenience.
 For now, use the default config_training.txt and change the following parameters to your needs:
   - the db section can point to a different root, another machine for example
   - the object_ids should be the list of object ids you want to train on. If you want, you can also use object_names,
-  that are more human readable
+  that are more human readable. object_ids is of the form ["6b3de86feee4e840280b4caad90003fb"] but there are two special
+  options: if it is "all", then all models are recomputed; if it is "missing", only the missing models are computed.
 
 A typical command line session might look like::
 
@@ -33,7 +34,7 @@ Extras
 ^^^^^^
 
 To verify that the model is good looking, you can (at least for the TOD models), launch the feature_viewer script in
-the app folder.
+the apps folder.
 
 .. program-output:: apps/feature_viewer --help
    :in_srcdir:
