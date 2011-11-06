@@ -1,31 +1,16 @@
 Object Recognition Api
 ======================
 
-Object Recognition is built on top of ecto and ROS. Here lay the innards.
+In Object Recognition each algorithm is defined in terms of a pipeline. We have a few interfaces you should follow if
+you wish to add a new pipeline to reduce the amount of code to write.
+
+Our infrastructure is very flexible thanks to ecto and we have developed several tools to facilitate the traditional
+pipelines that contain a training phase and a detection phase. If your pipeline does not require training, just skip
+the section.
 
 .. toctree::
    :maxdepth: 2
    
-   pipelines.rst
-
-
-Cells
-^^^^^
-
-.. ectomodule:: ecto_object_recognition.io
-
-.. ectomodule:: ecto_object_recognition.io_ros
-
-.. ectomodule:: ecto_object_recognition.conversion
-
-.. ectomodule:: ecto_object_recognition.filters
-
-.. ectomodule:: ecto_object_recognition.capture
-
-.. ectomodule:: ecto_object_recognition.reconstruction
-
-.. ectomodule:: ecto_object_recognition.tod_training
-
-.. ectomodule:: ecto_object_recognition.tod_detection
-
-.. ectomodule:: ecto_object_recognition.object_recognition_db
+   training.rst
+   detection.rst
+   cells.rst

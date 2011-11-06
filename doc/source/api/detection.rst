@@ -1,8 +1,11 @@
-Pipelines
+Detection
 =========
 
-In Object Recognition each algorithm is defined in terms of a pipeline. We have a few interfaces the you should follow if
-you wish to add a new pipeline.
+Source
+------
+
+Sink
+----
 
 Detection Pipelines
 -------------------
