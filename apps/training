@@ -1,11 +1,11 @@
 #!/usr/bin/env python
 import roscompat
+import ecto, ecto_ros
 from ecto_object_recognition import capture, tod_training
 from object_recognition import models
 from object_recognition.common.utils import json_helper
 from object_recognition.common.utils.training_detection_args import read_arguments
 from object_recognition.tod.trainer import Trainer as TodTrainer
-import ecto
 
 DEBUG = False
 

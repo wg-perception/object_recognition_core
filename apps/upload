@@ -1,11 +1,11 @@
 #!/usr/bin/env python
 import roscompat
 import os, sys, argparse
-
+import ecto, ecto_ros, ecto_sensor_msgs, ecto_geometry_msgs
 from ecto_opencv import highgui, imgproc
 from object_recognition import dbtools, models, capture
 from object_recognition.dbtools import add_db_options
-import ecto, ecto_ros, ecto_sensor_msgs, ecto_geometry_msgs
+
 
 def connect_observation_calc_with_mask_pose(sync, commit, object_id, session_id, debug=False):
     plasm = ecto.Plasm()

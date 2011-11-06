@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-#import roscompat
+import roscompat
 import sys
 import argparse
 import time
@@ -10,7 +10,7 @@ import subprocess
 
 import couchdb
 
-import ecto
+import ecto,ecto_ros
 from ecto_opencv import calib, highgui, imgproc
 import object_recognition
 from object_recognition import dbtools, models, capture

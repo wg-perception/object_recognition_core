@@ -1,10 +1,10 @@
 #!/usr/bin/env python
 import roscompat
 import ecto
+import ecto_ros
 from object_recognition import capture
 from object_recognition.capture import openni_capture
-
-import ecto_ros
+	
 import sys
 import argparse
 import math

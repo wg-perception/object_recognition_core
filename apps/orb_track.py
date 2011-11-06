@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+import roscompat
 import ecto
 import ecto_ros
 
