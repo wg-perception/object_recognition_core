@@ -2,6 +2,7 @@ from object_recognition.dbtools import DEFAULT_SERVER_URL, init_object_databases
 import couchdb
 from couchdb.mapping import TextField, ListField, DateTimeField, Document, \
     ViewField, IntegerField
+from couchdb.design import ViewDefinition
 from datetime import datetime
 
 class Object(Document):
@@ -109,28 +110,11 @@ class Model(Document):
     Type = TextField(default="Model")
     ModelType = TextField()
 
+    # this dictionary will include several views: the key will be the type of objectmodel
+    by_object_id_and = {}
     by_object_id = ViewField('models', '''\
         function(doc) {
             if (doc.Type == "Model")
-                emit(doc.object_id, doc)
-        }
-    ''')
-    by_object_id_and_TOD = ViewField('models', '''\
-        function(doc) {
-            if ((doc.Type == "Model") && (doc.ModelType == "TOD"))
-                emit(doc.object_id, doc)
-        }
-    ''')
-
-    by_object_id_and_mesh = ViewField('models', '''\
-        function(doc) {
-            if ((doc.Type == "Model") && (doc.ModelType == "mesh"))
-                emit(doc.object_id, doc)
-        }
-    ''')
-    by_object_id_and_LINEMOD = ViewField('models', '''\
-        function(doc) {
-            if ((doc.Type == "Model") && (doc.ModelType == "LINEMOD"))
                 emit(doc.object_id, doc)
         }
     ''')
@@ -139,13 +123,49 @@ class Model(Document):
             if(doc.Type == "Model")
                 emit(null,doc)
         }''')
+
     @classmethod
     def sync(cls, db):
         cls.by_object_id.sync(db)
-        cls.by_object_id_and_TOD.sync(db)
-        cls.by_object_id_and_mesh.sync(db)
-        cls.by_object_id_and_LINEMOD.sync(db)
         cls.all.sync(db)
+        # figure out the different models in the DB
+        models = [ m.value for m in db.query('''
+        function(doc) {
+            if (doc.Type == "Model")
+                emit(doc.ModelType)
+        }
+        ''', '''
+        function(keys, values, rereduce) {
+        log(keys);
+            var o = {}, key, key_id;
+            if (rereduce) {
+                for (v in values) {
+                    for(j in values[v]) {
+                        o[values[v][j]] = values[v][j];
+                    }
+                }
+            } else {
+                for (key_id in keys) {
+                    key = keys[key_id][0];
+                    o[key] = key;
+                }
+            }
+            var r = [];
+            for (key in o) {
+                r.push(o[key]);
+            }
+            return r;
+        }
+        ''') ][0]
+        # for each, create a view and sync it with the DB
+        for model in models:
+            cls.by_object_id_and[model] = ViewDefinition('models', 'by_object_id_and_' + model, '''\
+                function(doc) {
+                    if ((doc.Type == "Model") && (doc.ModelType == "%s"))
+                        emit(doc.object_id, doc)
+                }
+            ''' % model, wrapper = cls._wrap_row)
+            cls.by_object_id_and[model].sync(db)
 
 def sync_models(db):
     Object.sync(db)
@@ -192,14 +212,10 @@ def find_model_for_object(models_collection, object_id, model_type='all'):
     The type of the model can be specified through model_type
     '''
     #run the view, keyed on the object id.
-    if model_type == 'all':
-        r = Model.by_object_id(models_collection, key=object_id)
-    elif model_type == 'TOD':
-        r = Model.by_object_id_and_TOD(models_collection, key=object_id)
-    elif model_type == 'mesh':
-        r = Model.by_object_id_and_mesh(models_collection, key=object_id)
-    elif model_type == 'LINEMOD':
-        r = Model.by_object_id_and_LINEMOD(models_collection, key=object_id)
+    if not Model.by_object_id_and.has_key(model_type):
+        return []
+    r = Model.by_object_id_and[model_type](models_collection, key=object_id)
+
     if len(r) == 0 : return []
     return [ m.id for m in r ]
 
