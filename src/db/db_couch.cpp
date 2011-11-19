@@ -154,11 +154,28 @@ ObjectDbCouch::GetRevisionId(RevisionId & revision_id)
 void
 ObjectDbCouch::Delete(const ObjectId & id, const CollectionName & collection_name)
 {
-  json_spirit::mObject params;
   std::string status;
   Status(collection_name + "/" + id, status);
   if (curl_.get_response_code() == object_recognition::curl::cURL::OK)
   {
+    DocumentId document_id;
+    RevisionId revision_id;
+    {
+      json_spirit::mObject params;
+      read_json(json_writer_stream_, params);
+      document_id = params["_id"].get_str();
+      revision_id = params["_rev"].get_str();
+    }
+
+    json_writer_stream_.str("");
+    json_reader_stream_.str("");
+    curl_.setURL(url_ + "/" + collection_name + "/" + id + "?rev=" + revision_id);
+    curl_.setWriter(&json_writer_);
+    curl_.setReader(&json_reader_);
+
+    json_spirit::mObject params;
+    params["rev"] = json_spirit::mValue(revision_id);
+    write_json(params, json_reader_stream_);
     curl_.setCustomRequest("DELETE");
     curl_.perform();
     if (curl_.get_response_code() != object_recognition::curl::cURL::OK)
@@ -182,15 +199,14 @@ ObjectDbCouch::Query(const object_recognition::db::View & view, const Collection
   switch (view.type())
   {
     case object_recognition::db::View::VIEW_MODEL_WHERE_OBJECT_ID_AND_MODEL_TYPE:
-      url = collection_name + "/_design/models/_view/by_object_id_and_" + parameters["model_type"].get_str();
+      url = url_ + "/" + collection_name + "/_design/models/_view/by_object_id_and_"
+            + parameters["model_type"].get_str();
       break;
   }
 
   ObjectId object_id = parameters["object_id"].get_str();
-  QueryView(url, limit_rows, start_offset, "?startkey=\"" + object_id + "\"?enkey=\"" + object_id + "\"", total_rows,
+  QueryView(url, limit_rows, start_offset, "&startkey=\"" + object_id + "\"&endkey=\"" + object_id + "\"", total_rows,
             offset, document_ids);
-
-  // Find the document_ids with the right
 }
 
 void
@@ -229,7 +245,7 @@ ObjectDbCouch::QueryView(const std::string & in_url, int limit_rows, int start_o
                     + options;
   curl_.setURL(url);
   curl_.setHeader("Content-Type: application/json");
-  curl_.setCustomRequest("POST");
+  curl_.setCustomRequest("GET");
   curl_.perform();
 
   if (curl_.get_response_code() != object_recognition::curl::cURL::OK)
@@ -334,7 +350,6 @@ ObjectDbCouch::Status(const CollectionName& collection, std::string& status)
 void
 ObjectDbCouch::DeleteCollection(const CollectionName &collection)
 {
-  json_spirit::mObject params;
   std::string status;
   Status(collection, status);
   if (curl_.get_response_code() == object_recognition::curl::cURL::OK)

@@ -36,19 +36,35 @@ namespace object_recognition
               json_spirit::mObject::const_iterator iter = obj2.find(val.first);
               if (iter == obj2.end())
                 continue;
+              // If the type is different, we are done
+              if (val.second.type() != iter->second.type())
+                return false;
               bool is_same;
               switch (iter->second.type())
               {
-                case json_spirit::array_type:
-                  is_same = CompareJsonArrays(val.second.get_array(), iter->second.get_array());
-                  break;
                 case json_spirit::obj_type:
                   is_same = CompareJsonIntersection(val.second.get_obj(), iter->second.get_obj());
                   break;
+                case json_spirit::array_type:
+                  is_same = CompareJsonArrays(val.second.get_array(), iter->second.get_array());
+                  break;
+                case json_spirit::str_type:
+                  is_same = val.second.get_str() == iter->second.get_str();
+                  break;
+                case json_spirit::bool_type:
+                  is_same = val.second.get_bool() == iter->second.get_bool();
+                  break;
+                case json_spirit::int_type:
+                  is_same = val.second.get_int64() == iter->second.get_int64();
+                  break;
+                case json_spirit::real_type:
+                  is_same = val.second.get_real() == iter->second.get_real();
+                  break;
                 default:
-                  is_same = val.second.get_obj() == iter->second.get_obj();
+                  throw std::runtime_error("non JSON spirit type");
                   break;
               }
+
               if (!is_same)
                 return false;
             }

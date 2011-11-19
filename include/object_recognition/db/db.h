@@ -414,6 +414,7 @@ namespace object_recognition
 
       ViewIterator(const View &view, ObjectDb& db, const CollectionName & collection_name)
           :
+            start_offset_(0),
             query_(db.Query(view, collection_name)),
             collection_(collection_name),
             db_(db)
