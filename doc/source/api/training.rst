@@ -74,8 +74,8 @@ will have to implement the following member functions (and please send us a patc
     void
     Document::set_attachment<YourType>(const AttachmentName &attachment_name, const cv::Mat & value);
 
-(we do not use boost serialization to make sure the binary blobs are readable on machines with different ``boost``
-libraries)
+(we provide a default ``boost`` serialization but to make sure the binary blobs are readable on machines with different
+``boost`` libraries, you should probably implement your own serialization)
 
 Step 2
 ^^^^^^
