@@ -1,3 +1,38 @@
+/*
+ * Software License Agreement (BSD License)
+ *
+ *  Copyright (c) 2009, Willow Garage, Inc.
+ *  All rights reserved.
+ *
+ *  Redistribution and use in source and binary forms, with or without
+ *  modification, are permitted provided that the following conditions
+ *  are met:
+ *
+ *   * Redistributions of source code must retain the above copyright
+ *     notice, this list of conditions and the following disclaimer.
+ *   * Redistributions in binary form must reproduce the above
+ *     copyright notice, this list of conditions and the following
+ *     disclaimer in the documentation and/or other materials provided
+ *     with the distribution.
+ *   * Neither the name of Willow Garage, Inc. nor the names of its
+ *     contributors may be used to endorse or promote products derived
+ *     from this software without specific prior written permission.
+ *
+ *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ *  "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ *  LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
+ *  FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
+ *  COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
+ *  INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
+ *  BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+ *  LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+ *  CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+ *  LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
+ *  ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ *  POSSIBILITY OF SUCH DAMAGE.
+ *
+ */
+
 #pragma once
 
 #include <ecto/ecto.hpp>
@@ -21,21 +56,68 @@ namespace object_recognition
       bool
       CompareJsonIntersection(const json_spirit::mObject &obj1, const json_spirit::mObject &obj2);
 
-      /** Base class that inserts models in the DB: we need one for common operations (like checking whether the model
-       * is already in the DB)
+      /** Function filling a DB document for a model with the common attributes
+       * @param db the DB where the model will be saved
+       * @param collection_name the collection where the model will be saved
+       * @param object_id the id of the object for that model
+       * @param model_params the parameters of the model
+       * @param model_type the type of the model (TOD, Linemod, mesh, however you name it)
+       * @return
        */
-      struct ModelInserterUtils
+      Document
+      PopulateDoc(const ObjectDb& db, const CollectionName& collection_name, const ObjectId& object_id,
+                  const std::string& model_params, const std::string& model_type);
+
+      /** When creating your own cell to insert models in the DB first have an implementation class that inherits from
+       * ModelInserterImpl
+       */
+      struct ModelInserterImpl
       {
-        static Document
-        populate_doc(const ObjectDb& db, const CollectionName& collection_name, const ObjectId& object_id,
-                     const std::string& model_params, const std::string& model_type);
+        virtual
+        ~ModelInserterImpl()
+        {
+        }
+
+        static void
+        declare_params(ecto::tendrils& params)
+        {
+        }
+
+        static void
+        declare_io(const ecto::tendrils& params, ecto::tendrils& inputs, ecto::tendrils& outputs)
+        {
+        }
+
+        virtual void
+        configure(const ecto::tendrils& params, const ecto::tendrils& inputs, const ecto::tendrils& outputs)
+        {
+        }
+
+        /** This function is meant to fill the DB document
+         * @param inputs usual input tendril
+         * @param outputs usual output tendril
+         * @param doc DB document that needs to be filled when persisted to the DB. Automatically, it will be filled
+         * with: the model parameters, the type of the model and the collection in the DB
+         * @return
+         */
+        virtual int
+        process(const ecto::tendrils& inputs, const ecto::tendrils& outputs, db::Document& doc) = 0;
+
+        virtual std::string
+        model_type() const = 0;
       };
-      /** Class inserting the arbitrary Models into the DB
+
+      /** Class inserting the arbitrary Models into the DB. If you want to create a cell that persists to the DB, first
+       * implement a ModelInserterImpl class and then have your model inserter class inherit the ModelInserterBase as
+       * follows:
+       * struct MyAwesomeModelInserter db::bases::ModelInserterNase<MyAwesomeModelInserterImpl> {};
+       *
+       * You have to jump through those hoops because of the static member functions
        */
       template<typename T>
-      struct ModelInserter: T
+      struct ModelInserterBase: T
       {
-        typedef ModelInserter<T> C;
+        typedef ModelInserterBase<T> C;
 
         static void
         declare_params(ecto::tendrils& params)
@@ -68,8 +150,9 @@ namespace object_recognition
         int
         process(const ecto::tendrils& inputs, const ecto::tendrils& outputs)
         {
-          Document doc_new = ModelInserterUtils::populate_doc(db_, *collection_name_, *object_id_, *model_params_,
-                                                              T::model_type());
+          Document doc_new = PopulateDoc(db_, *collection_name_, *object_id_, *model_params_, T::model_type());
+
+          // Read the input model parameters
           json_spirit::mObject in_parameters;
           {
             json_spirit::mValue value;

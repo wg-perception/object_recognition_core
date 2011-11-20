@@ -7,30 +7,19 @@ namespace object_recognition
 {
   namespace tod
   {
-    /** Class inserting the TOD models in the DB
+    /** Implementation class inserting the TOD models in the DB
      */
-    struct ModelInserter_
+    struct ModelInserterImpl: public db::bases::ModelInserterImpl
     {
-      static void
-      declare_params(ecto::tendrils& params)
-      {
-      }
-
+    public:
       static void
       declare_io(const ecto::tendrils& params, ecto::tendrils& inputs, ecto::tendrils& outputs)
       {
-        typedef ModelInserter_ C;
-        inputs.declare(&C::points_, "points", "The 3d position of the points.");
-        inputs.declare(&C::descriptors_, "descriptors", "The descriptors.");
+        inputs.declare(&ModelInserterImpl::points_, "points", "The 3d position of the points.");
+        inputs.declare(&ModelInserterImpl::descriptors_, "descriptors", "The descriptors.");
       }
 
-      void
-      configure(const ecto::tendrils& params, const ecto::tendrils& inputs, const ecto::tendrils& outputs)
-      {
-
-      }
-
-      int
+      virtual int
       process(const ecto::tendrils& inputs, const ecto::tendrils& outputs, db::Document& doc)
       {
         doc.set_attachment<cv::Mat>("descriptors", *descriptors_);
@@ -38,10 +27,10 @@ namespace object_recognition
         return ecto::OK;
       }
 
-      const std::string& model_type() const
+      virtual std::string
+      model_type() const
       {
-        static std::string s = "TOD";
-        return s;
+        return "TOD";
       }
 
     private:
@@ -49,10 +38,9 @@ namespace object_recognition
       ecto::spore<cv::Mat> descriptors_;
     };
 
-    //for type prettiness
-    struct ModelInserter: db::bases::ModelInserter<ModelInserter_>
-    {
-    };
+    /** Class inserting the TOD models in the DB
+     */
+    typedef db::bases::ModelInserterBase<ModelInserterImpl> ModelInserter;
   }
 }
 

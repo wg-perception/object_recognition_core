@@ -5,7 +5,11 @@
 
 namespace
 {
-  // Helper functions to compare JSON arrays
+  /** Function comparing two JSON arrays
+   * @param obj1
+   * @param obj2
+   * @return true if the two arrays contain the same elements
+   */
   bool
   CompareJsonArrays(const json_spirit::mArray &obj1, const json_spirit::mArray &obj2)
   {
@@ -71,10 +75,17 @@ namespace object_recognition
         return true;
       }
 
+      /** Function filling a DB document for a model with the common attributes
+       * @param db the DB where the model will be saved
+       * @param collection_name the collection where the model will be saved
+       * @param object_id the id of the object for that model
+       * @param model_params the parameters of the model
+       * @param model_type the type of the model (TOD, Linemod, mesh, however you name it)
+       * @return
+       */
       Document
-      ModelInserterUtils::populate_doc(const ObjectDb& db, const CollectionName& collection_name,
-                                       const ObjectId& object_id, const std::string& model_params,
-                                       const std::string& model_type)
+      PopulateDoc(const ObjectDb& db, const CollectionName& collection_name, const ObjectId& object_id,
+                  const std::string& model_params, const std::string& model_type)
       {
         //create a document, and initialize all the common bits.
         Document doc(db, collection_name);
@@ -95,7 +106,6 @@ namespace object_recognition
         doc.set_value("ModelType", model_type);
         return doc;
       }
-
     }
   }
 }
