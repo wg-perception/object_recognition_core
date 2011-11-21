@@ -1,9 +1,8 @@
 import ecto
 from ecto_opencv.highgui import VideoCapture, imshow, FPSDrawer, MatPrinter, MatReader, imread
-from ecto_opencv.imgproc import cvtColor, Conversion
-from ecto_opencv.features2d import FAST, ORB, DrawKeypoints, Matcher, MatchRefinement, \
-    MatchRefinementHSvd, MatchRefinement3d, MatchRefinementPnP, DrawMatches, KeypointsToMat
-from ecto_opencv.calib import LatchMat, Select3d, Select3dRegion, PlaneFitter, PoseDrawer, DepthValidDraw, TransformCompose
+from ecto_opencv.features2d import FAST, ORB, Matcher, \
+    MatchRefinementHSvd, DrawMatches, KeypointsToMat
+from ecto_opencv.calib import Select3d, Select3dRegion, PlaneFitter, PoseDrawer, DepthValidDraw, TransformCompose
 from ecto_object_recognition.tod_detection import LSHMatcher
 
 class FeatureFinder(ecto.BlackBox):
@@ -84,51 +83,61 @@ class PlaneEstimator(ecto.BlackBox):
     def connections(self):
         return [ self.region['points3d'] >> self.plane_fitter['points3d'],
                 ]
-
+#
+#class OrbTemplate(ecto.BlackBox):
+#    '''Takes a template image, computes orb, and saves it.'''
+#    
 
 class OrbPoseEstimator(ecto.BlackBox):
     '''Estimates the pose of an ORB based template.
     '''
-
+    pose_estimation = MatchRefinementHSvd
+    orb = FeatureFinder
+    lsh = LSHMatcher
     def declare_params(self, p):
         p.declare('directory', 'The template directory.', '.')
         p.declare('show_matches', 'Display the matches.', False)
+        p.forward_all('pose_estimation')
+        p.forward_all('orb')
+        p.declare('use_lsh', 'Use lsh for matching instead of brute force.', True)
+        p.forward_all('lsh')
     def declare_io(self, p, i, o):
         self.gray_image = ecto.Passthrough('gray Input')
         self.rgb_image = ecto.Passthrough('rgb Input')
         self.K = ecto.Passthrough('K')
         self.points3d = ecto.Passthrough('points3d')
         self.depth_mask = ecto.Passthrough('mask')
-        self.pose_estimation = MatchRefinementHSvd('Pose Estimation', reprojection_error=3, inlier_thresh=15)
         self.fps = FPSDrawer('FPS')
         self.tr = TransformCompose('Transform Composition')
 
         #inputs
         i.declare('K', self.K.inputs.at('in'))
         i.declare('image', self.gray_image.inputs.at('in'))
+        i.declare('points3d', self.points3d.inputs.at('in'))
         i.declare('color_image', self.rgb_image.inputs.at('in'))
         i.declare('mask', self.depth_mask.inputs.at('in'))
-        i.declare('points3d', self.points3d.inputs.at('in'))
 
         #outputs
         o.declare('R', self.tr.outputs.at('R'))
         o.declare('T', self.tr.outputs.at('T'))
-        o.declare('found', self.pose_estimation.outputs.at('found'))
+        o.forward('found', 'pose_estimation')
         o.declare('debug_image', self.fps.outputs.at('image'))
+
     def configure(self, p, i, o):
         self.train = TemplateLoader(directory=p.directory)
         self.show_matches = p.show_matches
+        self.use_lsh = p.use_lsh
     def connections(self):
-        n_features = 4000
         train = self.train
-        orb = FeatureFinder('ORB test', n_features=n_features, n_levels=3, scale_factor=1.1, thresh=100, use_fast=False)
+        orb = self.orb
         graph = [ self.gray_image[:] >> orb['image'],
                   self.points3d[:] >> orb['points3d'],
                   self.depth_mask[:] >> orb['mask']
                 ]
 
-        matcher = LSHMatcher('LSH', n_tables=4, multi_probe_level=1, key_size=10, radius=70)
-        #matcher = Matcher()
+        matcher = Matcher()
+#        if self.use_lsh:
+#           matcher = self.lsh
         graph += [ orb['descriptors'] >> matcher['test'],
                    train['descriptors'] >> matcher['train'],
                   ]

@@ -32,25 +32,27 @@ namespace object_recognition
     process(const tendrils& in, const tendrils& out)
     {
       cv::Size dsize = depth_in->size(), isize = image_in->size();
-      if (dsize == isize)
-      {
-        *depth_out = *depth_in;
-        return ecto::OK;
-      }
       cv::Mat depth;
+      cv::Mat valid_mask;
       if (depth_in->type() == CV_16UC1)
       {
         depth_in->convertTo(depth, CV_32F, 1 / 1000.0); //convert to float so that we can work with NANs
+        valid_mask = *depth_in == 0;
+        depth.setTo(std::numeric_limits<float>::quiet_NaN(), valid_mask); //set all non valid points in the depth to NAN.
       }
       else
       {
         depth_in->convertTo(depth, CV_32F);
       }
-      float factor = float(isize.width) / dsize.width; //scaling factor.
-      cv::Mat output(isize, depth.type(), NAN); //output is same size as image.
 
-      cv::Mat valid_mask = *depth_in == 0;
-      depth.setTo(NAN, valid_mask); //set all non valid points in the depth to NAN.
+      if (dsize == isize)
+      {
+        *depth_out = depth;
+        return ecto::OK;
+      }
+
+      float factor = float(isize.width) / dsize.width; //scaling factor.
+      cv::Mat output(isize, depth.type(), std::numeric_limits<float>::quiet_NaN()); //output is same size as image.
       //resize into the subregion of the correct aspect ratio
       cv::Mat subregion(output.rowRange(0, dsize.height * factor));
       //use nearest neighbor to prevent discontinuities causing bogus depth.

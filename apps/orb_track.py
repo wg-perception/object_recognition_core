@@ -8,7 +8,7 @@ from ecto_opencv.features2d import ORB, DrawKeypoints, Matcher, MatchRefinement,
 from ecto_opencv.imgproc import cvtColor, Conversion
 from ecto_opencv.calib import LatchMat, Select3d, Select3dRegion, PlaneFitter, PoseDrawer, DepthValidDraw, TransformCompose
 from ecto_object_recognition.tod_detection import LSHMatcher
-from ecto.opts import scheduler_options, run_plasm
+from ecto.opts import scheduler_options, run_plasm, cell_options
 
 
 from object_recognition.common.io.source import Source, SourceTypes
@@ -19,14 +19,13 @@ if __name__ == '__main__':
     def parse_args():
         import argparse
         parser = argparse.ArgumentParser(description='Estimate the pose of an ORB template.')
-        parser.add_argument('-i,--input', dest='input', type=str, help='The directory of the template to use. Default: %(default)s', default='./')
-        parser.add_argument('-m,--matches', dest='matches', action='store_const',
-                        const=True, default=False,
-                        help='Visualize the matches.')
 
         scheduler_options(parser.add_argument_group('Scheduler'))
         Source.add_arguments(parser.add_argument_group('Source'))
+
+        factory = cell_options(parser, OrbPoseEstimator, 'track')
         options = parser.parse_args()
+        options.orb_factory = factory
         return options
 
     options = parse_args()
@@ -37,7 +36,7 @@ if __name__ == '__main__':
     rgb2gray = cvtColor('Grayscale', flag=Conversion.RGB2GRAY)
     plasm.connect(source['image'] >> rgb2gray ['image'])
 
-    pose_est = OrbPoseEstimator(directory=options.input, show_matches=options.matches)
+    pose_est = options.orb_factory(options, 'ORB Tracker')
 
     #convenience variable for the grayscale
     img_src = rgb2gray['image']
@@ -54,6 +53,5 @@ if __name__ == '__main__':
     plasm.connect(pose_est['debug_image'] >> display['image'],
                   )
 
-    ecto_ros.init(sys.argv, 'data_capture',False)
+#    ecto_ros.init(sys.argv, 'data_capture', False)
     run_plasm(options, plasm, locals=vars())
-

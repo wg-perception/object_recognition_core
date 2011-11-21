@@ -18,17 +18,17 @@ pipeline1:
     feature:
       n_features: 3000
       n_levels: 3
-      scale_factor: 1.1
+      scale_factor: 1.2
   search:
-    key_size: 24
+    key_size: 16
     multi_probe_level: 2
-    n_tables: 8
+    n_tables: 10
     radius: 55
     ratio: 0.8
     type: 'LSH'
   guess:
     n_ransac_iterations: 250
-    min_inliers: 20
+    min_inliers: 6
     sensor_error: 0.02
 
 # The list of object_ids to analyze
