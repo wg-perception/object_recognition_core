@@ -157,7 +157,7 @@ def create_capture_plasm(bag_name, angle_thresh, segmentation_cell, n_desired=72
               masker['mask'] >> mask2rgb['image'],
               mask2rgb['image'] >> mask_and['a'],
               source['image'] >> mask_and['b'],
-              mask_and[:] >> mask_display[:],
+              mask_and[:] >> mask_display['image'],
             ]
     if not preview:
         display.inputs.__test__ = True
