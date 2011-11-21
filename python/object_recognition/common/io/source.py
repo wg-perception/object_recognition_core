@@ -17,6 +17,7 @@ All source cells will have the following outputs:
 SourceTypes = type('SourceTypes', (object,),
                    dict(ros_bag='ros_bag',
                         ros_kinect='ros_kinect',
+                        openni='openni'
                         )
                    )
 
@@ -27,9 +28,11 @@ class Source(object):
     @staticmethod
     def create_source(source_type=SourceTypes.ros_kinect, *args, **kwargs):
         from .ros.source import KinectReader, BagReader
+        from .standalone import OpenNISource
         #extend this dict as necessary
         source = {SourceTypes.ros_bag:BagReader,
                   SourceTypes.ros_kinect:KinectReader,
+                  SourceTypes.openni:OpenNISource,
                   #TODO standalone:StandaloneKinectReader
                   #SourceType : BlackBox
                   }
@@ -40,7 +43,7 @@ class Source(object):
         #--ros_kinect is the default.
         sources = [x for x in dir(SourceTypes) if not x.startswith('__')]
         parser.add_argument('--source_type', dest='source_type', choices=(sources),
-                            default=SourceTypes.ros_kinect,
+                            default=SourceTypes.openni,
                             help='The source type to use. default(%(default)s)')
         parser.add_argument('--ros_bag', dest='ros_bag', type=str,
                             help='The path of a ROS bag to analyze. '
