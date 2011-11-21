@@ -24,7 +24,7 @@ def parse_args():
         os.makedirs(options.output)
     return options
 
-n_features = 10000
+n_features = 3000
 options = parse_args()
 plasm = ecto.Plasm()
 
@@ -42,7 +42,7 @@ plasm.connect(source['depth'] >> imshow(name='depth')[:],
               )
 
 #connect up the test ORB
-orb = FeatureFinder('ORB test', n_features=n_features, n_levels=5, scale_factor=1.1)
+orb = FeatureFinder('ORB test', n_features=n_features, n_levels=3, scale_factor=1.2)
 plasm.connect(img_src >> orb['image'],
               source['points3d'] >> orb['points3d'],
               source['mask'] >> orb['mask']
@@ -90,5 +90,5 @@ for y, x in (
 plasm.connect(orb_display['save'] >> image_writer['__test__'],
               source['image'] >> image_writer['image']
               )
-ecto_ros.init(sys.argv, 'data_capture')
+#ecto_ros.init(sys.argv, 'data_capture')
 run_plasm(options, plasm, locals=vars())
