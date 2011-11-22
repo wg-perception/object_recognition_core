@@ -15,8 +15,7 @@ def parse_args():
     parser = argparse.ArgumentParser(formatter_class=argparse.RawDescriptionHelpFormatter,
                                     description=textwrap.dedent(
 '''Captures data appropriate for training object recognition pipelines.
-Assumes an opposing dot pattern, (black dots on white background, white
-dots on black background), is the scene, and captures views of the 
+Assumes that there is a known fiducial in the scene, and captures views of the 
 object sparsely, depending on the angle_thresh setting.'''),
                                     fromfile_prefix_chars='@')
 
@@ -48,7 +47,7 @@ object sparsely, depending on the angle_thresh setting.'''),
     args = parser.parse_args()
     if not args.preview and len(args.bag) < 1:
       parser.print_help()
-      print '\nYou must suply a bag name, or run in --preview mode'
+      print '\nYou must supply a bag name, or run in --preview mode'
       sys.exit(1)
     args.segmentation_factory = segmentation_factory
     return args
