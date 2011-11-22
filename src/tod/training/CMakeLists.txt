@@ -2,7 +2,7 @@
 ectomodule(tod_training
     CameraToWorld.cpp
     KeypointValidator.cpp
-    ModelInserter.cpp
+    ModelWriter.cpp
     ModelStacker.cpp
     module.cpp
     PointMerger.cpp

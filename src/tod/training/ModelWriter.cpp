@@ -1,7 +1,7 @@
 #include <ecto/ecto.hpp>
 #include <opencv2/core/core.hpp>
 
-#include <object_recognition/db/ModelInserter.hpp>
+#include <object_recognition/db/ModelWriter.h>
 
 namespace object_recognition
 {
@@ -9,14 +9,14 @@ namespace object_recognition
   {
     /** Implementation class inserting the TOD models in the DB
      */
-    struct ModelInserterImpl: public db::bases::ModelInserterImpl
+    struct ModelWriterImpl: public db::bases::ModelWriterImpl
     {
     public:
       static void
       declare_io(const ecto::tendrils& params, ecto::tendrils& inputs, ecto::tendrils& outputs)
       {
-        inputs.declare(&ModelInserterImpl::points_, "points", "The 3d position of the points.");
-        inputs.declare(&ModelInserterImpl::descriptors_, "descriptors", "The descriptors.");
+        inputs.declare(&ModelWriterImpl::points_, "points", "The 3d position of the points.");
+        inputs.declare(&ModelWriterImpl::descriptors_, "descriptors", "The descriptors.");
       }
 
       virtual int
@@ -40,8 +40,8 @@ namespace object_recognition
 
     /** Class inserting the TOD models in the DB
      */
-    typedef db::bases::ModelInserterBase<ModelInserterImpl> ModelInserter;
+    typedef db::bases::ModelWriterBase<ModelWriterImpl> ModelWriter;
   }
 }
 
-ECTO_CELL(tod_training, object_recognition::tod::ModelInserter, "ModelInserter", "Insert a TOD model into the db")
+ECTO_CELL(tod_training, object_recognition::tod::ModelWriter, "ModelWriter", "Insert a TOD model into the db")

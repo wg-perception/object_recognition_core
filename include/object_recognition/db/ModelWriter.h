@@ -69,12 +69,12 @@ namespace object_recognition
                   const std::string& model_params, const std::string& model_type);
 
       /** When creating your own cell to insert models in the DB first have an implementation class that inherits from
-       * ModelInserterImpl
+       * ModelWriterImpl
        */
-      struct ModelInserterImpl
+      struct ModelWriterImpl
       {
         virtual
-        ~ModelInserterImpl()
+        ~ModelWriterImpl()
         {
         }
 
@@ -108,16 +108,16 @@ namespace object_recognition
       };
 
       /** Class inserting the arbitrary Models into the DB. If you want to create a cell that persists to the DB, first
-       * implement a ModelInserterImpl class and then have your model inserter class inherit the ModelInserterBase as
+       * implement a ModelWriterImpl class and then have your model inserter class inherit the ModelWriterBase as
        * follows:
-       * struct MyAwesomeModelInserter db::bases::ModelInserterNase<MyAwesomeModelInserterImpl> {};
+       * struct MyAwesomeModelWriter db::bases::ModelWriterNase<MyAwesomeModelWriterImpl> {};
        *
        * You have to jump through those hoops because of the static member functions
        */
       template<typename T>
-      struct ModelInserterBase: T
+      struct ModelWriterBase: T
       {
-        typedef ModelInserterBase<T> C;
+        typedef ModelWriterBase<T> C;
 
         static void
         declare_params(ecto::tendrils& params)

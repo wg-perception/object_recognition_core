@@ -37,7 +37,7 @@ if __name__ == '__main__':
                                      display=do_display, source=db_reader, source_plasm=source_plasm)
 
             # define the output
-            db_writer = tod_training.ModelInserter("db_writer", collection=db_params.collection,
+            db_writer = tod_training.ModelWriter("db_writer", collection=db_params.collection,
                                         db_params = db_params, object_id=object_id,
                                         model_json_params=json_helper.dict_to_cpp_json_str(pipeline_param))
 
