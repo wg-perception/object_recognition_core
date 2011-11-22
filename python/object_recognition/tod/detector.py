@@ -19,15 +19,11 @@ class TodDetector(ecto.BlackBox):
     image_duplicator = ecto.Passthrough
     message_cvt = ecto_ros.Mat2Image
 
-    def __init__(self, model_ids, object_ids, db_params, collection,
-                 feature_descriptor_params, guess_params, search_params, display=False, **kwargs):
-        self._tod_params = feature_descriptor_params
+    def __init__(self, model_documents, tod_params, guess_params, search_params, display=False, **kwargs):
+        self._model_documents = model_documents
+        self._tod_params = tod_params
         self._guess_params = guess_params
         self._search_params = search_params
-        self._model_ids = model_ids
-        self._object_ids = object_ids
-        self._db_params = db_params
-        self._collection = collection
 
         self._display = display
 
@@ -35,11 +31,7 @@ class TodDetector(ecto.BlackBox):
 
     def declare_params(self, p):
         p.forward('rgb_frame_id', cell_name='message_cvt', cell_key='frame_id')
-        p.forward('object_ids', cell_name='descriptor_matcher', cell_key='object_ids')
-        p.forward('model_ids', cell_name='descriptor_matcher', cell_key='model_ids')
-        p.forward('db_params', cell_name='descriptor_matcher', cell_key='db_params')
-        p.forward('collection', cell_name='descriptor_matcher', cell_key='collection')
-        p.forward('model_json_params', cell_name='descriptor_matcher', cell_key='model_json_params')
+        p.forward('model_documents', cell_name='descriptor_matcher', cell_key='model_documents')
 
     def declare_io(self, _p, i, o):
         i.forward('image', cell_name='image_duplicator', cell_key='in')
@@ -55,9 +47,7 @@ class TodDetector(ecto.BlackBox):
         self.feature_descriptor = FeatureDescriptor(json_params=json_helper.dict_to_cpp_json_str(self._tod_params))
         self.descriptor_matcher = tod_detection.DescriptorMatcher("Matcher",
                                 search_json_params=json_helper.dict_to_cpp_json_str(self._search_params),
-                                model_ids=self._model_ids, object_ids=self._object_ids,
-                                db_params=self._db_params, collection=self._collection,
-                                model_json_params=self._tod_params)
+                                model_documents=self._model_documents)
         self.message_cvt = ecto_ros.Mat2Image()
 
         guess_params = {}

@@ -13,7 +13,7 @@ from object_recognition.tod.detector import TodDetector
 import ecto
 import ecto_ros
 from object_recognition import models
-from ecto_object_recognition.object_recognition_db import DbDocuments
+from ecto_object_recognition.object_recognition_db import DbDocuments, DbModels
 
 class TODDetection(DetectionPipeline):
     def create_pipeline(self, argv=[]):
@@ -29,7 +29,6 @@ class TODDetection(DetectionPipeline):
         for object_id in params['object_ids']:
             for model_id in models.find_model_for_object(db, object_id, 'TOD'):
                 model_ids.append(str(model_id))
-        model_documents = DbDocuments(db_params, model_ids)
 
         # TODO handle this properly...
         ecto_ros.init(argv, "tod_detection", False)#not anonymous.
@@ -41,10 +40,10 @@ class TODDetection(DetectionPipeline):
 
         # define the different pipelines
         for pipeline_param in pipeline_params:
+            model_documents = DbModels(db_params, 'object_recognition', params['object_ids'],
+                                       model_ids, pipeline_param['feature_descriptor'])
             # create the loader and detector
-            detector = TodDetector(model_ids=params['model_ids'], object_ids=params['object_ids'],
-                                   db_params=db_params, collection='object_recognition',
-                                   model_json_params=pipeline_param['feature_descriptor'],
+            detector = TodDetector(model_documents=model_documents, model_json_params=pipeline_param['feature_descriptor'],
                                    guess_params=pipeline_param['guess'],
                                    search_params=json_helper.dict_to_cpp_json_str(pipeline_param['search']),
                                    display=do_display, rgb_frame_id=params['source']['rgb_frame_id'])

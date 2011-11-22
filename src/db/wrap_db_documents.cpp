@@ -34,10 +34,13 @@
  */
 #include <string>
 
+#include <boost/function.hpp>
 #include <boost/python.hpp>
 #include <boost/python/stl_iterator.hpp>
 #include <boost/shared_ptr.hpp>
 #include <object_recognition/db/db.h>
+
+#include "object_recognition/db/model_utils.h"
 
 namespace bp = boost::python;
 
@@ -45,8 +48,6 @@ namespace object_recognition
 {
   namespace db
   {
-    using namespace db;
-
     typedef boost::shared_ptr<Documents> DocumentsPtr;
 
     /** Function used to create a vector of db Document's from Python
@@ -76,7 +77,7 @@ namespace object_recognition
     }
 
     // Define the pickling of the object
-    struct db_parameters_pickle_suite: boost::python::pickle_suite
+    struct db_documents_pickle_suite: boost::python::pickle_suite
     {
       static boost::python::tuple
       getinitargs(const ObjectDbParameters& db_params)
@@ -105,7 +106,38 @@ namespace object_recognition
     {
       bp::class_<Documents, DocumentsPtr> DocumentsClass("DbDocuments");
       DocumentsClass.def("__init__", bp::make_constructor(DocumentsConstructor));
-      DocumentsClass.def_pickle(db_parameters_pickle_suite());
+      DocumentsClass.def_pickle(db_documents_pickle_suite());
+    }
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    DocumentsPtr
+    ModelDocumentsFromPython(const ObjectDbParameters & db_params, const std::string & collection_name,
+                             const bp::object & bp_object_ids, const bp::object & bp_model_ids,
+                             const std::string & model_json_params)
+    {
+      ObjectDb db;
+      db.set_params(db_params);
+
+      std::vector<ObjectId> object_ids;
+      std::vector<ModelId> model_ids;
+      {
+        boost::python::stl_input_iterator<ObjectId> object_begin(bp_object_ids), model_begin(bp_model_ids), end;
+        std::copy(object_begin, end, std::back_inserter(object_ids));
+        std::copy(model_begin, end, std::back_inserter(model_ids));
+      }
+      DocumentsPtr p(new Documents());
+      BOOST_FOREACH(const Document & document, ModelDocuments(db, collection_name, object_ids,
+              model_ids, model_json_params))
+            p->push_back(document);
+      *p = ModelDocuments(db, collection_name, object_ids, model_ids, model_json_params);
+      return p;
+    }
+
+    // DbModels are DbDocuments that are models
+    void
+    wrap_db_models()
+    {
+      boost::python::def("DbModels", ModelDocumentsFromPython);
     }
   }
 }

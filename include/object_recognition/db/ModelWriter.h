@@ -40,6 +40,7 @@
 #include "object_recognition/common/json_spirit/json_spirit_reader_template.h"
 #include "object_recognition/common/types.h"
 #include "object_recognition/db/db.h"
+#include "object_recognition/db/model_utils.h"
 #include "object_recognition/db/view_types.h"
 
 namespace object_recognition
@@ -48,26 +49,6 @@ namespace object_recognition
   {
     namespace bases
     {
-      /** Function that compares the intersection of two JSON trees
-       * @param obj1
-       * @param obj2
-       * @return true if the intersection between the keys have the same values
-       */
-      bool
-      CompareJsonIntersection(const json_spirit::mObject &obj1, const json_spirit::mObject &obj2);
-
-      /** Function filling a DB document for a model with the common attributes
-       * @param db the DB where the model will be saved
-       * @param collection_name the collection where the model will be saved
-       * @param object_id the id of the object for that model
-       * @param model_params the parameters of the model
-       * @param model_type the type of the model (TOD, Linemod, mesh, however you name it)
-       * @return
-       */
-      Document
-      PopulateDoc(const ObjectDb& db, const CollectionName& collection_name, const ObjectId& object_id,
-                  const std::string& model_params, const std::string& model_type);
-
       /** When creating your own cell to insert models in the DB first have an implementation class that inherits from
        * ModelWriterImpl
        */
