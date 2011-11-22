@@ -8,6 +8,7 @@ from object_recognition.common.filters.masker import Masker
 from object_recognition.common.io.sink import Sink
 from object_recognition.common.io.source import Source
 from object_recognition.common.utils.training_detection_args import read_arguments
+from object_recognition.common.utils import json_helper
 from object_recognition.tod.detector import TodDetector
 import ecto
 import ecto_ros
@@ -41,10 +42,12 @@ class TODDetection(DetectionPipeline):
         # define the different pipelines
         for pipeline_param in pipeline_params:
             # create the loader and detector
-            detector = TodDetector(feature_descriptor_params=pipeline_param['feature_descriptor'],
-                                   model_documents=model_documents, guess_params=pipeline_param['guess'],
-                                   search_params=pipeline_param['search'], display=do_display,
-                                   rgb_frame_id=params['source']['rgb_frame_id'])
+            detector = TodDetector(model_ids=params['model_ids'], object_ids=params['object_ids'],
+                                   db_params=db_params, collection='object_recognition',
+                                   model_json_params=pipeline_param['feature_descriptor'],
+                                   guess_params=pipeline_param['guess'],
+                                   search_params=json_helper.dict_to_cpp_json_str(pipeline_param['search']),
+                                   display=do_display, rgb_frame_id=params['source']['rgb_frame_id'])
 
             # Connect the detector to the source
             for key in source.outputs.iterkeys():

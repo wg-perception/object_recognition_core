@@ -48,6 +48,7 @@
 #include "object_recognition/common/json_spirit/json_spirit.h"
 #include "object_recognition/common/types.h"
 #include "object_recognition/db/db.h"
+#include "object_recognition/db/ModelReader.h"
 #include "object_recognition/db/opencv.h"
 #include "opencv_candidate/lsh.hpp"
 
@@ -58,10 +59,10 @@ namespace object_recognition
 {
   namespace tod
   {
-    struct DescriptorMatcher
+    struct DescriptorMatcher: public db::bases::ModelReaderImpl
     {
       void
-      DocumentsCallback(const Documents & db_documents)
+      ParameterCallback(const Documents & db_documents)
       {
         descriptors_db_.resize(db_documents.size());
         features3d_db_.resize(db_documents.size());
@@ -139,7 +140,6 @@ namespace object_recognition
         ss << "JSON string that can contain the following fields: \"radius\" (for epsilon nearest neighbor search), "
            << "\"ratio\" when applying the ratio criterion like in SIFT";
         p.declare<std::string>("search_json_params", ss.str()).required(true);
-        p.declare(&DescriptorMatcher::db_documents_, "model_documents", ss.str()).required(true);
       }
 
       static void
@@ -158,9 +158,6 @@ namespace object_recognition
       void
       configure(const ecto::tendrils& params, const ecto::tendrils& inputs, const ecto::tendrils& outputs)
       {
-        db_documents_.set_callback(boost::bind(&DescriptorMatcher::DocumentsCallback, this, _1));
-        db_documents_.dirty(true);
-
         // get some parameters
         {
           json_spirit::mObject search_param_tree;
@@ -242,7 +239,7 @@ namespace object_recognition
         outputs["object_ids"] << object_ids_;
         outputs["spans"] << spans_;
 
-        return 0;
+        return ecto::OK;
       }
     private:
       /** The object used to match descriptors to our DB of descriptors */
@@ -258,12 +255,12 @@ namespace object_recognition
       /** For each object id, the maximum distance between the known descriptors (span) */
       std::map<ObjectId, float> spans_;
 
-      ecto::spore<Documents> db_documents_;
       /** The matching object ids */
       std::vector<ObjectId> object_ids_;
     };
+
   }
 }
 
-ECTO_CELL(tod_detection, object_recognition::tod::DescriptorMatcher, "DescriptorMatcher",
-          "Given descriptors, find matches, relating to objects.");
+ECTO_CELL(tod_detection, object_recognition::db::bases::ModelReaderBase<object_recognition::tod::DescriptorMatcher>,
+          "DescriptorMatcher", "Given descriptors, find matches, relating to objects.");

@@ -2,8 +2,9 @@
 
 import ecto
 from object_recognition.tod.detector import TodDetector
+from ecto_object_recognition.object_recognition_db import ObjectDbParameters
 
-T = TodDetector(collection = '', db_params={'type':'CouchDB', 'root': 'bogus'}, feature_descriptor_params='{}',
-                                   guess_params='{}', search_params='{}',
+T = TodDetector([],[],ObjectDbParameters({'type':'CouchDB', 'root': 'bogus'}), '', '{}',
+                                   '{}', '{}',
                                    display=True)
 print T.__doc__
