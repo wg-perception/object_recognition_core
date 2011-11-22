@@ -11,6 +11,7 @@ the section.
 .. toctree::
    :maxdepth: 2
    
+   common.rst
    training.rst
    detection.rst
    cells.rst

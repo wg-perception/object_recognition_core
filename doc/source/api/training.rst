@@ -1,9 +1,6 @@
 Training
 ========
 
-Source
---------
-
 Database
 --------
 
@@ -19,12 +16,12 @@ Step 1
 ^^^^^^
 
 First, you will need to create a cell that implements what is added to the DB document. It has to inherit from
-``db::bases::ModelInserterImpl``. An example implementation is:
+``db::bases::ModelWriterImpl``. An example implementation is:
 
 .. code-block:: cpp
     :linenos:
 
-    struct MyAwesomeModelInserterImpl: public db::bases::ModelInserterImpl
+    struct MyAwesomeModelWriterImpl: public db::bases::ModelWriterImpl
     {
     public:
       // You can define the declare_params and configure functions if needed
@@ -33,7 +30,7 @@ First, you will need to create a cell that implements what is added to the DB do
       static void
       declare_io(const ecto::tendrils& params, ecto::tendrils& inputs, ecto::tendrils& outputs)
       {
-        inputs.declare(&MyAwesomeModelInserterImpl::model_part_, "model_part", "A part of the model.");
+        inputs.declare(&MyAwesomeModelWriterImpl::model_part_, "model_part", "A part of the model.");
       }
 
       // Note how this function has an extra argument: the db::Document
@@ -80,8 +77,8 @@ will have to implement the following member functions (and please send us a patc
 Step 2
 ^^^^^^
 
-Very important, you need to actually define a type for your cell based on ModelInserterBase. Something like this suffices:
+Very important, you need to actually define a type for your cell based on ModelWriterBase. Something like this suffices:
 
 .. code-block:: cpp
 
-    typedef db::bases::ModelInserterBase<MyAwesomeModelInserterImpl> MyAwesomeModelInserterCell;
+    typedef db::bases::ModelWriterBase<MyAwesomeModelWriterImpl> MyAwesomeModelWriterCell;
