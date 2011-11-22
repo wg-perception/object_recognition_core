@@ -4,6 +4,7 @@ ectomodule(tod_training
     KeypointValidator.cpp
     ModelWriter.cpp
     ModelStacker.cpp
+    ModelFiller.cpp
     module.cpp
     PointMerger.cpp
     PrepareForG2O.cpp

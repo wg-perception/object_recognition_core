@@ -28,13 +28,19 @@ if __name__ == '__main__':
         source_plasm.connect(observation_dealer[:] >> db_reader['observation'])
 
         main_plasm = ecto.Plasm()
+        pipelines = {}
         # connect to the model computation
         for pipeline_param in pipeline_params:
             #define the trainer
-            if pipeline_param['type'] == 'TOD':
-                trainer = TodTrainer(json_search_params=json_helper.dict_to_cpp_json_str(pipeline_param['search']),
-                                     json_feature_descriptor_params=json_helper.dict_to_cpp_json_str(pipeline_param['feature_descriptor']),
-                                     display=do_display, source=db_reader, source_plasm=source_plasm)
+            eval(pipeline_param['type'] + 'Trainer.train()')
+            
+            
+            pipeline = pipleines.get(pipeline_param['type'],False)
+            if pipeline:
+                pipeline.train()
+#                trainer = TodTrainer(json_search_params=json_helper.dict_to_cpp_json_str(pipeline_param['search']),
+#                                     json_feature_descriptor_params=json_helper.dict_to_cpp_json_str(pipeline_param['feature_descriptor']),
+#                                     display=do_display, source=db_reader, source_plasm=source_plasm)
 
             # define the output
             db_writer = tod_training.ModelWriter("db_writer", collection=db_params.collection,
