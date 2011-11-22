@@ -37,13 +37,14 @@
 
 #include <boost/bind.hpp>
 #include <boost/foreach.hpp>
+#include <boost/python.hpp>
 #include <boost/python/stl_iterator.hpp>
 
 #include <ecto/ecto.hpp>
 
 #include "object_recognition/common/json_spirit/json_spirit_reader_template.h"
 #include "object_recognition/common/types.h"
-#include "object_recognition/db/ModelInserter.hpp"
+#include "object_recognition/db/ModelWriter.h"
 #include "object_recognition/db/view_types.h"
 
 namespace object_recognition

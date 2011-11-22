@@ -1,7 +1,8 @@
 #include <algorithm>
 
 #include "object_recognition/common/json_spirit/json_spirit_reader_template.h"
-#include "object_recognition/db/ModelInserter.hpp"
+#include "object_recognition/db/ModelReader.h"
+#include "object_recognition/db/ModelWriter.h"
 
 namespace
 {
