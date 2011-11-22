@@ -13,7 +13,7 @@ source = Source.parse_arguments(args)
 _assert_source_interface(source)
 print source.__class__.__name__
 
-assert 'OpenNISource' == source.__class__.__name__
+#assert 'KinectReader' == source.__class__.__name__
 
 #test a bad bag
 args = parser.parse_args(['--ros_bag','non_existant.bag'])
