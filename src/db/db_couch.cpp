@@ -193,16 +193,18 @@ ObjectDbCouch::Query(const object_recognition::db::View & view, int limit_rows, 
   json_reader_stream_.str("");
   json_spirit::mObject parameters = view.parameters();
   std::string url;
+  bool do_throw;
   switch (view.type())
   {
     case object_recognition::db::View::VIEW_MODEL_WHERE_OBJECT_ID_AND_MODEL_TYPE:
       url = url_ + "/" + collection_ + "/_design/models/_view/by_object_id_and_" + parameters["model_type"].get_str();
+      do_throw = false;
       break;
   }
 
   ObjectId object_id = parameters["object_id"].get_str();
   QueryView(url, limit_rows, start_offset, "&startkey=\"" + object_id + "\"&endkey=\"" + object_id + "\"", total_rows,
-            offset, document_ids);
+            offset, document_ids, do_throw);
 }
 
 void
@@ -219,7 +221,8 @@ ObjectDbCouch::Query(const std::vector<std::string> & queries, int limit_rows, i
     write_json(fields, json_reader_stream_);
   }
 
-  QueryView(url_ + "/" + collection_ + "/_temp_view", limit_rows, start_offset, "", total_rows, offset, document_ids);
+  QueryView(url_ + "/" + collection_ + "/_temp_view", limit_rows, start_offset, "", total_rows, offset, document_ids,
+            true);
 }
 
 /** Once json_reader_stream_ has been filled, call that function to get the results of the view
@@ -227,7 +230,7 @@ ObjectDbCouch::Query(const std::vector<std::string> & queries, int limit_rows, i
  */
 void
 ObjectDbCouch::QueryView(const std::string & in_url, int limit_rows, int start_offset, const std::string &options,
-                         int& total_rows, int& offset, std::vector<DocumentId> & document_ids)
+                         int& total_rows, int& offset, std::vector<DocumentId> & document_ids, bool do_throw)
 {
   if (limit_rows <= 0)
     limit_rows = std::numeric_limits<int>::max();
@@ -245,7 +248,13 @@ ObjectDbCouch::QueryView(const std::string & in_url, int limit_rows, int start_o
 
   if (curl_.get_response_code() != object_recognition::curl::cURL::OK)
   {
-    throw std::runtime_error(curl_.get_response_reason_phrase() + " : " + curl_.getURL());
+    if (do_throw)
+      throw std::runtime_error(curl_.get_response_reason_phrase() + " : " + curl_.getURL());
+    else
+    {
+      total_rows = 0;
+      offset = 0;
+    }
   }
 
   json_reader_stream_.seekg(0);
