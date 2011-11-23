@@ -31,7 +31,7 @@
     #define spirit_namespace boost::spirit
 #endif
 
-namespace json_spirit
+namespace or_json
 {
     const spirit_namespace::int_parser < boost::int64_t >  int64_p  = spirit_namespace::int_parser < boost::int64_t  >();
     const spirit_namespace::uint_parser< boost::uint64_t > uint64_p = spirit_namespace::uint_parser< boost::uint64_t >();

@@ -14,7 +14,7 @@
 #include "json_spirit_error_position.h"
 #include <iostream>
 
-namespace json_spirit
+namespace or_json
 {
     // functions to reads a JSON values
 

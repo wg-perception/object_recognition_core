@@ -13,7 +13,7 @@
 #include "json_spirit_value.h"
 #include <map>
 
-namespace json_spirit
+namespace or_json
 { 
     template< class Obj_t, class Map_t >
     void obj_to_map( const Obj_t& obj, Map_t& mp_obj )

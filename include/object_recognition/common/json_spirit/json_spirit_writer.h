@@ -13,7 +13,7 @@
 #include "json_spirit_value.h"
 #include <iostream>
 
-namespace json_spirit
+namespace or_json
 {
     // functions to convert JSON Values to text, 
     // the "formatted" versions add whitespace to format the output nicely

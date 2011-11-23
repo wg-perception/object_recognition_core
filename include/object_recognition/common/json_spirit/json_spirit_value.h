@@ -21,7 +21,7 @@
 #include <boost/shared_ptr.hpp> 
 #include <boost/variant.hpp> 
 
-namespace json_spirit
+namespace or_json
 {
     enum Value_type{ obj_type, array_type, str_type, bool_type, int_type, real_type, null_type };
 

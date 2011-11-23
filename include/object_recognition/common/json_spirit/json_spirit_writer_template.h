@@ -12,7 +12,7 @@
 #include <sstream>
 #include <iomanip>
 
-namespace json_spirit
+namespace or_json
 {
     inline char to_hex_char( unsigned int c )
     {

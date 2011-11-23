@@ -6,88 +6,88 @@
 #include "json_spirit_writer.h"
 #include "json_spirit_writer_template.h"
 
-void json_spirit::write( const Value& value, std::ostream& os )
+void or_json::write( const Value& value, std::ostream& os )
 {
     write_stream( value, os, false );
 }
 
-void json_spirit::write_formatted( const Value& value, std::ostream& os )
+void or_json::write_formatted( const Value& value, std::ostream& os )
 {
     write_stream( value, os, true );
 }
 
-std::string json_spirit::write( const Value& value )
+std::string or_json::write( const Value& value )
 {
     return write_string( value, false );
 }
 
-std::string json_spirit::write_formatted( const Value& value )
+std::string or_json::write_formatted( const Value& value )
 {
     return write_string( value, true );
 }
 
 #ifndef BOOST_NO_STD_WSTRING
 
-void json_spirit::write( const wValue& value, std::wostream& os )
+void or_json::write( const wValue& value, std::wostream& os )
 {
     write_stream( value, os, false );
 }
 
-void json_spirit::write_formatted( const wValue& value, std::wostream& os )
+void or_json::write_formatted( const wValue& value, std::wostream& os )
 {
     write_stream( value, os, true );
 }
 
-std::wstring json_spirit::write( const wValue&  value )
+std::wstring or_json::write( const wValue&  value )
 {
     return write_string( value, false );
 }
 
-std::wstring json_spirit::write_formatted( const wValue&  value )
+std::wstring or_json::write_formatted( const wValue&  value )
 {
     return write_string( value, true );
 }
 
 #endif
 
-void json_spirit::write( const mValue& value, std::ostream& os )
+void or_json::write( const mValue& value, std::ostream& os )
 {
     write_stream( value, os, false );
 }
 
-void json_spirit::write_formatted( const mValue& value, std::ostream& os )
+void or_json::write_formatted( const mValue& value, std::ostream& os )
 {
     write_stream( value, os, true );
 }
 
-std::string json_spirit::write( const mValue& value )
+std::string or_json::write( const mValue& value )
 {
     return write_string( value, false );
 }
 
-std::string json_spirit::write_formatted( const mValue& value )
+std::string or_json::write_formatted( const mValue& value )
 {
     return write_string( value, true );
 }
 
 #ifndef BOOST_NO_STD_WSTRING
 
-void json_spirit::write( const wmValue& value, std::wostream& os )
+void or_json::write( const wmValue& value, std::wostream& os )
 {
     write_stream( value, os, false );
 }
 
-void json_spirit::write_formatted( const wmValue& value, std::wostream& os )
+void or_json::write_formatted( const wmValue& value, std::wostream& os )
 {
     write_stream( value, os, true );
 }
 
-std::wstring json_spirit::write( const wmValue&  value )
+std::wstring or_json::write( const wmValue&  value )
 {
     return write_string( value, false );
 }
 
-std::wstring json_spirit::write_formatted( const wmValue&  value )
+std::wstring or_json::write_formatted( const wmValue&  value )
 {
     return write_string( value, true );
 }
