@@ -48,18 +48,29 @@ namespace object_recognition
      * @return true if the intersection between the keys have the same values
      */
     bool
-    CompareJsonIntersection(const json_spirit::mObject &obj1, const json_spirit::mObject &obj2);
+    CompareJsonIntersection(const or_json::mObject &obj1, const or_json::mObject &obj2);
 
     /** Function filling a DB document for a model with the common attributes
      * @param db the DB where the model will be saved
      * @param object_id the id of the object for that model
+     * @param session_ids A json string list of session id's that this model was created from.
      * @param model_params the parameters of the model
      * @param model_type the type of the model (TOD, Linemod, mesh, however you name it)
      * @return
      */
+
     Document
-    PopulateDoc(const ObjectDb& db, const ObjectId& object_id, const std::string& model_params,
-                const std::string& model_type);
+    PopulateDoc(const ObjectDb& db, const ObjectId& object_id, const std::string& session_ids,
+                const std::string& model_params, const std::string& model_type);
+
+    /**
+     * This does an in-place modification of an existing document.
+     * @see other PopulateDoc
+     * @param document output document
+     */
+    void
+    PopulateDoc(const ObjectId& object_id, const std::string& session_ids, const std::string& model_params,
+                const std::string& model_type, Document& document);
 
     /** Given some parameters, retrieve Documents that are models either of id in model_ids, or with an object_id
      * that is in object_ids and with parameters matching model_json_params
