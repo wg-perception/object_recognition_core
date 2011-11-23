@@ -106,6 +106,7 @@ namespace object_recognition
     {
       bp::class_<Documents, DocumentsPtr> DocumentsClass("DbDocuments");
       DocumentsClass.def("__init__", bp::make_constructor(DocumentsConstructor));
+      DocumentsClass.def("size", &Documents::size);
       DocumentsClass.def_pickle(db_documents_pickle_suite());
     }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -126,9 +127,6 @@ namespace object_recognition
         std::copy(model_begin, end, std::back_inserter(model_ids));
       }
       DocumentsPtr p(new Documents());
-      BOOST_FOREACH(const Document & document, ModelDocuments(db, collection_name, object_ids,
-              model_ids, model_json_params))
-            p->push_back(document);
       *p = ModelDocuments(db, collection_name, object_ids, model_ids, model_json_params);
       return p;
     }
