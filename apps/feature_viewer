@@ -23,7 +23,7 @@ if __name__ == '__main__':
 
     #database ritual
     db_url = args.db_root
-    db_params = ObjectDbParameters({'type':'CouchDB', 'root':db_url})
+    db_params = ObjectDbParameters({'type':'CouchDB', 'root':db_url, 'collection':'object_recognition'})
     couch = couchdb.Server(db_url)
     dbs = dbtools.init_object_databases(couch)
 
@@ -32,7 +32,7 @@ if __name__ == '__main__':
     if len(tod_models) < 1:
         raise RuntimeError("There are no tod models available.")
 
-    db_reader = tod_detection.ModelReader('db_reader', db_params=db_params, collection='object_recognition')
+    db_reader = tod_detection.ModelReader('db_reader', db_params=db_params)
     #observation dealer will deal out each observation id.
     observation_dealer = ecto.Dealer(tendril=db_reader.inputs.at('model_id'), iterable=tod_models)
     to_pcl = conversion.MatToPointCloudXYZ()

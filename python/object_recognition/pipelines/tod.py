@@ -35,8 +35,8 @@ class TODDetection(DetectionPipeline):
 
         # define the different pipelines
         for pipeline_param in pipeline_params:
-            model_documents = DbModels(db_params, 'object_recognition', params['object_ids'],
-                                       params.get('model_ids',[]),json_helper.dict_to_cpp_json_str( pipeline_param['feature_descriptor']) )
+            model_documents = DbModels(db_params, params['object_ids'], params.get('model_ids',[]),
+                                       json_helper.dict_to_cpp_json_str( pipeline_param['feature_descriptor']) )
             # create the loader and detector
             detector = TodDetector(pipeline_param['feature_descriptor'],
                                    pipeline_param['guess'],

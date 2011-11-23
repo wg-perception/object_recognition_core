@@ -134,7 +134,7 @@ namespace object_recognition
           {
             View view(View::VIEW_MODEL_WHERE_OBJECT_ID_AND_MODEL_TYPE);
             view.Initialize(object_id, in_parameters["type"].get_str());
-            ViewIterator view_iterator = ViewIterator(view, db, collection_name).begin();
+            ViewIterator view_iterator = ViewIterator(view, db).begin();
 
             while (view_iterator != ViewIterator::end())
             {
@@ -142,7 +142,7 @@ namespace object_recognition
               json_spirit::mObject db_parameters = (*view_iterator).get_value<json_spirit::mObject>("parameters");
               // TODO 
               //if (CompareJsonIntersection(in_parameters, db_parameters))
-              model_documents.push_back(Document(db, collection_name, (*view_iterator).id()));
+              model_documents.push_back(Document(db, (*view_iterator).id()));
 
               ++view_iterator;
             }

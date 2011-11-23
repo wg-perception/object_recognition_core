@@ -4,11 +4,12 @@ Build:
 - split the tests (db tests should at least be separated)
 
 Interface:
-- --all should also have a --missing
+- --all should also have a --missing. Fix missing, object_names
 - remove --db options
 - meshing should support --all, --mising, --object_ids
 - have a common file for common options (author, db) : split parameters with that file too, even for training/detection/meshing/upload
 - autogeneration of parameter files:autogenerate if it does not exist
+- merge visualize and do_display
 
 Performance:
 - SBA
@@ -20,6 +21,8 @@ DB:
 - better object representation (model, inline images, 3d models ...)
 - be able to only replicate models in a DB (to put on the PR2)
 - add meta data that is missing (meet with everybody). We want: timestamp of the session, the sensor id
+- save models with several sets of parameters (distinctive, acquisition)
+- unexisting views should not crash
 
 Capture:
 - SBA should be a blackbox for pose adjustment: maybe in capture, or in TOD training
