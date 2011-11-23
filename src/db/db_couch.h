@@ -54,41 +54,37 @@ using object_recognition::db::RevisionId;
 class ObjectDbCouch: public object_recognition::db::ObjectDbBase
 {
 public:
-  ObjectDbCouch(const std::string &url);
+  ObjectDbCouch(const std::string &url, const std::string & collection);
 
   virtual void
-  insert_object(const CollectionName &collection, const json_spirit::mObject &fields, DocumentId & document_id,
-                RevisionId & revision_id);
+  insert_object(const json_spirit::mObject &fields, DocumentId & document_id, RevisionId & revision_id);
 
   virtual void
-  persist_fields(const DocumentId & document_id, const CollectionName &collection, const json_spirit::mObject &fields,
-                 RevisionId & revision_id);
+  persist_fields(const DocumentId & document_id, const json_spirit::mObject &fields, RevisionId & revision_id);
 
   virtual void
-  load_fields(const DocumentId & document_id, const CollectionName &collection, json_spirit::mObject &fields);
+  load_fields(const DocumentId & document_id, json_spirit::mObject &fields);
 
   virtual void
-  get_attachment_stream(const DocumentId & document_id, const CollectionName &collection,
-                        const std::string& attachment_name, const std::string& content_type, std::ostream& stream,
-                        RevisionId & revision_id);
+  get_attachment_stream(const DocumentId & document_id, const std::string& attachment_name,
+                        const std::string& content_type, std::ostream& stream, RevisionId & revision_id);
 
   virtual void
-  set_attachment_stream(const DocumentId & document_id, const CollectionName &collection,
-                        const AttachmentName& attachment_name, const MimeType& mime_type, const std::istream& stream,
-                        RevisionId & revision_id);
+  set_attachment_stream(const DocumentId & document_id, const AttachmentName& attachment_name,
+                        const MimeType& mime_type, const std::istream& stream, RevisionId & revision_id);
 
   virtual
   void
-  Delete(const ObjectId & id, const CollectionName & collection_name);
+  Delete(const ObjectId & id);
 
   virtual
   void
-  Query(const View & view, const CollectionName & collection_name, int limit_rows, int start_offset, int& total_rows,
-        int& offset, std::vector<DocumentId> & document_ids);
+  Query(const View & view, int limit_rows, int start_offset, int& total_rows, int& offset,
+        std::vector<DocumentId> & document_ids);
 
   virtual void
-  Query(const std::vector<std::string> & queries, const CollectionName & collection_name, int limit_rows,
-        int start_offset, int& total_rows, int& offset, std::vector<DocumentId> & document_ids);
+  Query(const std::vector<std::string> & queries, int limit_rows, int start_offset, int& total_rows, int& offset,
+        std::vector<DocumentId> & document_ids);
 
   virtual void
   Status(std::string& status);
@@ -144,15 +140,15 @@ private:
   }
 
   inline std::string
-  url_id(const CollectionName & collection_name, const DocumentId & id) const
+  url_id(const DocumentId & id) const
   {
-    return url_ + "/" + collection_name + (id.empty() ? "" : "/" + id);
+    return url_ + "/" + collection_ + (id.empty() ? "" : "/" + id);
   }
 
   inline std::string
-  url_id_rev(const CollectionName &collection_name, const DocumentId & id, const RevisionId & rev) const
+  url_id_rev(const DocumentId & id, const RevisionId & rev) const
   {
-    return url_id(collection_name, id) + "?rev=" + rev;
+    return url_id(id) + "?rev=" + rev;
   }
 
   void
@@ -168,10 +164,12 @@ private:
   QueryView(const CollectionName & collection_name, int limit_rows, int start_offset, const std::string &options,
             int& total_rows, int& offset, std::vector<DocumentId> & document_ids);
 
-  /** The URL of the DB, including port */
+  /** The URL of the DB, including port, but not collection */
   std::string url_;
+  /** The collection to operate upon */
+  std::string collection_;
 
-  //FIXME why are these mutable
+  // These mutable are they are internals/temporary variables
   mutable object_recognition::curl::cURL curl_;
   mutable std::stringstream json_writer_stream_, json_reader_stream_;
 

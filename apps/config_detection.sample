@@ -14,6 +14,7 @@ sink:
 pipeline1:
   type: 'TOD'
   feature_descriptor:
+    type: 'TOD'
     combination: 'ORB'
     feature:
       n_features: 3000

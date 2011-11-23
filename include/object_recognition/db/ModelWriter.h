@@ -103,9 +103,6 @@ namespace object_recognition
         static void
         declare_params(ecto::tendrils& params)
         {
-          params.declare(&C::collection_name_, "collection", //
-                         "std::string The collection in which to store the models on the db", //
-                         "object_recognition").required(true);
           params.declare(&C::db_params_, "db_params", //
                          "The DB parameters").required(true);
           params.declare(&C::object_id_, "object_id", //
@@ -124,14 +121,14 @@ namespace object_recognition
         void
         configure(const ecto::tendrils& params, const ecto::tendrils& inputs, const ecto::tendrils& outputs)
         {
-          db_.set_params(*db_params_);
+          db_.set_parameters(*db_params_);
           T::configure(params, inputs, outputs);
         }
 
         int
         process(const ecto::tendrils& inputs, const ecto::tendrils& outputs)
         {
-          Document doc_new = PopulateDoc(db_, *collection_name_, *object_id_, *model_params_, T::model_type());
+          Document doc_new = PopulateDoc(db_, *object_id_, *model_params_, T::model_type());
 
           // Read the input model parameters
           json_spirit::mObject in_parameters;
@@ -148,7 +145,7 @@ namespace object_recognition
             // Find all the models of that type for that object
             object_recognition::db::View view(object_recognition::db::View::VIEW_MODEL_WHERE_OBJECT_ID_AND_MODEL_TYPE);
             view.Initialize(*object_id_, T::model_type());
-            ViewIterator view_iterator(view, db_, *collection_name_);
+            ViewIterator view_iterator(view, db_);
 
             ViewIterator iter = view_iterator.begin(), end = view_iterator.end();
             for (; iter != end; ++iter)
@@ -161,7 +158,7 @@ namespace object_recognition
               {
                 std::cout << "Deleting the previous model " << (*iter).id() << " of object " << *object_id_
                           << std::endl;
-                db_.Delete((*iter).id(), *collection_name_);
+                db_.Delete((*iter).id());
                 break;
               }
             }
@@ -175,7 +172,6 @@ namespace object_recognition
         ObjectDb db_;
         ecto::spore<ObjectDbParameters> db_params_;
         ecto::spore<DocumentId> object_id_;
-        ecto::spore<CollectionName> collection_name_;
         ecto::spore<std::string> model_params_;
       };
     }

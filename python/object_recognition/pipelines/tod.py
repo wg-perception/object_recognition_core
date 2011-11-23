@@ -25,11 +25,6 @@ class TODDetection(DetectionPipeline):
 
         params, args, pipeline_params, do_display, db_params, db = read_arguments(parser, argv)
 
-        model_ids = []
-        for object_id in params['object_ids']:
-            for model_id in models.find_model_for_object(db, object_id, 'TOD'):
-                model_ids.append(str(model_id))
-
         # TODO handle this properly...
         ecto_ros.init(argv, "tod_detection", False)#not anonymous.
 
@@ -40,13 +35,14 @@ class TODDetection(DetectionPipeline):
 
         # define the different pipelines
         for pipeline_param in pipeline_params:
-            model_documents = DbModels(db_params, 'object_recognition', params['object_ids'],
-                                       model_ids, pipeline_param['feature_descriptor'])
+            model_documents = DbModels(db_params, params['object_ids'], params.get('model_ids',[]),
+                                       json_helper.dict_to_cpp_json_str( pipeline_param['feature_descriptor']) )
             # create the loader and detector
-            detector = TodDetector(model_documents=model_documents, model_json_params=pipeline_param['feature_descriptor'],
-                                   guess_params=pipeline_param['guess'],
-                                   search_params=json_helper.dict_to_cpp_json_str(pipeline_param['search']),
-                                   display=do_display, rgb_frame_id=params['source']['rgb_frame_id'])
+            detector = TodDetector(pipeline_param['feature_descriptor'],
+                                   pipeline_param['guess'],
+                                   json_helper.dict_to_cpp_json_str(pipeline_param['search']),
+                                   display=do_display, rgb_frame_id=params['source']['rgb_frame_id'],
+                                   model_documents=model_documents)
 
             # Connect the detector to the source
             for key in source.outputs.iterkeys():

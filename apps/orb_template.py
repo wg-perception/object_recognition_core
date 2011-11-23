@@ -17,6 +17,9 @@ from object_recognition.capture.orb_capture import *
 def parse_args():
     parser = argparse.ArgumentParser(description='Computes the ORB feature and descriptor template that may be used as a fiducial marker.')
     parser.add_argument('-o,--output', dest='output', type=str, help='The output directory for this template. Default: %(default)s', default='./')
+    parser.add_argument('-n_features', dest='n_features', type=int,
+                        help='The number of features to detect for the template.,%(default)d',
+                        default=5000)    
     scheduler_options(parser.add_argument_group('Scheduler'))
     Source.add_arguments(parser.add_argument_group('Source'))
     options = parser.parse_args()
@@ -24,7 +27,7 @@ def parse_args():
         os.makedirs(options.output)
     return options
 
-n_features = 3000
+
 options = parse_args()
 plasm = ecto.Plasm()
 
@@ -42,7 +45,7 @@ plasm.connect(source['depth'] >> imshow(name='depth')[:],
               )
 
 #connect up the test ORB
-orb = FeatureFinder('ORB test', n_features=n_features, n_levels=3, scale_factor=1.2)
+orb = FeatureFinder('ORB test', n_features=options.n_features, n_levels=3, scale_factor=1.2)
 plasm.connect(img_src >> orb['image'],
               source['points3d'] >> orb['points3d'],
               source['mask'] >> orb['mask']
@@ -90,5 +93,6 @@ for y, x in (
 plasm.connect(orb_display['save'] >> image_writer['__test__'],
               source['image'] >> image_writer['image']
               )
-#ecto_ros.init(sys.argv, 'data_capture')
+if 'ros' in options.type:
+  ecto_ros.init(sys.argv, 'orb_template')
 run_plasm(options, plasm, locals=vars())

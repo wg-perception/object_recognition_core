@@ -70,7 +70,7 @@ namespace object_recognition
 
       BOOST_FOREACH(const DocumentId & document_id, document_ids)
           {
-            p->push_back(Document(db, db_params.collection_, document_id));
+            p->push_back(Document(db, document_id));
           }
 
       return p;
@@ -106,17 +106,17 @@ namespace object_recognition
     {
       bp::class_<Documents, DocumentsPtr> DocumentsClass("DbDocuments");
       DocumentsClass.def("__init__", bp::make_constructor(DocumentsConstructor));
+      DocumentsClass.def("size", &Documents::size);
       DocumentsClass.def_pickle(db_documents_pickle_suite());
     }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     DocumentsPtr
-    ModelDocumentsFromPython(const ObjectDbParameters & db_params, const std::string & collection_name,
-                             const bp::object & bp_object_ids, const bp::object & bp_model_ids,
-                             const std::string & model_json_params)
+    ModelDocumentsFromPython(const ObjectDbParameters & db_params, const bp::object & bp_object_ids,
+                             const bp::object & bp_model_ids, const std::string & model_json_params)
     {
       ObjectDb db;
-      db.set_params(db_params);
+      db.set_parameters(db_params);
 
       std::vector<ObjectId> object_ids;
       std::vector<ModelId> model_ids;
@@ -126,10 +126,7 @@ namespace object_recognition
         std::copy(model_begin, end, std::back_inserter(model_ids));
       }
       DocumentsPtr p(new Documents());
-      BOOST_FOREACH(const Document & document, ModelDocuments(db, collection_name, object_ids,
-              model_ids, model_json_params))
-            p->push_back(document);
-      *p = ModelDocuments(db, collection_name, object_ids, model_ids, model_json_params);
+      *p = ModelDocuments(db, object_ids, model_ids, model_json_params);
       return p;
     }
 

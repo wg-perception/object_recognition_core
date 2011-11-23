@@ -40,44 +40,43 @@ object_recognition::curl::cURL_GS curl_init_cleanup;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-ObjectDbCouch::ObjectDbCouch(const std::string &url)
+ObjectDbCouch::ObjectDbCouch(const std::string &url, const std::string &collection)
     :
       url_(url),
+      collection_(collection),
       json_writer_(json_writer_stream_),
       json_reader_(json_reader_stream_)
 {
 }
 
 void
-ObjectDbCouch::insert_object(const CollectionName &collection, const json_spirit::mObject &fields,
-                             DocumentId & document_id, RevisionId & revision_id)
+ObjectDbCouch::insert_object(const json_spirit::mObject &fields, DocumentId & document_id, RevisionId & revision_id)
 {
-  CreateCollection(collection);
-  std::string url = url_id(collection, "");
+  CreateCollection(collection_);
+  std::string url = url_id("");
   upload_json(fields, url, "POST");
   GetObjectRevisionId(document_id, revision_id);
 }
 
 void
-ObjectDbCouch::persist_fields(const DocumentId & document_id, const CollectionName &collection,
-                              const json_spirit::mObject &fields, RevisionId & revision_id)
+ObjectDbCouch::persist_fields(const DocumentId & document_id, const json_spirit::mObject &fields,
+                              RevisionId & revision_id)
 {
   precondition_id(document_id);
-  upload_json(fields, url_id(collection, document_id), "PUT");
+  upload_json(fields, url_id(document_id), "PUT");
   //need to update the revision here.
   GetRevisionId(revision_id);
 }
 
 void
-ObjectDbCouch::load_fields(const DocumentId & document_id, const CollectionName &collection,
-                           json_spirit::mObject &fields)
+ObjectDbCouch::load_fields(const DocumentId & document_id, json_spirit::mObject &fields)
 {
   precondition_id(document_id);
   curl_.reset();
   json_writer_stream_.str("");
   curl_.setWriter(&json_writer_);
 
-  curl_.setURL(url_id(collection, document_id));
+  curl_.setURL(url_id(document_id));
   curl_.GET();
 
   curl_.perform();
@@ -91,9 +90,8 @@ ObjectDbCouch::load_fields(const DocumentId & document_id, const CollectionName 
 }
 
 void
-ObjectDbCouch::set_attachment_stream(const DocumentId & document_id, const CollectionName &collection,
-                                     const AttachmentName& attachment_name, const MimeType& mime_type,
-                                     const std::istream& stream, RevisionId & revision_id)
+ObjectDbCouch::set_attachment_stream(const DocumentId & document_id, const AttachmentName& attachment_name,
+                                     const MimeType& mime_type, const std::istream& stream, RevisionId & revision_id)
 {
   precondition_id(document_id);
   precondition_rev(revision_id);
@@ -104,22 +102,21 @@ ObjectDbCouch::set_attachment_stream(const DocumentId & document_id, const Colle
   json_writer_stream_.str("");
   curl_.setWriter(&json_writer_);
   curl_.setHeader("Content-Type: " + mime_type);
-  curl_.setURL(url_id(collection, document_id) + "/" + attachment_name + "?rev=" + revision_id);
+  curl_.setURL(url_id(document_id) + "/" + attachment_name + "?rev=" + revision_id);
   curl_.PUT();
   curl_.perform();
   GetRevisionId(revision_id);
 }
 
 void
-ObjectDbCouch::get_attachment_stream(const DocumentId & document_id, const CollectionName &collection,
-                                     const std::string& attachment_name, const std::string& content_type,
-                                     std::ostream& stream, RevisionId & revision_id)
+ObjectDbCouch::get_attachment_stream(const DocumentId & document_id, const std::string& attachment_name,
+                                     const std::string& content_type, std::ostream& stream, RevisionId & revision_id)
 {
   object_recognition::curl::writer binary_writer(stream);
   curl_.reset();
   json_writer_stream_.str("");
   curl_.setWriter(&binary_writer);
-  curl_.setURL(url_id(collection, document_id) + "/" + attachment_name);
+  curl_.setURL(url_id(document_id) + "/" + attachment_name);
   curl_.GET();
   curl_.perform();
   if (curl_.get_response_code() != object_recognition::curl::cURL::OK)
@@ -152,10 +149,10 @@ ObjectDbCouch::GetRevisionId(RevisionId & revision_id)
 }
 
 void
-ObjectDbCouch::Delete(const ObjectId & id, const CollectionName & collection_name)
+ObjectDbCouch::Delete(const ObjectId & id)
 {
   std::string status;
-  Status(collection_name + "/" + id, status);
+  Status(collection_ + "/" + id, status);
   if (curl_.get_response_code() == object_recognition::curl::cURL::OK)
   {
     DocumentId document_id;
@@ -169,7 +166,7 @@ ObjectDbCouch::Delete(const ObjectId & id, const CollectionName & collection_nam
 
     json_writer_stream_.str("");
     json_reader_stream_.str("");
-    curl_.setURL(url_ + "/" + collection_name + "/" + id + "?rev=" + revision_id);
+    curl_.setURL(url_ + "/" + collection_ + "/" + id + "?rev=" + revision_id);
     curl_.setWriter(&json_writer_);
     curl_.setReader(&json_reader_);
 
@@ -190,8 +187,8 @@ ObjectDbCouch::Delete(const ObjectId & id, const CollectionName & collection_nam
 }
 
 void
-ObjectDbCouch::Query(const object_recognition::db::View & view, const CollectionName & collection_name, int limit_rows,
-                     int start_offset, int& total_rows, int& offset, std::vector<DocumentId> & document_ids)
+ObjectDbCouch::Query(const object_recognition::db::View & view, int limit_rows, int start_offset, int& total_rows,
+                     int& offset, std::vector<DocumentId> & document_ids)
 {
   json_reader_stream_.str("");
   json_spirit::mObject parameters = view.parameters();
@@ -199,8 +196,7 @@ ObjectDbCouch::Query(const object_recognition::db::View & view, const Collection
   switch (view.type())
   {
     case object_recognition::db::View::VIEW_MODEL_WHERE_OBJECT_ID_AND_MODEL_TYPE:
-      url = url_ + "/" + collection_name + "/_design/models/_view/by_object_id_and_"
-            + parameters["model_type"].get_str();
+      url = url_ + "/" + collection_ + "/_design/models/_view/by_object_id_and_" + parameters["model_type"].get_str();
       break;
   }
 
@@ -210,8 +206,8 @@ ObjectDbCouch::Query(const object_recognition::db::View & view, const Collection
 }
 
 void
-ObjectDbCouch::Query(const std::vector<std::string> & queries, const CollectionName & collection_name, int limit_rows,
-                     int start_offset, int& total_rows, int& offset, std::vector<DocumentId> & document_ids)
+ObjectDbCouch::Query(const std::vector<std::string> & queries, int limit_rows, int start_offset, int& total_rows,
+                     int& offset, std::vector<DocumentId> & document_ids)
 {
   {
     json_spirit::mObject fields;
@@ -223,8 +219,7 @@ ObjectDbCouch::Query(const std::vector<std::string> & queries, const CollectionN
     write_json(fields, json_reader_stream_);
   }
 
-  QueryView(url_ + "/" + collection_name + "/_temp_view", limit_rows, start_offset, "", total_rows, offset,
-            document_ids);
+  QueryView(url_ + "/" + collection_ + "/_temp_view", limit_rows, start_offset, "", total_rows, offset, document_ids);
 }
 
 /** Once json_reader_stream_ has been filled, call that function to get the results of the view

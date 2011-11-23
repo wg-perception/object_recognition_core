@@ -1,8 +1,7 @@
 #include <algorithm>
 
 #include "object_recognition/common/json_spirit/json_spirit_reader_template.h"
-#include "object_recognition/db/ModelReader.h"
-#include "object_recognition/db/ModelWriter.h"
+#include <object_recognition/db/model_utils.h>
 
 namespace
 {
@@ -76,18 +75,17 @@ namespace object_recognition
 
     /** Function filling a DB document for a model with the common attributes
      * @param db the DB where the model will be saved
-     * @param collection_name the collection where the model will be saved
      * @param object_id the id of the object for that model
      * @param model_params the parameters of the model
      * @param model_type the type of the model (TOD, Linemod, mesh, however you name it)
      * @return
      */
     Document
-    PopulateDoc(const ObjectDb& db, const CollectionName& collection_name, const ObjectId& object_id,
-                const std::string& model_params, const std::string& model_type)
+    PopulateDoc(const ObjectDb& db, const ObjectId& object_id, const std::string& model_params,
+                const std::string& model_type)
     {
       //create a document, and initialize all the common bits.
-      Document doc(db, collection_name);
+      Document doc(db);
       doc.set_value("object_id", object_id);
       // Convert the parameters to a property tree and insert them
       json_spirit::mObject params;
@@ -115,15 +113,14 @@ namespace object_recognition
      * @return
      */
     Documents
-    ModelDocuments(ObjectDb &db, const std::string &collection_name, const std::vector<ObjectId> & object_ids,
-                   const std::vector<ModelId> & model_ids, const std::string & model_json_params)
+    ModelDocuments(ObjectDb &db, const std::vector<ObjectId> & object_ids, const std::vector<ModelId> & model_ids,
+                   const std::string & model_json_params)
     {
-
       Documents model_documents;
       model_documents.reserve(object_ids.size() + model_ids.size());
       // First, load all the models where their id belongs to model_ids_, blindly trusting them
       BOOST_FOREACH(const ModelId & model_id, model_ids)
-            model_documents.push_back(Document(db, collection_name, model_id));
+            model_documents.push_back(Document(db, model_id));
 
       // ext, for each object id, find the models (if any) that fit the parameters
       json_spirit::mObject in_parameters;
@@ -136,20 +133,16 @@ namespace object_recognition
       BOOST_FOREACH(const ModelId & object_id, object_ids)
           {
             View view(View::VIEW_MODEL_WHERE_OBJECT_ID_AND_MODEL_TYPE);
-            view.Initialize(object_id, collection_name);
-            ViewIterator view_iterator(view, db, collection_name);
+            view.Initialize(object_id, in_parameters["type"].get_str());
+            ViewIterator view_iterator = ViewIterator(view, db).begin();
 
             while (view_iterator != ViewIterator::end())
             {
               // Compare the parameters to the input ones
-              json_spirit::mObject db_parameters;
-              {
-                json_spirit::mValue value;
-                json_spirit::read((*view_iterator).get_value<std::string>("parameters"), value);
-                db_parameters = value.get_obj();
-              }
-              if (CompareJsonIntersection(in_parameters, db_parameters))
-                model_documents.push_back(Document(db, collection_name, (*view_iterator).id()));
+              json_spirit::mObject db_parameters = (*view_iterator).get_value<json_spirit::mObject>("parameters");
+              // TODO 
+              //if (CompareJsonIntersection(in_parameters, db_parameters))
+              model_documents.push_back(Document(db, (*view_iterator).id()));
 
               ++view_iterator;
             }

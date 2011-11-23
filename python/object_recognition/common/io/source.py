@@ -33,8 +33,6 @@ class Source(object):
         source = {SourceTypes.ros_bag:BagReader,
                   SourceTypes.ros_kinect:KinectReader,
                   SourceTypes.openni:OpenNISource,
-                  #TODO standalone:StandaloneKinectReader
-                  #SourceType : BlackBox
                   }
         return source[source_type](*args, **kwargs)
 
@@ -43,7 +41,7 @@ class Source(object):
         #--ros_kinect is the default.
         sources = [x for x in dir(SourceTypes) if not x.startswith('__')]
         parser.add_argument('--source_type', dest='source_type', choices=(sources),
-                            default=SourceTypes.openni,
+                            default=SourceTypes.ros_kinect,
                             help='The source type to use. default(%(default)s)')
         parser.add_argument('--ros_bag', dest='ros_bag', type=str,
                             help='The path of a ROS bag to analyze. '

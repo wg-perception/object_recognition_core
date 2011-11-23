@@ -19,8 +19,7 @@ class TodDetector(ecto.BlackBox):
     image_duplicator = ecto.Passthrough
     message_cvt = ecto_ros.Mat2Image
 
-    def __init__(self, model_documents, tod_params, guess_params, search_params, display=False, **kwargs):
-        self._model_documents = model_documents
+    def __init__(self, tod_params, guess_params, search_params, display=False, **kwargs):
         self._tod_params = tod_params
         self._guess_params = guess_params
         self._search_params = search_params
@@ -47,7 +46,7 @@ class TodDetector(ecto.BlackBox):
         self.feature_descriptor = FeatureDescriptor(json_params=json_helper.dict_to_cpp_json_str(self._tod_params))
         self.descriptor_matcher = tod_detection.DescriptorMatcher("Matcher",
                                 search_json_params=json_helper.dict_to_cpp_json_str(self._search_params),
-                                model_documents=self._model_documents)
+                                model_documents=p.model_documents)
         self.message_cvt = ecto_ros.Mat2Image()
 
         guess_params = {}

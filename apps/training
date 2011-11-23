@@ -2,6 +2,7 @@
 import roscompat
 import ecto, ecto_ros
 from ecto_object_recognition import capture, tod_training
+from ecto_object_recognition.object_recognition_db import ObjectDbParameters
 from object_recognition import models
 from object_recognition.common.utils import json_helper
 from object_recognition.common.utils.training_detection_args import read_arguments
@@ -16,7 +17,7 @@ if __name__ == '__main__':
 
     for object_id in params['object_ids']:
         object_id = object_id.encode('ascii')
-        db_reader = capture.ObservationReader("db_reader", db_url=db_params.root)
+        db_reader = capture.ObservationReader("db_reader", db_params=db_params)
         obs_ids = models.find_all_observations_for_object(db, object_id)
         if not obs_ids:
             print 'no observations found for object %s' % object_id
@@ -43,8 +44,7 @@ if __name__ == '__main__':
 #                                     display=do_display, source=db_reader, source_plasm=source_plasm)
 
             # define the output
-            db_writer = tod_training.ModelWriter("db_writer", collection=db_params.collection,
-                                        db_params = db_params, object_id=object_id,
+            db_writer = tod_training.ModelWriter("db_writer", db_params = db_params, object_id=object_id,
                                         model_json_params=json_helper.dict_to_cpp_json_str(pipeline_param))
 
             # connect the output

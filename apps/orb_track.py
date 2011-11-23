@@ -52,6 +52,7 @@ if __name__ == '__main__':
     display = imshow('orb display', name='Pose')
     plasm.connect(pose_est['debug_image'] >> display['image'],
                   )
+    if 'ros' in options.type:
+      ecto_ros.init(sys.argv, 'orb_track')
 
-#    ecto_ros.init(sys.argv, 'data_capture', False)
     run_plasm(options, plasm, locals=vars())
