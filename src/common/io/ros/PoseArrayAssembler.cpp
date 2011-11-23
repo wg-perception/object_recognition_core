@@ -262,17 +262,17 @@ namespace object_recognition
 
       // Add the object ids to the message
       {
-        json_spirit::mObject object_ids_param_tree;
+        or_json::mObject object_ids_param_tree;
 
-        std::vector<json_spirit::mValue> object_ids_array;
+        std::vector<or_json::mValue> object_ids_array;
         BOOST_FOREACH(const ObjectId & object_id, *object_ids_)
-              object_ids_array.push_back(json_spirit::mValue(object_id));
-        object_ids_param_tree["object_ids"] = json_spirit::mValue(object_ids_array);
+              object_ids_array.push_back(or_json::mValue(object_id));
+        object_ids_param_tree["object_ids"] = or_json::mValue(object_ids_array);
 
         std::stringstream ssparams;
 
-        json_spirit::mValue value(object_ids_param_tree);
-        json_spirit::write(value, ssparams);
+        or_json::mValue value(object_ids_param_tree);
+        or_json::write(value, ssparams);
         object_ids_msg.data = ssparams.str();
       }
 
