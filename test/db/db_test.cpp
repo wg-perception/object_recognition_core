@@ -24,6 +24,24 @@ params_garbage(const std::string& url = db_url)
   return "{\ndfkja:dkfj, dfkjak, dfkjalksf.dfj ---\ndfjkasdf";
 }
 
+ObjectDbParameters
+params_test()
+{
+  ObjectDbParameters params = ObjectDbParameters("CouchDB");
+  params.root_ = "http://foo:12323";
+  params.collection_ = "test_it";
+  return params;
+}
+
+ObjectDbParameters
+params_valid()
+{
+  ObjectDbParameters params = ObjectDbParameters("CouchDB");
+  params.root_ = "http://localhost:5984";
+  params.collection_ = "test_it";
+  return params;
+}
+
 json_spirit::mObject
 parse_status(const std::string& status)
 {
@@ -81,18 +99,18 @@ TEST(OR_db, DeleteNonexistant)
 
 TEST(OR_db, DocumentPesistLoad)
 {
-  ObjectDb db(ObjectDbParameters("CouchDB"));
+  ObjectDb db(params_valid());
   delete_c(db, "test_it");
   std::string id;
   {
-    Document doc(db, "test_it");
+    Document doc(db);
     doc.set_value("x", 1.0);
     doc.set_value("foo", "UuU");
     doc.Persist();
     id = doc.id();
   }
   {
-    Document doc(db, "test_it", id);
+    Document doc(db, id);
     EXPECT_EQ(doc.get_value<double>("x"), 1.0);
     EXPECT_EQ(doc.get_value<std::string>("foo"), "UuU");
   }
@@ -101,8 +119,7 @@ TEST(OR_db, DocumentPesistLoad)
 
 TEST(OR_db, NonExistantCouch)
 {
-  ObjectDbParameters params("CouchDB");
-  params.root_ = "http://foo:12323";
+  ObjectDbParameters params = params_test();
   ObjectDb db(params);
   try
   {
@@ -118,8 +135,7 @@ TEST(OR_db, NonExistantCouch)
 
 TEST(OR_db, StatusCollectionNonExistantDb)
 {
-  ObjectDbParameters params("CouchDB");
-  params.root_ = "http://foo:12323";
+  ObjectDbParameters params = params_test();
   ObjectDb db(params);
   try
   {
@@ -134,8 +150,7 @@ TEST(OR_db, StatusCollectionNonExistantDb)
 
 TEST(OR_db, DeleteBogus)
 {
-  ObjectDbParameters params("CouchDB");
-  params.root_ = "http://foo:12323";
+  ObjectDbParameters params = params_test();
   ObjectDb db(params);
   try
   {
@@ -172,10 +187,10 @@ TEST(OR_db, StatusCollectionExistant)
 
 TEST(OR_db, DocumentBadId)
 {
-  ObjectDb db(ObjectDbParameters("CouchDB"));
+  ObjectDb db(params_valid());
   try
   {
-    Document doc(db, "test_it", "bogus_id");
+    Document doc(db, "bogus_id");
     ASSERT_FALSE(true);
 
   } catch (std::runtime_error& e)
@@ -186,12 +201,12 @@ TEST(OR_db, DocumentBadId)
 
 TEST(OR_db, DocumentUrl)
 {
-  ObjectDbParameters params("CouchDB");
-  params.root_ = "http://foo:12323";
+  ObjectDbParameters params = params_test();
+  params.collection_ = "test_it";
   ObjectDb db(params);
   try
   {
-    Document doc(db, "test_it", "bogus_id");
+    Document doc(db, "bogus_id");
     ASSERT_FALSE(true);
   } catch (std::runtime_error& e)
   {
@@ -259,7 +274,7 @@ TEST(OR_db, NonArgsDbInsert)
 
   std::string id;
   {
-    Document doc(db, "test_it");
+    Document doc(db);
     doc.set_value("x", 1.0);
     doc.set_value("foo", "UuU");
     try
@@ -277,14 +292,14 @@ TEST(OR_db, NonArgsDbInsert)
 TEST(OR_db, InitSeperatelyChangeURL)
 {
   ObjectDb db;
-  db.set_params(ObjectDbParameters("CouchDB"));
+  db.set_parameters(ObjectDbParameters("CouchDB"));
   std::string status;
   db.Status(status);
   json_spirit::mObject ps = parse_status(status);
   EXPECT_EQ(ps.count("couchdb"), 1);
   ObjectDbParameters params("CouchDB");
   params.root_ = "http://abc";
-  db.set_params(params);
+  db.set_parameters(params);
   try
   {
     db.Status(status);

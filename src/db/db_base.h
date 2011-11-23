@@ -67,37 +67,33 @@ namespace object_recognition
       {
       }
       virtual void
-      insert_object(const CollectionName &collection, const json_spirit::mObject &fields, DocumentId & document_id,
-                    RevisionId & revision_id) = 0;
+      insert_object(const json_spirit::mObject &fields, DocumentId & document_id, RevisionId & revision_id) = 0;
 
       virtual void
-      persist_fields(const DocumentId & document_id, const CollectionName &collection,
-                     const json_spirit::mObject &fields, RevisionId & revision_id) = 0;
+      persist_fields(const DocumentId & document_id, const json_spirit::mObject &fields, RevisionId & revision_id) = 0;
 
       virtual void
-      load_fields(const DocumentId & document_id, const CollectionName &collection, json_spirit::mObject &fields) = 0;
+      load_fields(const DocumentId & document_id, json_spirit::mObject &fields) = 0;
 
       virtual void
-      Delete(const ObjectId & id, const CollectionName & collection_name) = 0;
+      Delete(const ObjectId & id) = 0;
 
       virtual
       void
-      Query(const View & view, const CollectionName & collection_name, int limit_rows, int start_offset,
-            int& total_rows, int& offset, std::vector<DocumentId> & document_ids) = 0;
+      Query(const View & view, int limit_rows, int start_offset, int& total_rows, int& offset,
+            std::vector<DocumentId> & document_ids) = 0;
 
       virtual void
-      Query(const std::vector<std::string> & queries, const CollectionName & collection_name, int limit_rows,
-            int start_offset, int& total_rows, int& offset, std::vector<DocumentId> & document_ids) = 0;
+      Query(const std::vector<std::string> & queries, int limit_rows, int start_offset, int& total_rows, int& offset,
+            std::vector<DocumentId> & document_ids) = 0;
 
       virtual void
-      set_attachment_stream(const DocumentId & document_id, const CollectionName &collection,
-                            const AttachmentName& attachment_name, const MimeType& mime_type,
-                            const std::istream& stream, RevisionId & revision_id)=0;
+      set_attachment_stream(const DocumentId & document_id, const AttachmentName& attachment_name,
+                            const MimeType& mime_type, const std::istream& stream, RevisionId & revision_id)=0;
 
       virtual void
-      get_attachment_stream(const DocumentId & document_id, const CollectionName &collection,
-                            const AttachmentName& attachment_name, const MimeType& mime_type, std::ostream& stream,
-                            RevisionId & revision_id)=0;
+      get_attachment_stream(const DocumentId & document_id, const AttachmentName& attachment_name,
+                            const MimeType& mime_type, std::ostream& stream, RevisionId & revision_id)=0;
 
       virtual void
       Status(std::string& status) = 0;

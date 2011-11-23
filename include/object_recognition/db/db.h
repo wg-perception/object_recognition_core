@@ -120,40 +120,40 @@ namespace object_recognition
       ObjectDb(const ObjectDbParameters &in_params);
 
       void
-      set_params(const std::string& json_params);
+      set_parameters(const std::string& json_params);
       void
-      set_params(const ObjectDbParameters &in_params);
+      set_parameters(const ObjectDbParameters &in_params);
 
       /*** Get the parameters */
       const ObjectDbParameters &
-      get_params() const;
+      parameters() const
+      {
+        return parameters_;
+      }
 
       void
-      get_attachment_stream(const DocumentId & document_id, const CollectionName &collection,
-                            const AttachmentName& attachment_name, MimeType& content_type, std::ostream& stream,
-                            RevisionId & revision_id) const;
+      get_attachment_stream(const DocumentId & document_id, const AttachmentName& attachment_name,
+                            MimeType& content_type, std::ostream& stream, RevisionId & revision_id) const;
 
       void
-      set_attachment_stream(const DocumentId & document_id, const CollectionName &collection,
-                            const AttachmentName& attachment_name, const MimeType& content_type,
-                            const std::istream& stream, RevisionId & revision_id) const;
+      set_attachment_stream(const DocumentId & document_id, const AttachmentName& attachment_name,
+                            const MimeType& content_type, const std::istream& stream, RevisionId & revision_id) const;
 
       void
-      insert_object(const CollectionName &collection, const json_spirit::mObject &fields, DocumentId & document_id,
-                    RevisionId & revision_id) const;
+      insert_object(const json_spirit::mObject &fields, DocumentId & document_id, RevisionId & revision_id) const;
 
       void
-      load_fields(const DocumentId & document_id, const CollectionName &collection, json_spirit::mObject &fields) const;
+      load_fields(const DocumentId & document_id, json_spirit::mObject &fields) const;
 
       void
-      persist_fields(const DocumentId & document_id, const CollectionName &collection,
-                     const json_spirit::mObject &fields, RevisionId & revision_id) const;
+      persist_fields(const DocumentId & document_id, const json_spirit::mObject &fields,
+                     RevisionId & revision_id) const;
 
       void
-      Delete(const ObjectId & id, const CollectionName & collection_name) const;
+      Delete(const ObjectId & id) const;
 
       QueryFunction
-      Query(const View &view, const CollectionName & collection_name) const;
+      Query(const View &view) const;
 
       void
       Status(std::string& status);
@@ -174,13 +174,13 @@ namespace object_recognition
       type();
     private:
       void
-      Query_(const View &view, const CollectionName & collection_name, int limit_rows, int start_offset,
-             int& total_rows, int& offset, std::vector<DocumentId> & document_ids);
+      Query_(const View &view, int limit_rows, int start_offset, int& total_rows, int& offset,
+             std::vector<DocumentId> & document_ids);
 
       /** The DB from which we'll get all the info */
       boost::shared_ptr<ObjectDbBase> db_;
       /** The parameters of the current DB */
-      ObjectDbParameters db_parameters_;
+      ObjectDbParameters parameters_;
     };
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -193,8 +193,8 @@ namespace object_recognition
     public:
       Document();
       ~Document();
-      Document(const ObjectDb & db, const CollectionName & collection);
-      Document(const ObjectDb & db, const CollectionName & collection, const DocumentId &document_id);
+      Document(const ObjectDb & db);
+      Document(const ObjectDb & db, const DocumentId &document_id);
 
       /** Persist your object to a given DB
        */
@@ -378,7 +378,6 @@ namespace object_recognition
       };
 
       ObjectDb db_;
-      CollectionName collection_;
       DocumentId document_id_;
       RevisionId revision_id_;
       typedef std::map<AttachmentName, StreamAttachment::ptr> AttachmentMap;
@@ -412,11 +411,10 @@ namespace object_recognition
       static const unsigned int BATCH_SIZE;
       ViewIterator();
 
-      ViewIterator(const View &view, ObjectDb& db, const CollectionName & collection_name)
+      ViewIterator(const View &view, ObjectDb& db)
           :
             start_offset_(0),
-            query_(db.Query(view, collection_name)),
-            collection_(collection_name),
+            query_(db.Query(view)),
             db_(db)
       {
       }
@@ -444,13 +442,6 @@ namespace object_recognition
       void
       set_db(const ObjectDb & db);
 
-      /** Set the collection on which to perform the Query. This might be part of the views_
-       * and unnecessary for certain DB's
-       * @param collection The collection on which the query is performed
-       */
-      void
-      set_collection(const CollectionName & collection);
-
       bool
       operator!=(const ViewIterator & document_view) const;
 
@@ -462,7 +453,6 @@ namespace object_recognition
       int total_rows_;
       /** The strings to send to the db_ to perform the query */
       ObjectDb::QueryFunction query_;
-      CollectionName collection_;
       ObjectDb db_;
     };
 

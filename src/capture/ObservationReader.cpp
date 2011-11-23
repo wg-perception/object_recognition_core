@@ -29,8 +29,7 @@ namespace object_recognition
       static void
       declare_params(tendrils& params)
       {
-        params.declare<std::string>("db_collection", "The collection to load from.", "object_recognition");
-        params.declare<std::string>("db_url", "The database url", std::string(DEFAULT_COUCHDB_URL));
+        params.declare(&ObservationReader::db_params_, "db_params", "The DB parameters");
       }
       static void
       declare_io(const tendrils& params, tendrils& inputs, tendrils& outputs)
@@ -47,19 +46,13 @@ namespace object_recognition
       void
       configure(const tendrils& params, const tendrils& inputs, const tendrils& outputs)
       {
-        params["db_url"] >> db_url;
-        params["db_collection"] >> collection;
         observation = inputs["observation"];
-        db::ObjectDbParameters db_params;
-        db_params.type_ = db::ObjectDbParameters::COUCHDB;
-        db_params.root_ = db_url;
-        db_params.collection_ = collection;
-        db = object_recognition::db::ObjectDb(db_params);
+        db = object_recognition::db::ObjectDb(*db_params_);
       }
       int
       process(const tendrils& inputs, const tendrils& outputs)
       {
-        Document doc(db, collection, *observation);
+        Document doc(db, *observation);
         Observation obs;
         obs << doc;
         obs >> outputs;
@@ -67,7 +60,7 @@ namespace object_recognition
       }
       int total_rows, offset;
       ecto::spore<std::string> observation;
-      std::string db_url, collection;
+      ecto::spore<db::ObjectDbParameters> db_params_;
       ObjectDb db;
       int current_frame;
     };

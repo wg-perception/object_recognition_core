@@ -58,12 +58,11 @@ namespace object_recognition
      */
     ObjectDbParameters::ObjectDbParameters(const std::string& type_str)
     {
-      ObjectDbParameters::ObjectDbType type = StringToType(type_str);
-      switch (type)
+      type_ = StringToType(type_str);
+      switch (type_)
       {
         case ObjectDbParameters::COUCHDB:
         {
-          type_ = ObjectDbParameters::COUCHDB;
           root_ = DEFAULT_COUCHDB_URL;
           break;
         }
@@ -127,26 +126,26 @@ namespace object_recognition
 
     ObjectDb::ObjectDb(const ObjectDbParameters &in_params)
     {
-      set_params(in_params);
+      set_parameters(in_params);
     }
     ObjectDb::ObjectDb(const std::string& json_params)
     {
-      set_params(json_params);
+      set_parameters(json_params);
     }
 
     void
-    ObjectDb::set_params(const std::string& json_params)
+    ObjectDb::set_parameters(const std::string& json_params)
     {
-      set_params(ObjectDbParameters(json_params));
+      set_parameters(ObjectDbParameters(json_params));
     }
     void
-    ObjectDb::set_params(const ObjectDbParameters &in_params)
+    ObjectDb::set_parameters(const ObjectDbParameters &in_params)
     {
-      db_parameters_ = in_params;
-      switch (db_parameters_.type_)
+      parameters_ = in_params;
+      switch (parameters_.type_)
       {
         case ObjectDbParameters::COUCHDB:
-          db_ = boost::shared_ptr<ObjectDbBase>(new ObjectDbCouch(db_parameters_.root_));
+          db_ = boost::shared_ptr<ObjectDbBase>(new ObjectDbCouch(parameters_.root_, parameters_.collection_));
           return;
         case ObjectDbParameters::EMPTY:
           return;
@@ -154,66 +153,64 @@ namespace object_recognition
     }
 
     void
-    ObjectDb::insert_object(const CollectionName &collection, const json_spirit::mObject &fields,
-                            DocumentId & document_id, RevisionId & revision_id) const
+    ObjectDb::insert_object(const json_spirit::mObject &fields, DocumentId & document_id,
+                            RevisionId & revision_id) const
     {
       PRECONDITION_DB()
-      db_->insert_object(collection, fields, document_id, revision_id);
+      db_->insert_object(fields, document_id, revision_id);
     }
 
     void
-    ObjectDb::set_attachment_stream(const DocumentId & document_id, const CollectionName &collection,
-                                    const AttachmentName& attachment_name, const MimeType& content_type,
-                                    const std::istream& stream, RevisionId & revision_id) const
-    {
-      PRECONDITION_DB()
-      db_->set_attachment_stream(document_id, collection, attachment_name, content_type, stream, revision_id);
-    }
-
-    void
-    ObjectDb::get_attachment_stream(const DocumentId & document_id, const CollectionName &collection,
-                                    const AttachmentName& attachment_name, MimeType& content_type, std::ostream& stream,
+    ObjectDb::set_attachment_stream(const DocumentId & document_id, const AttachmentName& attachment_name,
+                                    const MimeType& content_type, const std::istream& stream,
                                     RevisionId & revision_id) const
     {
       PRECONDITION_DB()
-      db_->get_attachment_stream(document_id, collection, attachment_name, content_type, stream, revision_id);
+      db_->set_attachment_stream(document_id, attachment_name, content_type, stream, revision_id);
     }
 
     void
-    ObjectDb::load_fields(const DocumentId & document_id, const CollectionName &collection,
-                          json_spirit::mObject &fields) const
+    ObjectDb::get_attachment_stream(const DocumentId & document_id, const AttachmentName& attachment_name,
+                                    MimeType& content_type, std::ostream& stream, RevisionId & revision_id) const
     {
       PRECONDITION_DB()
-      db_->load_fields(document_id, collection, fields);
+      db_->get_attachment_stream(document_id, attachment_name, content_type, stream, revision_id);
     }
 
     void
-    ObjectDb::persist_fields(const DocumentId & document_id, const CollectionName &collection,
-                             const json_spirit::mObject &fields, RevisionId & revision_id) const
+    ObjectDb::load_fields(const DocumentId & document_id, json_spirit::mObject &fields) const
     {
       PRECONDITION_DB()
-      db_->persist_fields(document_id, collection, fields, revision_id);
+      db_->load_fields(document_id, fields);
     }
 
     void
-    ObjectDb::Delete(const ObjectId & id, const CollectionName & collection_name) const
+    ObjectDb::persist_fields(const DocumentId & document_id, const json_spirit::mObject &fields,
+                             RevisionId & revision_id) const
     {
       PRECONDITION_DB()
-      db_->Delete(id, collection_name);
+      db_->persist_fields(document_id, fields, revision_id);
+    }
+
+    void
+    ObjectDb::Delete(const ObjectId & id) const
+    {
+      PRECONDITION_DB()
+      db_->Delete(id);
     }
 
     ObjectDb::QueryFunction
-    ObjectDb::Query(const View &view, const CollectionName & collection_name) const
+    ObjectDb::Query(const View &view) const
     {
-      return boost::bind(&ObjectDb::Query_, *this, view, collection_name, _1, _2, _3, _4, _5);
+      return boost::bind(&ObjectDb::Query_, *this, view, _1, _2, _3, _4, _5);
     }
 
     void
-    ObjectDb::Query_(const View &view, const CollectionName & collection_name, int limit_rows, int start_offset,
-                     int& total_rows, int& offset, std::vector<DocumentId> & document_ids)
+    ObjectDb::Query_(const View &view, int limit_rows, int start_offset, int& total_rows, int& offset,
+                     std::vector<DocumentId> & document_ids)
     {
       PRECONDITION_DB()
-      db_->Query(view, collection_name, limit_rows, start_offset, total_rows, offset, document_ids);
+      db_->Query(view, limit_rows, start_offset, total_rows, offset, document_ids);
     }
 
     void
@@ -261,21 +258,20 @@ namespace object_recognition
 
     }
 
-    Document::Document(const ObjectDb& db, const CollectionName & collection)
+    Document::Document(const ObjectDb& db)
         :
-          db_(db),
-          collection_(collection)
+          db_(db)
     {
 
     }
-    Document::Document(const ObjectDb & db, const CollectionName & collection, const DocumentId &document_id)
+
+    Document::Document(const ObjectDb & db, const DocumentId &document_id)
         :
           db_(db),
-          collection_(collection),
           document_id_(document_id)
     {
       // Load all fields from the DB (not the attachments)
-      db.load_fields(document_id_, collection_, fields_);
+      db.load_fields(document_id_, fields_);
     }
 
     /** Persist your object to a given DB
@@ -287,9 +283,9 @@ namespace object_recognition
     {
       // Persist the object if it does not exist in the DB
       if (document_id_.empty())
-        db_.insert_object(collection_, fields_, document_id_, revision_id_);
+        db_.insert_object(fields_, document_id_, revision_id_);
       else
-        db_.persist_fields(document_id_, collection_, fields_, revision_id_);
+        db_.persist_fields(document_id_, fields_, revision_id_);
 
       // Persist the attachments
       boost::any nothing_any;
@@ -297,7 +293,7 @@ namespace object_recognition
           attachment != attachment_end; ++attachment)
       {
         // Persist the attachment
-        db_.set_attachment_stream(document_id_, collection_, attachment->first, attachment->second->type_,
+        db_.set_attachment_stream(document_id_, attachment->first, attachment->second->type_,
                                   attachment->second->stream_, revision_id_);
       }
     }
@@ -325,8 +321,7 @@ namespace object_recognition
       StreamAttachment::ptr stream_attachment(new StreamAttachment(mime_type));
       // Otherwise, load it from the DB
       RevisionId revision_id;
-      db_.get_attachment_stream(document_id_, collection_, attachment_name, mime_type, stream_attachment->stream_,
-                                revision_id);
+      db_.get_attachment_stream(document_id_, attachment_name, mime_type, stream_attachment->stream_, revision_id);
       stream << stream_attachment->stream_.rdbuf();
     }
 
@@ -352,8 +347,7 @@ namespace object_recognition
 
       StreamAttachment::ptr stream_attachment(new StreamAttachment(mime_type));
       // Otherwise, load it from the DB
-      db_.get_attachment_stream(document_id_, collection_, attachment_name, mime_type, stream_attachment->stream_,
-                                revision_id_);
+      db_.get_attachment_stream(document_id_, attachment_name, mime_type, stream_attachment->stream_, revision_id_);
       stream << stream_attachment->stream_.rdbuf();
 
       attachments_[attachment_name] = stream_attachment;
@@ -412,16 +406,6 @@ namespace object_recognition
       db_ = db;
     }
 
-    /** Set the collection on which to perform the Query. This might be part of the views_
-     * and unnecessary for certain DB's
-     * @param collection The collection on which the query is performed
-     */
-    void
-    ViewIterator::set_collection(const CollectionName & collection)
-    {
-      collection_ = collection;
-    }
-
     /** Perform the query itself
      * @return an Iterator that will iterate over each result
      */
@@ -473,7 +457,7 @@ namespace object_recognition
     Document
     ViewIterator::operator*() const
     {
-      return Document(db_, collection_, document_ids_.back());
+      return Document(db_, document_ids_.back());
     }
 
     // Specializations for cv::Mat
