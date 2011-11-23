@@ -50,7 +50,7 @@ ObjectDbCouch::ObjectDbCouch(const std::string &url, const std::string &collecti
 }
 
 void
-ObjectDbCouch::insert_object(const json_spirit::mObject &fields, DocumentId & document_id, RevisionId & revision_id)
+ObjectDbCouch::insert_object(const or_json::mObject &fields, DocumentId & document_id, RevisionId & revision_id)
 {
   CreateCollection(collection_);
   std::string url = url_id("");
@@ -59,7 +59,7 @@ ObjectDbCouch::insert_object(const json_spirit::mObject &fields, DocumentId & do
 }
 
 void
-ObjectDbCouch::persist_fields(const DocumentId & document_id, const json_spirit::mObject &fields,
+ObjectDbCouch::persist_fields(const DocumentId & document_id, const or_json::mObject &fields,
                               RevisionId & revision_id)
 {
   precondition_id(document_id);
@@ -69,7 +69,7 @@ ObjectDbCouch::persist_fields(const DocumentId & document_id, const json_spirit:
 }
 
 void
-ObjectDbCouch::load_fields(const DocumentId & document_id, json_spirit::mObject &fields)
+ObjectDbCouch::load_fields(const DocumentId & document_id, or_json::mObject &fields)
 {
   precondition_id(document_id);
   curl_.reset();
@@ -128,7 +128,7 @@ ObjectDbCouch::get_attachment_stream(const DocumentId & document_id, const std::
 void
 ObjectDbCouch::GetObjectRevisionId(DocumentId& document_id, RevisionId & revision_id)
 {
-  json_spirit::mObject params;
+  or_json::mObject params;
   read_json(json_writer_stream_, params);
   document_id = params["id"].get_str();
   revision_id = params["rev"].get_str();
@@ -141,7 +141,7 @@ ObjectDbCouch::GetObjectRevisionId(DocumentId& document_id, RevisionId & revisio
 void
 ObjectDbCouch::GetRevisionId(RevisionId & revision_id)
 {
-  json_spirit::mObject params;
+  or_json::mObject params;
   read_json(json_writer_stream_, params);
   revision_id = params["rev"].get_str();
   if (revision_id.empty())
@@ -158,7 +158,7 @@ ObjectDbCouch::Delete(const ObjectId & id)
     DocumentId document_id;
     RevisionId revision_id;
     {
-      json_spirit::mObject params;
+      or_json::mObject params;
       read_json(json_writer_stream_, params);
       document_id = params["_id"].get_str();
       revision_id = params["_rev"].get_str();
@@ -170,8 +170,8 @@ ObjectDbCouch::Delete(const ObjectId & id)
     curl_.setWriter(&json_writer_);
     curl_.setReader(&json_reader_);
 
-    json_spirit::mObject params;
-    params["rev"] = json_spirit::mValue(revision_id);
+    or_json::mObject params;
+    params["rev"] = or_json::mValue(revision_id);
     write_json(params, json_reader_stream_);
     curl_.setCustomRequest("DELETE");
     curl_.perform();
@@ -191,7 +191,7 @@ ObjectDbCouch::Query(const object_recognition::db::View & view, int limit_rows, 
                      int& offset, std::vector<DocumentId> & document_ids)
 {
   json_reader_stream_.str("");
-  json_spirit::mObject parameters = view.parameters();
+  or_json::mObject parameters = view.parameters();
   std::string url;
   switch (view.type())
   {
@@ -210,10 +210,10 @@ ObjectDbCouch::Query(const std::vector<std::string> & queries, int limit_rows, i
                      int& offset, std::vector<DocumentId> & document_ids)
 {
   {
-    json_spirit::mObject fields;
+    or_json::mObject fields;
     BOOST_FOREACH(const std::string& query, queries)
         {
-          fields["map"] = json_spirit::mValue(query);
+          fields["map"] = or_json::mValue(query);
         }
     json_reader_stream_.str("");
     write_json(fields, json_reader_stream_);
@@ -251,12 +251,12 @@ ObjectDbCouch::QueryView(const std::string & in_url, int limit_rows, int start_o
   json_reader_stream_.seekg(0);
   json_writer_stream_.seekg(0);
 
-  json_spirit::mObject fields;
+  or_json::mObject fields;
   read_json(json_writer_stream_, fields);
 
   total_rows = fields["total_rows"].get_int();
   document_ids.clear();
-  BOOST_FOREACH(json_spirit::mValue & v, fields["rows"].get_array())
+  BOOST_FOREACH(or_json::mValue & v, fields["rows"].get_array())
       {
         // values are: id, key, value
         document_ids.push_back(v.get_obj()["id"].get_str());
@@ -267,13 +267,13 @@ ObjectDbCouch::QueryView(const std::string & in_url, int limit_rows, int start_o
 void
 ObjectDbCouch::CreateCollection(const CollectionName &collection)
 {
-  json_spirit::mObject params;
+  or_json::mObject params;
   std::string status;
   Status(collection, status);
   std::stringstream ss(status);
   read_json(ss, params);
 
-  json_spirit::mObject::const_iterator iter = params.find("reason");
+  or_json::mObject::const_iterator iter = params.find("reason");
   if ((params.find("error") != params.end()) && (iter != params.end()) && (iter->second.get_str() == "no_db_file"))
   {
     json_writer_stream_.str("");
@@ -363,7 +363,7 @@ ObjectDbCouch::DeleteCollection(const CollectionName &collection)
 }
 
 void
-ObjectDbCouch::upload_json(const json_spirit::mObject &params, const std::string& url, const std::string& request)
+ObjectDbCouch::upload_json(const or_json::mObject &params, const std::string& url, const std::string& request)
 {
   curl_.reset();
   json_writer_stream_.str("");

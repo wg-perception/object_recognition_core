@@ -57,13 +57,13 @@ public:
   ObjectDbCouch(const std::string &url, const std::string & collection);
 
   virtual void
-  insert_object(const json_spirit::mObject &fields, DocumentId & document_id, RevisionId & revision_id);
+  insert_object(const or_json::mObject &fields, DocumentId & document_id, RevisionId & revision_id);
 
   virtual void
-  persist_fields(const DocumentId & document_id, const json_spirit::mObject &fields, RevisionId & revision_id);
+  persist_fields(const DocumentId & document_id, const or_json::mObject &fields, RevisionId & revision_id);
 
   virtual void
-  load_fields(const DocumentId & document_id, json_spirit::mObject &fields);
+  load_fields(const DocumentId & document_id, or_json::mObject &fields);
 
   virtual void
   get_attachment_stream(const DocumentId & document_id, const std::string& attachment_name,
@@ -120,23 +120,23 @@ private:
   }
 
   void
-  upload_json(const json_spirit::mObject &ptree, const std::string& url, const std::string& request);
+  upload_json(const or_json::mObject &ptree, const std::string& url, const std::string& request);
 
   template<typename T>
   void
-  read_json(T &reader, json_spirit::mObject& object)
+  read_json(T &reader, or_json::mObject& object)
   {
-    json_spirit::mValue value;
-    json_spirit::read(reader, value);
+    or_json::mValue value;
+    or_json::read(reader, value);
     object = value.get_obj();
   }
 
   template<typename T>
   void
-  write_json(const json_spirit::mObject& object, T &writer)
+  write_json(const or_json::mObject& object, T &writer)
   {
-    json_spirit::mValue value(object);
-    json_spirit::write(value, writer);
+    or_json::mValue value(object);
+    or_json::write(value, writer);
   }
 
   inline std::string

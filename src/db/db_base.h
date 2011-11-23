@@ -67,13 +67,13 @@ namespace object_recognition
       {
       }
       virtual void
-      insert_object(const json_spirit::mObject &fields, DocumentId & document_id, RevisionId & revision_id) = 0;
+      insert_object(const or_json::mObject &fields, DocumentId & document_id, RevisionId & revision_id) = 0;
 
       virtual void
-      persist_fields(const DocumentId & document_id, const json_spirit::mObject &fields, RevisionId & revision_id) = 0;
+      persist_fields(const DocumentId & document_id, const or_json::mObject &fields, RevisionId & revision_id) = 0;
 
       virtual void
-      load_fields(const DocumentId & document_id, json_spirit::mObject &fields) = 0;
+      load_fields(const DocumentId & document_id, or_json::mObject &fields) = 0;
 
       virtual void
       Delete(const ObjectId & id) = 0;

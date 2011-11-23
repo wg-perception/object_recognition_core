@@ -153,7 +153,7 @@ namespace object_recognition
     }
 
     void
-    ObjectDb::insert_object(const json_spirit::mObject &fields, DocumentId & document_id,
+    ObjectDb::insert_object(const or_json::mObject &fields, DocumentId & document_id,
                             RevisionId & revision_id) const
     {
       PRECONDITION_DB()
@@ -178,14 +178,14 @@ namespace object_recognition
     }
 
     void
-    ObjectDb::load_fields(const DocumentId & document_id, json_spirit::mObject &fields) const
+    ObjectDb::load_fields(const DocumentId & document_id, or_json::mObject &fields) const
     {
       PRECONDITION_DB()
       db_->load_fields(document_id, fields);
     }
 
     void
-    ObjectDb::persist_fields(const DocumentId & document_id, const json_spirit::mObject &fields,
+    ObjectDb::persist_fields(const DocumentId & document_id, const or_json::mObject &fields,
                              RevisionId & revision_id) const
     {
       PRECONDITION_DB()
@@ -272,6 +272,11 @@ namespace object_recognition
     {
       // Load all fields from the DB (not the attachments)
       db.load_fields(document_id_, fields_);
+    }
+
+    void Document::update_db(const ObjectDb& db)
+    {
+      db_ = db;
     }
 
     /** Persist your object to a given DB
