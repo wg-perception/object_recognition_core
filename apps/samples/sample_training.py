@@ -7,7 +7,7 @@ from ecto_object_recognition import capture
 from ecto_object_recognition.object_recognition_db import ObjectDbParameters
 from object_recognition import models, dbtools
 import ecto_opencv
-
+import os
 
 def parse_args():
     import argparse
@@ -23,7 +23,7 @@ db = dbtools.init_object_databases(couchdb.Server(args.db_root))
 
 for object_id in args.objects:
     #get a list of observation ids for a particular object id.
-    obs_ids = models.find_all_observations_for_object(db, object_id)
+    obs_ids = models.find_all_observations_for_object(db, object_id)[:5]
 
     if not obs_ids:
         print 'No observations found for object %s.' % object_id
@@ -38,18 +38,23 @@ for object_id in args.objects:
 
     plasm.connect(observation_dealer[:] >> db_reader['observation'])
 
-    writer_image = ImageSaver(filename_format='images/%05d.png')[:]
-    writer_depth = ImageSaver(filename_format='depth/%05d.png')[:]
-    writer_mask = ImageSaver(filename_format='mask/%05d.png')[:]
-
-    #visualization
-    plasm.connect(db_reader['image'] >> (writer_image, imshow(name='image')['image']),
-                  db_reader['mask'] >> (writer_mask, imshow(name='mask')['image']),
-                  db_reader['depth'] >> (writer_depth, imshow(name='depth')['image'])
-                  )
+    path_names = [ 'image', 'depth', 'mask']
+    for path_name in path_names:
+        path = os.path.join(object_id, path_name)
+        if not os.path.exists(path):
+            os.makedirs(path)
+            writer_image = ImageSaver(filename_format=os.path.join(path, '%05d.png'))[:]
+            plasm.connect(db_reader[path_name] >> (writer_image, imshow(name=path_name)['image']))
 
     sched = ecto.schedulers.Singlethreaded(plasm)
     sched.execute()
 
-    #After done execution upload the resulting model to the db....
+    # write files listing the produced files
+    for path_name in path_names:
+        file_object = open(os.path.join(object_id, path_name + '.txt'), 'w')
+        for file_name in [ os.path.join(path_name, file_name) for file_name in os.listdir(os.path.join(object_id,
+                    path_name)) if file_name.endswith('png') ]:
+            file_object.write(file_name + '\n')
+        file_object.close
 
+    #After done execution upload the resulting model to the db....
