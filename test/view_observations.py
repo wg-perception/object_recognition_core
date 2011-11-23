@@ -31,7 +31,8 @@ for session in results:
 if len(obs_ids) == 0:
     raise RuntimeError("There are no observations available.")
 
-db_reader = capture.ObservationReader('db_reader', db_url=db_url, collection='observations')
+db_reader = capture.ObservationReader('db_reader', db_params=ObjectDbParameters({'type':'CouchDB', 'root':db_url,
+                                                                                 'collection':'observations'}))
 #observation dealer will deal out each observation id.
 observation_dealer = ecto.Dealer(tendril=db_reader.inputs.at('observation'), iterable=obs_ids)
 fps = highgui.FPSDrawer('FPS drawer')
