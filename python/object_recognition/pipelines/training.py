@@ -70,12 +70,14 @@ class TrainingPipeline:
         return NotImplemented
 
     @classmethod
-    def train(cls, params, args, object_id, pipeline_params, do_display, db_params, db):
+    def train(cls, object_id, session_ids, observation_ids, pipeline_params, db_params):
         '''
         returns the final plasm to be executed.
         '''
+        
+        from ecto_object_recognition.object_recognition_db import ModelWriter
+
         #todo make this depend on the pipeline specification or something...
-        observation_ids = models.find_all_observations_for_object(db, object_id)
         dealer = ObservationDealer(db_params=db_params, observation_ids=observation_ids)
 
         pipeline = cls()
@@ -91,7 +93,9 @@ class TrainingPipeline:
             if key in post_process.inputs.keys():
                 plasm.connect(model_builder[key] >> post_process[key])
 
-        writer = Writer()#todo fill it up.
+        writer = ModelWriter(db_params=db_params,
+                             object_id=object_id,
+                             session_id=session_id,)
         plasm.connect(post_process["db_document"] >> writer["db_document"])
         return plasm
 
