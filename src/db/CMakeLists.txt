@@ -44,6 +44,7 @@ ectomodule(object_recognition_db
     module.cpp
     wrap_db_parameters.cpp
     wrap_db_documents.cpp
+    ModelWriter.cpp
     )
 
 link_ecto(object_recognition_db
