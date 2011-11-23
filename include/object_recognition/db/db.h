@@ -140,13 +140,13 @@ namespace object_recognition
                             const MimeType& content_type, const std::istream& stream, RevisionId & revision_id) const;
 
       void
-      insert_object(const json_spirit::mObject &fields, DocumentId & document_id, RevisionId & revision_id) const;
+      insert_object(const or_json::mObject &fields, DocumentId & document_id, RevisionId & revision_id) const;
 
       void
-      load_fields(const DocumentId & document_id, json_spirit::mObject &fields) const;
+      load_fields(const DocumentId & document_id, or_json::mObject &fields) const;
 
       void
-      persist_fields(const DocumentId & document_id, const json_spirit::mObject &fields,
+      persist_fields(const DocumentId & document_id, const or_json::mObject &fields,
                      RevisionId & revision_id) const;
 
       void
@@ -195,6 +195,12 @@ namespace object_recognition
       ~Document();
       Document(const ObjectDb & db);
       Document(const ObjectDb & db, const DocumentId &document_id);
+
+      /**
+       * Update the db that this document should be associated with.
+       * @param db
+       */
+      void update_db(const ObjectDb& db);
 
       /** Persist your object to a given DB
        */
@@ -290,7 +296,7 @@ namespace object_recognition
       T
       get_value(const std::string& key) const
       {
-        json_spirit::mObject::const_iterator iter = fields_.find(key);
+        or_json::mObject::const_iterator iter = fields_.find(key);
         if (iter != fields_.end())
           return iter->second.get_value<T>();
         else
@@ -302,25 +308,25 @@ namespace object_recognition
       void
       set_value(const std::string& key, const T& val)
       {
-        fields_[key] = json_spirit::mValue(val);
+        fields_[key] = or_json::mValue(val);
       }
 
       /** Set several values by inserting a property tree */
       void
-      set_values(const json_spirit::mObject & json_tree)
+      set_values(const or_json::mObject & json_tree)
       {
         fields_.insert(json_tree.begin(), json_tree.end());
       }
 
       /** Set several values by inserting a property tree at a specific key*/
       void
-      set_values(const std::string& key, const json_spirit::mObject & json_tree)
+      set_values(const std::string& key, const or_json::mObject & json_tree)
       {
-        json_spirit::mObject::const_iterator iter = fields_.find(key);
+        or_json::mObject::const_iterator iter = fields_.find(key);
         if (iter == fields_.end())
           fields_.insert(std::make_pair(key, json_tree));
         else
-          iter->second.get_value<json_spirit::mObject>().insert(json_tree.begin(), json_tree.end());
+          iter->second.get_value<or_json::mObject>().insert(json_tree.begin(), json_tree.end());
       }
 
       /** Clear all the fields, there are no fields left after */
@@ -383,7 +389,7 @@ namespace object_recognition
       typedef std::map<AttachmentName, StreamAttachment::ptr> AttachmentMap;
       AttachmentMap attachments_;
       /** contains the fields: they are of integral types */
-      json_spirit::mObject fields_;
+      or_json::mObject fields_;
     };
 
     // Specializations for cv::Mat
@@ -455,7 +461,6 @@ namespace object_recognition
       ObjectDb::QueryFunction query_;
       ObjectDb db_;
     };
-
   }
 }
 

@@ -106,7 +106,9 @@ namespace object_recognition
           params.declare(&C::db_params_, "db_params", //
                          "The DB parameters").required(true);
           params.declare(&C::object_id_, "object_id", //
-                         "The object id, to associate this frame with.").required(true);
+                         "The object id, to associate this model with.").required(true);
+          params.declare(&C::object_id_, "session_ids", //
+                         "The session_ids, to associate this model with.").required(true);
           params.declare(&C::model_params_, "model_json_params", //
                          "The parameters used for the model, as JSON.").required(true);
           T::declare_params(params);
@@ -128,15 +130,10 @@ namespace object_recognition
         int
         process(const ecto::tendrils& inputs, const ecto::tendrils& outputs)
         {
-          Document doc_new = PopulateDoc(db_, *object_id_, *model_params_, T::model_type());
+          Document doc_new = PopulateDoc(db_, *object_id_, *session_ids_, *model_params_, T::model_type());
 
           // Read the input model parameters
-          json_spirit::mObject in_parameters;
-          {
-            json_spirit::mValue value;
-            json_spirit::read(*model_params_, value);
-            in_parameters = value.get_obj();
-          }
+          or_json::mObject in_parameters = to_json(*model_params_);
 
           std::cout << "persisting " << doc_new.id() << std::endl;
           int rval = T::process(inputs, outputs, doc_new);
@@ -151,7 +148,7 @@ namespace object_recognition
             for (; iter != end; ++iter)
             {
               // Compare the parameters
-              json_spirit::mObject db_parameters = (*iter).get_value<json_spirit::mObject>("parameters");
+              or_json::mObject db_parameters = (*iter).get_value<or_json::mObject>("parameters");
 
               // If they are the same, delete the current model in the database
               if (CompareJsonIntersection(in_parameters, db_parameters))
@@ -172,7 +169,7 @@ namespace object_recognition
         ObjectDb db_;
         ecto::spore<ObjectDbParameters> db_params_;
         ecto::spore<DocumentId> object_id_;
-        ecto::spore<std::string> model_params_;
+        ecto::spore<std::string> session_ids_, model_params_;
       };
     }
   }

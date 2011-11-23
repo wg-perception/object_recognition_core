@@ -71,8 +71,8 @@ namespace object_recognition
         {
           case VIEW_MODEL_WHERE_OBJECT_ID_AND_MODEL_TYPE:
             //TODO
-            parameters_["object_id"] = json_spirit::mValue(arg1);
-            parameters_["model_type"] = json_spirit::mValue(arg2);
+            parameters_["object_id"] = or_json::mValue(arg1);
+            parameters_["model_type"] = or_json::mValue(arg2);
             break;
           default:
             throw std::runtime_error("Not a valid View type for initialization arguments: std::string, std::string");
@@ -84,14 +84,14 @@ namespace object_recognition
       {
         return type_;
       }
-      const json_spirit::mObject &
+      const or_json::mObject &
       parameters() const
       {
         return parameters_;
       }
     private:
       ViewType type_;
-      json_spirit::mObject parameters_;
+      or_json::mObject parameters_;
     };
   }
 }
