@@ -1,6 +1,0 @@
---author
-Ethan Rublee
---email
-erublee@willowgarage.com
---db_root
-http://localhost:5984
