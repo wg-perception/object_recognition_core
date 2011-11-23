@@ -42,12 +42,12 @@ params_valid()
   return params;
 }
 
-json_spirit::mObject
+or_json::mObject
 parse_status(const std::string& status)
 {
-  json_spirit::mValue value;
+  or_json::mValue value;
   std::stringstream ss(status);
-  json_spirit::read(ss, value);
+  or_json::read(ss, value);
   return value.get_obj();
 }
 
@@ -56,7 +56,7 @@ expect_not_found(ObjectDb& db, const std::string& collection)
 {
   std::string status;
   db.Status(collection, status);
-  json_spirit::mObject ps = parse_status(status);
+  or_json::mObject ps = parse_status(status);
   EXPECT_EQ(ps["error"].get_str(), "not_found");
 }
 
@@ -72,7 +72,7 @@ TEST(OR_db, Status)
   ObjectDb db(ObjectDbParameters("CouchDB"));
   std::string status;
   db.Status(status);
-  json_spirit::mObject ps = parse_status(status);
+  or_json::mObject ps = parse_status(status);
   EXPECT_EQ(ps.count("couchdb"), 1);
 }
 
@@ -83,7 +83,7 @@ TEST(OR_db, CreateDelete)
     db.CreateCollection("test_it");
     std::string status;
     db.Status("test_it", status);
-    json_spirit::mObject ps = parse_status(status);
+    or_json::mObject ps = parse_status(status);
     EXPECT_EQ(ps["db_name"].get_str(), "test_it");
   }
   {
@@ -168,7 +168,7 @@ TEST(OR_db, StatusCollectionNonExistant)
 
   std::string status;
   db.Status("test_it", status);
-  json_spirit::mObject ps = parse_status(status);
+  or_json::mObject ps = parse_status(status);
   EXPECT_EQ(ps["error"].get_str(), "not_found");
   EXPECT_EQ(ps["reason"].get_str(), "no_db_file");
 }
@@ -180,7 +180,7 @@ TEST(OR_db, StatusCollectionExistant)
   std::string status;
   db.CreateCollection("test_it");
   db.Status("test_it", status);
-  json_spirit::mObject ps = parse_status(status);
+  or_json::mObject ps = parse_status(status);
   EXPECT_EQ(ps["db_name"].get_str(), "test_it");
   db.DeleteCollection("test_it");
 }
@@ -295,7 +295,7 @@ TEST(OR_db, InitSeperatelyChangeURL)
   db.set_parameters(ObjectDbParameters("CouchDB"));
   std::string status;
   db.Status(status);
-  json_spirit::mObject ps = parse_status(status);
+  or_json::mObject ps = parse_status(status);
   EXPECT_EQ(ps.count("couchdb"), 1);
   ObjectDbParameters params("CouchDB");
   params.root_ = "http://abc";
@@ -324,16 +324,16 @@ TEST(OR_db, ObjectDbCopy)
 
 TEST(OR_db, JSONReadWrite)
 {
-  json_spirit::mObject params1, params2;
+  or_json::mObject params1, params2;
   std::stringstream ssparams1, ssparams2, ssparams3;
   ssparams1 << "{\"num1\":2, \"num2\":3.5, \"str\":\"foo\"}";
-  json_spirit::mValue value;
-  json_spirit::read(ssparams1, value);
+  or_json::mValue value;
+  or_json::read(ssparams1, value);
   params1 = value.get_obj();
 
   // Write it to a JSON string and make sure numbers are persisted as numbers
-  value = json_spirit::mValue(params1);
-  json_spirit::write(value, ssparams2);
+  value = or_json::mValue(params1);
+  or_json::write(value, ssparams2);
   std::string new_json = ssparams2.str();
   EXPECT_GE(new_json.find("\"2\""), new_json.size());
   EXPECT_GE(new_json.find("\"3.5\""), new_json.size());
@@ -341,7 +341,7 @@ TEST(OR_db, JSONReadWrite)
 
   // Make sure we can read it back
   ssparams3 << ssparams2.str();
-  json_spirit::read(ssparams3, value);
+  or_json::read(ssparams3, value);
   params2 = value.get_obj();
   EXPECT_EQ(params1["num1"].get_uint64(), params2["num1"].get_uint64());
   EXPECT_EQ(params1["num2"].get_real(), params2["num2"].get_real());
@@ -350,10 +350,10 @@ TEST(OR_db, JSONReadWrite)
 
 TEST(OR_db, JSONReadBigInteger)
 {
-  json_spirit::mObject params1, params2;
+  or_json::mObject params1, params2;
   std::stringstream ssparams1, ssparams2, ssparams3;
   ssparams1 << "{\"num\":3372036854775808  }";
-  json_spirit::mValue value;
-  json_spirit::read(ssparams1, value);
+  or_json::mValue value;
+  or_json::read(ssparams1, value);
   params1 = value.get_obj();
 }

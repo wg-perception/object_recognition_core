@@ -108,13 +108,13 @@ namespace object_recognition
       void
       configure(const ecto::tendrils& params, const ecto::tendrils& inputs, const ecto::tendrils& outputs)
       {
-        json_spirit::mObject search_param_tree;
+        or_json::mObject search_param_tree;
         std::stringstream ssparams;
         ssparams << params.get<std::string>("search_json_params");
 
         {
-          json_spirit::mValue value;
-          json_spirit::read(ssparams, value);
+          or_json::mValue value;
+          or_json::read(ssparams, value);
           search_param_tree = value.get_obj();
         }
 
