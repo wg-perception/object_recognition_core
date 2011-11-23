@@ -132,7 +132,7 @@ class Model(Document):
         models = [ m.value for m in db.query('''
         function(doc) {
             if (doc.Type == "Model")
-                emit(doc.ModelType)
+                emit(doc.ModelType,doc.ModelType)
         }
         ''', '''
         function(keys, values, rereduce) {
@@ -156,7 +156,12 @@ class Model(Document):
             }
             return r;
         }
-        ''') ][0]
+        ''') ]
+
+        if not models:
+            return
+        else:
+            models = models[0]
         # for each, create a view and sync it with the DB
         for model in models:
             cls.by_object_id_and[model] = ViewDefinition('models', 'by_object_id_and_' + model, '''\

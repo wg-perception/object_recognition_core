@@ -90,5 +90,6 @@ for y, x in (
 plasm.connect(orb_display['save'] >> image_writer['__test__'],
               source['image'] >> image_writer['image']
               )
-#ecto_ros.init(sys.argv, 'data_capture')
+if 'ros' in options.type:
+  ecto_ros.init(sys.argv, 'orb_template')
 run_plasm(options, plasm, locals=vars())
