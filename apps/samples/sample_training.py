@@ -4,7 +4,6 @@ import sys
 import couchdb
 from ecto_opencv.highgui import imshow, ImageSaver
 from ecto_object_recognition import capture
-from ecto_object_recognition.object_recognition_db import ObjectDbParameters
 from object_recognition import models, dbtools
 import ecto_opencv
 import os
@@ -30,9 +29,8 @@ for object_id in args.objects:
         continue
 
     plasm = ecto.Plasm()
-    params = ObjectDbParameters(dict(type=args.db_type, root=args.db_root, collection=args.db_collection))
     #the db_reader transforms observation id into a set of image,depth,mask,K,R,T
-    db_reader = capture.ObservationReader("db_reader", db_params=params)
+    db_reader = capture.ObservationReader("db_reader", db_params=dbtools.args_to_db_params(args))
     #this iterates over all of the observation ids.
     observation_dealer = ecto.Dealer(tendril=db_reader.inputs.at('observation'), iterable=obs_ids)
 

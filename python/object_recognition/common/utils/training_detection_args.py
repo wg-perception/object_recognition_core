@@ -5,7 +5,6 @@ Module that creates a function to define/read common arguments for the training/
 from ecto_object_recognition.object_recognition_db import ObjectDbParameters
 from object_recognition import models, dbtools
 from object_recognition.common.utils.parser import ObjectRecognitionParser
-import couchdb
 import os
 import yaml
 
@@ -38,8 +37,7 @@ def read_arguments(parser=None, argv=None):
     db_params = ObjectDbParameters(params['db'])
 
     # initialize the DB
-    if db_params.type.lower() == 'couchdb':
-        db = dbtools.init_object_databases(couchdb.Server(db_params.root))
+    db = dbtools.db_params_to_db(db_params)
 
     # read the object_ids
     object_ids = set()
