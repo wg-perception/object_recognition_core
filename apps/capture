@@ -23,11 +23,11 @@ object sparsely, depending on the angle_thresh setting.'''),
                        default='',
                        help='A bagfile to write to.')
     parser.add_argument('-a', '--angle_thresh', metavar='RADIANS', dest='angle_thresh', type=float,
-                       default=math.pi / 18,
+                       default= 10 * math.pi / 180, #10 degrees
                        help='The delta angular threshold in pose.'
                             'Frames will not be recorded unless they are not closer to any other pose by this amount. default(%(default)s)')
     parser.add_argument('-n', '--nviews', metavar='NVIEWS', dest='nviews', type=int,
-                       default=72,
+                       default=36,
                        help='Number of desired views. default(%(default)s)')
     parser.add_argument('--preview', dest='preview', action='store_true',
                         default=False, help='Preview the pose estimator.')

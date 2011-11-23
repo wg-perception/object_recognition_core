@@ -28,20 +28,21 @@ Readme, needs to be cleaned into rst... dumping here for now.
    rosrun object_recognition_core orb_template.py -o my_textured_plane
    
    #try out tracking to see if you got a good template. Press 'q' to quit.
-   rosrun object_recognition_core orb_track.py -i my_textured_plane
+   rosrun object_recognition_core orb_track.py --track_directory my_textured_plane
+
    
    #*************** Capture Objects *****************************
    #*************************************************************
    #Once you are happy with the workspace tracking, its time to capure an object.
    #Place an object at the origin of the workspace. An run the capture program in preview mode.
    #Make sure the mask and pose are being picked up.
-   rosrun object_recognition_core capture -o silk.bag -i my_textured_plane -n 30 --preview
-   
+   rosrun object_recognition_core capture -i my_textured_plane --seg_z_min 0.01 -o silk.bag --preview
+
    #When satisified by the preview mode, run it for real.  The following will capture a bag of 60 views
    #where each view is normally distributed on the view sphere. The mask and pose displays should only refresh
-   #when a novel view is captured.  The program will finish when 30 (-n) views are captured.
+   #when a novel view is captured.  The program will finish when 35 (-n) views are captured.
    #Press 'q' to quit early.
-   rosrun object_recognition_core capture -o silk.bag -i my_textured_plane -n 30
+   rosrun object_recognition_core capture -i my_textured_plane --seg_z_min 0.01 -o silk.bag
    
    #Now time for upload. Give the object a name with, and useful tags seperated by a space, e.g. milk soy silk.
    rosrun object_recognition_core upload -i silk.bag -n 'Silk' milk soy silk --commit
