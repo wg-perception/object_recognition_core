@@ -5,6 +5,7 @@ Module that creates a function to define/read common arguments for the training/
 from ecto_object_recognition.object_recognition_db import ObjectDbParameters
 from object_recognition import models, dbtools
 from object_recognition.common.utils.parser import ObjectRecognitionParser
+from object_recognition.dbtools import args_to_db_params
 import os
 import yaml
 
@@ -23,8 +24,9 @@ def read_arguments(parser=None, argv=None):
     parser.add_argument('-c', '--config_file', help='Config file')
     parser.add_argument('--object_ids', help='If set, it overrides the list of object_ids in the config file')
     parser.add_argument('--object_names', help='If set, it overrides the list of object names in the config file')
-    parser.add_argument('--do_display', help='If set, it will display some windows with temporary results',
+    parser.add_argument('--visualize', help='If set, it will display some windows with temporary results',
                        default=False, action='store_true')
+    dbtools.add_db_options(parser)
     args = parser.parse_args(args=argv)
 
     # define the input
@@ -34,7 +36,7 @@ def read_arguments(parser=None, argv=None):
     params = yaml.load(open(args.config_file))
 
     # read some parameters
-    db_params = ObjectDbParameters(params['db'])
+    db_params = args_to_db_params(args, params.get('db', {}))
 
     # initialize the DB
     db = dbtools.db_params_to_db(db_params)
@@ -68,4 +70,4 @@ def read_arguments(parser=None, argv=None):
         if key.startswith('pipeline'):
             pipeline_params.append(value)
 
-    return params, args, pipeline_params, args.do_display, db_params, db
+    return params, args, pipeline_params, args.visualize, db_params, db

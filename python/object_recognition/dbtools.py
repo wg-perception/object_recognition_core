@@ -43,15 +43,20 @@ def add_db_options(parser):
     db_group.add_argument('--commit', dest='commit', action='store_true',
                         default=False, help='Commit the data to the database.')
 
-def args_to_db_params(args):
+def args_to_db_params(args, secondary_parameters):
     """
-    Given args, create an ObjectDbParameters object
+    Given command line parsed args, create an ObjectDbParameters object. The keys in args have to be:
+    'db_type', 'db_root', 'db_collection'
+    Any parameter that is not in the args will be taken from the dictionary secondary_parameters, where the keys are:
+    'type', 'url', 'collection'
     """
     dic = {}
     remap_dic = {'db_type':'type', 'db_root':'url', 'db_collection': 'collection'}
-    for key in remap_dic.iterkeys():
-        if hasattr(args, key):
-            dic[remap_dic[key]] = getattr(args, key)
+    for args_key, secondary_key in remap_dic.iterkeys():
+        if hasattr(args, args_key):
+            dic[secondary_key] = getattr(args, args_key)
+        elif hasattr(secondary_parameters, secondary_key):
+            dic[secondary_key] = getattr(secondary_parameters, secondary_key)
     return ObjectDbParameters(dic)
 
 def db_params_to_db(db_params):

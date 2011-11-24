@@ -12,7 +12,7 @@ DEBUG = False
 ########################################################################################################################
 
 if __name__ == '__main__':
-    params, args, pipeline_params, do_display, db_params, db = read_arguments()
+    params, args, pipeline_params, visualize, db_params, db = read_arguments()
 
     for object_id in params['object_ids']:
         object_id = object_id.encode('ascii')
@@ -34,7 +34,7 @@ if __name__ == '__main__':
             if pipeline_param['type'] == 'TOD':
                 trainer = TodTrainer(json_search_params=json_helper.dict_to_cpp_json_str(pipeline_param['search']),
                                      json_feature_descriptor_params=json_helper.dict_to_cpp_json_str(pipeline_param['feature_descriptor']),
-                                     display=do_display, source=db_reader, source_plasm=source_plasm)
+                                     visualize=visualize, source=db_reader, source_plasm=source_plasm)
 
             # define the output
             db_writer = tod_training.ModelWriter("db_writer", db_params = db_params, object_id=object_id,

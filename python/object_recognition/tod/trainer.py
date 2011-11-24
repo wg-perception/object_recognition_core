@@ -34,7 +34,7 @@ class Trainer(ecto.BlackBox):
         ecto.BlackBox.__init__(self, **kwargs)
 
     def declare_params(self, p):
-        p.declare('display', 'If true, displays images at runtime', False)
+        p.declare('visualize', 'If true, displays images at runtime', False)
         p.forward('json_feature_descriptor_params', cell_name = 'feature_descriptor', cell_key = 'json_params')
         p.forward('json_search_params', cell_name = 'prepare_for_g2o', cell_key = 'search_json_params')
 
@@ -61,7 +61,7 @@ class Trainer(ecto.BlackBox):
         self.T_duplicator = self.T_duplicator()
         self.depth_duplicator = self.depth_duplicator()
         
-        self._display = p.display
+        self._visualize = p.visualize
 
     def connections(self):
         sub_connections = [ self.source['image'] >> self.image_duplicator['in'],
@@ -97,7 +97,7 @@ class Trainer(ecto.BlackBox):
                         self.R_duplicator[:] >> self.model_stacker['R'],
                         self.T_duplicator[:] >> self.model_stacker['T'] ]
 
-        if self._display:
+        if self._visualize:
             mask_view = highgui.imshow(name="mask")
             depth_view = highgui.imshow(name="depth")
 

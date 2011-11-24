@@ -77,7 +77,7 @@ namespace object_recognition
         params.declare(&GuessGenerator::n_ransac_iterations_, "n_ransac_iterations", "Number of RANSAC iterations.",
                        1000);
         params.declare(&GuessGenerator::sensor_error_, "sensor_error", "The error (in meters) from the Kinect", 0.01);
-        params.declare(&GuessGenerator::do_display_, "do_display", "If true, display temporary info through highgui",
+        params.declare(&GuessGenerator::visualize_, "visualize", "If true, display temporary info through highgui",
                        false);
       }
 
@@ -102,7 +102,7 @@ namespace object_recognition
       void
       configure(const tendrils& params, const tendrils& inputs, const tendrils& outputs)
       {
-        if (*do_display_)
+        if (*visualize_)
         {
           colors_.push_back(cv::Scalar(255, 255, 0));
           colors_.push_back(cv::Scalar(0, 255, 255));
@@ -150,7 +150,7 @@ namespace object_recognition
           // Cluster the matches per object ID
           OpenCVIdToObjectPoints all_object_points;
           ClusterPerObject(keypoints, point_cloud, matches, matches_3d, all_object_points);
-          if (*do_display_)
+          if (*visualize_)
             DrawClustersPerObject(keypoints, colors_, initial_image, all_object_points);
 
           // For each object, build the connectivity graph between the matches
@@ -203,7 +203,7 @@ namespace object_recognition
               }
 
               // Store the matches for debug purpose
-              if (*do_display_)
+              if (*visualize_)
               {
                 matching_query_points[opencv_object_id].push_back(inliers);
 
@@ -281,7 +281,7 @@ namespace object_recognition
             object_ids_final.insert(object_ids_final.end(), object_ids.begin(), object_ids.end());
           }
 
-          if (*do_display_)
+          if (*visualize_)
           {
             // Draw the different inliers
             cv::Mat output_img = initial_image.clone();
@@ -320,7 +320,7 @@ namespace object_recognition
       /** List of very different colors, for debugging purposes */
       std::vector<cv::Scalar> colors_;
       /** flag indicating whether we run in debug mode */
-      ecto::spore<bool> do_display_;
+      ecto::spore<bool> visualize_;
       /** The minimum number of inliers in order to do pose matching */
       ecto::spore<unsigned int> min_inliers_;
       /** The number of RANSAC iterations to perform */

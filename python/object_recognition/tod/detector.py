@@ -19,12 +19,12 @@ class TodDetector(ecto.BlackBox):
     image_duplicator = ecto.Passthrough
     message_cvt = ecto_ros.Mat2Image
 
-    def __init__(self, tod_params, guess_params, search_params, display=False, **kwargs):
+    def __init__(self, tod_params, guess_params, search_params, visualize=False, **kwargs):
         self._tod_params = tod_params
         self._guess_params = guess_params
         self._search_params = search_params
 
-        self._display = display
+        self._visualize = visualize
 
         ecto.BlackBox.__init__(self, **kwargs)
 
@@ -53,7 +53,7 @@ class TodDetector(ecto.BlackBox):
         for key in [ 'min_inliers', 'n_ransac_iterations', 'sensor_error']:
             if key in self._guess_params:
                 guess_params[key] = self._guess_params[key]
-        guess_params['do_display'] = self._display
+        guess_params['visualize'] = self._visualize
         self.guess_generator = tod_detection.GuessGenerator("Guess Gen", **guess_params)
 
         self.image_duplicator = ecto.Passthrough()
@@ -81,8 +81,8 @@ class TodDetector(ecto.BlackBox):
                            self.message_cvt[:] >> pub_features[:],
                            ]
 
-        if self._display:
-            # display the found keypoints
+        if self._visualize:
+            # visualize the found keypoints
             image_view = highgui.imshow(name="RGB")
             keypoints_view = highgui.imshow(name="Keypoints")
 

@@ -23,7 +23,7 @@ class TODDetection(DetectionPipeline):
         # add arguments for the source and sink
         Sink.add_arguments(parser)
 
-        params, args, pipeline_params, do_display, db_params, db = read_arguments(parser, argv)
+        params, args, pipeline_params, visualize, db_params, db = read_arguments(parser, argv)
 
         # TODO handle this properly...
         ecto_ros.init(argv, "tod_detection", False)#not anonymous.
@@ -41,7 +41,7 @@ class TODDetection(DetectionPipeline):
             detector = TodDetector(pipeline_param['feature_descriptor'],
                                    pipeline_param['guess'],
                                    json_helper.dict_to_cpp_json_str(pipeline_param['search']),
-                                   display=do_display, rgb_frame_id=params['source']['rgb_frame_id'],
+                                   visualize=visualize, rgb_frame_id=params['source']['rgb_frame_id'],
                                    model_documents=model_documents)
 
             # Connect the detector to the source
@@ -58,7 +58,7 @@ class TODDetection(DetectionPipeline):
             plasm.connect(source['image_message'] >> sink['image_message'])
 
         # Display the different poses
-        if do_display:
+        if visualize:
             pose_view = highgui.imshow(name="Pose")
             pose_drawer = calib.PosesDrawer()
 
