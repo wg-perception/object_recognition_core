@@ -4,10 +4,9 @@ import os, sys, argparse
 import ecto, ecto_ros, ecto_sensor_msgs, ecto_geometry_msgs
 from ecto_opencv import highgui, imgproc
 from object_recognition import dbtools, models, capture
-from object_recognition.dbtools import add_db_options
+from object_recognition.dbtools import add_db_options, args_to_db_params
 
-
-def connect_observation_calc_with_mask_pose(sync, commit, object_id, session_id, debug=False):
+def connect_observation_calc_with_mask_pose(sync, commit, object_id, session_id, db_params, debug=False):
     plasm = ecto.Plasm()
     #need to go from ROS message types to opencv types.
     depth_ci = ecto_ros.CameraInfo2Cv('camera_info -> cv::Mat')
@@ -38,7 +37,8 @@ def connect_observation_calc_with_mask_pose(sync, commit, object_id, session_id,
         plasm.connect(mask[:] >> mask_display[:])
 
     if commit:
-        db_inserter = capture.ObservationInserter("db_inserter", object_id=object_id, session_id=session_id)
+        db_inserter = capture.ObservationInserter("db_inserter", object_id=object_id, session_id=session_id,
+                                                  db_params=db_params)
         plasm.connect(depth[:] >> db_inserter['depth'],
                   pose['R', 'T'] >> db_inserter['R', 'T'],
                   mask[:] >> db_inserter['mask'],
@@ -97,7 +97,7 @@ def compute_for_bag_with_mask_pose(bag, obj, args):
     print "running graph"
     plasm = connect_observation_calc_with_mask_pose(sync, args.commit,
                                      str(session.object_id),
-                                     str(session.id),
+                                     str(session.id), args_to_db_params(args),
                                      args.visualize)
 
     from ecto.opts import run_plasm

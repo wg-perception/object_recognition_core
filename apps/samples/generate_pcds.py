@@ -27,9 +27,7 @@ def generate_pointclouds_in_object_space(dbs, session, args):
     obs_ids = models.find_all_observations_for_session(dbs, session.id)
     if len(obs_ids) == 0:
         raise RuntimeError("There are no observations available.")
-    db_reader = capture.ObservationReader('Database Source',
-                                          ObjectDbParameters({'type':'CouchDB', 'root':args.db_root,
-                                                                        'collection':args.db_collection}))
+    db_reader = capture.ObservationReader('Database Source', db_params=dbtools.args_to_db_params(args))
 
     #observation dealer will deal out each observation id.
     observation_dealer = ecto.Dealer(tendril=db_reader.inputs.at('observation'), iterable=obs_ids)

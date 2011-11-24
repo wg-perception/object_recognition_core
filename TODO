@@ -9,7 +9,6 @@ Interface:
 - meshing should support --all, --missing, --object_ids
 - have a common file for common options (author, db) : split parameters with that file too, even for training/detection/meshing/upload
 - autogeneration of parameter files:autogenerate if it does not exist
-- merge visualize and do_display
 
 Performance:
 - SBA

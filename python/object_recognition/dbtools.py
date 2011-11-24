@@ -1,4 +1,7 @@
+from ecto_object_recognition.object_recognition_db import ObjectDbParameters
+
 DEFAULT_SERVER_URL = 'http://localhost:5984'
+
 def create_db(db_name, couch):
     ''' Create and return a handle to the specified couch db database.
     Will attempt to find the existing db,
@@ -40,13 +43,26 @@ def add_db_options(parser):
     db_group.add_argument('--commit', dest='commit', action='store_true',
                         default=False, help='Commit the data to the database.')
 
-def args_to_dict(args):
+def args_to_db_params(args, secondary_parameters):
     """
-    Given args, create a dictionary containing only the db arguments
+    Given command line parsed args, create an ObjectDbParameters object. The keys in args have to be:
+    'db_type', 'db_root', 'db_collection'
+    Any parameter that is not in the args will be taken from the dictionary secondary_parameters, where the keys are:
+    'type', 'url', 'collection'
     """
     dic = {}
-    remap_dic = {'db_type':'type', 'db_root':'url', 'db_collection': 'collection'}
-    for key in remap_dic.iterkeys():
-        if hasattr(args, key):
-            dic[remap_dic[key]] = getattr(args, key)
-    return dic
+    remap_dic = {'db_type':'type', 'db_root':'root', 'db_collection': 'collection'}
+    for args_key, secondary_key in remap_dic.iteritems():
+        if hasattr(args, args_key):
+            dic[secondary_key] = getattr(args, args_key)
+        elif hasattr(secondary_parameters, secondary_key):
+            dic[secondary_key] = getattr(secondary_parameters, secondary_key)
+    return ObjectDbParameters(dic)
+
+def db_params_to_db(db_params):
+    """
+    Given a ObjectDbParameters, return  db object
+    """
+    if db_params.type.lower() == 'couchdb':
+        import couchdb
+        return init_object_databases(couchdb.Server(db_params.root))

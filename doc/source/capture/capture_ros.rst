@@ -58,7 +58,7 @@ Readme, needs to be cleaned into rst... dumping here for now.
    #Next objects should be trained. It may take some time between objects, this is normal.
    rosrun object_recognition_core training \
    -c `rospack find object_recognition_core`/bin/config_training.sample \
-   --do_display
+   --visualize
    
    #*************** Detect Objects ******************************
    #*************************************************************
@@ -67,4 +67,4 @@ Readme, needs to be cleaned into rst... dumping here for now.
    #results. /markers is used for the results, and it is a marker array.
    rosrun object_recognition_core detection \
    -c `rospack find object_recognition_core`/bin/config_detection.sample \
-   #--do_display
+   #--visualize

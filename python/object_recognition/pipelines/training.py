@@ -16,9 +16,10 @@ class ObservationDealer(ecto.BlackBox):
     At each iteration, will return one fully typed observation, K,R,T,image,depth,mask, etc...
     Initialized with a predetermined set of observation ids.
     '''
+    db_reader = capture.ObservationReader
     def declare_params(self, p):
-        p.declare('observation_ids', 'An iterable of observation ids.')
-        p.declare('db_params', 'db parameters.')
+        p.declare('observation_ids', 'An iterable of observation ids.',[])
+        p.declare('db_params', 'db parameters.', '')
 
     def declare_io(self, p, i, o):
         self.db_reader = capture.ObservationReader(db_params=p.db_params)
@@ -31,6 +32,7 @@ class ObservationDealer(ecto.BlackBox):
         return graph
 
 class ModelBuilder(ecto.BlackBox):
+    incremental_model_builder = None
     def __init__(self, source, incremental_model_builder, **kwargs):
         self.source = source
         self.incremental_model_builder = incremental_model_builder
@@ -66,7 +68,8 @@ class TrainingPipeline:
 
     @abstractmethod
     def post_processor(self, pipeline_params):
-        pass
+        raise NotImplementedError("This should return a cell .")
+
 
     @classmethod #see http://docs.python.org/library/abc.html#abc.ABCMeta.__subclasshook__
     def __subclasshook__(cls, C):
@@ -92,7 +95,7 @@ class TrainingPipeline:
         model_builder = ModelBuilder(source=dealer,
                                      incremental_model_builder=incremental_model_builder,
                                      niter=0) #execute until a quit condition occurs.
-        post_process = pipeline.post_process(pipeline_params)
+        post_process = pipeline.post_processor(pipeline_params)
 
         plasm = ecto.Plasm()
         # Connect the model builder to the source
@@ -111,7 +114,7 @@ class TrainingPipeline:
 
 
 def find_training_pipelines(modules):
-        pipelines = []
+        pipelines = {}
         ms = []
         for module in modules:
             m = __import__(module)
@@ -124,5 +127,5 @@ def find_training_pipelines(modules):
             for x in dir(pymodule):
                 potential_pipeline = getattr(pymodule, x)
                 if inspect.isclass(potential_pipeline) and potential_pipeline != TrainingPipeline and issubclass(potential_pipeline, TrainingPipeline):
-                    pipelines.append(potential_pipeline)
+                    pipelines[potential_pipeline.name()] = potential_pipeline
         return pipelines

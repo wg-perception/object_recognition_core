@@ -169,7 +169,7 @@ class Model(Document):
                     if ((doc.Type == "Model") && (doc.ModelType == "%s"))
                         emit(doc.object_id, doc)
                 }
-            ''' % model, wrapper = cls._wrap_row)
+            ''' % model, wrapper=cls._wrap_row)
             cls.by_object_id_and[model].sync(db)
 
 def sync_models(db):
@@ -192,19 +192,23 @@ def find_all_observations_for_session(observation_collection, session_id):
     obs_ids = zip(*sorted(obs_tuples, key=lambda obs: obs[0]))[1]
     return obs_ids
 
-def find_all_observations_for_object(observation_collection, object_id):
+def find_all_sessions_for_object(db, object_id):
+    sessions = Session.by_object_id(db, key=object_id)
+    sessions_by_date_added = []
+    for x in sessions:
+        sess = db[x.id]
+        sessions_by_date_added.append((sess['added'], x.id))
+    sessions_by_date_added = sorted(sessions_by_date_added)
+    return zip(*sessions_by_date_added)[1]
+
+def find_all_observations_for_object(db, object_id):
     ''' Finds all of the observations associated with an object, and returns a list
     of their ids. These are sorted by the frame number,
     so they should be in chronological ordering.
     '''
-    sessions = Session.by_object_id(observation_collection, key=object_id)
-    sessions_by_data = []
-    for x in sessions:
-        sess = observation_collection[x.id]
-        sessions_by_data.append((sess['added'], x.id))
-    sessions_by_data = sorted(sessions_by_data)
+    sessions = find_all_sessions_for_object(db, object_id)
     #run the view, keyed on the session id.
-    results = Observation.by_session_id(observation_collection, key=sessions_by_data[-1][1])
+    results = Observation.by_session_id(db, key=sessions[-1])
     if len(results) == 0 : return []
     #create a list of tuples, so that they can be sorted by frame number
     obs_tuples = [ (obs.frame_number, obs.id) for obs in results]

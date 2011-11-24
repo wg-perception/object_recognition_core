@@ -16,13 +16,14 @@ class TODModelBuilder(ecto.BlackBox):
     """
     """
     feature_descriptor = FeatureDescriptor
-
+    source = ecto.PassthroughN
+    model_stacker = tod_training.TodModelStacker
     def declare_params(self, p):
         p.declare('display', 'If true, displays images at runtime', False)
         p.forward('json_feature_descriptor_params', cell_name='feature_descriptor', cell_key='json_params')
 
     def declare_io(self, p, i, o):
-        self.source = ecto.PassthroughN(what=dict(image='An image',
+        self.source = ecto.PassthroughN(items=dict(image='An image',
                                                                    depth='A depth image',
                                                                    mask='A mask for valid object pixels.',
                                                                    K='The camera matrix',
@@ -104,9 +105,9 @@ class TODPostProcessor(ecto.BlackBox):
         p.forward('json_search_params', cell_name='prepare_for_g2o', cell_key='search_json_params')
 
     def declare_io(self, p, i, o):
-        i.forward_all('g2o')
+        #i.forward_all('g2o')
         i.forward_all('prepare_for_g2o')
-        i.forward('descriptors', 'point_merger')
+        #i.forward('descriptors', 'point_merger')
         o.forward_all('model_filler')
 
     def configure(self, p, i, o):
@@ -119,14 +120,15 @@ class TODPostProcessor(ecto.BlackBox):
                  self.prepare_for_g2o['x', 'y', 'disparity', 'points'] >> self.g2o['x', 'y', 'disparity', 'points'],
                  self.g2o['points'] >> self.point_merger['points'],
                  self.prepare_for_g2o['ids'] >> self.point_merger['ids'],
-                 self.point_merger['points', 'descriptors'] >> model_filler['points', 'descriptors']
+                 self.point_merger['points', 'descriptors'] >> self.model_filler['points', 'descriptors']
                 ]
         return graph
 
 class TODTrainingPipeline(TrainingPipeline):
     '''Implements the training pipeline functions'''
 
-    def name(self):
+    @classmethod
+    def name(cls):
         return "TOD"
 
     def incremental_model_builder(self, pipeline_params):

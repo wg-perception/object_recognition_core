@@ -2,59 +2,43 @@
 import roscompat
 import ecto, ecto_ros
 from ecto_object_recognition import capture, tod_training
-from ecto_object_recognition.object_recognition_db import ObjectDbParameters
 from object_recognition import models
 from object_recognition.common.utils import json_helper
 from object_recognition.common.utils.training_detection_args import read_arguments
-from object_recognition.tod.trainer import Trainer as TodTrainer
-
+from object_recognition.pipelines.training import find_training_pipelines
+import sys
 DEBUG = False
 
 ########################################################################################################################
 
 if __name__ == '__main__':
-    params, args, pipeline_params, do_display, db_params, db = read_arguments()
-
+    params, args, pipeline_params, visualize, db_params, db = read_arguments()
+    pipelines = find_training_pipelines(['object_recognition']) #map of string name to pipeline class
     for object_id in params['object_ids']:
         object_id = object_id.encode('ascii')
-        db_reader = capture.ObservationReader("db_reader", db_params=db_params)
-        obs_ids = models.find_all_observations_for_object(db, object_id)
-        if not obs_ids:
-            print 'no observations found for object %s' % object_id
-            continue
+        session_ids = models.find_all_sessions_for_object(db, object_id)
+        for session_id in session_ids:
+            db_reader = capture.ObservationReader("db_reader", db_params=db_params)
+            observation_ids = models.find_all_observations_for_session(db, session_id)
 
-        # define the input and connect to it
-        source_plasm = ecto.Plasm()
-        observation_dealer = ecto.Dealer(tendril=db_reader.inputs.at('observation'), iterable=obs_ids)
-        source_plasm.connect(observation_dealer[:] >> db_reader['observation'])
+            if not observation_ids:
+                print >> sys.stderr, 'No observations found for (object,session): (%s,%s)' % (object_id, session_id)
+                continue
 
-        main_plasm = ecto.Plasm()
-        pipelines = {}
-        # connect to the model computation
-        for pipeline_param in pipeline_params:
-            #define the trainer
-            eval(pipeline_param['type'] + 'Trainer.train()')
-            
-            
-            pipeline = pipleines.get(pipeline_param['type'],False)
-            if pipeline:
-                pipeline.train()
-#                trainer = TodTrainer(json_search_params=json_helper.dict_to_cpp_json_str(pipeline_param['search']),
-#                                     json_feature_descriptor_params=json_helper.dict_to_cpp_json_str(pipeline_param['feature_descriptor']),
-#                                     display=do_display, source=db_reader, source_plasm=source_plasm)
+            for pipeline_param in pipeline_params:
+                pipeline = pipelines.get(pipeline_param['type'], False)
+                if not pipeline:
+                    sys.stderr.write('Invalid pipeline name: %s\nMake sure that the pipeline type is defined by a TrainingPipeline class, in the name class function.' % pipeline_param['type'])
+                    sys.exit(-1)
 
-            # define the output
-            db_writer = tod_training.ModelWriter("db_writer", db_params = db_params, object_id=object_id,
-                                        model_json_params=json_helper.dict_to_cpp_json_str(pipeline_param))
+                #create a plasm using the TrainingPipeline interface.
+                plasm = pipeline.train(object_id, session_ids, observation_ids, pipeline_param, db_params)
 
-            # connect the output
-            main_plasm.connect(trainer['points', 'descriptors'] >> db_writer['points', 'descriptors'])
+                if DEBUG:
+                    #render the DAG with dot
+                    print plasm.viz()
+                    ecto.view_plasm(plasm)
 
-        if DEBUG:
-            #render the DAG with dot
-            print main_plasm.viz()
-            ecto.view_plasm(main_plasm)
-
-        print >> open('training.dot', 'wt'), main_plasm.viz()
-        sched = ecto.schedulers.Singlethreaded(main_plasm)
-        sched.execute(niter=1)
+                #we promise to only do on iteration of the training pipeline.
+                sched = ecto.schedulers.Singlethreaded(plasm)
+                sched.execute(niter=1)

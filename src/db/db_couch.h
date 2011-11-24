@@ -162,7 +162,7 @@ private:
    */
   void
   QueryView(const CollectionName & collection_name, int limit_rows, int start_offset, const std::string &options,
-            int& total_rows, int& offset, std::vector<DocumentId> & document_ids);
+            int& total_rows, int& offset, std::vector<DocumentId> & document_ids, bool do_throw);
 
   /** The URL of the DB, including port, but not collection */
   std::string url_;
