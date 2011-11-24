@@ -51,7 +51,7 @@ def args_to_db_params(args, secondary_parameters):
     'type', 'url', 'collection'
     """
     dic = {}
-    remap_dic = {'db_type':'type', 'db_root':'url', 'db_collection': 'collection'}
+    remap_dic = {'db_type':'type', 'db_root':'root', 'db_collection': 'collection'}
     for args_key, secondary_key in remap_dic.iteritems():
         if hasattr(args, args_key):
             dic[secondary_key] = getattr(args, args_key)

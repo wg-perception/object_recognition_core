@@ -254,6 +254,7 @@ ObjectDbCouch::QueryView(const std::string & in_url, int limit_rows, int start_o
     {
       total_rows = 0;
       offset = 0;
+      return;
     }
   }
 
