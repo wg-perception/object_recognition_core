@@ -9,6 +9,7 @@ from g2o import SbaDisparity
 from feature_descriptor import FeatureDescriptor
 import ecto
 from object_recognition.pipelines.training import TrainingPipeline
+from object_recognition.common.utils import dict_to_cpp_json_str
 
 ########################################################################################################################
 class TODModelBuilder(ecto.BlackBox):
@@ -125,8 +126,17 @@ class TODPostProcessor(ecto.BlackBox):
 class TODTrainingPipeline(TrainingPipeline):
     '''Implements the training pipeline functions'''
 
-    def incremental_model_builder(self,pipeline_params):
-        return TODModelBuilder
+    def name(self):
+        return "TOD"
 
-    def post_processor(self,pipeline_params):
-        return TODPostProcessor
+    def incremental_model_builder(self, pipeline_params):
+        feature_params = pipeline_params.get("feature_descriptor", False)
+        if not feature_params:
+            raise RuntimeError("You must supply feature_descriptor parameters for TOD.")
+        return TODModelBuilder(json_feature_descriptor_params=dict_to_cpp_json_str(feature_params))
+
+    def post_processor(self, pipeline_params):
+        search_params = pipeline_params.get("search", False)
+        if not search_params:
+            raise RuntimeError("You must supply search parameters for TOD.")
+        return TODPostProcessor(json_search_params=dict_to_cpp_json_str(search_params))

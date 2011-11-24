@@ -20,3 +20,8 @@ def dict_to_cpp_json_str(dict_obj):
     """
     return str(dict_obj).replace("'", '"')
 
+def list_to_cpp_json_str(list_obj):
+    """
+    Given a dictionary object, convert it to a string for C++
+    """
+    return str(list_obj).replace("'", '"')
