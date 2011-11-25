@@ -70,12 +70,12 @@ namespace object_recognition
     }
 
     Document
-    PopulateDoc(const ObjectDb& db, const ObjectId& object_id, const std::string& session_ids,const std::string& model_params,
-                const std::string& model_type)
+    PopulateDoc(const ObjectDb& db, const ObjectId& object_id, const std::string& session_ids,
+                const std::string& model_params, const std::string& model_type)
     {
       //create a document, and initialize all the common bits.
       Document doc(db);
-      PopulateDoc(object_id,session_ids, model_params, model_type, doc);
+      PopulateDoc(object_id, session_ids, model_params, model_type, doc);
       return doc;
     }
 
@@ -88,11 +88,11 @@ namespace object_recognition
       doc.set_value("object_id", object_id);
       // Convert the parameters to a property tree and insert them
       or_json::mObject params = to_json(model_params).get_obj();
-      or_json::mArray sessions = to_json(session_ids).get_array();
+      or_json::mValue sessions = to_json(session_ids);
 
-      params.erase("type");
-      doc.set_value("session_ids",sessions);
-      doc.set_values("parameters", params);
+      params.erase("type"); //TODO EAR: this is a bit funky?
+      doc.set_value("session_ids", sessions);
+      doc.set_value("parameters", params);
       doc.set_value("Type", "Model");
       doc.set_value("ModelType", model_type);
     }
