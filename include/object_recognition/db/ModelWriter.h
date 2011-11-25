@@ -134,7 +134,7 @@ namespace object_recognition
           Document doc_new = PopulateDoc(db_, *object_id_, *session_ids_, *model_params_, T::model_type());
 
           // Read the input model parameters
-          or_json::mObject in_parameters = to_json(*model_params_);
+          or_json::mObject in_parameters = to_json(*model_params_).get_obj();
 
           std::cout << "persisting " << doc_new.id() << std::endl;
           int rval = T::process(inputs, outputs, doc_new);
