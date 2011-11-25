@@ -293,7 +293,6 @@ namespace object_recognition
         db_.persist_fields(document_id_, fields_, revision_id_);
 
       // Persist the attachments
-      boost::any nothing_any;
       for (AttachmentMap::const_iterator attachment = attachments_.begin(), attachment_end = attachments_.end();
           attachment != attachment_end; ++attachment)
       {
