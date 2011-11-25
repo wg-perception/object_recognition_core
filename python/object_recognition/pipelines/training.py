@@ -10,6 +10,7 @@ import pkgutil
 import ecto
 from ecto_object_recognition import capture
 from object_recognition.common.utils import list_to_cpp_json_str
+from object_recognition.common.utils.json_helper import dict_to_cpp_json_str
 
 class ObservationDealer(ecto.BlackBox):
     '''
@@ -18,7 +19,7 @@ class ObservationDealer(ecto.BlackBox):
     '''
     db_reader = capture.ObservationReader
     def declare_params(self, p):
-        p.declare('observation_ids', 'An iterable of observation ids.',[])
+        p.declare('observation_ids', 'An iterable of observation ids.', [])
         p.declare('db_params', 'db parameters.', '')
 
     def declare_io(self, p, i, o):
@@ -32,7 +33,6 @@ class ObservationDealer(ecto.BlackBox):
         return graph
 
 class ModelBuilder(ecto.BlackBox):
-    incremental_model_builder = None
     def __init__(self, source, incremental_model_builder, **kwargs):
         self.source = source
         self.incremental_model_builder = incremental_model_builder
@@ -57,17 +57,30 @@ class TrainingPipeline:
     '''
     __metaclass__ = ABCMeta
 
-    @abstractmethod
-    def name(cls):
+    @classmethod
+    def type_name(cls):
+        '''
+        Return the code name for your pipeline. eg. 'TOD', 'LINEMOD', 'mesh', etc...
+        '''
         raise NotImplementedError("The training pipeline class must return a string name.")
 
     @abstractmethod
     def incremental_model_builder(self, pipeline_params):
+        '''
+        Given a dictionary of parameters, return a cell, or BlackBox that takes
+        as input observations, and at each iteration and builds up a model
+        on its output.
+        '''
         raise NotImplementedError("This should return a cell .")
 
 
     @abstractmethod
     def post_processor(self, pipeline_params):
+        '''
+        Given a dictionary of parameters, return a cell, or BlackBox that
+        takes the output of the incremental_model_builder and converts it into
+        a database document. You may do whatever post processing here.
+        '''
         raise NotImplementedError("This should return a cell .")
 
 
@@ -82,7 +95,12 @@ class TrainingPipeline:
     @classmethod
     def train(cls, object_id, session_ids, observation_ids, pipeline_params, db_params):
         '''
-        returns the final plasm to be executed.
+        Returns a training plasm, that will be executed exactly once.
+        :param object_id: The object id to train up.
+        :param session_ids: A list of session ids that this model should be based on.
+        :param observation_ids: A list of observation ids that will be dealt to the incremental model builder.
+        :param pipeline_params: A dictionary of parameters that will be used to initialize the training pipeline.
+        :param db_params: A DB parameters object that specifies where to save the model to.
         '''
 
         from ecto_object_recognition.object_recognition_db import ModelWriter
@@ -106,7 +124,8 @@ class TrainingPipeline:
         writer = ModelWriter(db_params=db_params,
                              object_id=object_id,
                              session_ids=list_to_cpp_json_str(session_ids),
-
+                             model_json_params=dict_to_cpp_json_str(pipeline_params),
+                             model_type=cls.type_name()
                              )
         plasm.connect(post_process["db_document"] >> writer["db_document"])
         return plasm
@@ -114,6 +133,11 @@ class TrainingPipeline:
 
 
 def find_training_pipelines(modules):
+    '''
+    Given a list of python packages, or modules, find all TrainingPipeline implementations.
+    :param modules: A list of python package names, e.g. ['object_recognition']
+    :returns: A list of TrainingPipeline implementation classes.
+    '''
         pipelines = {}
         ms = []
         for module in modules:
@@ -127,5 +151,5 @@ def find_training_pipelines(modules):
             for x in dir(pymodule):
                 potential_pipeline = getattr(pymodule, x)
                 if inspect.isclass(potential_pipeline) and potential_pipeline != TrainingPipeline and issubclass(potential_pipeline, TrainingPipeline):
-                    pipelines[potential_pipeline.name()] = potential_pipeline
+                    pipelines[potential_pipeline.type_name()] = potential_pipeline
         return pipelines
