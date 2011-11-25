@@ -15,30 +15,27 @@ from object_recognition.common.utils import dict_to_cpp_json_str
 class TODModelBuilder(ecto.BlackBox):
     """
     """
-    feature_descriptor = FeatureDescriptor
-    source = ecto.PassthroughN
-    model_stacker = tod_training.TodModelStacker
     def declare_params(self, p):
+        self.feature_descriptor = FeatureDescriptor()
         p.declare('display', 'If true, displays images at runtime', False)
         p.forward('json_feature_descriptor_params', cell_name='feature_descriptor', cell_key='json_params')
 
     def declare_io(self, p, i, o):
         self.source = ecto.PassthroughN(items=dict(image='An image',
-                                                                   depth='A depth image',
-                                                                   mask='A mask for valid object pixels.',
-                                                                   K='The camera matrix',
-                                                                   R='The rotation matrix',
-                                                                   T='The translation vector',
-                                                                   frame_number='The frame number.'
-                                                                   )
-                                                         )
+                                                   depth='A depth image',
+                                                   mask='A mask for valid object pixels.',
+                                                   K='The camera matrix',
+                                                   R='The rotation matrix',
+                                                   T='The translation vector',
+                                                   frame_number='The frame number.'
+                                                   )
+                                        )
         self.model_stacker = tod_training.TodModelStacker()
 
         i.forward_all('source')
         o.forward_all('model_stacker')
 
     def configure(self, p, i, o):
-        self.feature_descriptor = self.feature_descriptor()
         self.depth_to_3d_sparse = calib.DepthTo3dSparse()
         self.keypoints_to_mat = features2d.KeypointsToMat()
         self.camera_to_world = tod_training.CameraToWorld()
@@ -105,18 +102,29 @@ class TODPostProcessor(ecto.BlackBox):
         p.forward('json_search_params', cell_name='prepare_for_g2o', cell_key='search_json_params')
 
     def declare_io(self, p, i, o):
-        #i.forward_all('g2o')
-        i.forward_all('prepare_for_g2o')
-        #i.forward('descriptors', 'point_merger')
+        self.source = ecto.PassthroughN(items=dict(K='The camera matrix',
+                                                   quaternions='A vector of quaternions',
+                                                   Ts='A vector of translation vectors',
+                                                   descriptors='A stacked vector of descriptors',
+                                                   points='The 2D measurements per point.',
+                                                   points3d='The estimated 3d position of the points (3-channel matrices).'
+                                                   )
+                                        )
+        i.forward_all('source')
         o.forward_all('model_filler')
 
     def configure(self, p, i, o):
         self.point_merger = self.point_merger()
         self.prepare_for_g2o = self.prepare_for_g2o(search_json_params=p.json_search_params)
         self.g2o = self.g2o()
+        self.model_filler = self.model_filler()
 
     def connections(self):
-        graph = [
+        graph = [self.source['points', 'points3d', 'descriptors'] >> self.prepare_for_g2o['points', 'points3d', 'descriptors'],
+                 self.source['Ts', 'quaternions', 'K'] >> self.g2o['Ts', 'quaternions', 'K'],
+                 self.source['descriptors'] >> self.point_merger['descriptors'],
+                ]
+        graph += [
                  self.prepare_for_g2o['x', 'y', 'disparity', 'points'] >> self.g2o['x', 'y', 'disparity', 'points'],
                  self.g2o['points'] >> self.point_merger['points'],
                  self.prepare_for_g2o['ids'] >> self.point_merger['ids'],
@@ -128,7 +136,7 @@ class TODTrainingPipeline(TrainingPipeline):
     '''Implements the training pipeline functions'''
 
     @classmethod
-    def name(cls):
+    def type_name(cls):
         return "TOD"
 
     def incremental_model_builder(self, pipeline_params):
