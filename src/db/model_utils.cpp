@@ -87,11 +87,11 @@ namespace object_recognition
     {
       doc.set_value("object_id", object_id);
       // Convert the parameters to a property tree and insert them
-      or_json::mObject params = to_json(model_params);
-      or_json::mObject sessions = to_json(session_ids);
+      or_json::mObject params = to_json(model_params).get_obj();
+      or_json::mArray sessions = to_json(session_ids).get_array();
 
       params.erase("type");
-      doc.set_values("session_ids",sessions);
+      doc.set_value("session_ids",sessions);
       doc.set_values("parameters", params);
       doc.set_value("Type", "Model");
       doc.set_value("ModelType", model_type);
