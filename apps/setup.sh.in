@@ -1,2 +1,0 @@
-export PATH=@APP_PATH@:$PATH
-. @CMAKE_BINARY_DIR@/python_path.sh
