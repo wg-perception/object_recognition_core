@@ -12,9 +12,6 @@ from object_recognition.common.utils import json_helper
 from object_recognition.tod.detector import TodDetector
 import ecto
 import ecto_ros
-from object_recognition import models
-from ecto_object_recognition.object_recognition_db import DbDocuments, DbModels
-
 class TODDetection(DetectionPipeline):
     def create_pipeline(self, argv=[]):
         plasm = ecto.Plasm()
@@ -35,8 +32,8 @@ class TODDetection(DetectionPipeline):
 
         # define the different pipelines
         for pipeline_param in pipeline_params:
-            model_documents = DbModels(db_params, params['object_ids'], params.get('model_ids',[]),
-                                       json_helper.dict_to_cpp_json_str( pipeline_param['feature_descriptor']) )
+            model_documents = DbModels(db_params, params['object_ids'], params.get('model_ids', []),
+                                       json_helper.dict_to_cpp_json_str(pipeline_param['feature_descriptor']))
             # create the loader and detector
             detector = TodDetector(pipeline_param['feature_descriptor'],
                                    pipeline_param['guess'],
