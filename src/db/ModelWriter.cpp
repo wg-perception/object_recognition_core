@@ -47,6 +47,12 @@ namespace object_recognition
 {
   namespace db
   {
+    /**
+     * \brief A runtime ModelWriter, this takes in a db::Document and saves it to the DB,
+     * appending meta info to it.
+     *
+     * TODO Add date info to the model.
+     */
     struct ModelWriter
     {
       typedef ModelWriter C;
@@ -81,14 +87,14 @@ namespace object_recognition
       int
       process(const ecto::tendrils& inputs, const ecto::tendrils& outputs)
       {
+        //TODO move this logic to a function call.
         Document doc_new = *db_document_;
         doc_new.update_db(db_);
         PopulateDoc(*object_id_, *session_ids_, *model_params_, *model_type_, doc_new);
 
         // Read the input model parameters
-        or_json::mObject in_parameters = to_json(*model_params_);
+        or_json::mObject in_parameters = to_json(*model_params_).get_obj();
 
-        std::cout << "persisting " << doc_new.id() << std::endl;
         // Find all the models of that type for that object
         View view(View::VIEW_MODEL_WHERE_OBJECT_ID_AND_MODEL_TYPE);
         view.Initialize(*object_id_, *model_type_);
@@ -107,10 +113,8 @@ namespace object_recognition
             db_.Delete((*iter).id());
             break;
           }
-
-          doc_new.Persist();
         }
-        std::cout << "done persisting " << doc_new.id() << std::endl;
+        doc_new.Persist();
         return ecto::OK;
       }
     private:
