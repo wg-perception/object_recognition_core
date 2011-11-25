@@ -43,7 +43,7 @@ def add_db_options(parser):
     db_group.add_argument('--commit', dest='commit', action='store_true',
                         default=False, help='Commit the data to the database.')
 
-def args_to_db_params(args, secondary_parameters):
+def args_to_db_params(args, secondary_parameters={}):
     """
     Given command line parsed args, create an ObjectDbParameters object. The keys in args have to be:
     'db_type', 'db_root', 'db_collection'
