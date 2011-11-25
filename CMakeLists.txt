@@ -26,13 +26,6 @@ configure_file(python/__init__.py.in
   ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/__init__.py
   @ONLY)
 
-#path setup for executables
-set(APP_PATH ${CMAKE_CURRENT_SOURCE_DIR}/apps)
-configure_file( apps/setup.sh.in
-  ${CMAKE_CURRENT_BINARY_DIR}/setup.sh
-  @ONLY
-  )
-
 ecto_python_env_gen(${CMAKE_BINARY_DIR}/lib ${CMAKE_CURRENT_SOURCE_DIR}/python)
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
