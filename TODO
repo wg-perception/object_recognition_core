@@ -35,6 +35,7 @@ Capture:
 - upload through the capture GUI. Also have the triggering of all the other models (RabbitMQ ...)
 - should be a parameter file for the type of fiducials
 - unify the different Kinect calls to use the Kinect source (grep for /camera/depth)
+- move capture into its own project
 
 Doc:
 - API docs
@@ -54,3 +55,8 @@ Plugin architecture:
 -  Devs should not typically have to edit object_recognition to use their pipeline.
 -  ideas. your package is in the python path, and you give us its name, we search it for training, detection, testing pipelines and execute them
     - this requires ABCs to be defined so we can easily use pipelines.  Done for training.
+
+Organization:
+- Use image pipeline for the sources of images. Mono, stero, ros, bag, standalone, etc...
+- Capture should be its own project.
+- Breakout TOD.
