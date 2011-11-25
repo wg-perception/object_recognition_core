@@ -17,7 +17,7 @@ class TODModelBuilder(ecto.BlackBox):
     """
     def declare_params(self, p):
         self.feature_descriptor = FeatureDescriptor()
-        p.declare('display', 'If true, displays images at runtime', False)
+        p.declare('visualize', 'If true, displays images at runtime', False)
         p.forward('json_feature_descriptor_params', cell_name='feature_descriptor', cell_key='json_params')
 
     def declare_io(self, p, i, o):
@@ -42,7 +42,7 @@ class TODModelBuilder(ecto.BlackBox):
         self.model_stacker = tod_training.TodModelStacker()
         self.rescale_depth = capture.RescaledRegisteredDepth() #this is for SXGA mode scale handling.
         self.keypoint_validator = tod_training.KeypointsValidator()
-        self._display = p.display
+        self.visualize = p.visualize
 
     def connections(self):
         graph = []
@@ -74,7 +74,7 @@ class TODModelBuilder(ecto.BlackBox):
                         self.source['K', 'R', 'T'] >> self.model_stacker['K', 'R', 'T'],
                         ]
 
-        if self._display:
+        if self.visualize:
             mask_view = highgui.imshow(name="mask")
             depth_view = highgui.imshow(name="depth")
 
@@ -139,13 +139,15 @@ class TODTrainingPipeline(TrainingPipeline):
     def type_name(cls):
         return "TOD"
 
-    def incremental_model_builder(self, pipeline_params):
+    def incremental_model_builder(self, pipeline_params, args):
         feature_params = pipeline_params.get("feature_descriptor", False)
         if not feature_params:
             raise RuntimeError("You must supply feature_descriptor parameters for TOD.")
-        return TODModelBuilder(json_feature_descriptor_params=dict_to_cpp_json_str(feature_params))
+        #grab visualize if works.
+        visualize = getattr(args, 'visualize', False)
+        return TODModelBuilder(json_feature_descriptor_params=dict_to_cpp_json_str(feature_params), visualize=visualize)
 
-    def post_processor(self, pipeline_params):
+    def post_processor(self, pipeline_params, _args):
         search_params = pipeline_params.get("search", False)
         if not search_params:
             raise RuntimeError("You must supply search parameters for TOD.")

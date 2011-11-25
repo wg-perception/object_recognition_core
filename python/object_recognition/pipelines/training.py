@@ -3,8 +3,6 @@ Loaders for all object recognition pipelines
 '''
 from abc import ABCMeta, abstractmethod
 import inspect
-from pydoc import ispackage
-from inspect import ismodule
 import pkgutil
 
 import ecto
@@ -65,7 +63,7 @@ class TrainingPipeline:
         raise NotImplementedError("The training pipeline class must return a string name.")
 
     @abstractmethod
-    def incremental_model_builder(self, pipeline_params):
+    def incremental_model_builder(self, pipeline_params, args):
         '''
         Given a dictionary of parameters, return a cell, or BlackBox that takes
         as input observations, and at each iteration and builds up a model
@@ -75,7 +73,7 @@ class TrainingPipeline:
 
 
     @abstractmethod
-    def post_processor(self, pipeline_params):
+    def post_processor(self, pipeline_params, args):
         '''
         Given a dictionary of parameters, return a cell, or BlackBox that
         takes the output of the incremental_model_builder and converts it into
@@ -93,7 +91,7 @@ class TrainingPipeline:
         return NotImplemented
 
     @classmethod
-    def train(cls, object_id, session_ids, observation_ids, pipeline_params, db_params):
+    def train(cls, object_id, session_ids, observation_ids, pipeline_params, db_params, args=None):
         '''
         Returns a training plasm, that will be executed exactly once.
         :param object_id: The object id to train up.
@@ -101,19 +99,21 @@ class TrainingPipeline:
         :param observation_ids: A list of observation ids that will be dealt to the incremental model builder.
         :param pipeline_params: A dictionary of parameters that will be used to initialize the training pipeline.
         :param db_params: A DB parameters object that specifies where to save the model to.
+        :param args: General command line args, for things like visualize or what have you.
+        :returns: A plasm, only execute once please.
         '''
-
         from ecto_object_recognition.object_recognition_db import ModelWriter
 
         #todo make this depend on the pipeline specification or something...
         dealer = ObservationDealer(db_params=db_params, observation_ids=observation_ids)
 
         pipeline = cls()
-        incremental_model_builder = pipeline.incremental_model_builder(pipeline_params)
+        incremental_model_builder = pipeline.incremental_model_builder(pipeline_params, args)
         model_builder = ModelBuilder(source=dealer,
                                      incremental_model_builder=incremental_model_builder,
-                                     niter=0) #execute until a quit condition occurs.
-        post_process = pipeline.post_processor(pipeline_params)
+                                     niter=0,
+                                     ) #execute until a quit condition occurs.
+        post_process = pipeline.post_processor(pipeline_params, args)
 
         plasm = ecto.Plasm()
         # Connect the model builder to the source
@@ -138,18 +138,19 @@ def find_training_pipelines(modules):
     :param modules: A list of python package names, e.g. ['object_recognition']
     :returns: A list of TrainingPipeline implementation classes.
     '''
-        pipelines = {}
-        ms = []
-        for module in modules:
-            m = __import__(module)
-            ms += [(module, m)]
-            for loader, module_name, is_pkg in  pkgutil.walk_packages(m.__path__):
-                if is_pkg:
-                    module = loader.find_module(module_name).load_module(module_name)
-                    ms.append(module)
-        for pymodule in ms:
-            for x in dir(pymodule):
-                potential_pipeline = getattr(pymodule, x)
-                if inspect.isclass(potential_pipeline) and potential_pipeline != TrainingPipeline and issubclass(potential_pipeline, TrainingPipeline):
-                    pipelines[potential_pipeline.type_name()] = potential_pipeline
-        return pipelines
+    pipelines = {}
+    ms = []
+    for module in modules:
+        m = __import__(module)
+        ms += [(module, m)]
+        for loader, module_name, is_pkg in  pkgutil.walk_packages(m.__path__):
+            if is_pkg:
+                module = loader.find_module(module_name).load_module(module_name)
+                ms.append(module)
+    for pymodule in ms:
+        for x in dir(pymodule):
+            potential_pipeline = getattr(pymodule, x)
+            if inspect.isclass(potential_pipeline) and potential_pipeline != TrainingPipeline and issubclass(potential_pipeline, TrainingPipeline):
+                pipelines[potential_pipeline.type_name()] = potential_pipeline
+    return pipelines
+
