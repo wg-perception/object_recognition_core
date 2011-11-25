@@ -9,7 +9,6 @@ from object_recognition.pipelines.training import find_training_pipelines
 import sys
 DEBUG = False
 
-########################################################################################################################
 
 if __name__ == '__main__':
     params, args, pipeline_params, visualize, db_params, db = read_arguments()
@@ -36,7 +35,6 @@ if __name__ == '__main__':
 
                 if DEBUG:
                     #render the DAG with dot
-                    print plasm.viz()
                     ecto.view_plasm(plasm)
 
                 #we promise to only do on iteration of the training pipeline.
