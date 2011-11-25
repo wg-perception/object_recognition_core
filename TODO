@@ -9,6 +9,8 @@ Interface:
 - meshing should support --all, --missing, --object_ids
 - have a common file for common options (author, db) : split parameters with that file too, even for training/detection/meshing/upload
 - autogeneration of parameter files:autogenerate if it does not exist
+- normalize source parameters.  training and detection use a config file, everything else uses args...
+- All apps should support the sources? ros kinect, ros bag, openni
 
 Performance:
 - SBA
@@ -18,11 +20,14 @@ Performance:
 DB:
 - delete things from the DB, find orphans, find missing components (models ...), find duplicates
 - better object representation (model, inline images, 3d models ...)
+  - HTML - see the model_viewer under apps. Its a couch app, we can make it do whatever.
+           Currently have something for viewing the meshes, and something for viewing the objects.
 - be able to only replicate models in a DB (to put on the PR2)
 - add meta data that is missing (meet with everybody). We want: timestamp of the session, the sensor id
 - save models with several sets of parameters (distinctive, acquisition)
-- unexisting views should not crash
+- non-existant views should not crash
 - use a single view for all model types
+
 
 Capture:
 - SBA should be a blackbox for pose adjustment: maybe in capture, or in TOD training
@@ -41,6 +46,11 @@ New cells:
 
 Test:
 - have something for performance. Use NIST.
-
+- be able to train and test on the same bag
+- ground truth format?  Look at NIST CSV.  Possibly come up with bag format too, where each frame has a listing of object id and pose relative to the sensor
+- ground truth capture... Use the NIST Ponoko rig to capture scenes with GT poses. Needs a simple app or something.
 
 Plugin architecture:
+-  Devs should not typically have to edit object_recognition to use their pipeline.
+-  ideas. your package is in the python path, and you give us its name, we search it for training, detection, testing pipelines and execute them
+    - this requires ABCs to be defined so we can easily use pipelines.  Done for training.
