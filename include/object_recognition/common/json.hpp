@@ -4,16 +4,16 @@
 #include "json_spirit/json_spirit.h"
 namespace object_recognition
 {
-  inline or_json::mObject
+  inline or_json::mValue
   to_json(const std::string& str)
   {
     or_json::mValue value;
     or_json::read(str, value);
-    return value.get_obj();
+    return value;
   }
 
   inline std::string
-  from_json(const or_json::mObject& obj)
+  from_json(const or_json::mValue& obj)
   {
     return or_json::write(obj);
   }
