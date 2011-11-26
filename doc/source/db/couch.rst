@@ -8,8 +8,8 @@ must do is install couchdb, and ensure that the service has started.
 .. highlight:: ectosh
 
 The following should download and start the couch on Ubuntu like distros.
-::
-  
+:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
   % sudo apt-get install couchdb
 
 
@@ -33,6 +33,39 @@ to be accessed on any interface.
   [httpd]
   port = 5984
   bind_address = 0.0.0.0
+
+After editing this file, restart the couchdb service::
+
+  % sudo service couchdb restart
+
+Web UI
+^^^^^^
+
+We have a set of webpages that may be pushed to your couchdb instance that help
+browse the objects that you train, or models created.
+
+First make sure you have ``couchapp``::
+  
+  % sudo easy_install couchapp
+
+There is a make target for installing the web ui, which may be more convenient::
+
+  % make or_web_ui
+
+This will push the app to the location specified in the Cmake cache, by the variable,
+``OR_WEB_UI_LOCATION``.  Use ccache or cmake-gui to point it to a different location if you
+like.
+
+You can manually push it also, if you need more flexibility, or hate the cmake cache.
+cd to the ``object_recognition/web_ui`` directory and run couchapp in a manner similar to the
+following.::
+  
+  % couchapp push . http://localhost:5984/or_web_ui
+
+
+This will upload the contents of the directory to collection in your couchdb instance,
+called ``or_web_ui``.  After this you can browse the web ui using the url
+http://localhost:5984/or_web_ui/_design/viewer/index.html
 
 Library
 ^^^^^^^

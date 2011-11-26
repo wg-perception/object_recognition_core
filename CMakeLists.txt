@@ -30,6 +30,7 @@ ecto_python_env_gen(${CMAKE_BINARY_DIR}/lib ${CMAKE_CURRENT_SOURCE_DIR}/python)
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
 add_subdirectory(src)
+add_subdirectory(web_ui)
 option(BUILD_TEST "Build tests" ON)
 if(BUILD_TEST)
   enable_testing()

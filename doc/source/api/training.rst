@@ -1,16 +1,20 @@
 Training
 ========
 
+
 Database
 --------
 
-When creating your training pipeline, you will want to store your model in the database. By using our interface you will
-save a lot of time. Creating such a cell is easy and it will automatically automatically add the following fields to
+When creating your training pipeline, you will want to store your model in the database.
+By using our interface you will
+save a lot of time. Creating such a cell is easy and
+it will automatically add the following fields to
 the model when persisted:
 
 - the object id
 - the model parameters
 - the fact that the document is a model, of the type given by the member function ``model_type``
+
 
 Step 1
 ^^^^^^

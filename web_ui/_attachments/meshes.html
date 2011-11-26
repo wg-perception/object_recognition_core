@@ -3,8 +3,7 @@
 <script src="js/Three.js"></script>
 <script src="js/plane.js"></script>
 <script src="js/thingiview.js"></script>
-<script
-	src="http://ajax.googleapis.com/ajax/libs/jquery/1.6.4/jquery.min.js"></script>
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.6.4/jquery.min.js"></script>
 
 <script>
 	function image_for_object(object_id, mesh_id) {
@@ -13,7 +12,8 @@
 				"/object_recognition/_design/observations/_view/by_object_id?key=\""
 						+ object_id + "\"&limit=1", function(data) {
 					observation_id = data.rows[0].id
-					var a = $("<a>").attr("href", "?mesh=" + mesh_id).appendTo("#links");
+					var a = $("<a>").attr("href", "?mesh=" + mesh_id).appendTo(
+							"#links");
 					$("<img/>").attr("src",
 							"/object_recognition/" + observation_id + "/image")
 							.attr("width", 200).appendTo(a);
@@ -54,12 +54,12 @@
 		thingiview.setObjectMaterial('solid');
 	}
 </script>
-<div id="viewer" style="width: 50%; height: 400px"></div>
-<div id="links" style="width: 50%; height: 400px"></div>
-
 </head>
 <body>
-	<div id="viewer" style="width: 50%; height: 400px"></div>
+  <h1>Object Meshes</h1>
+  <p>Best viewed in Google Chrome with webgl support.</p>
+  <div id="viewer" style="width: 50%; height: 400px"></div>
+  <div id="links" style="width: 50%; height: 400px"></div>
 </body>
 </html>
 
