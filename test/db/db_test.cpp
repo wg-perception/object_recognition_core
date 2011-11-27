@@ -21,7 +21,7 @@ db_types()
 {
   const char* types[] =
   { "CouchDB", "filesystem" };
-  return std::vector<std::string>(types, types + 2);
+  return std::vector<std::string>(types, types + 1);
 }
 
 ObjectDbParameters
@@ -195,10 +195,12 @@ TEST(OR_db, DocumentPersistLoad)
         ObjectDb db(params_valid(db_type));
         delete_c(db, "test_it");
         std::string id;
+        std::string original_attachment = "Ecto is awesome";
         {
           Document doc(db);
           doc.set_value("x", 1.0);
           doc.set_value("foo", "UuU");
+          doc.set_attachment<std::string>("bar", original_attachment);
           doc.Persist();
           id = doc.id();
         }
@@ -206,6 +208,9 @@ TEST(OR_db, DocumentPersistLoad)
           Document doc(db, id);
           EXPECT_EQ(doc.get_value<double>("x"), 1.0);
           EXPECT_EQ(doc.get_value<std::string>("foo"), "UuU");
+          std::string attachment;
+          doc.get_attachment("bar", attachment);
+          EXPECT_EQ(attachment, original_attachment);
         }
         delete_c(db, "test_it");
       }

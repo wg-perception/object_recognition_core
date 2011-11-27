@@ -116,15 +116,20 @@ ObjectDbFilesystem::set_attachment_stream(const DocumentId & document_id, const 
   precondition_id(document_id);
 
   // Write the stream to a file
+  boost::filesystem::create_directories(url_attachments(document_id));
   boost::filesystem::path path = url_attachments(document_id) / attachment_name;
   std::ofstream file(path.string().c_str(), std::ios::binary);
-  std::stringstream stream_;
-  stream_ << stream.rdbuf();
-  stream_.seekg(0);
-  file << stream_;
+  {
+    std::istream & un_const_stream = const_cast<std::istream &>(stream);
+    size_t stream_position = un_const_stream.tellg();
+    un_const_stream.seekg(0);
+    file << un_const_stream.rdbuf();
+    un_const_stream.seekg(stream_position);
+  }
   file.close();
 
   // TODO use MIME type
+  std::cout << path.string() << std::endl;
 
   revision_id = DEFAULT_REVISION_ID_;
 }
@@ -137,7 +142,7 @@ ObjectDbFilesystem::get_attachment_stream(const DocumentId & document_id, const 
   // Write the stream to a file
   boost::filesystem::path path = url_attachments(document_id) / attachment_name;
   std::ifstream file(path.string().c_str(), std::ios::binary);
-  stream << file;
+  stream << file.rdbuf();
   file.close();
 
   // TODO use MIME type
