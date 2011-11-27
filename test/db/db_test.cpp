@@ -13,6 +13,9 @@ const char* db_url = "http://localhost:5984";
 using namespace object_recognition::db;
 using object_recognition::db::ObjectDbParameters;
 
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Functions related to parameters
+
 std::vector<std::string>
 db_types()
 {
@@ -36,11 +39,21 @@ params_garbage(const std::string& url = db_url)
 }
 
 ObjectDbParameters
-params_test()
+params_test(const std::string &db_type)
 {
-  ObjectDbParameters params = ObjectDbParameters("CouchDB");
-  params.root_ = "http://foo:12323";
-  params.collection_ = "test_it";
+  ObjectDbParameters params;
+  if (db_type == "CouchDB")
+  {
+    params = ObjectDbParameters("CouchDB");
+    params.root_ = "http://foo:12323";
+    params.collection_ = "test_it";
+  }
+  else if (db_type == "filesystem")
+  {
+    params = ObjectDbParameters("filesystem");
+    params.root_ = "/bogus/path/for/testing";
+    params.collection_ = "test_it";
+  }
   return params;
 }
 
@@ -63,6 +76,8 @@ params_valid(const std::string &db_type)
   return params;
 }
 
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Utils
 or_json::mObject
 parse_status(const std::string& status)
 {
@@ -75,8 +90,7 @@ parse_status(const std::string& status)
 void
 expect_not_found(ObjectDb& db, const std::string& collection)
 {
-  std::string status;
-  db.Status(collection, status);
+  std::string status = db.Status(collection);
   or_json::mObject ps = parse_status(status);
   EXPECT_EQ(ps["error"].get_str(), "not_found");
 }
@@ -88,31 +102,81 @@ delete_c(ObjectDb& db, const std::string& collection)
   expect_not_found(db, collection);
 }
 
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Error handlers
+
+void
+handling_invalid_server(const std::string & db_type, const std::runtime_error& e, const std::string &collection,
+                        const std::string &id)
+{
+  switch (ObjectDbParameters::StringToType(db_type))
+  {
+    case ObjectDbParameters::COUCHDB:
+    {
+      std::string url = "http://foo:12323";
+      if (!collection.empty())
+      {
+        url.append("/" + collection);
+        if (!id.empty())
+          url.append("/" + id);
+      };EXPECT_EQ(std::string(e.what()), "No response from server. : " + url);
+      break;
+    }
+    case ObjectDbParameters::FILESYSTEM:
+      EXPECT_EQ(std::string(e.what()), "Path /bogus/path/for/testing does not exist. Please create.");
+      break;
+    default:
+      throw std::runtime_error("Status test not implemented for " + db_type);
+  }
+}
+
+void
+handling_valid_server(const std::string & db_type, const std::string & status)
+{
+  or_json::mObject ps = parse_status(status);
+  switch (ObjectDbParameters::StringToType(db_type))
+  {
+    case ObjectDbParameters::COUCHDB:
+      EXPECT_EQ(ps.count("couchdb"), 1);
+      break;
+    case ObjectDbParameters::FILESYSTEM:
+      EXPECT_EQ(ps.count("filesystem"), 1);
+      break;
+    default:
+      throw std::runtime_error("Status test not implemented for " + db_type);
+  }
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 TEST(OR_db, Status)
 {
-  // TODO fix for all types of DBs
-  ObjectDb db(ObjectDbParameters("CouchDB"));
-  std::string status;
-  db.Status(status);
-  or_json::mObject ps = parse_status(status);
-  EXPECT_EQ(ps.count("couchdb"), 1);
+  BOOST_FOREACH(const std::string &db_type, db_types())
+      {
+        ObjectDbParameters db_params(db_type);
+        ObjectDb db(db_params);
+        std::string status = db.Status();
+        handling_valid_server(db_type, status);
+      }
 }
 
 TEST(OR_db, CreateDelete)
 {
-  {
-    // TODO fix for all types of DBs
-    ObjectDb db(ObjectDbParameters("CouchDB"));
-    db.CreateCollection("test_it");
-    std::string status;
-    db.Status("test_it", status);
-    or_json::mObject ps = parse_status(status);
-    EXPECT_EQ(ps["db_name"].get_str(), "test_it");
-  }
-  {
-    ObjectDb db(ObjectDbParameters("CouchDB"));
-    delete_c(db, "test_it");
-  }
+  BOOST_FOREACH(const std::string &db_type, db_types())
+      {
+        ObjectDbParameters db_params(db_type);
+        {
+          ObjectDb db(db_params);
+          db.CreateCollection("test_it");
+          std::string status = db.Status("test_it");
+          or_json::mObject ps = parse_status(status);
+          EXPECT_EQ(ps["db_name"].get_str(), "test_it");
+        }
+        {
+          ObjectDb db(db_params);
+          delete_c(db, "test_it");
+        }
+      }
 }
 TEST(OR_db, DeleteNonexistant)
 {
@@ -147,109 +211,136 @@ TEST(OR_db, DocumentPersistLoad)
       }
 }
 
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 TEST(OR_db, NonExistantCouch)
 {
-  // TODO fix for all types of DBs
-  ObjectDbParameters params = params_test();
-  ObjectDb db(params);
-  try
-  {
-    std::string status;
-    db.Status(status);
-    ASSERT_FALSE(true);
-  } catch (std::runtime_error& e)
-  {
-    EXPECT_EQ(std::string(e.what()), "No response from server. : http://foo:12323");
-  }
-
+  BOOST_FOREACH(const std::string &db_type, db_types())
+      {
+        ObjectDbParameters db_params = params_test(db_type);
+        ObjectDb db(db_params);
+        try
+        {
+          std::string status = db.Status();
+          ASSERT_FALSE(true);
+        } catch (std::runtime_error& e)
+        {
+          handling_invalid_server(db_type, e, "", "");
+        }
+      }
 }
 
 TEST(OR_db, StatusCollectionNonExistantDb)
 {
-  // TODO fix for all types of DBs
-  ObjectDbParameters params = params_test();
-  ObjectDb db(params);
-  try
-  {
-    std::string status;
-    db.Status("test_it", status);
-    ASSERT_FALSE(true);
-  } catch (std::runtime_error& e)
-  {
-    EXPECT_EQ(std::string(e.what()), "No response from server. : http://foo:12323/test_it");
-  }
+  BOOST_FOREACH(const std::string &db_type, db_types())
+      {
+        ObjectDbParameters db_params = params_test(db_type);
+        ObjectDb db(db_params);
+        std::string collection = "test_it";
+        try
+        {
+          std::string status = db.Status(collection);
+          ASSERT_FALSE(true);
+        } catch (std::runtime_error& e)
+        {
+          handling_invalid_server(db_type, e, collection, "");
+        }
+      }
 }
 
 TEST(OR_db, DeleteBogus)
 {
-  // TODO fix for all types of DBs
-  ObjectDbParameters params = params_test();
-  ObjectDb db(params);
-  try
-  {
-    db.DeleteCollection("test_it");
-    ASSERT_FALSE(true);
-  } catch (std::runtime_error& e)
-  {
-    EXPECT_EQ(std::string(e.what()), "No response from server. : http://foo:12323/test_it");
-  }
+  BOOST_FOREACH(const std::string &db_type, db_types())
+      {
+        ObjectDbParameters db_params = params_test(db_type);
+        ObjectDb db(db_params);
+        std::string collection = "test_it";
+        try
+        {
+          db.DeleteCollection(collection);
+          ASSERT_FALSE(true);
+        } catch (std::runtime_error& e)
+        {
+          handling_invalid_server(db_type, e, collection, "");
+        }
+      }
 }
 
 TEST(OR_db, StatusCollectionNonExistant)
 {
-  // TODO fix for all types of DBs
-  ObjectDb db(ObjectDbParameters("CouchDB"));
-  db.DeleteCollection("test_it");
+  BOOST_FOREACH(const std::string &db_type, db_types())
+      {
+        ObjectDbParameters db_params(db_type);
+        ObjectDb db(db_params);
+        db.DeleteCollection("test_it");
 
-  std::string status;
-  db.Status("test_it", status);
-  or_json::mObject ps = parse_status(status);
-  EXPECT_EQ(ps["error"].get_str(), "not_found");
-  EXPECT_EQ(ps["reason"].get_str(), "no_db_file");
+        std::string status = db.Status("test_it");
+        or_json::mObject ps = parse_status(status);
+        EXPECT_EQ(ps["error"].get_str(), "not_found");
+        EXPECT_EQ(ps["reason"].get_str(), "no_db_file");
+      }
 }
 
 TEST(OR_db, StatusCollectionExistant)
 {
-  // TODO fix for all types of DBs
-  ObjectDb db(ObjectDbParameters("CouchDB"));
-  db.DeleteCollection("test_it");
-  std::string status;
-  db.CreateCollection("test_it");
-  db.Status("test_it", status);
-  or_json::mObject ps = parse_status(status);
-  EXPECT_EQ(ps["db_name"].get_str(), "test_it");
-  db.DeleteCollection("test_it");
+  BOOST_FOREACH(const std::string &db_type, db_types())
+      {
+        ObjectDbParameters db_params(db_type);
+        ObjectDb db(db_params);
+        db.DeleteCollection("test_it");
+        db.CreateCollection("test_it");
+        std::string status = db.Status("test_it");
+        or_json::mObject ps = parse_status(status);
+        EXPECT_EQ(ps["db_name"].get_str(), "test_it");
+        db.DeleteCollection("test_it");
+      }
 }
 
 TEST(OR_db, DocumentBadId)
 {
-  // TODO fix for all types of DBs
-  ObjectDb db(params_valid("CouchDB"));
-  try
-  {
-    Document doc(db, "bogus_id");
-    ASSERT_FALSE(true);
-
-  } catch (std::runtime_error& e)
-  {
-    EXPECT_EQ(std::string(e.what()), "Object Not Found : http://localhost:5984/test_it/bogus_id");
-  }
+  BOOST_FOREACH(const std::string &db_type, db_types())
+      {
+        ObjectDb db(params_valid(db_type));
+        try
+        {
+          Document doc(db, "bogus_id");
+          ASSERT_FALSE(true);
+        } catch (std::runtime_error& e)
+        {
+          switch (ObjectDbParameters::StringToType(db_type))
+          {
+            case ObjectDbParameters::COUCHDB:
+            {
+              EXPECT_EQ(std::string(e.what()), "Object Not Found : http://localhost:5984/test_it/bogus_id");
+              break;
+            }
+            case ObjectDbParameters::FILESYSTEM:
+              EXPECT_EQ(std::string(e.what()), "Object Not Found : /tmp/test_it/all_docs/bogus_id/value");
+              break;
+            default:
+              throw std::runtime_error("Status test not implemented for " + db_type);
+          }
+        }
+      }
 }
 
 TEST(OR_db, DocumentUrl)
 {
-  // TODO fix for all types of DBs
-  ObjectDbParameters params = params_test();
-  params.collection_ = "test_it";
-  ObjectDb db(params);
-  try
-  {
-    Document doc(db, "bogus_id");
-    ASSERT_FALSE(true);
-  } catch (std::runtime_error& e)
-  {
-    EXPECT_EQ(std::string(e.what()), "No response from server. : http://foo:12323/test_it/bogus_id");
-  }
+  BOOST_FOREACH(const std::string &db_type, db_types())
+      {
+        ObjectDbParameters db_params = params_test(db_type);
+        db_params.collection_ = "test_it";
+        ObjectDb db(db_params);
+        std::string bogus_id = "bogus_id";
+        try
+        {
+          Document doc(db, bogus_id);
+          ASSERT_FALSE(true);
+        } catch (std::runtime_error& e)
+        {
+          handling_invalid_server(db_type, e, db_params.collection_, bogus_id);
+        }
+      }
 }
 
 TEST(OR_db, DoubleCreate)
@@ -278,7 +369,6 @@ TEST(OR_db, DoubleDelete)
 
 TEST(OR_db, ParamsBogus)
 {
-  // TODO fix for all types of DBs
   try
   {
     ObjectDb db(params_bogus());
@@ -291,7 +381,6 @@ TEST(OR_db, ParamsBogus)
 
 TEST(OR_db, ParamsGarbage)
 {
-  // TODO fix for all types of DBs
   try
   {
     ObjectDb db(params_garbage());
@@ -339,26 +428,26 @@ TEST(OR_db, NonArgsDbInsert)
 
 TEST(OR_db, InitSeperatelyChangeURL)
 {
-  // TODO fix for all types of DBs
-  ObjectDb db;
-  db.set_parameters(ObjectDbParameters("CouchDB"));
-  std::string status;
-  db.Status(status);
-  or_json::mObject ps = parse_status(status);
-  EXPECT_EQ(ps.count("couchdb"), 1);
-  ObjectDbParameters params("CouchDB");
-  params.root_ = "http://abc";
-  db.set_parameters(params);
-  try
-  {
-    db.Status(status);
-    ASSERT_FALSE(true);
-  } catch (std::runtime_error& e)
-  {
+  BOOST_FOREACH(const std::string &db_type, db_types())
+      {
+        ObjectDbParameters db_params(db_type);
+        ObjectDb db;
+        db.set_parameters(db_params);
+        std::string status = db.Status();
+        handling_valid_server(db_type, status);
+        ObjectDbParameters params = params_test(db_type);
+        db.set_parameters(params);
+        try
+        {
+          db.Status(status);
+          ASSERT_FALSE(true);
+        } catch (std::runtime_error& e)
+        {
 //error messages seem to be bit platform dependent.
 //    std::string expect = "No response from server. : http://abc";
 //    EXPECT_EQ(e.what(), expect);
-  }
+        }
+      }
 }
 
 TEST(OR_db, ObjectDbCopy)

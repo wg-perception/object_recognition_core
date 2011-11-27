@@ -97,11 +97,12 @@ ObjectDbFilesystem::persist_fields(const DocumentId & document_id, const or_json
 void
 ObjectDbFilesystem::load_fields(const DocumentId & document_id, or_json::mObject &fields)
 {
+  Status();
   precondition_id(document_id);
 
   // Read the JSON from disk
   if (!boost::filesystem::exists(url_value(document_id)))
-    throw std::runtime_error(url_value(document_id).string() + " path does not exist.");
+    throw std::runtime_error("Object Not Found : " + url_value(document_id).string());
   std::ifstream file(url_value(document_id).string().c_str());
   read_json(file, fields);
   file.close();
@@ -244,27 +245,38 @@ ObjectDbFilesystem::QueryView(const std::string & in_url, int limit_rows, int st
 void
 ObjectDbFilesystem::CreateCollection(const CollectionName &collection)
 {
+  std::string status;
+  Status(status);
   boost::filesystem::create_directories(path_ / collection);
 }
 
-void
-ObjectDbFilesystem::Status(std::string& status)
+std::string
+ObjectDbFilesystem::Status()
 {
-  status = "";
+  // To comply the CouchDB status function
+  if (boost::filesystem::exists(path_))
+  {
+    return "{\"filesystem\":\"Welcome\",\"version\":\"1.0\"}";
+  }
+  else
+    throw std::runtime_error("Path " + path_.string() + " does not exist. Please create.");
 }
 
-void
-ObjectDbFilesystem::Status(const CollectionName& collection, std::string& status)
+std::string
+ObjectDbFilesystem::Status(const CollectionName& collection)
 {
+  Status();
   if (!boost::filesystem::exists(path_ / collection))
-    status = "{\"error\":\"not_found\",\"reason\":\"no_db_file\"}";
+    return "{\"error\":\"not_found\",\"reason\":\"no_db_file\"}";
   else
-    status = "{}";
+    return "{\"db_name\":\"" + collection + "\"}";
 }
 
 void
 ObjectDbFilesystem::DeleteCollection(const CollectionName &collection)
 {
+  std::string status;
+  Status(status);
   if (boost::filesystem::exists(path_ / collection))
     boost::filesystem::remove_all(path_ / collection);
 }

@@ -236,18 +236,18 @@ namespace object_recognition
       db_->Query(view, limit_rows, start_offset, total_rows, offset, document_ids);
     }
 
-    void
-    ObjectDb::Status(std::string& status)
+    std::string
+    ObjectDb::Status()
     {
       PRECONDITION_DB()
-      db_->Status(status);
+      return db_->Status();
     }
 
-    void
-    ObjectDb::Status(const CollectionName& collection, std::string& status)
+    std::string
+    ObjectDb::Status(const CollectionName& collection)
     {
       PRECONDITION_DB()
-      db_->Status(collection, status);
+      return db_->Status(collection);
     }
     void
     ObjectDb::CreateCollection(const CollectionName &collection)

@@ -169,11 +169,11 @@ namespace object_recognition
       QueryFunction
       Query(const View &view) const;
 
-      void
-      Status(std::string& status);
+      std::string
+      Status();
 
-      void
-      Status(const CollectionName& collection, std::string& status);
+      std::string
+      Status(const CollectionName& collection);
 
       void
       CreateCollection(const CollectionName &collection);

@@ -88,11 +88,11 @@ public:
   Query(const std::vector<std::string> & queries, int limit_rows, int start_offset, int& total_rows, int& offset,
         std::vector<DocumentId> & document_ids);
 
-  virtual void
-  Status(std::string& status);
+  virtual std::string
+  Status();
 
-  virtual void
-  Status(const CollectionName& collection, std::string& status);
+  virtual std::string
+  Status(const CollectionName& collection);
 
   virtual void
   CreateCollection(const CollectionName &collection);

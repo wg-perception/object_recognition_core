@@ -157,8 +157,7 @@ ObjectDbCouch::GetRevisionId(RevisionId & revision_id)
 void
 ObjectDbCouch::Delete(const ObjectId & id)
 {
-  std::string status;
-  Status(collection_ + "/" + id, status);
+  std::string status = Status(collection_ + "/" + id);
   if (curl_.get_response_code() == object_recognition::curl::cURL::OK)
   {
     DocumentId document_id;
@@ -284,8 +283,7 @@ void
 ObjectDbCouch::CreateCollection(const CollectionName &collection)
 {
   or_json::mObject params;
-  std::string status;
-  Status(collection, status);
+  std::string status = Status(collection);
   std::stringstream ss(status);
   read_json(ss, params);
 
@@ -322,8 +320,8 @@ ObjectDbCouch::CreateCollection(const CollectionName &collection)
   }
 }
 
-void
-ObjectDbCouch::Status(std::string& status)
+std::string
+ObjectDbCouch::Status()
 {
   json_writer_stream_.str("");
   json_reader_stream_.str("");
@@ -337,11 +335,11 @@ ObjectDbCouch::Status(std::string& status)
   {
     throw std::runtime_error(curl_.get_response_reason_phrase() + " : " + curl_.getURL());
   }
-  status = json_writer_stream_.str();
+  return json_writer_stream_.str();
 }
 
-void
-ObjectDbCouch::Status(const CollectionName& collection, std::string& status)
+std::string
+ObjectDbCouch::Status(const CollectionName& collection)
 {
   json_writer_stream_.str("");
   json_reader_stream_.str("");
@@ -355,14 +353,13 @@ ObjectDbCouch::Status(const CollectionName& collection, std::string& status)
   {
     throw std::runtime_error(curl_.get_response_reason_phrase() + " : " + curl_.getURL());
   }
-  status = json_writer_stream_.str();
+  return json_writer_stream_.str();
 }
 
 void
 ObjectDbCouch::DeleteCollection(const CollectionName &collection)
 {
-  std::string status;
-  Status(collection, status);
+  std::string status = Status(collection);
   if (curl_.get_response_code() == object_recognition::curl::cURL::OK)
   {
     curl_.setCustomRequest("DELETE");
