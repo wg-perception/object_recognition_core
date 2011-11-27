@@ -2,13 +2,14 @@
 
 import ecto
 from ecto_object_recognition import capture
-from object_recognition.tod.trainer import Trainer
+from object_recognition.tod.trainer import TODTrainingPipeline
+from object_recognition.common.utils.parser import ObjectRecognitionParser
 
-db_reader = capture.ObservationReader("db_reader")
-source_plasm = ecto.Plasm()
-observation_dealer = ecto.Dealer(tendril=db_reader.inputs.at('observation'), iterable=[])
-source_plasm.connect(observation_dealer[:] >> db_reader['observation'])
+T = TODTrainingPipeline()
 
-T = Trainer(source=db_reader, source_plasm=source_plasm)
+parser = ObjectRecognitionParser()
 
-print T.__doc__
+args = parser.parse_args()
+
+T.incremental_model_builder({'feature_descriptor': {'type': 'ORB'}}, args)
+T.post_processor({'search': {'type': 'LSH'}}, args)
