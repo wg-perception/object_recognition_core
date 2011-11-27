@@ -76,6 +76,8 @@ using object_recognition::db::RevisionId;
 class ObjectDbFilesystem: public object_recognition::db::ObjectDbBase
 {
 public:
+  ObjectDbFilesystem();
+
   ObjectDbFilesystem(const std::string &url, const std::string & collection);
 
   virtual void
@@ -155,7 +157,7 @@ private:
   inline boost::filesystem::path
   url_id(const DocumentId & id) const
   {
-    return url_ / collection_ / "all_docs" / id;
+    return path_ / collection_ / "all_docs" / id;
   }
 
   inline boost::filesystem::path
@@ -177,10 +179,7 @@ private:
   QueryView(const CollectionName & collection_name, int limit_rows, int start_offset, const std::string &options,
             int& total_rows, int& offset, std::vector<DocumentId> & document_ids, bool do_throw);
 
-  /** The path of the DB, not including the collection */
-  boost::filesystem::path url_;
-  /** The collection to operate upon */
-  std::string collection_;
+  boost::filesystem::path path_;
 };
 
 #endif /* DB_FILESYSTEM_H_ */

@@ -1,4 +1,7 @@
 #include <string>
+#include <vector>
+
+#include <boost/foreach.hpp>
 
 #include <gtest/gtest.h>
 
@@ -6,9 +9,17 @@
 #include <object_recognition/db/db.h>
 
 const char* db_url = "http://localhost:5984";
-using namespace object_recognition::db;
 
+using namespace object_recognition::db;
 using object_recognition::db::ObjectDbParameters;
+
+std::vector<std::string>
+db_types()
+{
+  const char* types[] =
+  { "CouchDB", "filesystem" };
+  return std::vector<std::string>(types, types + 2);
+}
 
 ObjectDbParameters
 params_bogus(const std::string& url = db_url)
@@ -34,11 +45,21 @@ params_test()
 }
 
 ObjectDbParameters
-params_valid()
+params_valid(const std::string &db_type)
 {
-  ObjectDbParameters params = ObjectDbParameters("CouchDB");
-  params.root_ = "http://localhost:5984";
-  params.collection_ = "test_it";
+  ObjectDbParameters params;
+  if (db_type == "CouchDB")
+  {
+    params = ObjectDbParameters("CouchDB");
+    params.root_ = "http://localhost:5984";
+    params.collection_ = "test_it";
+  }
+  else if (db_type == "filesystem")
+  {
+    params = ObjectDbParameters("filesystem");
+    params.root_ = "/tmp";
+    params.collection_ = "test_it";
+  }
   return params;
 }
 
@@ -69,6 +90,7 @@ delete_c(ObjectDb& db, const std::string& collection)
 
 TEST(OR_db, Status)
 {
+  // TODO fix for all types of DBs
   ObjectDb db(ObjectDbParameters("CouchDB"));
   std::string status;
   db.Status(status);
@@ -79,6 +101,7 @@ TEST(OR_db, Status)
 TEST(OR_db, CreateDelete)
 {
   {
+    // TODO fix for all types of DBs
     ObjectDb db(ObjectDbParameters("CouchDB"));
     db.CreateCollection("test_it");
     std::string status;
@@ -93,32 +116,40 @@ TEST(OR_db, CreateDelete)
 }
 TEST(OR_db, DeleteNonexistant)
 {
-  ObjectDb db(ObjectDbParameters("CouchDB"));
-  db.DeleteCollection("dgadf");
+  BOOST_FOREACH(const std::string &db_type, db_types())
+      {
+        ObjectDbParameters db_params(db_type);
+        ObjectDb db(db_params);
+        db.DeleteCollection("dgadf");
+      }
 }
 
-TEST(OR_db, DocumentPesistLoad)
+TEST(OR_db, DocumentPersistLoad)
 {
-  ObjectDb db(params_valid());
-  delete_c(db, "test_it");
-  std::string id;
-  {
-    Document doc(db);
-    doc.set_value("x", 1.0);
-    doc.set_value("foo", "UuU");
-    doc.Persist();
-    id = doc.id();
-  }
-  {
-    Document doc(db, id);
-    EXPECT_EQ(doc.get_value<double>("x"), 1.0);
-    EXPECT_EQ(doc.get_value<std::string>("foo"), "UuU");
-  }
-  delete_c(db, "test_it");
+  BOOST_FOREACH(const std::string &db_type, db_types())
+      {
+        ObjectDb db(params_valid(db_type));
+        delete_c(db, "test_it");
+        std::string id;
+        {
+          Document doc(db);
+          doc.set_value("x", 1.0);
+          doc.set_value("foo", "UuU");
+          doc.Persist();
+          id = doc.id();
+        }
+        {
+          Document doc(db, id);
+          EXPECT_EQ(doc.get_value<double>("x"), 1.0);
+          EXPECT_EQ(doc.get_value<std::string>("foo"), "UuU");
+        }
+        delete_c(db, "test_it");
+      }
 }
 
 TEST(OR_db, NonExistantCouch)
 {
+  // TODO fix for all types of DBs
   ObjectDbParameters params = params_test();
   ObjectDb db(params);
   try
@@ -135,6 +166,7 @@ TEST(OR_db, NonExistantCouch)
 
 TEST(OR_db, StatusCollectionNonExistantDb)
 {
+  // TODO fix for all types of DBs
   ObjectDbParameters params = params_test();
   ObjectDb db(params);
   try
@@ -150,6 +182,7 @@ TEST(OR_db, StatusCollectionNonExistantDb)
 
 TEST(OR_db, DeleteBogus)
 {
+  // TODO fix for all types of DBs
   ObjectDbParameters params = params_test();
   ObjectDb db(params);
   try
@@ -161,8 +194,10 @@ TEST(OR_db, DeleteBogus)
     EXPECT_EQ(std::string(e.what()), "No response from server. : http://foo:12323/test_it");
   }
 }
+
 TEST(OR_db, StatusCollectionNonExistant)
 {
+  // TODO fix for all types of DBs
   ObjectDb db(ObjectDbParameters("CouchDB"));
   db.DeleteCollection("test_it");
 
@@ -175,6 +210,7 @@ TEST(OR_db, StatusCollectionNonExistant)
 
 TEST(OR_db, StatusCollectionExistant)
 {
+  // TODO fix for all types of DBs
   ObjectDb db(ObjectDbParameters("CouchDB"));
   db.DeleteCollection("test_it");
   std::string status;
@@ -187,7 +223,8 @@ TEST(OR_db, StatusCollectionExistant)
 
 TEST(OR_db, DocumentBadId)
 {
-  ObjectDb db(params_valid());
+  // TODO fix for all types of DBs
+  ObjectDb db(params_valid("CouchDB"));
   try
   {
     Document doc(db, "bogus_id");
@@ -201,6 +238,7 @@ TEST(OR_db, DocumentBadId)
 
 TEST(OR_db, DocumentUrl)
 {
+  // TODO fix for all types of DBs
   ObjectDbParameters params = params_test();
   params.collection_ = "test_it";
   ObjectDb db(params);
@@ -216,22 +254,31 @@ TEST(OR_db, DocumentUrl)
 
 TEST(OR_db, DoubleCreate)
 {
-  ObjectDb db(ObjectDbParameters("CouchDB"));
-  db.CreateCollection("aa");
-  db.CreateCollection("aa");
-  db.DeleteCollection("aa");
+  BOOST_FOREACH(const std::string &db_type, db_types())
+      {
+        ObjectDbParameters db_params(db_type);
+        ObjectDb db(db_params);
+        db.CreateCollection("aa");
+        db.CreateCollection("aa");
+        db.DeleteCollection("aa");
+      }
 }
 
 TEST(OR_db, DoubleDelete)
 {
-  ObjectDb db(ObjectDbParameters("CouchDB"));
-  db.CreateCollection("aa");
-  db.DeleteCollection("aa");
-  db.DeleteCollection("aa");
+  BOOST_FOREACH(const std::string &db_type, db_types())
+      {
+        ObjectDbParameters db_params(db_type);
+        ObjectDb db(db_params);
+        db.CreateCollection("aa");
+        db.DeleteCollection("aa");
+        db.DeleteCollection("aa");
+      }
 }
 
 TEST(OR_db, ParamsBogus)
 {
+  // TODO fix for all types of DBs
   try
   {
     ObjectDb db(params_bogus());
@@ -244,6 +291,7 @@ TEST(OR_db, ParamsBogus)
 
 TEST(OR_db, ParamsGarbage)
 {
+  // TODO fix for all types of DBs
   try
   {
     ObjectDb db(params_garbage());
@@ -291,6 +339,7 @@ TEST(OR_db, NonArgsDbInsert)
 
 TEST(OR_db, InitSeperatelyChangeURL)
 {
+  // TODO fix for all types of DBs
   ObjectDb db;
   db.set_parameters(ObjectDbParameters("CouchDB"));
   std::string status;
@@ -314,12 +363,16 @@ TEST(OR_db, InitSeperatelyChangeURL)
 
 TEST(OR_db, ObjectDbCopy)
 {
-  ObjectDb db(ObjectDbParameters("CouchDB")), db2;
-  db2 = db;
-  std::string s1, s2;
-  db.Status(s1);
-  db2.Status(s2);
-  EXPECT_EQ(s1, s2);
+  BOOST_FOREACH(const std::string &db_type, db_types())
+      {
+        ObjectDbParameters db_params(db_type);
+        ObjectDb db(db_params), db2;
+        db2 = db;
+        std::string s1, s2;
+        db.Status(s1);
+        db2.Status(s2);
+        EXPECT_EQ(s1, s2);
+      }
 }
 
 TEST(OR_db, JSONReadWrite)

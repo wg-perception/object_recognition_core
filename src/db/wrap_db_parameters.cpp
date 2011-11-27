@@ -75,8 +75,6 @@ namespace object_recognition
 {
   namespace db
   {
-    using namespace db;
-
     typedef boost::shared_ptr<ObjectDbParameters> ObjectDbParametersPtr;
 
     /** Constructor for the ObjectDbParameters class from a python dictionary
@@ -106,9 +104,8 @@ namespace object_recognition
       static boost::python::tuple
       getstate(const ObjectDbParameters& db_params)
       {
-        return boost::python::make_tuple(ObjectDbParameters::TypeToString(db_params.type_),
-                                         db_params.root_, db_params.collection_,
-                                         MapToBpDict(db_params.all_parameters_));
+        return boost::python::make_tuple(ObjectDbParameters::TypeToString(db_params.type_), db_params.root_,
+                                         db_params.collection_, MapToBpDict(db_params.all_parameters_));
       }
 
       static
@@ -157,6 +154,8 @@ namespace object_recognition
       ObjectDbParametersClass.add_property("root", root, "The root of the database.");
       ObjectDbParametersClass.add_property("type", type, "The type of the database.");
       ObjectDbParametersClass.def_pickle(db_parameters_pickle_suite());
+      bp::enum_<ObjectDbParameters::ObjectDbType>("color").value("COUCHDB", ObjectDbParameters::COUCHDB).value(
+          "EMPTY", ObjectDbParameters::EMPTY).value("FILESYSTEM", ObjectDbParameters::FILESYSTEM);
     }
   }
 }

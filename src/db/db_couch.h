@@ -54,6 +54,8 @@ using object_recognition::db::RevisionId;
 class ObjectDbCouch: public object_recognition::db::ObjectDbBase
 {
 public:
+  ObjectDbCouch();
+
   ObjectDbCouch(const std::string &url, const std::string & collection);
 
   virtual void
@@ -142,7 +144,7 @@ private:
   inline std::string
   url_id(const DocumentId & id) const
   {
-    return url_ + "/" + collection_ + (id.empty() ? "" : "/" + id);
+    return root_ + "/" + collection_ + (id.empty() ? "" : "/" + id);
   }
 
   inline std::string
@@ -163,11 +165,6 @@ private:
   void
   QueryView(const CollectionName & collection_name, int limit_rows, int start_offset, const std::string &options,
             int& total_rows, int& offset, std::vector<DocumentId> & document_ids, bool do_throw);
-
-  /** The URL of the DB, including port, but not collection */
-  std::string url_;
-  /** The collection to operate upon */
-  std::string collection_;
 
   // These mutable are they are internals/temporary variables
   mutable object_recognition::curl::cURL curl_;

@@ -45,10 +45,17 @@
 
 const RevisionId ObjectDbFilesystem::DEFAULT_REVISION_ID_ = "0";
 
-ObjectDbFilesystem::ObjectDbFilesystem(const std::string &url, const std::string &collection)
+ObjectDbFilesystem::ObjectDbFilesystem()
     :
-      url_(url),
-      collection_(collection)
+      ObjectDbBase("/tmp", "object_recognition"),
+      path_(root_)
+{
+}
+
+ObjectDbFilesystem::ObjectDbFilesystem(const std::string &root, const std::string &collection)
+    :
+      ObjectDbBase(root, collection),
+      path_(root)
 {
 }
 
@@ -61,8 +68,8 @@ ObjectDbFilesystem::insert_object(const or_json::mObject &fields, DocumentId & d
   {
     document_id = "";
     // 32 is the CouchDB hash key size
-    for (int i = 0; i < 32; i++)
-      document_id.append(hexa_values.substr((int) ((16 * rand()) / RAND_MAX), 1));
+    for (unsigned int i = 0; i < 32; ++i)
+      document_id.append(hexa_values.substr(rand() % 16, 1));
     boost::filesystem::path url = url_id(document_id);
     // Stop if the folder does not exist
     if (!boost::filesystem::exists(url))
@@ -79,6 +86,7 @@ ObjectDbFilesystem::persist_fields(const DocumentId & document_id, const or_json
   precondition_id(document_id);
 
   // Save the JSON to disk
+  boost::filesystem::create_directories(url_id(document_id));
   std::ofstream file(url_value(document_id).string().c_str());
   write_json(fields, file);
   file.close();
@@ -92,6 +100,8 @@ ObjectDbFilesystem::load_fields(const DocumentId & document_id, or_json::mObject
   precondition_id(document_id);
 
   // Read the JSON from disk
+  if (!boost::filesystem::exists(url_value(document_id)))
+    throw std::runtime_error(url_value(document_id).string() + " path does not exist.");
   std::ifstream file(url_value(document_id).string().c_str());
   read_json(file, fields);
   file.close();
@@ -234,25 +244,27 @@ ObjectDbFilesystem::QueryView(const std::string & in_url, int limit_rows, int st
 void
 ObjectDbFilesystem::CreateCollection(const CollectionName &collection)
 {
-  boost::filesystem::create_directories(url_ / collection_);
+  boost::filesystem::create_directories(path_ / collection);
 }
 
 void
 ObjectDbFilesystem::Status(std::string& status)
 {
-  throw std::runtime_error("Function not implemented in the Filesystem DB.");
   status = "";
 }
 
 void
 ObjectDbFilesystem::Status(const CollectionName& collection, std::string& status)
 {
-  throw std::runtime_error("Function not implemented in the Filesystem DB.");
-  status = "";
+  if (!boost::filesystem::exists(path_ / collection))
+    status = "{\"error\":\"not_found\",\"reason\":\"no_db_file\"}";
+  else
+    status = "{}";
 }
 
 void
 ObjectDbFilesystem::DeleteCollection(const CollectionName &collection)
 {
-  boost::filesystem::remove_all(url_ / collection_);
+  if (boost::filesystem::exists(path_ / collection))
+    boost::filesystem::remove_all(path_ / collection);
 }

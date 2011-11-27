@@ -66,7 +66,7 @@ namespace object_recognition
     public:
       enum ObjectDbType
       {
-        EMPTY, COUCHDB
+        EMPTY, COUCHDB, FILESYSTEM
       };
       ObjectDbParameters();
 
@@ -113,6 +113,21 @@ namespace object_recognition
       {
       }
 
+      ObjectDb(const ObjectDb &db)
+          :
+            db_(db.db_),
+            parameters_(db.parameters_)
+      {
+      }
+
+      ObjectDb&
+      operator=(const ObjectDb &db)
+      {
+        db_ = db.db_;
+        parameters_ = db.parameters_;
+        return *this;
+      }
+
       /** Constructor
        * @param in_params any class that inherits from ObjectDbBaseParameters
        */
@@ -146,8 +161,7 @@ namespace object_recognition
       load_fields(const DocumentId & document_id, or_json::mObject &fields) const;
 
       void
-      persist_fields(const DocumentId & document_id, const or_json::mObject &fields,
-                     RevisionId & revision_id) const;
+      persist_fields(const DocumentId & document_id, const or_json::mObject &fields, RevisionId & revision_id) const;
 
       void
       Delete(const ObjectId & id) const;
@@ -200,7 +214,8 @@ namespace object_recognition
        * Update the db that this document should be associated with.
        * @param db
        */
-      void update_db(const ObjectDb& db);
+      void
+      update_db(const ObjectDb& db);
 
       /** Persist your object to a given DB
        */
