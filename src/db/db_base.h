@@ -62,6 +62,13 @@ namespace object_recognition
     class ObjectDbBase
     {
     public:
+      ObjectDbBase(const std::string &root, const std::string &collection)
+          :
+            root_(root),
+            collection_(collection)
+      {
+      }
+
       virtual
       ~ObjectDbBase()
       {
@@ -95,11 +102,11 @@ namespace object_recognition
       get_attachment_stream(const DocumentId & document_id, const AttachmentName& attachment_name,
                             const MimeType& mime_type, std::ostream& stream, RevisionId & revision_id)=0;
 
-      virtual void
-      Status(std::string& status) = 0;
+      virtual std::string
+      Status() = 0;
 
-      virtual void
-      Status(const CollectionName& collection, std::string& status) = 0;
+      virtual std::string
+      Status(const CollectionName& collection) = 0;
 
       virtual void
       CreateCollection(const CollectionName &collection) = 0;
@@ -109,6 +116,23 @@ namespace object_recognition
 
       virtual DbType
       type() = 0;
+
+      const std::string &
+      root()
+      {
+        return root_;
+      }
+
+      const std::string &
+      collection()
+      {
+        return collection_;
+      }
+    protected:
+      /** The path of the DB, not including the collection */
+      std::string root_;
+      /** The collection to operate upon */
+      std::string collection_;
     };
   }
 }

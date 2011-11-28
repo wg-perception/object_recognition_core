@@ -33,8 +33,10 @@
  *
  */
 
-#ifndef DB_COUCH_H_
-#define DB_COUCH_H_
+#ifndef DB_FILESYSTEM_H_
+#define DB_FILESYSTEM_H_
+
+#include <boost/filesystem.hpp>
 
 #include "curl_interface.h"
 #include "db_base.h"
@@ -51,12 +53,32 @@ using object_recognition::db::RevisionId;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-class ObjectDbCouch: public object_recognition::db::ObjectDbBase
+/** This class saves any data to disk, following: http://code.google.com/p/couchdb-fuse
+ * Or again:
+ *     mnt/
+ *       dbname/
+ *         all_docs/
+ *           id1/
+ *             value (this contains the JSON-encoded dump of this document)
+ *             attachments
+ *               att1.jpg
+ *               ...
+ *           id2/
+ *             value
+ *             ...
+ *         view/
+ *           designdoc1/
+ *             viewname/
+ *               key1/
+ *                 doc (this is a symlink to something like `all_docs/id1'
+ *                 value
+ */
+class ObjectDbFilesystem: public object_recognition::db::ObjectDbBase
 {
 public:
-  ObjectDbCouch();
+  ObjectDbFilesystem();
 
-  ObjectDbCouch(const std::string &url, const std::string & collection);
+  ObjectDbFilesystem(const std::string &url, const std::string & collection);
 
   virtual void
   insert_object(const or_json::mObject &fields, DocumentId & document_id, RevisionId & revision_id);
@@ -103,9 +125,10 @@ public:
   virtual DbType
   type()
   {
-    return "CouchDB";
+    return "Filesystem";
   }
 private:
+  static const RevisionId DEFAULT_REVISION_ID_;
 
   inline void
   precondition_id(const DocumentId & id) const
@@ -113,16 +136,6 @@ private:
     if (id.empty())
       throw std::runtime_error("The document's id must be initialized.");
   }
-
-  inline void
-  precondition_rev(const RevisionId & rev) const
-  {
-    if (rev.empty())
-      throw std::runtime_error("The document must have a valid revision.");
-  }
-
-  void
-  upload_json(const or_json::mObject &ptree, const std::string& url, const std::string& request);
 
   template<typename T>
   void
@@ -141,23 +154,23 @@ private:
     or_json::write(value, writer);
   }
 
-  inline std::string
+  inline boost::filesystem::path
   url_id(const DocumentId & id) const
   {
-    return root_ + "/" + collection_ + (id.empty() ? "" : "/" + id);
+    return path_ / collection_ / "all_docs" / id;
   }
 
-  inline std::string
-  url_id_rev(const DocumentId & id, const RevisionId & rev) const
+  inline boost::filesystem::path
+  url_value(const DocumentId & id) const
   {
-    return url_id(id) + "?rev=" + rev;
+    return url_id(id) / "value";
   }
 
-  void
-  GetObjectRevisionId(DocumentId& document_id, RevisionId & revision_id);
-
-  void
-  GetRevisionId(RevisionId & revision_id);
+  inline boost::filesystem::path
+  url_attachments(const DocumentId & id) const
+  {
+    return url_id(id) / "attachments";
+  }
 
   /** Once json_reader_stream_ has been filled, call that function to get the results of the view
    *
@@ -166,12 +179,7 @@ private:
   QueryView(const CollectionName & collection_name, int limit_rows, int start_offset, const std::string &options,
             int& total_rows, int& offset, std::vector<DocumentId> & document_ids, bool do_throw);
 
-  // These mutable are they are internals/temporary variables
-  mutable object_recognition::curl::cURL curl_;
-  mutable std::stringstream json_writer_stream_, json_reader_stream_;
-
-  object_recognition::curl::writer json_writer_;
-  object_recognition::curl::reader json_reader_;
+  boost::filesystem::path path_;
 };
 
-#endif /* DB_COUCH_H_ */
+#endif /* DB_FILESYSTEM_H_ */

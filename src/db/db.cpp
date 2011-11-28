@@ -38,6 +38,7 @@
 
 #include "db_base.h"
 #include "db_couch.h"
+#include "db_filesystem.h"
 #include "object_recognition/db/db.h"
 #include <object_recognition/db/opencv.h>
 
@@ -46,8 +47,6 @@ namespace object_recognition
 {
   namespace db
   {
-    const std::string DEFAULT_COUCHDB_URL = "http://localhost:5984";
-
     ObjectDbParameters::ObjectDbParameters()
     {
       type_ = EMPTY;
@@ -63,11 +62,25 @@ namespace object_recognition
       {
         case ObjectDbParameters::COUCHDB:
         {
-          root_ = DEFAULT_COUCHDB_URL;
+          ObjectDbCouch tmp;
+          root_ = tmp.root();
+          collection_ = tmp.collection();
           break;
         }
         case ObjectDbParameters::EMPTY:
         {
+          break;
+        }
+        case ObjectDbParameters::FILESYSTEM:
+        {
+          ObjectDbFilesystem tmp;
+          root_ = tmp.root();
+          collection_ = tmp.collection();
+          break;
+        }
+        default:
+        {
+          throw std::runtime_error("No implementation for that db enum type.");
           break;
         }
       }
@@ -84,8 +97,10 @@ namespace object_recognition
         return COUCHDB;
       else if (type_str == "empty")
         return EMPTY;
+      else if (type_str == "filesystem")
+        return FILESYSTEM;
       else
-        throw std::runtime_error(type_str + ": Invalid type. Possible are 'CouchDB', 'empty'");
+        throw std::runtime_error(type_str + ": Invalid type. Possible are 'CouchDB', 'empty' and 'filesystem'");
     }
 
     std::string
@@ -97,6 +112,10 @@ namespace object_recognition
           return "CouchDB";
         case EMPTY:
           return "empty";
+        case FILESYSTEM:
+          return "filesystem";
+        default:
+          throw std::runtime_error("No conversion to string implemented for that type");
       }
       return "";
     }
@@ -149,12 +168,16 @@ namespace object_recognition
           return;
         case ObjectDbParameters::EMPTY:
           return;
+        case ObjectDbParameters::FILESYSTEM:
+          db_ = boost::shared_ptr<ObjectDbBase>(new ObjectDbFilesystem(parameters_.root_, parameters_.collection_));
+          return;
+        default:
+          throw std::runtime_error("No set_parameters implemeted for that db type.");
       }
     }
 
     void
-    ObjectDb::insert_object(const or_json::mObject &fields, DocumentId & document_id,
-                            RevisionId & revision_id) const
+    ObjectDb::insert_object(const or_json::mObject &fields, DocumentId & document_id, RevisionId & revision_id) const
     {
       PRECONDITION_DB()
       db_->insert_object(fields, document_id, revision_id);
@@ -213,18 +236,18 @@ namespace object_recognition
       db_->Query(view, limit_rows, start_offset, total_rows, offset, document_ids);
     }
 
-    void
-    ObjectDb::Status(std::string& status)
+    std::string
+    ObjectDb::Status()
     {
       PRECONDITION_DB()
-      db_->Status(status);
+      return db_->Status();
     }
 
-    void
-    ObjectDb::Status(const CollectionName& collection, std::string& status)
+    std::string
+    ObjectDb::Status(const CollectionName& collection)
     {
       PRECONDITION_DB()
-      db_->Status(collection, status);
+      return db_->Status(collection);
     }
     void
     ObjectDb::CreateCollection(const CollectionName &collection)
@@ -274,7 +297,8 @@ namespace object_recognition
       db.load_fields(document_id_, fields_);
     }
 
-    void Document::update_db(const ObjectDb& db)
+    void
+    Document::update_db(const ObjectDb& db)
     {
       db_ = db;
     }

@@ -40,10 +40,17 @@ object_recognition::curl::cURL_GS curl_init_cleanup;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-ObjectDbCouch::ObjectDbCouch(const std::string &url, const std::string &collection)
+ObjectDbCouch::ObjectDbCouch()
     :
-      url_(url),
-      collection_(collection),
+      ObjectDbBase("http://localhost:5984", "object_recognition"),
+      json_writer_(json_writer_stream_),
+      json_reader_(json_reader_stream_)
+{
+}
+
+ObjectDbCouch::ObjectDbCouch(const std::string &root, const std::string &collection)
+    :
+      ObjectDbBase(root, collection),
       json_writer_(json_writer_stream_),
       json_reader_(json_reader_stream_)
 {
@@ -59,8 +66,7 @@ ObjectDbCouch::insert_object(const or_json::mObject &fields, DocumentId & docume
 }
 
 void
-ObjectDbCouch::persist_fields(const DocumentId & document_id, const or_json::mObject &fields,
-                              RevisionId & revision_id)
+ObjectDbCouch::persist_fields(const DocumentId & document_id, const or_json::mObject &fields, RevisionId & revision_id)
 {
   precondition_id(document_id);
   upload_json(fields, url_id(document_id), "PUT");
@@ -151,8 +157,7 @@ ObjectDbCouch::GetRevisionId(RevisionId & revision_id)
 void
 ObjectDbCouch::Delete(const ObjectId & id)
 {
-  std::string status;
-  Status(collection_ + "/" + id, status);
+  std::string status = Status(collection_ + "/" + id);
   if (curl_.get_response_code() == object_recognition::curl::cURL::OK)
   {
     DocumentId document_id;
@@ -166,7 +171,7 @@ ObjectDbCouch::Delete(const ObjectId & id)
 
     json_writer_stream_.str("");
     json_reader_stream_.str("");
-    curl_.setURL(url_ + "/" + collection_ + "/" + id + "?rev=" + revision_id);
+    curl_.setURL(root_ + "/" + collection_ + "/" + id + "?rev=" + revision_id);
     curl_.setWriter(&json_writer_);
     curl_.setReader(&json_reader_);
 
@@ -197,7 +202,7 @@ ObjectDbCouch::Query(const object_recognition::db::View & view, int limit_rows, 
   switch (view.type())
   {
     case object_recognition::db::View::VIEW_MODEL_WHERE_OBJECT_ID_AND_MODEL_TYPE:
-      url = url_ + "/" + collection_ + "/_design/models/_view/by_object_id_and_" + parameters["model_type"].get_str();
+      url = root_ + "/" + collection_ + "/_design/models/_view/by_object_id_and_" + parameters["model_type"].get_str();
       do_throw = false;
       break;
   }
@@ -221,7 +226,7 @@ ObjectDbCouch::Query(const std::vector<std::string> & queries, int limit_rows, i
     write_json(fields, json_reader_stream_);
   }
 
-  QueryView(url_ + "/" + collection_ + "/_temp_view", limit_rows, start_offset, "", total_rows, offset, document_ids,
+  QueryView(root_ + "/" + collection_ + "/_temp_view", limit_rows, start_offset, "", total_rows, offset, document_ids,
             true);
 }
 
@@ -278,8 +283,7 @@ void
 ObjectDbCouch::CreateCollection(const CollectionName &collection)
 {
   or_json::mObject params;
-  std::string status;
-  Status(collection, status);
+  std::string status = Status(collection);
   std::stringstream ss(status);
   read_json(ss, params);
 
@@ -316,47 +320,46 @@ ObjectDbCouch::CreateCollection(const CollectionName &collection)
   }
 }
 
-void
-ObjectDbCouch::Status(std::string& status)
+std::string
+ObjectDbCouch::Status()
 {
   json_writer_stream_.str("");
   json_reader_stream_.str("");
   curl_.setWriter(&json_writer_);
   curl_.setReader(&json_reader_);
   //couch db post to the db
-  curl_.setURL(url_);
+  curl_.setURL(root_);
   curl_.setCustomRequest("GET");
   curl_.perform();
   if (curl_.get_response_code() != object_recognition::curl::cURL::OK)
   {
     throw std::runtime_error(curl_.get_response_reason_phrase() + " : " + curl_.getURL());
   }
-  status = json_writer_stream_.str();
+  return json_writer_stream_.str();
 }
 
-void
-ObjectDbCouch::Status(const CollectionName& collection, std::string& status)
+std::string
+ObjectDbCouch::Status(const CollectionName& collection)
 {
   json_writer_stream_.str("");
   json_reader_stream_.str("");
   curl_.setWriter(&json_writer_);
   curl_.setReader(&json_reader_);
   //couch db post to the db
-  curl_.setURL(url_ + "/" + collection);
+  curl_.setURL(root_ + "/" + collection);
   curl_.setCustomRequest("GET");
   curl_.perform();
   if (curl_.get_response_code() == 0)
   {
     throw std::runtime_error(curl_.get_response_reason_phrase() + " : " + curl_.getURL());
   }
-  status = json_writer_stream_.str();
+  return json_writer_stream_.str();
 }
 
 void
 ObjectDbCouch::DeleteCollection(const CollectionName &collection)
 {
-  std::string status;
-  Status(collection, status);
+  std::string status = Status(collection);
   if (curl_.get_response_code() == object_recognition::curl::cURL::OK)
   {
     curl_.setCustomRequest("DELETE");

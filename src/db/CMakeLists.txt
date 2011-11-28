@@ -17,6 +17,7 @@ include_directories(
 add_library(object_recognition_db SHARED
   db.cpp
   db_couch.cpp
+  db_filesystem.cpp
   opencv.cpp
   ../../include/object_recognition/common/json_spirit/json_spirit_reader.cpp
   ../../include/object_recognition/common/json_spirit/json_spirit_value.cpp
