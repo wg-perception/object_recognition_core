@@ -7,8 +7,7 @@ must do is install couchdb, and ensure that the service has started.
 
 .. highlight:: ectosh
 
-The following should download and start the couch on Ubuntu like distros.
-:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+The following should download and start the couch on Ubuntu like distros::
 
   % sudo apt-get install couchdb
 
@@ -48,7 +47,7 @@ First make sure you have ``couchapp``::
   
   % sudo easy_install couchapp
 
-There is a make target for installing the web ui, which may be more convenient::
+There is a make target for installing the web ui for your convenience.::
 
   % make or_web_ui
 
