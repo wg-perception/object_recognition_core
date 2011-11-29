@@ -17,7 +17,7 @@ def dict_to_cpp_json_str(dict_obj):
     """
     Given a dictionary object, convert it to a string for C++
     """
-    return str(dict_obj).replace("'", '"') #TODO Shouldn't this use json.dumps?
+    return json.dumps(dict_obj)
 
 def list_to_cpp_json_str(list_obj):
     """
