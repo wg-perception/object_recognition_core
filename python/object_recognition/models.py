@@ -1,9 +1,9 @@
+from couchdb.design import ViewDefinition
+from couchdb.mapping import TextField, ListField, DateTimeField, Document, ViewField, IntegerField
+from datetime import datetime
+from object_recognition import dbtools
 from object_recognition.dbtools import DEFAULT_SERVER_URL, init_object_databases
 import couchdb
-from couchdb.mapping import TextField, ListField, DateTimeField, Document, \
-    ViewField, IntegerField
-from couchdb.design import ViewDefinition
-from datetime import datetime
 
 class Object(Document):
     object_name = TextField()
@@ -131,8 +131,15 @@ class Model(Document):
         # figure out the different models in the DB
         models = [ m.value for m in db.query('''
         function(doc) {
-            if (doc.Type == "Model")
-                emit(doc.ModelType,doc.ModelType)
+            if (doc.Type == "Model") {
+                if (doc.method) {
+                    emit(doc.method, doc.method);
+                } else {
+                    if (doc.ModelType) {
+                        emit(doc.ModelType, doc.ModelType);
+                    }
+                }
+            }
         }
         ''', '''
         function(keys, values, rereduce) {
@@ -166,10 +173,11 @@ class Model(Document):
         for model in models:
             cls.by_object_id_and[model] = ViewDefinition('models', 'by_object_id_and_' + model, '''\
                 function(doc) {
-                    if ((doc.Type == "Model") && (doc.ModelType == "%s"))
-                        emit(doc.object_id, doc)
+                    if (doc.Type == "Model")
+                        if ((doc.method == "%s") || (doc.ModelType == "%s"))
+                            emit(doc.object_id, doc)
                 }
-            ''' % model, wrapper=cls._wrap_row)
+            ''' % (model, model), wrapper=cls._wrap_row)
             cls.by_object_id_and[model].sync(db)
 
 def sync_models(db):
@@ -178,13 +186,14 @@ def sync_models(db):
     Observation.sync(db)
     Model.sync(db)
 
-def find_all_observations_for_session(observation_collection, session_id):
+def find_all_observations_for_session(db_params, session_id):
     ''' Finds all of the observations associated with a session, and returns a list
     of their ids. These are sorted by the frame number,
     so they should be in chronological ordering.
     '''
+    db = dbtools.db_params_to_db(db_params)
     #run the view, keyed on the session id.
-    results = Observation.by_session_id(observation_collection, key=session_id)
+    results = Observation.by_session_id(db, key=session_id)
     if len(results) == 0 : return []
     #create a list of tuples, so that they can be sorted by frame number
     obs_tuples = [ (obs.frame_number, obs.id) for obs in results]
@@ -192,7 +201,8 @@ def find_all_observations_for_session(observation_collection, session_id):
     obs_ids = zip(*sorted(obs_tuples, key=lambda obs: obs[0]))[1]
     return obs_ids
 
-def find_all_sessions_for_object(db, object_id):
+def find_all_sessions_for_object(db_params, object_id):
+    db = dbtools.db_params_to_db(db_params)
     sessions = Session.by_object_id(db, key=object_id)
     sessions_by_date_added = []
     for x in sessions:
@@ -201,11 +211,12 @@ def find_all_sessions_for_object(db, object_id):
     sessions_by_date_added = sorted(sessions_by_date_added)
     return zip(*sessions_by_date_added)[1]
 
-def find_all_observations_for_object(db, object_id):
+def find_all_observations_for_object(db_params, object_id):
     ''' Finds all of the observations associated with an object, and returns a list
     of their ids. These are sorted by the frame number,
     so they should be in chronological ordering.
     '''
+    db = dbtools.db_params_to_db(db_params)
     sessions = find_all_sessions_for_object(db, object_id)
     #run the view, keyed on the session id.
     results = Observation.by_session_id(db, key=sessions[-1])

@@ -5,11 +5,12 @@ Module defining the TOD trainer to train the TOD models
 
 from ecto_object_recognition import capture, tod_training
 from ecto_opencv import calib, features2d, highgui
-from g2o import SbaDisparity
 from feature_descriptor import FeatureDescriptor
-import ecto
-from object_recognition.pipelines.training import TrainingPipeline
+from g2o import SbaDisparity
 from object_recognition.common.utils import dict_to_cpp_json_str
+from object_recognition.pipelines.training import TrainingPipeline
+import collections
+import ecto
 
 ########################################################################################################################
 class TODModelBuilder(ecto.BlackBox):
@@ -132,6 +133,20 @@ class TODPostProcessor(ecto.BlackBox):
                 ]
         return graph
 
+def merge_dict(a, b):
+    """
+    Merge two dictionaries recursively (.update would erase co-existing values and not merge them
+    """
+    c = a.copy()
+    for key, val in b.iteritems():
+        if key in a:
+            if isinstance(val, collections.Mapping) and isinstance(a[key], collections.Mapping):
+                c[key] = merge_dict(val, a[key])
+            # otherwise, a is preferred as done with the initial copy
+        else:
+            c[key] = val
+    return c
+
 class TODTrainingPipeline(TrainingPipeline):
     '''Implements the training pipeline functions'''
 
@@ -139,15 +154,20 @@ class TODTrainingPipeline(TrainingPipeline):
     def type_name(cls):
         return "TOD"
 
-    def incremental_model_builder(self, pipeline_params, args):
-        feature_params = pipeline_params.get("feature_descriptor", False)
+    def incremental_model_builder(self, submethod, pipeline_params, args):
+        feature_params = pipeline_params.get("feature", False)
         if not feature_params:
             raise RuntimeError("You must supply feature_descriptor parameters for TOD.")
+        # merge it with the subtype
+        feature_descriptor_params = { 'feature': feature_params, 'descriptor': pipeline_params.get('descriptor', {}) }
+        feature_descriptor_params = merge_dict(feature_descriptor_params, submethod)
+
         #grab visualize if works.
         visualize = getattr(args, 'visualize', False)
-        return TODModelBuilder(json_feature_descriptor_params=dict_to_cpp_json_str(feature_params), visualize=visualize)
+        return TODModelBuilder(json_feature_descriptor_params=dict_to_cpp_json_str(feature_descriptor_params),
+                               visualize=visualize)
 
-    def post_processor(self, pipeline_params, _args):
+    def post_processor(self, submethod, pipeline_params, _args):
         search_params = pipeline_params.get("search", False)
         if not search_params:
             raise RuntimeError("You must supply search parameters for TOD.")

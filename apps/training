@@ -1,37 +1,37 @@
 #!/usr/bin/env python
 import roscompat
-import ecto, ecto_ros
-from ecto_object_recognition import capture, tod_training
+from ecto_object_recognition import capture
 from object_recognition import models
-from object_recognition.common.utils import json_helper
 from object_recognition.common.utils.training_detection_args import read_arguments
-from object_recognition.pipelines.training import find_training_pipelines
+from object_recognition.pipelines import find_pipelines
+import ecto
 import sys
+from object_recognition.pipelines.training import TrainingPipeline
 DEBUG = False
 
-
 if __name__ == '__main__':
-    params, args, pipeline_params, visualize, db_params, db = read_arguments()
-    pipelines = find_training_pipelines(['object_recognition']) #map of string name to pipeline class
+    params, args, pipeline_params, visualize, db_params = read_arguments('object_recognition_training')
+    pipelines = find_pipelines(['object_recognition'], TrainingPipeline) #map of string name to pipeline class
     for object_id in params['object_ids']:
         object_id = object_id.encode('ascii')
-        session_ids = models.find_all_sessions_for_object(db, object_id)
+        session_ids = models.find_all_sessions_for_object(db_params, object_id)
         for session_id in session_ids:
             db_reader = capture.ObservationReader("db_reader", db_params=db_params)
-            observation_ids = models.find_all_observations_for_session(db, session_id)
+            observation_ids = models.find_all_observations_for_session(db_params, session_id)
 
             if not observation_ids:
                 print >> sys.stderr, 'No observations found for (object,session): (%s,%s)' % (object_id, session_id)
                 continue
 
             for pipeline_param in pipeline_params:
-                pipeline = pipelines.get(pipeline_param['type'], False)
+                pipeline = pipelines.get(pipeline_param['method'], False)
                 if not pipeline:
                     sys.stderr.write('Invalid pipeline name: %s\nMake sure that the pipeline type is defined by a TrainingPipeline class, in the name class function.' % pipeline_param['type'])
                     sys.exit(-1)
 
                 #create a plasm using the TrainingPipeline interface.
-                plasm = pipeline.train(object_id, session_ids, observation_ids, pipeline_param, db_params, args)
+                plasm = pipeline.train(object_id, session_ids, observation_ids, pipeline_param['submethod'],
+                                       pipeline_param['parameters'], db_params, args)
 
                 if DEBUG:
                     #render the DAG with dot

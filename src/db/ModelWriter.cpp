@@ -65,11 +65,13 @@ namespace object_recognition
         params.declare(&C::object_id_, "object_id", //
                        "The object id, to associate this model with.").required(true);
         params.declare(&C::session_ids_, "session_ids", //
-                       "The session sid, to associate this model with.").required(true);
-        params.declare(&C::model_params_, "model_json_params", //
-                       "The parameters used for the model, as JSON.").required(true);
-        params.declare(&C::model_type_, "model_type", //
-                       "The type of model.").required(true);
+                       "The session ids, to associate this model with.").required(true);
+        params.declare(&C::model_method_, "method", //
+                       "The method used to compute the model (e.g. 'TOD' ...).").required(true);
+        params.declare(&C::model_submethod_, "json_submethod", //
+                       "The discriminative parameters used, as JSON.").required(true);
+        params.declare(&C::model_parameters_, "json_parameters", //
+                       "The non-discriminative parameters used, as JSON.").required(true);
       }
 
       static void
@@ -90,28 +92,36 @@ namespace object_recognition
         //TODO move this logic to a function call.
         Document doc_new = *db_document_;
         doc_new.update_db(db_);
-        PopulateDoc(*object_id_, *session_ids_, *model_params_, *model_type_, doc_new);
+        PopulateDoc(*object_id_, *session_ids_, *model_method_, *model_submethod_, *model_parameters_, doc_new);
 
         // Read the input model parameters
-        or_json::mObject in_parameters = to_json(*model_params_).get_obj();
+        or_json::mObject in_parameters = to_json(*model_submethod_).get_obj();
 
         // Find all the models of that type for that object
         View view(View::VIEW_MODEL_WHERE_OBJECT_ID_AND_MODEL_TYPE);
-        view.Initialize(*object_id_, *model_type_);
+        view.Initialize(*object_id_, *model_method_);
         ViewIterator view_iterator(view, db_);
 
         ViewIterator iter = view_iterator.begin(), end = view_iterator.end();
         for (; iter != end; ++iter)
         {
           // Compare the parameters
-          or_json::mObject db_parameters = (*iter).get_value<or_json::mObject>("parameters");
+          bool is_incomplete_model_type = false;
+          or_json::mObject db_parameters;
+          // Yes, this is ugly but it's to make sure that we convert the old databases to the new style
+          try
+          {
+            db_parameters = (*iter).get_value<or_json::mObject>("subtype");
+          } catch (...)
+          {
+            is_incomplete_model_type = true;
+          }
 
           // If they are the same, delete the current model in the database
-          if (CompareJsonIntersection(in_parameters, db_parameters))
+          if ((CompareJsonIntersection(in_parameters, db_parameters)) || is_incomplete_model_type)
           {
             std::cout << "Deleting the previous model " << (*iter).id() << " of object " << *object_id_ << std::endl;
             db_.Delete((*iter).id());
-            break;
           }
         }
         doc_new.Persist();
@@ -121,12 +131,12 @@ namespace object_recognition
       ObjectDb db_;
       ecto::spore<ObjectDbParameters> db_params_;
       ecto::spore<DocumentId> object_id_;
-      ecto::spore<std::string> session_ids_, model_params_, model_type_;
+      ecto::spore<std::string> session_ids_, model_parameters_, model_method_, model_submethod_;
       ecto::spore<Document> db_document_;
-
     };
   }
 }
+
 ECTO_CELL( object_recognition_db, object_recognition::db::ModelWriter, "ModelWriter",
           "Takes a document, that should be considered as a Model, and persists it."
           " Also stores common meta data that is useful for searching.");

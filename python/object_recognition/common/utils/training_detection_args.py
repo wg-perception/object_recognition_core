@@ -2,15 +2,15 @@
 Module that creates a function to define/read common arguments for the training/detection pipeline
 """
 
-from ecto_object_recognition.object_recognition_db import ObjectDbParameters
 from object_recognition import models, dbtools
 from object_recognition.common.utils.parser import ObjectRecognitionParser
 from object_recognition.dbtools import args_to_db_params
+import ecto_ros
 import os
-import yaml
 import sys
+import yaml
 
-def read_arguments(parser=None, argv=None):
+def read_arguments(node_name, parser=None, argv=sys.argv):
     """
     Returns:
     params, pipeline_params, db_dict, db
@@ -28,7 +28,13 @@ def read_arguments(parser=None, argv=None):
     parser.add_argument('--visualize', help='If set, it will display some windows with temporary results',
                        default=False, action='store_true')
     dbtools.add_db_options(parser)
-    args = parser.parse_args(args=argv)
+    # TODO if sink/source
+    ecto_ros.init(argv, node_name, False)
+
+    if '--help' in sys.argv or '-h' in sys.argv:
+        args = parser.parse_args()
+    else:
+        args = parser.parse_args()#args=argv)
 
     # define the input
     if args.config_file is None or not os.path.exists(args.config_file):
@@ -72,4 +78,4 @@ def read_arguments(parser=None, argv=None):
         if key.startswith('pipeline'):
             pipeline_params.append(value)
 
-    return params, args, pipeline_params, args.visualize, db_params, db
+    return params, args, pipeline_params, args.visualize, db_params

@@ -71,42 +71,39 @@ namespace object_recognition
 
     Document
     PopulateDoc(const ObjectDb& db, const ObjectId& object_id, const std::string& session_ids,
-                const std::string& model_params, const std::string& model_type)
+                const std::string& method, const std::string& submethod_str, const std::string& parameters_str)
     {
       //create a document, and initialize all the common bits.
       Document doc(db);
-      PopulateDoc(object_id, session_ids, model_params, model_type, doc);
+      PopulateDoc(object_id, session_ids, method, submethod_str, parameters_str, doc);
       return doc;
     }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     void
-    PopulateDoc(const ObjectId& object_id, const std::string& session_ids, const std::string& model_params,
-                const std::string& model_type, Document& doc)
+    PopulateDoc(const ObjectId& object_id, const std::string& session_ids, const std::string& method,
+                const std::string& submethod_str, const std::string& parameters_str, Document& doc)
     {
       doc.set_value("object_id", object_id);
       // Convert the parameters to a property tree and insert them
-      or_json::mObject params = to_json(model_params).get_obj();
+      or_json::mObject submethod = to_json(submethod_str).get_obj();
+      or_json::mObject parameters = to_json(parameters_str).get_obj();
       or_json::mValue sessions = to_json(session_ids);
 
-      params.erase("type"); //TODO EAR: this is a bit funky?
       doc.set_value("session_ids", sessions);
-      doc.set_value("parameters", params);
       doc.set_value("Type", "Model");
-      doc.set_value("ModelType", model_type);
+      doc.set_value("method", method);
+      doc.set_value("submethod", submethod);
+      doc.set_value("parameters", parameters);
     }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     Documents
-    ModelDocuments(ObjectDb &db, const std::vector<ObjectId> & object_ids, const std::vector<ModelId> & model_ids,
-                   const std::string & model_json_params)
+    ModelDocuments(ObjectDb &db, const std::vector<ObjectId> & object_ids, const std::string & model_json_params)
     {
       Documents model_documents;
-      model_documents.reserve(object_ids.size() + model_ids.size());
-      // First, load all the models where their id belongs to model_ids_, blindly trusting them
-      BOOST_FOREACH(const ModelId & model_id, model_ids)
-            model_documents.push_back(Document(db, model_id));
+      model_documents.reserve(object_ids.size());
 
       // ext, for each object id, find the models (if any) that fit the parameters
       or_json::mObject in_parameters;

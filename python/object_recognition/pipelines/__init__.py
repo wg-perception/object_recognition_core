@@ -2,35 +2,30 @@
 Loaders for all object recognition pipelines
 '''
 from abc import ABCMeta, abstractmethod
+import inspect
+import pkgutil
+from object_recognition.pipelines.detection import DetectionPipeline
+from object_recognition.pipelines.training import TrainingPipeline
 
-class DetectionPipeline:
-    ''' An abstract base class for creating object detection pipelines.
+def find_pipelines(modules, pipeline_type):
     '''
-    __metaclass__ = ABCMeta
-
-    @abstractmethod
-    def create_pipeline(self, argv=None):
-        '''
-        Concrete implementations of Detection pipelines should use this as the most general creation point.
-        
-        :param argv: Command line arguments, if argv is None, then it is expected that sys.argv will be used.
-                     These command line args should be taken into consideration when constructing the pipeline.
-
-        :returns: An ecto.Plasm instance, which contains the pipeline
-                  that when executed for 1 iteration will produce a detection result.  This may change...
-        '''
-        pass
-
-    @classmethod #see http://docs.python.org/library/abc.html#abc.ABCMeta.__subclasshook__
-    def __subclasshook__(cls, C):
-        if cls is DetectionPipeline:
-            #all pipelines must have atleast this function.
-            if any("create_pipeline" in B.__dict__ for B in C.__mro__):
-                return True
-        return NotImplemented
-
-    @classmethod
-    def create(cls, argv=[]):
-        from .tod import TODDetection
-        td = TODDetection()
-        return td.create_pipeline(argv)
+    Given a list of python packages, or modules, find all TrainingPipeline implementations.
+    :param modules: A list of python package names, e.g. ['object_recognition']
+    :returns: A list of TrainingPipeline implementation classes.
+    '''
+    pipelines = {}
+    ms = []
+    for module in modules:
+        m = __import__(module)
+        ms += [(module, m)]
+        for loader, module_name, is_pkg in  pkgutil.walk_packages(m.__path__):
+            if is_pkg:
+                module = loader.find_module(module_name).load_module(module_name)
+                ms.append(module)
+    for pymodule in ms:
+        for x in dir(pymodule):
+            potential_pipeline = getattr(pymodule, x)
+            if inspect.isclass(potential_pipeline) and potential_pipeline != pipeline_type and \
+                                                            issubclass(potential_pipeline, pipeline_type):
+                pipelines[potential_pipeline.type_name()] = potential_pipeline
+    return pipelines
