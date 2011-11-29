@@ -456,17 +456,12 @@ namespace object_recognition
     {
       // Move forward in the list of Objects to check
       document_ids_.pop_back();
-      // Return the end iterator if we are done
+      // If we have nothing else to pop, try to get more from the DB
       if (document_ids_.empty())
       {
         // Figure out if we need to query for more document ids
         if (start_offset_ < total_rows_)
           query_(BATCH_SIZE, start_offset_, total_rows_, start_offset_, document_ids_);
-      }
-      else
-      {
-        // Fill the current object
-        document_ids_.pop_back();
       }
       return *this;
     }
