@@ -7,7 +7,6 @@ if(NOT pcl_FOUND)
 message(FATAL_ERROR "pcl could not be found, so not building tod.")
 endif()
 
-add_subdirectory(capture)
 add_subdirectory(common)
 add_subdirectory(db)
 add_subdirectory(tod)

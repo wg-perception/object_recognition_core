@@ -12,7 +12,6 @@ User Docs
    :maxdepth: 2
    
    db/couch.rst
-   capture/capture.rst
    training/training.rst
    detection/detection.rst
 
