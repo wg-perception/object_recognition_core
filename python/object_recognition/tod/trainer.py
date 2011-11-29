@@ -9,7 +9,6 @@ from feature_descriptor import FeatureDescriptor
 from g2o import SbaDisparity
 from object_recognition.common.utils import dict_to_cpp_json_str
 from object_recognition.pipelines.training import TrainingPipeline
-import collections
 import ecto
 
 ########################################################################################################################
@@ -133,20 +132,6 @@ class TODPostProcessor(ecto.BlackBox):
                 ]
         return graph
 
-def merge_dict(a, b):
-    """
-    Merge two dictionaries recursively (.update would erase co-existing values and not merge them
-    """
-    c = a.copy()
-    for key, val in b.iteritems():
-        if key in a:
-            if isinstance(val, collections.Mapping) and isinstance(a[key], collections.Mapping):
-                c[key] = merge_dict(val, a[key])
-            # otherwise, a is preferred as done with the initial copy
-        else:
-            c[key] = val
-    return c
-
 class TODTrainingPipeline(TrainingPipeline):
     '''Implements the training pipeline functions'''
 
@@ -160,6 +145,7 @@ class TODTrainingPipeline(TrainingPipeline):
             raise RuntimeError("You must supply feature_descriptor parameters for TOD.")
         # merge it with the subtype
         feature_descriptor_params = { 'feature': feature_params, 'descriptor': pipeline_params.get('descriptor', {}) }
+        from object_recognition.tod import merge_dict
         feature_descriptor_params = merge_dict(feature_descriptor_params, submethod)
 
         #grab visualize if works.

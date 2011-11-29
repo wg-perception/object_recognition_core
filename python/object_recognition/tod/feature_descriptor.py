@@ -21,13 +21,13 @@ class FeatureDescriptor(ecto.BlackBox):
         params = eval(p.json_params)
         #self._json_params = json_params
         if params:
-            if params.has_key('combination'):
-                if params['combination'] == 'ORB':
-                    self._feature_descriptor_params = params.get('feature', {})
-                    self._feature_descriptor_params.update(params.get('descriptor', {}))
-                    self._cell_name = 'ORB_combination'
-                else:
-                    raise 'parameters not supported for FeatureDescriptor'
+            feature_type = params.get('feature', {}).get('type', '')
+            descriptor_type = params.get('feature', {}).get('type', '')
+            if feature_type == 'ORB' and descriptor_type == 'ORB':
+                self._feature_descriptor_params = params.get('feature', {})
+                self._feature_descriptor_params.update(params.get('descriptor', {}))
+                self._feature_descriptor_params.pop('type')
+                self._cell_name = 'ORB_combination'
             else:
                 raise 'parameters not supported for FeatureDescriptor'
         else:

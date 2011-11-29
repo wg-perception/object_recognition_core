@@ -3,6 +3,7 @@ Module defining several outputs for the object recognition pipeline
 '''
 
 from ecto_object_recognition.io import GuessCsvWriter
+from object_recognition.dbtools import db_params_to_db
 
 #SinkTypes is dict of name:name that describes the types of sinks available
 #append to the dict sink types.
@@ -52,16 +53,18 @@ class Sink(object):
                             help='The source type to use. default(%(default)s)')
 
     @staticmethod
-    def parse_arguments(obj, db, db_params, object_ids):
+    def parse_arguments(obj, db_params, object_ids):
         if type(obj).__name__ == 'dict':
             dic = obj
         else:
             dic = obj.__dict__
+        if 'sink_type' in dic:
+            dic['type'] = dic.pop('sink_type')
 
         sink = None
-        mapping = object_to_models_mapping(db, object_ids)
-        if 'sink_type' in dic:
-            sink = Sink.create_sink(sink_type=dic['sink_type'], mapping=mapping, db_params=db_params)
+        mapping = object_to_models_mapping(db_params_to_db(db_params), object_ids)
+        if 'type' in dic:
+            sink = Sink.create_sink(sink_type=dic['type'], mapping=mapping, db_params=db_params)
         else:
             raise RuntimeError("Could not create a sink from the given args! %s" % str(dic))
         return _assert_sink_interface(sink)

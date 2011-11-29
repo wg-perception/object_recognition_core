@@ -123,8 +123,7 @@ namespace object_recognition
             while (view_iterator != ViewIterator::end())
             {
               // Compare the parameters to the input ones
-              or_json::mObject db_parameters = (*view_iterator).get_value<or_json::mObject>("submethod");
-              if (CompareJsonIntersection(submethod, db_parameters))
+              if (CompareJsonIntersection(submethod, (*view_iterator).get_value<or_json::mObject>("submethod")))
                 model_documents.push_back(Document(db, (*view_iterator).id()));
 
               ++view_iterator;

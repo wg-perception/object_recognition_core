@@ -78,4 +78,5 @@ def read_arguments(node_name, parser=None, argv=sys.argv):
         if key.startswith('pipeline'):
             pipeline_params.append(value)
 
-    return params, args, pipeline_params, args.visualize, db_params
+    args = vars(args)
+    return params, args, pipeline_params, args['visualize'], db_params

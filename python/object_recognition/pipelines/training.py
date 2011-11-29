@@ -63,7 +63,7 @@ class TrainingPipeline:
         raise NotImplementedError("The training pipeline class must return a string name.")
 
     @abstractmethod
-    def incremental_model_builder(self, pipeline_params, args):
+    def incremental_model_builder(self, submethod, pipeline_params, args):
         '''
         Given a dictionary of parameters, return a cell, or BlackBox that takes
         as input observations, and at each iteration and builds up a model
@@ -73,7 +73,7 @@ class TrainingPipeline:
 
 
     @abstractmethod
-    def post_processor(self, pipeline_params, args):
+    def post_processor(self, submethod, pipeline_params, args):
         '''
         Given a dictionary of parameters, return a cell, or BlackBox that
         takes the output of the incremental_model_builder and converts it into
@@ -91,13 +91,16 @@ class TrainingPipeline:
         return NotImplemented
 
     @classmethod
-    def train(cls, object_id, session_ids, observation_ids, pipeline_params, db_params, args=None):
+    def train(cls, object_id, session_ids, observation_ids, submethod, pipeline_params, db_params, args=None):
         '''
         Returns a training plasm, that will be executed exactly once.
         :param object_id: The object id to train up.
         :param session_ids: A list of session ids that this model should be based on.
         :param observation_ids: A list of observation ids that will be dealt to the incremental model builder.
-        :param pipeline_params: A dictionary of parameters that will be used to initialize the training pipeline.
+        :param submethod: A dictionary of discriminative parameters that will be used to initialize the
+        training pipeline.
+        :param pipeline_params: A dictionary of non-discriminative parameters that will be used to initialize the
+        training pipeline.
         :param db_params: A DB parameters object that specifies where to save the model to.
         :param args: General command line args, for things like visualize or what have you.
         :returns: A plasm, only execute once please.
@@ -108,49 +111,24 @@ class TrainingPipeline:
         dealer = ObservationDealer(db_params=db_params, observation_ids=observation_ids)
 
         pipeline = cls()
-        incremental_model_builder = pipeline.incremental_model_builder(pipeline_params, args)
+        incremental_model_builder = pipeline.incremental_model_builder(submethod, pipeline_params, args)
         model_builder = ModelBuilder(source=dealer,
                                      incremental_model_builder=incremental_model_builder,
                                      niter=0,
                                      ) #execute until a quit condition occurs.
-        post_process = pipeline.post_processor(pipeline_params, args)
+        post_process = pipeline.post_processor(submethod, pipeline_params, args)
 
         plasm = ecto.Plasm()
         # Connect the model builder to the source
-        for key in model_builder.outputs.iterkeys():
-            if key in post_process.inputs.keys():
-                plasm.connect(model_builder[key] >> post_process[key])
+        for key in set(model_builder.outputs.keys()).intersection(post_process.inputs.keys()):
+            plasm.connect(model_builder[key] >> post_process[key])
 
         writer = ModelWriter(db_params=db_params,
                              object_id=object_id,
                              session_ids=list_to_cpp_json_str(session_ids),
-                             model_json_params=dict_to_cpp_json_str(pipeline_params),
-                             model_type=cls.type_name()
+                             method=cls.type_name(),
+                             json_submethod=dict_to_cpp_json_str(submethod),
+                             json_parameters=dict_to_cpp_json_str(pipeline_params),
                              )
         plasm.connect(post_process["db_document"] >> writer["db_document"])
         return plasm
-
-
-
-def find_training_pipelines(modules):
-    '''
-    Given a list of python packages, or modules, find all TrainingPipeline implementations.
-    :param modules: A list of python package names, e.g. ['object_recognition']
-    :returns: A list of TrainingPipeline implementation classes.
-    '''
-    pipelines = {}
-    ms = []
-    for module in modules:
-        m = __import__(module)
-        ms += [(module, m)]
-        for loader, module_name, is_pkg in  pkgutil.walk_packages(m.__path__):
-            if is_pkg:
-                module = loader.find_module(module_name).load_module(module_name)
-                ms.append(module)
-    for pymodule in ms:
-        for x in dir(pymodule):
-            potential_pipeline = getattr(pymodule, x)
-            if inspect.isclass(potential_pipeline) and potential_pipeline != TrainingPipeline and issubclass(potential_pipeline, TrainingPipeline):
-                pipelines[potential_pipeline.type_name()] = potential_pipeline
-    return pipelines
-
