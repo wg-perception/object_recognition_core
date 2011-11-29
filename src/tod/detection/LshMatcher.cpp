@@ -57,16 +57,17 @@ namespace object_recognition
       static void
       declare_params(ecto::tendrils& p)
       {
-        p.declare(&LSHMatcher::radius_,"radius", "", 55);
-        p.declare(&LSHMatcher::key_size_,"key_size", "", 8);
-        p.declare(&LSHMatcher::n_tables_,"n_tables", "", 4);
-        p.declare(&LSHMatcher::multi_probe_level_,"multi_probe_level", "", 1);
+        p.declare(&LSHMatcher::radius_, "radius", "", 55);
+        p.declare(&LSHMatcher::key_size_, "key_size", "", 8);
+        p.declare(&LSHMatcher::n_tables_, "n_tables", "", 4);
+        p.declare(&LSHMatcher::multi_probe_level_, "multi_probe_level", "", 1);
       }
 
       static void
       declare_io(const ecto::tendrils& params, ecto::tendrils& inputs, ecto::tendrils& outputs)
       {
         inputs.declare<cv::Mat>("train", "Test descriptors.");
+        inputs.declare<bool>("update", "If set to true, update the descriptors.", false);
         inputs.declare<cv::Mat>("test", "Train descriptors.");
         outputs.declare<matches_t>("matches", "The descriptor matches.");
       }
@@ -79,6 +80,9 @@ namespace object_recognition
       int
       process(const ecto::tendrils& inputs, const ecto::tendrils& outputs)
       {
+        if (inputs["update"])
+          matcher_.reset();
+
         if (!matcher_)
         {
           // key_size: 24
