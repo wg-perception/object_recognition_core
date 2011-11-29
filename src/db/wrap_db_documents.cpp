@@ -113,20 +113,18 @@ namespace object_recognition
 
     DocumentsPtr
     ModelDocumentsFromPython(const ObjectDbParameters & db_params, const bp::object & bp_object_ids,
-                             const bp::object & bp_model_ids, const std::string & model_json_params)
+                             const std::string & method, const std::string & json_submethod)
     {
       ObjectDb db;
       db.set_parameters(db_params);
 
       std::vector<ObjectId> object_ids;
-      std::vector<ModelId> model_ids;
       {
-        boost::python::stl_input_iterator<ObjectId> object_begin(bp_object_ids), model_begin(bp_model_ids), end;
+        boost::python::stl_input_iterator<ObjectId> object_begin(bp_object_ids), end;
         std::copy(object_begin, end, std::back_inserter(object_ids));
-        std::copy(model_begin, end, std::back_inserter(model_ids));
       }
       DocumentsPtr p(new Documents());
-      *p = ModelDocuments(db, object_ids, model_ids, model_json_params);
+      *p = ModelDocuments(db, object_ids, method, json_submethod);
       return p;
     }
 

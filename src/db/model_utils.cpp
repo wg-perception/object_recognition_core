@@ -100,32 +100,32 @@ namespace object_recognition
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     Documents
-    ModelDocuments(ObjectDb &db, const std::vector<ObjectId> & object_ids, const std::string & model_json_params)
+    ModelDocuments(ObjectDb &db, const std::vector<ObjectId> & object_ids, const std::string & method,
+                   const std::string & json_submethod)
     {
       Documents model_documents;
       model_documents.reserve(object_ids.size());
 
       // ext, for each object id, find the models (if any) that fit the parameters
-      or_json::mObject in_parameters;
+      or_json::mObject submethod;
       {
         or_json::mValue value;
-        or_json::read(model_json_params, value);
-        in_parameters = value.get_obj();
+        or_json::read(json_submethod, value);
+        submethod = value.get_obj();
       }
 
       BOOST_FOREACH(const ModelId & object_id, object_ids)
           {
             View view(View::VIEW_MODEL_WHERE_OBJECT_ID_AND_MODEL_TYPE);
-            view.Initialize(object_id, in_parameters["type"].get_str());
+            view.Initialize(object_id, method);
             ViewIterator view_iterator = ViewIterator(view, db).begin();
 
             while (view_iterator != ViewIterator::end())
             {
               // Compare the parameters to the input ones
-              or_json::mObject db_parameters = (*view_iterator).get_value<or_json::mObject>("parameters");
-              // TODO 
-              //if (CompareJsonIntersection(in_parameters, db_parameters))
-              model_documents.push_back(Document(db, (*view_iterator).id()));
+              or_json::mObject db_parameters = (*view_iterator).get_value<or_json::mObject>("submethod");
+              if (CompareJsonIntersection(submethod, db_parameters))
+                model_documents.push_back(Document(db, (*view_iterator).id()));
 
               ++view_iterator;
             }

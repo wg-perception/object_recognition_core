@@ -76,12 +76,15 @@ namespace object_recognition
 
     /** Given some parameters, retrieve Documents that are models either of id in model_ids, or with an object_id
      * that is in object_ids and with parameters matching model_json_params
+     * @param db
      * @param object_ids
-     * @param model_json_params
+     * @param method
+     * @param json_submethod
      * @return
      */
     Documents
-    ModelDocuments(ObjectDb &db, const std::vector<ObjectId> & object_ids, const std::string & model_json_params);
+    ModelDocuments(ObjectDb &db, const std::vector<ObjectId> & object_ids, const std::string & method,
+                   const std::string & json_submethod);
   }
 }
 
