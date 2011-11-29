@@ -454,8 +454,6 @@ namespace object_recognition
     ViewIterator &
     ViewIterator::operator++()
     {
-      // Move forward in the list of Objects to check
-      document_ids_.pop_back();
       // If we have nothing else to pop, try to get more from the DB
       if (document_ids_.empty())
       {
@@ -463,6 +461,8 @@ namespace object_recognition
         if (start_offset_ < total_rows_)
           query_(BATCH_SIZE, start_offset_, total_rows_, start_offset_, document_ids_);
       }
+      else if (!document_ids_.empty())
+        document_ids_.pop_back();
       return *this;
     }
 
