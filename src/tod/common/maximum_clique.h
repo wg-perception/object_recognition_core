@@ -74,6 +74,18 @@ namespace object_recognition
       void
       set(Index i, Index j);
 
+      /** Nothing set later for i will be <= j
+       * Nothing set later for j will be <= i
+       * @param i
+       * @param j
+       */
+      void
+      set_sorted(Index i, Index j)
+      {
+        adjacency_[i].push_back(j);
+        adjacency_[j].push_back(i);
+      }
+
       inline bool
       empty() const
       {
@@ -87,26 +99,50 @@ namespace object_recognition
       }
 
       size_t
-      count(Index index) const
-      {
-        return adjacency_[index].count();
-      }
+      count(Index index) const;
 
       ///////// Non standard functions
-      inline std::vector<Index>
-      neighbors(Index i) const
-      {
-        std::vector<Index> neighbors;
-        neighbors.reserve(adjacency_.size());
-        const boost::dynamic_bitset<> & row = adjacency_[i];
-
-        for (Index i = 0; i < adjacency_.size(); ++i)
-          if (row.test(i))
-            neighbors.push_back(i);
-        return neighbors;
-      }
+      std::vector<Index>
+      neighbors(Index i) const;
     private:
-      std::vector<boost::dynamic_bitset<> > adjacency_;
+      inline void
+      InvalidateOneWay(Index index1, Index index2)
+      {
+        std::vector<Index> & row = adjacency_[index1];
+        std::vector<Index>::iterator iter = std::lower_bound(row.begin(), row.end(), index2);
+        std::copy(iter + 1, row.end(), iter);
+        row.resize(row.size() - 1);
+      }
+
+      inline void
+      SetOneWay(Index index1, Index index2)
+      {
+        std::vector<Index> & row = adjacency_[index1];
+        if (row.empty())
+        {
+          //row.reserve(16);
+          row.push_back(index2);
+          return;
+        }
+        std::vector<Index>::iterator end = row.end();
+        std::vector<Index>::iterator iter = std::lower_bound(row.begin(), end, index2);
+        if (iter == end)
+        {
+          row.push_back(index2);
+          return;
+        }
+        if ((*iter) == index2)
+          return;
+        else
+        {
+          row.push_back(index2);
+          std::copy_backward(iter, row.end() - 1, row.end());
+          *iter = index2;
+        }
+      }
+
+      //std::vector<boost::dynamic_bitset<> > adjacency_;
+      std::vector<std::vector<Index> > adjacency_;
     };
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

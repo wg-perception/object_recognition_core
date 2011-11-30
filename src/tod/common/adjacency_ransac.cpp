@@ -163,7 +163,7 @@ namespace object_recognition
             continue;
 
           // If all those conditions are respected, those two matches are potentially part of the same cluster
-          physical_adjacency_.set(i, j);
+          physical_adjacency_.set_sorted(i, j);
 
           const cv::KeyPoint & keypoint1 = keypoints[query_indices_[i]], &keypoint2 = keypoints[query_indices_[j]];
           if ((((keypoint1.pt.x - keypoint2.pt.x) * (keypoint1.pt.x - keypoint2.pt.x)
@@ -172,7 +172,7 @@ namespace object_recognition
               && (std::abs(dist_training - dist_query) < 2 * sensor_error))
           //((dist_query >= 5 * sensor_error) && (dist_training >= 5 * sensor_error))
           {
-            sample_adjacency_.set(i, j);
+            sample_adjacency_.set_sorted(i, j);
           }
         }
       }

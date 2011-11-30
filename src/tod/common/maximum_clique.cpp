@@ -48,15 +48,15 @@ namespace object_recognition
     AdjacencyMatrix::AdjacencyMatrix()
     {
     }
-
-    AdjacencyMatrix::AdjacencyMatrix(unsigned int size)
-        :
-          adjacency_(size)
-    {
-      for (size_t i = 0; i < size; ++i)
-        adjacency_[i].resize(size, false);
-    }
-
+    /*
+     AdjacencyMatrix::AdjacencyMatrix(unsigned int size)
+     :
+     adjacency_(size)
+     {
+     for (size_t i = 0; i < size; ++i)
+     adjacency_[i].resize(size, false);
+     }
+     */
     void
     AdjacencyMatrix::clear()
     {
@@ -72,40 +72,110 @@ namespace object_recognition
           }
     }
 
+    /*
+     void
+     AdjacencyMatrix::invalidate(Index index)
+     {
+     // Invalidate the column
+     boost::dynamic_bitset<> & row = adjacency_[index];
+     for (Index i = 0; i < adjacency_.size(); ++i)
+     if (row.test(i))
+     {
+     adjacency_[i].reset(index);
+     // Invalidate the row
+     row.reset(i);
+     }
+     }
+
+     void
+     AdjacencyMatrix::invalidate(Index index1, Index index2)
+     {
+     adjacency_[index1].reset(index2);
+     adjacency_[index2].reset(index1);
+     }
+
+     bool
+     AdjacencyMatrix::test(Index i, Index j) const
+     {
+     return adjacency_[i].test(j);
+     }
+
+     void
+     AdjacencyMatrix::set(Index i, Index j)
+     {
+     adjacency_[i].set(j);
+     adjacency_[j].set(i);
+     }
+
+     size_t
+     AdjacencyMatrix::count(Index index) const
+     {
+     return adjacency_[index].count();
+     }
+
+     std::vector<Index>
+     AdjacencyMatrix::neighbors(Index i) const
+     {
+     std::vector<AdjacencyMatrix::Index> neighbors;
+     AdjacencyMatrix::neighbors.reserve(adjacency_.size());
+     const boost::dynamic_bitset<> & row = adjacency_[i];
+
+     for (Index i = 0; i < adjacency_.size(); ++i)
+     if (row.test(i))
+     neighbors.push_back(i);
+     return neighbors;
+     }
+     */
+
+    AdjacencyMatrix::AdjacencyMatrix(unsigned int size)
+        :
+          adjacency_(size)
+    {
+    }
+
     void
     AdjacencyMatrix::invalidate(Index index)
     {
       // Invalidate the column
-      boost::dynamic_bitset<> & row = adjacency_[index];
-      for (Index i = 0; i < adjacency_.size(); ++i)
-        if (row.test(i))
-        {
-          adjacency_[i].reset(index);
-          // Invalidate the row
-          row.reset(i);
-        }
+      BOOST_FOREACH(Index sub_index, adjacency_[index])
+          {
+            InvalidateOneWay(sub_index, index);
+          }
+      // Invalidate the row
+      adjacency_[index].clear();
     }
 
     void
     AdjacencyMatrix::invalidate(Index index1, Index index2)
     {
-      adjacency_[index1].reset(index2);
-      adjacency_[index2].reset(index1);
+      InvalidateOneWay(index1, index2);
+      InvalidateOneWay(index2, index1);
     }
 
     bool
     AdjacencyMatrix::test(Index i, Index j) const
     {
-      return adjacency_[i].test(j);
+      return std::binary_search(adjacency_[i].begin(), adjacency_[i].end(), j);
     }
 
     void
     AdjacencyMatrix::set(Index i, Index j)
     {
-      adjacency_[i].set(j);
-      adjacency_[j].set(i);
+      SetOneWay(i, j);
+      SetOneWay(j, i);
     }
 
+    size_t
+    AdjacencyMatrix::count(Index index) const
+    {
+      return adjacency_[index].size();
+    }
+
+    std::vector<AdjacencyMatrix::Index>
+    AdjacencyMatrix::neighbors(Index i) const
+    {
+      return adjacency_[i];
+    }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     /** Construct from a dimacs file */
