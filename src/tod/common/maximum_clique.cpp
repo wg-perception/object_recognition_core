@@ -38,6 +38,7 @@
 #include <sstream>
 
 #include <boost/foreach.hpp>
+#include <boost/unordered_set.hpp>
 
 #include "maximum_clique.h"
 
@@ -48,19 +49,40 @@ namespace object_recognition
     AdjacencyMatrix::AdjacencyMatrix()
     {
     }
-    /*
-     AdjacencyMatrix::AdjacencyMatrix(unsigned int size)
-     :
-     adjacency_(size)
-     {
-     for (size_t i = 0; i < size; ++i)
-     adjacency_[i].resize(size, false);
-     }
-     */
+
     void
     AdjacencyMatrix::clear()
     {
       adjacency_.clear();
+    }
+
+    void
+    AdjacencyMatrix::InvalidateCluster(const std::vector<Index> &indices)
+    {
+      boost::unordered_set<Index> done_sub_indices;
+      BOOST_FOREACH(Index index, indices)
+          {
+            // Only focus on the neighbors that we will not delete anyway
+            std::vector<Index> & row = adjacency_[index];
+            std::vector<Index>::iterator end = std::set_difference(row.begin(), row.end(), indices.begin(),
+                                                                   indices.end(), row.begin());
+            row.resize(end - row.begin());
+            BOOST_FOREACH(Index sub_index, row)
+                {
+                  // Check if it's already been processed
+                  if (done_sub_indices.find(sub_index) != done_sub_indices.end())
+                    continue;
+                  // If not, remove all the indices from the neighbors of that sub_index
+                  std::vector<Index> & sub_row = adjacency_[sub_index];
+                  end = std::set_difference(sub_row.begin(), sub_row.end(), indices.begin(), indices.end(),
+                                            sub_row.begin());
+                  sub_row.resize(end - sub_row.begin());
+                  // Make sure we don't process it again
+                  done_sub_indices.insert(sub_index);
+                }
+            // Remove the original index
+            adjacency_[index].clear();
+          }
     }
 
     void
@@ -71,61 +93,6 @@ namespace object_recognition
             invalidate(index);
           }
     }
-
-    /*
-     void
-     AdjacencyMatrix::invalidate(Index index)
-     {
-     // Invalidate the column
-     boost::dynamic_bitset<> & row = adjacency_[index];
-     for (Index i = 0; i < adjacency_.size(); ++i)
-     if (row.test(i))
-     {
-     adjacency_[i].reset(index);
-     // Invalidate the row
-     row.reset(i);
-     }
-     }
-
-     void
-     AdjacencyMatrix::invalidate(Index index1, Index index2)
-     {
-     adjacency_[index1].reset(index2);
-     adjacency_[index2].reset(index1);
-     }
-
-     bool
-     AdjacencyMatrix::test(Index i, Index j) const
-     {
-     return adjacency_[i].test(j);
-     }
-
-     void
-     AdjacencyMatrix::set(Index i, Index j)
-     {
-     adjacency_[i].set(j);
-     adjacency_[j].set(i);
-     }
-
-     size_t
-     AdjacencyMatrix::count(Index index) const
-     {
-     return adjacency_[index].count();
-     }
-
-     std::vector<Index>
-     AdjacencyMatrix::neighbors(Index i) const
-     {
-     std::vector<AdjacencyMatrix::Index> neighbors;
-     AdjacencyMatrix::neighbors.reserve(adjacency_.size());
-     const boost::dynamic_bitset<> & row = adjacency_[i];
-
-     for (Index i = 0; i < adjacency_.size(); ++i)
-     if (row.test(i))
-     neighbors.push_back(i);
-     return neighbors;
-     }
-     */
 
     AdjacencyMatrix::AdjacencyMatrix(unsigned int size)
         :
@@ -411,6 +378,12 @@ namespace object_recognition
     Graph::AddEdge(unsigned int vertex_1, unsigned int vertex_2)
     {
       adjacency_.set(vertex_1, vertex_2);
+    }
+
+    void
+    Graph::AddEdgeSorted(unsigned int vertex_1, unsigned int vertex_2)
+    {
+      adjacency_.set_sorted(vertex_1, vertex_2);
     }
 
     /** Given a vertex, delete all the edges containing it */

@@ -89,8 +89,14 @@ namespace object_recognition
       valid_indices_.resize(end - valid_indices_.begin());
 
       // Reset the matrices
-      physical_adjacency_.invalidate(indices);
-      sample_adjacency_.invalidate(indices);
+      maximum_clique::AdjacencyMatrix physical_adjacency = physical_adjacency_;
+      maximum_clique::AdjacencyMatrix sample_adjacency = sample_adjacency_;
+
+      physical_adjacency_.InvalidateCluster(indices);
+      sample_adjacency_.InvalidateCluster(indices);
+      // TODO remove
+      physical_adjacency.invalidate(indices);
+      sample_adjacency.invalidate(indices);
     }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

@@ -203,7 +203,7 @@ namespace object_recognition
         for (unsigned int j = 0; j < in_inliers.size(); ++j)
           for (unsigned int i = j + 1; i < in_inliers.size(); ++i)
             if (sample_adjacency_.test(in_inliers[j], in_inliers[i]))
-              graph.AddEdge(j, i);
+              graph.AddEdgeSorted(j, i);
 
         // If we cannot even find enough points well distributed in the sample, stop here
         unsigned int minimal_size = 8;

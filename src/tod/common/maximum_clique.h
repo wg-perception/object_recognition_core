@@ -62,6 +62,9 @@ namespace object_recognition
       clear();
 
       void
+      InvalidateCluster(const std::vector<Index> &indices);
+
+      void
       invalidate(const std::vector<Index> &indices);
       void
       invalidate(Index index);
@@ -182,6 +185,12 @@ namespace object_recognition
       /** Add an edge to the graph */
       void
       AddEdge(Vertex vertex_1, Vertex vertex_2);
+
+      /** Add an edge to the graph
+       * But later on, nothing will be smaller than vertex_2 for vertex_2 and reciprocally
+       */
+      void
+      AddEdgeSorted(Vertex vertex_1, Vertex vertex_2);
 
       /** Given a vertex, delete all the edges containing it */
       void
