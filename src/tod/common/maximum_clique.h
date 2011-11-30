@@ -39,6 +39,7 @@
 #include <set>
 
 #include <boost/foreach.hpp>
+#include <boost/dynamic_bitset.hpp>
 
 #include <opencv2/core/core.hpp>
 
@@ -46,6 +47,109 @@ namespace object_recognition
 {
   namespace maximum_clique
   {
+    /** Simple (and hopefully) fast implementation of an adjacency matrix
+     */
+    class AdjacencyMatrix
+    {
+    public:
+      typedef unsigned int Index;
+
+      AdjacencyMatrix();
+
+      AdjacencyMatrix(Index size);
+
+      void
+      clear();
+
+      void
+      InvalidateCluster(const std::vector<Index> &indices);
+
+      void
+      invalidate(const std::vector<Index> &indices);
+      void
+      invalidate(Index index);
+      void
+      invalidate(Index index1, Index index2);
+
+      bool
+      test(Index i, Index j) const;
+
+      void
+      set(Index i, Index j);
+
+      /** Nothing set later for i will be <= j
+       * Nothing set later for j will be <= i
+       * @param i
+       * @param j
+       */
+      void
+      set_sorted(Index i, Index j)
+      {
+        adjacency_[i].push_back(j);
+        adjacency_[j].push_back(i);
+      }
+
+      inline bool
+      empty() const
+      {
+        return adjacency_.empty();
+      }
+
+      inline size_t
+      size() const
+      {
+        return adjacency_.size();
+      }
+
+      size_t
+      count(Index index) const;
+
+      ///////// Non standard functions
+      std::vector<Index>
+      neighbors(Index i) const;
+    private:
+      inline void
+      InvalidateOneWay(Index index1, Index index2)
+      {
+        std::vector<Index> & row = adjacency_[index1];
+        std::vector<Index>::iterator iter = std::lower_bound(row.begin(), row.end(), index2);
+        std::copy(iter + 1, row.end(), iter);
+        row.resize(row.size() - 1);
+      }
+
+      inline void
+      SetOneWay(Index index1, Index index2)
+      {
+        std::vector<Index> & row = adjacency_[index1];
+        if (row.empty())
+        {
+          //row.reserve(16);
+          row.push_back(index2);
+          return;
+        }
+        std::vector<Index>::iterator end = row.end();
+        std::vector<Index>::iterator iter = std::lower_bound(row.begin(), end, index2);
+        if (iter == end)
+        {
+          row.push_back(index2);
+          return;
+        }
+        if ((*iter) == index2)
+          return;
+        else
+        {
+          row.push_back(index2);
+          std::copy_backward(iter, row.end() - 1, row.end());
+          *iter = index2;
+        }
+      }
+
+      //std::vector<boost::dynamic_bitset<> > adjacency_;
+      std::vector<std::vector<Index> > adjacency_;
+    };
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
     class Graph
     {
     public:
@@ -55,7 +159,6 @@ namespace object_recognition
       /** Constructor */
       Graph()
       {
-        n_vertices_ = 0;
       }
 
       /** Constructor */
@@ -68,15 +171,26 @@ namespace object_recognition
       Graph(const std::string & name);
 
       void
+      clear()
+      {
+        adjacency_.clear();
+      }
+
+      void
       set_vertex_number(unsigned int vertex_number)
       {
-        adjacency_ = cv::Mat_<uchar>::zeros(vertex_number, vertex_number);
-        n_vertices_ = vertex_number;
+        adjacency_ = AdjacencyMatrix(vertex_number);
       }
 
       /** Add an edge to the graph */
       void
       AddEdge(Vertex vertex_1, Vertex vertex_2);
+
+      /** Add an edge to the graph
+       * But later on, nothing will be smaller than vertex_2 for vertex_2 and reciprocally
+       */
+      void
+      AddEdgeSorted(Vertex vertex_1, Vertex vertex_2);
 
       /** Given a vertex, delete all the edges containing it */
       void
@@ -96,17 +210,16 @@ namespace object_recognition
       void
       FindClique(Vertices & QMax, unsigned int minimal_size);
 
-      inline const cv::Mat_<uchar>
+      inline const AdjacencyMatrix &
       adjacency() const
       {
         return adjacency_;
       }
 
       inline void
-      set_adjacency(const cv::Mat_<uchar> & adjacency)
+      set_adjacency(const AdjacencyMatrix & adjacency)
       {
         adjacency_ = adjacency;
-        n_vertices_ = adjacency_.cols;
       }
 
     private:
@@ -122,10 +235,25 @@ namespace object_recognition
       inline bool
       IsIntersecting(Vertex in_vertex, const Vertices &vertices)
       {
-        const uchar * data = adjacency_.ptr(in_vertex);
+#if 0
+        const AdjacencyMatrix::Neighbors & neighbors = ajacency_.neighbors(in_Vertex);
+        AdjacencyMatrix::Neighbors::const_iterator first1 = neighbors.begin(), last1 = neighbors.end();
+        Vertices::const_iterator first2 = vertices.begin(), last2 = vertices.end();
+
+        while (first1 != last1 && first2 != last2)
+        {
+          if (*first1 < *first2)
+          ++first1;
+          else if (*first2 < *first1)
+          ++first2;
+          else
+          return true;
+        }
+#else
         BOOST_FOREACH(Vertex vertex, vertices)
-        if (data[vertex])
-        return true;
+              if (adjacency_.test(in_vertex, vertex))
+                return true;
+#endif
         return false;
       }
 
@@ -140,9 +268,7 @@ namespace object_recognition
                    std::vector<unsigned int> &S, std::vector<unsigned int> &SOld);
 
       /** Mask for the edges */
-      cv::Mat_<uchar> adjacency_;
-      /** The number of vertices in the graph */
-      unsigned int n_vertices_;
+      AdjacencyMatrix adjacency_;
 
       int all_steps_;
       double t_limit_;

@@ -54,6 +54,13 @@ namespace object_recognition
 {
   namespace tod
   {
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    void
+    AdjacencyRansac::clear_adjacency()
+    {
+      physical_adjacency_.clear();
+      sample_adjacency_.clear();
+    }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -82,13 +89,14 @@ namespace object_recognition
       valid_indices_.resize(end - valid_indices_.begin());
 
       // Reset the matrices
-      BOOST_FOREACH(unsigned int index, indices)
-          {
-            physical_adjacency_.col(index).setTo(cv::Scalar(0));
-            physical_adjacency_.row(index).setTo(cv::Scalar(0));
-            sample_adjacency_.col(index).setTo(cv::Scalar(0));
-            sample_adjacency_.row(index).setTo(cv::Scalar(0));
-          }
+      maximum_clique::AdjacencyMatrix physical_adjacency = physical_adjacency_;
+      maximum_clique::AdjacencyMatrix sample_adjacency = sample_adjacency_;
+
+      physical_adjacency_.InvalidateCluster(indices);
+      sample_adjacency_.InvalidateCluster(indices);
+      // TODO remove
+      physical_adjacency.invalidate(indices);
+      sample_adjacency.invalidate(indices);
     }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -128,87 +136,13 @@ namespace object_recognition
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    /**
-     * @param query_indices indices to remove from the data structure
-     */
-    void
-    AdjacencyRansac::DeleteQueryIndices(std::vector<unsigned int> &query_indices)
-    {
-      std::sort(query_indices.begin(), query_indices.end());
-      std::vector<unsigned int>::iterator end = std::unique(query_indices.begin(), query_indices.end());
-      query_indices.resize(end - query_indices.begin());
-
-      pcl::PointCloud<pcl::PointXYZ>::iterator iter_query_points = query_points_->begin();
-      pcl::PointCloud<pcl::PointXYZ>::iterator iter_training_points = training_points_->begin();
-      std::vector<unsigned int>::iterator iter_query_indices = query_indices_.begin();
-
-      std::vector<unsigned int> indices_to_remove;
-      unsigned int new_point_number;
-      {
-        std::vector<unsigned int>::const_iterator iter = query_indices.begin();
-        for (unsigned int i = 0; i < query_indices_.size(); ++i)
-        {
-          unsigned int query_index = query_indices_[i];
-          if ((iter == end) || (query_index < *iter))
-          {
-            *(iter_query_points++) = (*query_points_)[i];
-            *(iter_training_points++) = (*training_points_)[i];
-            *(iter_query_indices++) = query_indices_[i];
-            indices_to_remove.push_back(i);
-            continue;
-          }
-          // If the match has a keypoint in the inliers, remove the match
-          if (query_index == *iter)
-            continue;
-          while ((iter != end) && (query_index > *iter))
-            ++iter;
-        }
-        new_point_number = iter_query_indices - query_indices_.begin();
-        query_points_->resize(new_point_number);
-        training_points_->resize(new_point_number);
-        query_indices_.resize(new_point_number);
-      }
-
-      // Remove the right rows and columns in the matrices
-      {
-        std::vector<unsigned int>::iterator iter_row = indices_to_remove.begin();
-        cv::Mat_<uchar> new_physical_adjacency(new_point_number, new_point_number), new_sample_adjacency(
-            new_point_number, new_point_number);
-        uchar * iter_new_physical = new_physical_adjacency.data, *iter_new_sample = new_sample_adjacency.data;
-        for (unsigned int j = 0; int(j) < sample_adjacency_.rows; ++j)
-        {
-          if (j == *iter_row)
-          {
-            ++iter_row;
-            continue;
-          }
-          const uchar * iter_physical = physical_adjacency_.ptr(j), *iter_sample = sample_adjacency_.ptr(j);
-          std::vector<unsigned int>::iterator iter_col = indices_to_remove.begin();
-          for (unsigned int i = 0; int(i) < sample_adjacency_.cols; ++i, ++iter_physical, ++iter_sample)
-          {
-            if (i == *iter_col)
-            {
-              ++iter_col;
-              continue;
-            }
-            *(iter_new_physical++) = *iter_physical;
-            *(iter_new_sample++) = *iter_sample;
-          }
-        }
-        physical_adjacency_ = new_physical_adjacency;
-        sample_adjacency_ = new_sample_adjacency;
-      }
-    }
-
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
     void
     AdjacencyRansac::FillAdjacency(const std::vector<cv::KeyPoint> & keypoints, float object_span, float sensor_error)
     {
       // The error the 3d sensor makes, distance wise
       unsigned int n_matches = training_points_->size();
-      physical_adjacency_ = cv::Mat_<uchar>::zeros(n_matches, n_matches);
-      sample_adjacency_ = cv::Mat_<uchar>::zeros(n_matches, n_matches);
+      physical_adjacency_ = maximum_clique::AdjacencyMatrix(n_matches);
+      sample_adjacency_ = maximum_clique::AdjacencyMatrix(n_matches);
       for (unsigned int i = 0; i < n_matches; ++i)
       {
         const pcl::PointXYZ & training_point_1 = training_points_->points[i], &query_point_1 = query_points_->points[i];
@@ -235,8 +169,7 @@ namespace object_recognition
             continue;
 
           // If all those conditions are respected, those two matches are potentially part of the same cluster
-          physical_adjacency_(i, j) = 1;
-          physical_adjacency_(j, i) = 1;
+          physical_adjacency_.set_sorted(i, j);
 
           const cv::KeyPoint & keypoint1 = keypoints[query_indices_[i]], &keypoint2 = keypoints[query_indices_[j]];
           if ((((keypoint1.pt.x - keypoint2.pt.x) * (keypoint1.pt.x - keypoint2.pt.x)
@@ -245,8 +178,7 @@ namespace object_recognition
               && (std::abs(dist_training - dist_query) < 2 * sensor_error))
           //((dist_query >= 5 * sensor_error) && (dist_training >= 5 * sensor_error))
           {
-            sample_adjacency_(i, j) = 1;
-            sample_adjacency_(j, i) = 1;
+            sample_adjacency_.set_sorted(i, j);
           }
         }
       }
@@ -305,7 +237,8 @@ namespace object_recognition
           local_keypoints[j] = keypoints[query_indices[j]];
         cv::drawKeypoints(out_img, local_keypoints, out_img, colors[i]);
         ++i;
-        std::cout << i << std::endl;
+        if (i >= colors.size())
+          break;
       }
       cv::namedWindow("keypoints from objects", 0);
       cv::imshow("keypoints from objects", out_img);

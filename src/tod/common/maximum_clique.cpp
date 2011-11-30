@@ -38,6 +38,7 @@
 #include <sstream>
 
 #include <boost/foreach.hpp>
+#include <boost/unordered_set.hpp>
 
 #include "maximum_clique.h"
 
@@ -45,6 +46,105 @@ namespace object_recognition
 {
   namespace maximum_clique
   {
+    AdjacencyMatrix::AdjacencyMatrix()
+    {
+    }
+
+    void
+    AdjacencyMatrix::clear()
+    {
+      adjacency_.clear();
+    }
+
+    void
+    AdjacencyMatrix::InvalidateCluster(const std::vector<Index> &indices)
+    {
+      boost::unordered_set<Index> done_sub_indices;
+      BOOST_FOREACH(Index index, indices)
+          {
+            // Only focus on the neighbors that we will not delete anyway
+            std::vector<Index> & row = adjacency_[index];
+            std::vector<Index>::iterator end = std::set_difference(row.begin(), row.end(), indices.begin(),
+                                                                   indices.end(), row.begin());
+            row.resize(end - row.begin());
+            BOOST_FOREACH(Index sub_index, row)
+                {
+                  // Check if it's already been processed
+                  if (done_sub_indices.find(sub_index) != done_sub_indices.end())
+                    continue;
+                  // If not, remove all the indices from the neighbors of that sub_index
+                  std::vector<Index> & sub_row = adjacency_[sub_index];
+                  end = std::set_difference(sub_row.begin(), sub_row.end(), indices.begin(), indices.end(),
+                                            sub_row.begin());
+                  sub_row.resize(end - sub_row.begin());
+                  // Make sure we don't process it again
+                  done_sub_indices.insert(sub_index);
+                }
+            // Remove the original index
+            adjacency_[index].clear();
+          }
+    }
+
+    void
+    AdjacencyMatrix::invalidate(const std::vector<Index> &indices)
+    {
+      BOOST_FOREACH(Index index, indices)
+          {
+            invalidate(index);
+          }
+    }
+
+    AdjacencyMatrix::AdjacencyMatrix(unsigned int size)
+        :
+          adjacency_(size)
+    {
+    }
+
+    void
+    AdjacencyMatrix::invalidate(Index index)
+    {
+      // Invalidate the column
+      BOOST_FOREACH(Index sub_index, adjacency_[index])
+          {
+            InvalidateOneWay(sub_index, index);
+          }
+      // Invalidate the row
+      adjacency_[index].clear();
+    }
+
+    void
+    AdjacencyMatrix::invalidate(Index index1, Index index2)
+    {
+      InvalidateOneWay(index1, index2);
+      InvalidateOneWay(index2, index1);
+    }
+
+    bool
+    AdjacencyMatrix::test(Index i, Index j) const
+    {
+      return std::binary_search(adjacency_[i].begin(), adjacency_[i].end(), j);
+    }
+
+    void
+    AdjacencyMatrix::set(Index i, Index j)
+    {
+      SetOneWay(i, j);
+      SetOneWay(j, i);
+    }
+
+    size_t
+    AdjacencyMatrix::count(Index index) const
+    {
+      return adjacency_[index].size();
+    }
+
+    std::vector<AdjacencyMatrix::Index>
+    AdjacencyMatrix::neighbors(Index i) const
+    {
+      return adjacency_[i];
+    }
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
     /** Construct from a dimacs file */
     Graph::Graph(const std::string & name)
     {
@@ -95,7 +195,7 @@ namespace object_recognition
           AddEdge(vi, vj);
         }
       }
-      std::cout << "|E| = " << num_edges << "  |V| = " << adjacency_.cols << std::endl;
+      std::cout << "|E| = " << num_edges << "  |V| = " << adjacency_.size() << std::endl;
       f.close();
     }
 
@@ -110,9 +210,8 @@ namespace object_recognition
     Graph::Intersection(Vertex p, const Vertices & vertices, Vertices &intersection)
     {
       intersection.clear();
-      const uchar * row = adjacency_.ptr(p);
       BOOST_FOREACH(Vertex vertex, vertices)
-            if (row[vertex])
+            if (adjacency_.test(p, vertex))
               intersection.push_back(vertex);
       return !intersection.empty();
     }
@@ -169,9 +268,8 @@ namespace object_recognition
       for (unsigned int i = 0; i < R_size; ++i)
       {
         degrees[i] = std::make_pair(0, R[i]);
-        const uchar * row = adjacency_.ptr(R[i]);
         for (unsigned int j = 0; j < i; ++j)
-          if (row[R[j]])
+          if (adjacency_.test(R[i], R[j]))
           {
             ++degrees[i].first;
             ++degrees[j].first;
@@ -245,27 +343,27 @@ namespace object_recognition
     void
     Graph::FindClique(Vertices & QMax, unsigned int minimal_size)
     {
-      if (n_vertices_ == 0)
+      if (adjacency_.empty())
         return;
       all_steps_ = 1;
       t_limit_ = 0.025;
 
-      Vertices R(n_vertices_);
-      for (unsigned int i = 0; i < n_vertices_; ++i)
+      Vertices R(adjacency_.size());
+      for (unsigned int i = 0; i < adjacency_.size(); ++i)
         R[i] = i;
       DegreeSort(R);
 
-      unsigned int max_degree = cv::countNonZero(adjacency_.row(R[0]));
-      Colors C(n_vertices_);
+      unsigned int max_degree = adjacency_.count(R[0]);
+      Colors C(adjacency_.size());
       for (unsigned int i = 0; i < max_degree; i++)
         C[i] = i + 1;
-      for (unsigned int i = max_degree; i < n_vertices_; i++)
+      for (unsigned int i = max_degree; i < adjacency_.size(); i++)
         C[i] = max_degree + 1;
 
       Vertices Q;
       QMax.clear();
       // +1 as we start at level 1
-      std::vector<unsigned int> S(n_vertices_ + 1, 0), SOld(n_vertices_ + 1, 0);
+      std::vector<unsigned int> S(adjacency_.size() + 1, 0), SOld(adjacency_.size() + 1, 0);
 
       MaxCliqueDyn(R, C, 1, minimal_size, QMax, Q, S, SOld);
     }
@@ -279,23 +377,26 @@ namespace object_recognition
     void
     Graph::AddEdge(unsigned int vertex_1, unsigned int vertex_2)
     {
-      adjacency_(vertex_1, vertex_2) = 1;
-      adjacency_(vertex_2, vertex_1) = 1;
+      adjacency_.set(vertex_1, vertex_2);
+    }
+
+    void
+    Graph::AddEdgeSorted(unsigned int vertex_1, unsigned int vertex_2)
+    {
+      adjacency_.set_sorted(vertex_1, vertex_2);
     }
 
     /** Given a vertex, delete all the edges containing it */
     void
     Graph::DeleteEdges(unsigned int in_vertex)
     {
-      adjacency_.col(in_vertex).setTo(cv::Scalar(0));
-      adjacency_.row(in_vertex).setTo(cv::Scalar(0));
+      adjacency_.invalidate(in_vertex);
     }
     /** Given a vertex, delete all the edges containing it */
     void
     Graph::DeleteEdge(Vertex vertex_1, Vertex vertex_2)
     {
-      adjacency_(vertex_1, vertex_2) = 0;
-      adjacency_(vertex_2, vertex_1) = 0;
+      adjacency_.invalidate(vertex_1, vertex_2);
     }
   }
 }
