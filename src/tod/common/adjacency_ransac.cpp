@@ -143,11 +143,13 @@ namespace object_recognition
       unsigned int n_matches = training_points_->size();
       physical_adjacency_ = maximum_clique::AdjacencyMatrix(n_matches);
       sample_adjacency_ = maximum_clique::AdjacencyMatrix(n_matches);
-      for (unsigned int i = 0; i < n_matches; ++i)
+      pcl::PointCloud<pcl::PointXYZ>::const_iterator query_point_1 = query_points_->points.begin(), training_point_1 =
+          training_points_->points.begin(), query_point_2;
+      for (unsigned int i = 0; i < n_matches; ++i, ++query_point_1, ++training_point_1)
       {
-        const pcl::PointXYZ & training_point_1 = training_points_->points[i], &query_point_1 = query_points_->points[i];
         // For every other match that might end up in the same cluster
-        for (unsigned int j = i + 1; j < n_matches; ++j)
+        query_point_2 = query_point_1 + 1;
+        for (unsigned int j = i + 1; j < n_matches; ++j, ++query_point_2)
         {
           // Two matches with the same query point cannot be connected
           // They should not, but in practice, there is so much noise in the training that we should allow it
@@ -155,15 +157,15 @@ namespace object_recognition
           //if (query_indices[i] == query_indices[j])
           //continue;
           // Two training points can be connected if they are within the span of an object
-          const pcl::PointXYZ & query_point_2 = query_points_->points[j];
-          float dist_query = pcl::euclideanDistance(query_point_1, query_point_2);
+          float dist_query = pcl::squaredEuclideanDistance(*query_point_1, *query_point_2);
           //distances(i, j) = dist2;
           //distances(j, i) = dist2;
-          if (dist_query > (object_span + 2 * sensor_error))
+          if (dist_query > (object_span + 2 * sensor_error) * (object_span + 2 * sensor_error))
             continue;
+          dist_query = std::sqrt(dist_query);
 
           const pcl::PointXYZ & training_point_2 = training_points_->points[j];
-          float dist_training = pcl::euclideanDistance(training_point_1, training_point_2);
+          float dist_training = pcl::euclideanDistance(*training_point_1, training_point_2);
           // Make sure the distance between two points is somewhat conserved
           if (std::abs(dist_training - dist_query) > 4 * sensor_error)
             continue;
