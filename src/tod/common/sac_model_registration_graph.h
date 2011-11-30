@@ -106,7 +106,8 @@ namespace object_recognition
           int sample = valid_samples[rand() % valid_samples.size()];
           std::vector<int> new_valid_samples(valid_samples.size());
           std::vector<int>::iterator end = std::set_intersection(valid_samples.begin(), valid_samples.end(),
-                                                                 neighbors_[sample].begin(), neighbors_[sample].end(),
+                                                                 sample_adjacency_.neighbors(sample).begin(),
+                                                                 sample_adjacency_.neighbors(sample).end(),
                                                                  new_valid_samples.begin());
           new_valid_samples.resize(end - new_valid_samples.begin());
           std::vector<int> new_samples;
@@ -236,13 +237,12 @@ namespace object_recognition
       void
       BuildNeighbors()
       {
-        neighbors_.resize(sample_adjacency_.size());
         size_t max_neighbors_size = 10;
         for (unsigned int j = 0; j < sample_adjacency_.size(); ++j)
         {
-          neighbors_[j] = sample_adjacency_.neighbors(j);
-          max_neighbors_size = std::max(max_neighbors_size, neighbors_[j].size());
-          if (neighbors_[j].size() >= 3)
+          size_t size = sample_adjacency_.neighbors(j).size();
+          max_neighbors_size = std::max(max_neighbors_size, size);
+          if (size >= 3)
             sample_pool_.push_back(j);
         }
         if (!indices_.empty())
@@ -258,7 +258,6 @@ namespace object_recognition
       const object_recognition::maximum_clique::AdjacencyMatrix sample_adjacency_;
       std::vector<int> indices_;
       std::vector<int> sample_pool_;
-      std::vector<std::vector<unsigned int> > neighbors_;
       size_t best_inlier_number_;
       PointCloudConstPtr input_;
       float threshold_;

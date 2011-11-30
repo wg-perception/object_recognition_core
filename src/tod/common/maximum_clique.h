@@ -105,7 +105,7 @@ namespace object_recognition
       count(Index index) const;
 
       ///////// Non standard functions
-      std::vector<Index>
+      const std::vector<Index> &
       neighbors(Index i) const;
     private:
       inline void
@@ -144,7 +144,6 @@ namespace object_recognition
         }
       }
 
-      //std::vector<boost::dynamic_bitset<> > adjacency_;
       std::vector<std::vector<Index> > adjacency_;
     };
 
