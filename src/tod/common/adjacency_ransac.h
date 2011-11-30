@@ -48,7 +48,6 @@ namespace object_recognition
 {
   namespace tod
   {
-
     class AdjacencyRansac
     {
     public:
@@ -57,6 +56,8 @@ namespace object_recognition
         query_points_ = boost::shared_ptr<pcl::PointCloud<pcl::PointXYZ> >(new pcl::PointCloud<pcl::PointXYZ>());
         training_points_ = boost::shared_ptr<pcl::PointCloud<pcl::PointXYZ> >(new pcl::PointCloud<pcl::PointXYZ>());
       }
+
+      void clear_adjacency();
 
       void
       FillAdjacency(const std::vector<cv::KeyPoint> & keypoints, float object_span, float sensor_error);
@@ -69,9 +70,6 @@ namespace object_recognition
 
       void
       InvalidateQueryIndices(std::vector<unsigned int> &query_indices);
-
-      void
-      DeleteQueryIndices(std::vector<unsigned int> &query_indices);
 
       unsigned int
       n_points() const
@@ -130,10 +128,10 @@ namespace object_recognition
       size_t object_index_;
       object_recognition::maximum_clique::Graph graph_;
       /** matrix indicating whether two points are close enough physically */
-      cv::Mat_<uchar> physical_adjacency_;
+      maximum_clique::AdjacencyMatrix physical_adjacency_;
       /** matrix indicating whether two points can be drawn in a RANSAC sample (belong to physical_adjacency but are not
        * too close) */
-      cv::Mat_<uchar> sample_adjacency_;
+      maximum_clique::AdjacencyMatrix sample_adjacency_;
 
     private:
       pcl::PointCloud<pcl::PointXYZ>::Ptr query_points_;

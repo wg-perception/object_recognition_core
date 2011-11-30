@@ -39,6 +39,7 @@
 #include <set>
 
 #include <boost/foreach.hpp>
+#include <boost/dynamic_bitset.hpp>
 
 #include <opencv2/core/core.hpp>
 
@@ -46,6 +47,70 @@ namespace object_recognition
 {
   namespace maximum_clique
   {
+    /** Simple (and hopefully) fast implementation of an adjacency matrix
+     */
+    class AdjacencyMatrix
+    {
+    public:
+      typedef unsigned int Index;
+
+      AdjacencyMatrix();
+
+      AdjacencyMatrix(Index size);
+
+      void
+      clear();
+
+      void
+      invalidate(const std::vector<Index> &indices);
+      void
+      invalidate(Index index);
+      void
+      invalidate(Index index1, Index index2);
+
+      bool
+      test(Index i, Index j) const;
+
+      void
+      set(Index i, Index j);
+
+      inline bool
+      empty() const
+      {
+        return adjacency_.empty();
+      }
+
+      inline size_t
+      size() const
+      {
+        return adjacency_.size();
+      }
+
+      size_t
+      count(Index index) const
+      {
+        return adjacency_[index].count();
+      }
+
+      ///////// Non standard functions
+      inline std::vector<Index>
+      neighbors(Index i) const
+      {
+        std::vector<Index> neighbors;
+        neighbors.reserve(adjacency_.size());
+        const boost::dynamic_bitset<> & row = adjacency_[i];
+
+        for (Index i = 0; i < adjacency_.size(); ++i)
+          if (row.test(i))
+            neighbors.push_back(i);
+        return neighbors;
+      }
+    private:
+      std::vector<boost::dynamic_bitset<> > adjacency_;
+    };
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
     class Graph
     {
     public:
@@ -55,7 +120,6 @@ namespace object_recognition
       /** Constructor */
       Graph()
       {
-        n_vertices_ = 0;
       }
 
       /** Constructor */
@@ -68,10 +132,15 @@ namespace object_recognition
       Graph(const std::string & name);
 
       void
+      clear()
+      {
+        adjacency_.clear();
+      }
+
+      void
       set_vertex_number(unsigned int vertex_number)
       {
-        adjacency_ = cv::Mat_<uchar>::zeros(vertex_number, vertex_number);
-        n_vertices_ = vertex_number;
+        adjacency_ = AdjacencyMatrix(vertex_number);
       }
 
       /** Add an edge to the graph */
@@ -96,17 +165,16 @@ namespace object_recognition
       void
       FindClique(Vertices & QMax, unsigned int minimal_size);
 
-      inline const cv::Mat_<uchar>
+      inline const AdjacencyMatrix &
       adjacency() const
       {
         return adjacency_;
       }
 
       inline void
-      set_adjacency(const cv::Mat_<uchar> & adjacency)
+      set_adjacency(const AdjacencyMatrix & adjacency)
       {
         adjacency_ = adjacency;
-        n_vertices_ = adjacency_.cols;
       }
 
     private:
@@ -122,10 +190,25 @@ namespace object_recognition
       inline bool
       IsIntersecting(Vertex in_vertex, const Vertices &vertices)
       {
-        const uchar * data = adjacency_.ptr(in_vertex);
+#if 0
+        const AdjacencyMatrix::Neighbors & neighbors = ajacency_.neighbors(in_Vertex);
+        AdjacencyMatrix::Neighbors::const_iterator first1 = neighbors.begin(), last1 = neighbors.end();
+        Vertices::const_iterator first2 = vertices.begin(), last2 = vertices.end();
+
+        while (first1 != last1 && first2 != last2)
+        {
+          if (*first1 < *first2)
+          ++first1;
+          else if (*first2 < *first1)
+          ++first2;
+          else
+          return true;
+        }
+#else
         BOOST_FOREACH(Vertex vertex, vertices)
-        if (data[vertex])
-        return true;
+              if (adjacency_.test(in_vertex, vertex))
+                return true;
+#endif
         return false;
       }
 
@@ -140,9 +223,7 @@ namespace object_recognition
                    std::vector<unsigned int> &S, std::vector<unsigned int> &SOld);
 
       /** Mask for the edges */
-      cv::Mat_<uchar> adjacency_;
-      /** The number of vertices in the graph */
-      unsigned int n_vertices_;
+      AdjacencyMatrix adjacency_;
 
       int all_steps_;
       double t_limit_;

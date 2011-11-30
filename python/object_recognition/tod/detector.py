@@ -38,7 +38,7 @@ class TodDetector(ecto.BlackBox):
                                                    K='The camera matrix'
                                                    )
                                         )
-        i.forward(['image', 'K'], cell_name='passthrough', cell_key=['image','K'])
+        i.forward(['image', 'K'], cell_name='passthrough', cell_key=['image', 'K'])
         i.forward('mask', cell_name='feature_descriptor', cell_key='mask')
         i.forward('points3d', cell_name='guess_generator', cell_key='points3d')
 
@@ -115,5 +115,5 @@ class TodDetectionPipeline(DetectionPipeline):
         return 'TOD'
 
     def detector(self, submethod, parameters, db_params, model_documents, args):
-        visualize = getattr(args, 'visualize', False)
+        visualize = args.get('visualize', False)
         return TodDetector(submethod, parameters, model_documents, visualize, args)

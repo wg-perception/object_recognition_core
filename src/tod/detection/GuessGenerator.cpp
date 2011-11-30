@@ -157,8 +157,6 @@ namespace object_recognition
           std::vector<ObjectId> object_ids_final;
           std::vector<cv::Mat> Rs_final, Ts_final;
           std::map<size_t, std::vector<std::vector<int> > > matching_query_points;
-          typedef std::map<size_t, object_recognition::maximum_clique::Graph> OpenCVIdToGraph;
-          OpenCVIdToGraph graphs;
           for (OpenCVIdToObjectPoints::iterator query_iterator = all_object_points.begin();
               query_iterator != all_object_points.end(); ++query_iterator)
           {
@@ -180,7 +178,7 @@ namespace object_recognition
             }
 
             adjacency_ransac.FillAdjacency(keypoints, spans.find(object_id)->second, *sensor_error_);
-
+            std::cout << "done filling" << std::endl;
             // Keep processing the graph until there is no maximum clique of the right size
             std::vector<ObjectId> object_ids;
             std::vector<cv::Mat> Rs, Ts;
@@ -204,51 +202,7 @@ namespace object_recognition
 
               // Store the matches for debug purpose
               if (*visualize_)
-              {
                 matching_query_points[opencv_object_id].push_back(inliers);
-
-                // Check whether other matches could fit that model
-                std::vector<std::vector<int> > neighbors;
-                const cv::Mat_<uchar> & adjacency = adjacency_ransac.physical_adjacency_;
-                {
-                  neighbors.resize(adjacency.rows);
-                  for (int j = 0; j < adjacency.rows; ++j)
-                  {
-                    const uchar * row = adjacency.ptr<uchar>(j);
-                    for (int i = 0; i < adjacency.cols; ++i)
-                      if (row[i])
-                        neighbors[j].push_back(i);
-                  }
-                }
-
-                std::vector<int> intersection = neighbors[inliers[0]];
-                std::sort(inliers.begin(), inliers.end());
-                std::vector<int>::iterator intersection_end = std::set_difference(neighbors[inliers[0]].begin(),
-                                                                                  neighbors[inliers[0]].end(),
-                                                                                  inliers.begin(), inliers.end(),
-                                                                                  intersection.begin());
-                intersection.resize(intersection_end - intersection.begin());
-                BOOST_FOREACH(int inlier, inliers)
-                    {
-                      intersection_end = std::set_intersection(intersection.begin(), intersection.end(),
-                                                               neighbors[inlier].begin(), neighbors[inlier].end(),
-                                                               intersection.begin());
-                      intersection.resize(intersection_end - intersection.begin());
-                    }
-
-                // Check why those are not good
-                std::cout << "possible coherent ones: " << intersection.size() << std::endl;
-
-                /*object_recognition::maximum_clique::Graph graph_new(intersection.size());
-                 for (unsigned int j = 0; j < intersection.size(); ++j)
-                 for (unsigned int i = j + 1; i < intersection.size(); ++i)
-                 if (adjacency(intersection[j], intersection[i]))
-                 graph_new.addEdge(j, i);
-                 std::vector<unsigned int> vertices;
-                 graph_new.findMaximumClique(vertices);
-
-                 std::cout << " witin themselves: " << vertices.size() << std::endl;*/
-              }
 
               // Store the pose
               cv::Mat_<float> R_mat(3, 3), tvec(3, 1);
@@ -279,6 +233,9 @@ namespace object_recognition
             Rs_final.insert(Rs_final.end(), Rs.begin(), Rs.end());
             Ts_final.insert(Ts_final.end(), Ts.begin(), Ts.end());
             object_ids_final.insert(object_ids_final.end(), object_ids.begin(), object_ids.end());
+
+            // Clear the adjacency matrix
+            adjacency_ransac.clear_adjacency();
           }
 
           if (*visualize_)

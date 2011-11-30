@@ -78,9 +78,10 @@ namespace object_recognition
        * \param cloud the input point cloud dataset
        * \param indices a vector of point indices to be used from \a cloud
        */
-      SampleConsensusModelRegistrationGraph(const PointCloudConstPtr &cloud, const std::vector<int> &indices,
-                                            float threshold, const cv::Mat & physical_adjacency,
-                                            const cv::Mat &sample_adjacency)
+      SampleConsensusModelRegistrationGraph(
+          const PointCloudConstPtr &cloud, const std::vector<int> &indices, float threshold,
+          const object_recognition::maximum_clique::AdjacencyMatrix & physical_adjacency,
+          const object_recognition::maximum_clique::AdjacencyMatrix &sample_adjacency)
           :
             pcl::SampleConsensusModelRegistration<PointT>(cloud, indices),
             physical_adjacency_(physical_adjacency),
@@ -149,12 +150,11 @@ namespace object_recognition
         // Assign a maximum distance for all the points that cannot belong to a clique including the sample
         for (size_t i = 0; i < indices_.size(); ++i)
         {
-          const uchar* row = physical_adjacency_.ptr(indices_[i]);
           BOOST_FOREACH(int sample, samples_)
               {
                 if (sample == indices_[i])
                   continue;
-                if (!row[sample])
+                if (!physical_adjacency_.test(indices_[i], sample))
                 {
                   distances[i] = std::numeric_limits<double>::max();
                   break;
@@ -181,12 +181,11 @@ namespace object_recognition
         BOOST_FOREACH(int inlier, possible_inliers)
             {
               bool is_good = true;
-              const uchar* row = physical_adjacency_.ptr(inlier);
               BOOST_FOREACH(int sample, samples_)
                   {
                     if (sample == inlier)
                       break;
-                    if (!row[sample])
+                    if (!physical_adjacency_.test(inlier, sample))
                     {
                       is_good = false;
                       break;
@@ -203,7 +202,7 @@ namespace object_recognition
         object_recognition::maximum_clique::Graph graph(in_inliers.size());
         for (unsigned int j = 0; j < in_inliers.size(); ++j)
           for (unsigned int i = j + 1; i < in_inliers.size(); ++i)
-            if (sample_adjacency_(in_inliers[j], in_inliers[i]))
+            if (sample_adjacency_.test(in_inliers[j], in_inliers[i]))
               graph.AddEdge(j, i);
 
         // If we cannot even find enough points well distributed in the sample, stop here
@@ -237,20 +236,12 @@ namespace object_recognition
       void
       BuildNeighbors()
       {
-        neighbors_.resize(sample_adjacency_.rows);
+        neighbors_.resize(sample_adjacency_.size());
         size_t max_neighbors_size = 10;
-        for (int j = 0; j < sample_adjacency_.rows; ++j)
+        for (unsigned int j = 0; j < sample_adjacency_.size(); ++j)
         {
-          const uchar * row = sample_adjacency_.ptr(j);
-          std::vector<unsigned int> & neighbors = neighbors_[j];
-          neighbors.reserve(max_neighbors_size);
-          for (int i = 0; i < sample_adjacency_.cols; ++i)
-          {
-            // If two points can belong to the same sample set
-            if (row[i])
-              neighbors.push_back(i);
-          }
-          max_neighbors_size = std::max(max_neighbors_size, neighbors.size());
+          neighbors_[j] = sample_adjacency_.neighbors(j);
+          max_neighbors_size = std::max(max_neighbors_size, neighbors_[j].size());
           if (neighbors_[j].size() >= 3)
             sample_pool_.push_back(j);
         }
@@ -263,8 +254,8 @@ namespace object_recognition
         }
       }
 
-      const cv::Mat_<uchar> physical_adjacency_;
-      const cv::Mat_<uchar> sample_adjacency_;
+      const object_recognition::maximum_clique::AdjacencyMatrix physical_adjacency_;
+      const object_recognition::maximum_clique::AdjacencyMatrix sample_adjacency_;
       std::vector<int> indices_;
       std::vector<int> sample_pool_;
       std::vector<std::vector<unsigned int> > neighbors_;
