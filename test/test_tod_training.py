@@ -11,5 +11,7 @@ parser = ObjectRecognitionParser()
 
 args = parser.parse_args()
 
-T.incremental_model_builder({'feature_descriptor': {'type': 'ORB'}}, args)
-T.post_processor({'search': {'type': 'LSH'}}, args)
+submethod = {'descriptor': {'type':'ORB'}}
+parameters = {'feature': {'type': 'ORB'}}
+T.incremental_model_builder(submethod, parameters, args)
+T.post_processor(submethod, {'search': {'type': 'LSH'}}, args)
