@@ -187,7 +187,7 @@ namespace object_recognition
       AddEdge(Vertex vertex_1, Vertex vertex_2);
 
       /** Add an edge to the graph
-       * But later on, nothing will be smaller than vertex_2 for vertex_2 and reciprocally
+       * But later on, nothing will be smaller than vertex_2 for vertex_1 and reciprocally
        */
       void
       AddEdgeSorted(Vertex vertex_1, Vertex vertex_2);
