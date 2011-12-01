@@ -138,7 +138,7 @@ namespace object_recognition
       return adjacency_[index].size();
     }
 
-    std::vector<AdjacencyMatrix::Index>
+    const std::vector<AdjacencyMatrix::Index> &
     AdjacencyMatrix::neighbors(Index i) const
     {
       return adjacency_[i];
