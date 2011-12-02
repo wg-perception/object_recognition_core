@@ -10,8 +10,8 @@ from object_recognition.pipelines.training import TrainingPipeline
 DEBUG = False
 
 if __name__ == '__main__':
-    params, args, pipeline_params, visualize, db_params = read_arguments('object_recognition_training')
-    pipelines = find_pipelines(['object_recognition'], TrainingPipeline) #map of string name to pipeline class
+    params, args, pipeline_params, visualize, db_params = read_arguments()
+    pipelines = find_pipelines(pipeline_params, TrainingPipeline) #map of string name to pipeline class
     for object_id in params['object_ids']:
         object_id = object_id.encode('ascii')
         session_ids = models.find_all_sessions_for_object(db_params, object_id)
@@ -22,7 +22,6 @@ if __name__ == '__main__':
             if not observation_ids:
                 print >> sys.stderr, 'No observations found for (object,session): (%s,%s)' % (object_id, session_id)
                 continue
-
             for pipeline_param in pipeline_params:
                 pipeline = pipelines.get(pipeline_param['method'], False)
                 if not pipeline:
