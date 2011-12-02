@@ -26,18 +26,21 @@ def read_arguments(parser=None, argv=sys.argv):
     parser.add_argument('--object_names', help='If set, it overrides the list of object names in the config file')
     parser.add_argument('--visualize', help='If set, it will display some windows with temporary results',
                        default=False, action='store_true')
+
     dbtools.add_db_options(parser)
+
+    ros_group = parser.add_argument_group('ROS Parameters')
+    ros_group.add_argument('--node_name', help='The name for the node', default='object_recognition')
 
     try:
         import ecto_ros
+        original_argv = sys.argv
         ecto_ros.strip_ros_args(argv)
+        args = parser.parse_args(args=argv[1:])
+        if args.node_name:
+            ecto_ros.init(original_argv, args.node_name, False)
     except:
-        pass
-
-    if '--help' in sys.argv or '-h' in sys.argv:
         args = parser.parse_args()
-    else:
-        args = parser.parse_args()#args=argv)
 
     # define the input
     if args.config_file is None or not os.path.exists(args.config_file):
