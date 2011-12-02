@@ -8,6 +8,11 @@ from object_recognition.dbtools import args_to_db_params
 import os
 import sys
 import yaml
+try:
+    import ecto_ros
+    ECTO_ROS_FOUND = True
+except ImportError:
+    ECTO_ROS_FOUND = False
 
 def read_arguments(parser=None, argv=sys.argv):
     """
@@ -32,14 +37,16 @@ def read_arguments(parser=None, argv=sys.argv):
     ros_group = parser.add_argument_group('ROS Parameters')
     ros_group.add_argument('--node_name', help='The name for the node', default='object_recognition')
 
-    try:
-        import ecto_ros
+    if ECTO_ROS_FOUND:
+        args = parser.parse_args()
+
         original_argv = sys.argv
         ecto_ros.strip_ros_args(argv)
         args = parser.parse_args(args=argv[1:])
+        
         if args.node_name:
             ecto_ros.init(original_argv, args.node_name, False)
-    except:
+    else:
         args = parser.parse_args()
 
     # define the input
