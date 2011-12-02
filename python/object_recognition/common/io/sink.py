@@ -17,8 +17,11 @@ SinkTypes = type('SourceTypes', (object,),
 def object_to_models_mapping(db, object_ids):
     from object_recognition import models
     #run a view to get all of the meshes for the given objects.
-    r = models.Model.by_object_id_and['mesh'](db)
     mapping = {}
+    if 'mesh' not in models.Model.by_object_id_and:
+        return mapping
+    r = models.Model.by_object_id_and['mesh'](db)
+
     obj = models.Object.all(db)
     for x in r:
         obj_name = "N/A"
