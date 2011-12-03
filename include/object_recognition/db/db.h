@@ -318,6 +318,17 @@ namespace object_recognition
           throw std::runtime_error("Not a valid key for that JSON tree");
       }
 
+      /** Get a specific value */
+      or_json::mValue
+      get_value(const std::string& key) const
+      {
+        or_json::mObject::const_iterator iter = fields_.find(key);
+        if (iter != fields_.end())
+          return iter->second;
+        else
+          throw std::runtime_error("Not a valid key for that JSON tree");
+      }
+
       /** Set a specific value */
       template<typename T>
       void

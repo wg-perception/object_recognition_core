@@ -13,6 +13,9 @@ namespace object_recognition
 {
   namespace db
   {
+    std::string
+    temporary_yml_file_name(bool do_gzip);
+
     void
     mats2yaml(const std::map<std::string, cv::Mat>& mm,std::ostream& out, bool do_gzip = false);
 

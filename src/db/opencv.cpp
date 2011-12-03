@@ -9,34 +9,34 @@
 #include "object_recognition/db/opencv.h"
 
 namespace fs = boost::filesystem;
-namespace
-{
-  std::string
-  gen_temp_yml(bool do_gzip)
-  {
-    std::string fname;
-    {
-      char buffer[L_tmpnam];
-      char* p = std::tmpnam(buffer);
-      if (p != NULL) {
-        fname = std::string(buffer) + ".yml";
-        if (do_gzip)
-          fname += ".gz";
-      }
-      else
-        throw std::runtime_error("Could not create temporary filename!");
-    }
-    return fname;
-  }
-}
+
 namespace object_recognition
 {
   namespace db
   {
+    std::string
+    temporary_yml_file_name(bool do_gzip)
+    {
+      std::string fname;
+      {
+        char buffer[L_tmpnam];
+        char* p = std::tmpnam(buffer);
+        if (p != NULL)
+        {
+          fname = std::string(buffer) + ".yml";
+          if (do_gzip)
+            fname += ".gz";
+        }
+        else
+          throw std::runtime_error("Could not create temporary filename!");
+      }
+      return fname;
+    }
+
     void
     mats2yaml(const std::map<std::string, cv::Mat>& mm,std::ostream& out, bool do_gzip)
     {
-      std::string fname = gen_temp_yml(do_gzip);
+      std::string fname = temporary_yml_file_name(do_gzip);
       {
         cv::FileStorage fs(fname, cv::FileStorage::WRITE);
         typedef std::pair<std::string, cv::Mat> pair_t;
@@ -55,7 +55,7 @@ namespace object_recognition
     void
     yaml2mats(std::map<std::string, cv::Mat>& mm,std::istream& in, bool do_gzip)
     {
-      std::string fname = gen_temp_yml(do_gzip);
+      std::string fname = temporary_yml_file_name(do_gzip);
       {
         std::ofstream writer(fname.c_str());
         writer << in.rdbuf();
@@ -79,7 +79,7 @@ namespace object_recognition
       std::stringstream ss;
       cv::imencode(".png", image, buffer);
       std::copy(buffer.begin(), buffer.end(), std::ostream_iterator<uint8_t>(ss));
-      doc.set_attachment_stream(name,ss,"image/png");
+      doc.set_attachment_stream(name, ss, "image/png");
     }
 
     void

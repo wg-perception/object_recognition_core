@@ -95,7 +95,7 @@ namespace object_recognition
         PopulateDoc(*object_id_, *session_ids_, *model_method_, *model_submethod_, *model_parameters_, doc_new);
 
         // Read the input model parameters
-        or_json::mObject in_parameters = to_json(*model_submethod_).get_obj();
+        or_json::mValue in_parameters = to_json(*model_submethod_);
 
         // Find all the models of that type for that object
         View view(View::VIEW_MODEL_WHERE_OBJECT_ID_AND_MODEL_TYPE);
@@ -107,11 +107,11 @@ namespace object_recognition
         {
           // Compare the parameters
           bool is_incomplete_model_type = false;
-          or_json::mObject db_parameters;
+          or_json::mValue db_parameters;
           // Yes, this is ugly but it's to make sure that we convert the old databases to the new style
           try
           {
-            db_parameters = (*iter).get_value<or_json::mObject>("subtype");
+            db_parameters = (*iter).get_value("subtype");
           } catch (...)
           {
             is_incomplete_model_type = true;

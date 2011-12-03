@@ -48,7 +48,7 @@ namespace object_recognition
      * @return true if the intersection between the keys have the same values
      */
     bool
-    CompareJsonIntersection(const or_json::mObject &obj1, const or_json::mObject &obj2);
+    CompareJsonIntersection(const or_json::mValue &obj1, const or_json::mValue &obj2);
 
     /** Function filling a DB document for a model with the common attributes
      * @param db the DB where the model will be saved
