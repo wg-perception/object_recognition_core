@@ -5,12 +5,11 @@ Module that creates a function to define/read common arguments for the training/
 from object_recognition import models, dbtools
 from object_recognition.common.utils.parser import ObjectRecognitionParser
 from object_recognition.dbtools import args_to_db_params
-import ecto_ros
 import os
 import sys
 import yaml
 
-def read_arguments(node_name, parser=None, argv=sys.argv):
+def read_arguments(parser=None, argv=sys.argv):
     """
     Returns:
     params, pipeline_params, db_dict, db
@@ -28,8 +27,12 @@ def read_arguments(node_name, parser=None, argv=sys.argv):
     parser.add_argument('--visualize', help='If set, it will display some windows with temporary results',
                        default=False, action='store_true')
     dbtools.add_db_options(parser)
-    # TODO if sink/source
-    ecto_ros.init(argv, node_name, False)
+
+    try:
+        import ecto_ros
+        ecto_ros.strip_ros_args(argv)
+    except:
+        pass
 
     if '--help' in sys.argv or '-h' in sys.argv:
         args = parser.parse_args()

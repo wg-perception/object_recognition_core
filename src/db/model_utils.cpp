@@ -6,7 +6,7 @@
 
 namespace
 {
-  /** Function comparing two JSON arrays
+  /** Function comparing two JSON spirit arrays
    * @param obj1
    * @param obj2
    * @return true if the two arrays contain the same elements
@@ -16,7 +16,32 @@ namespace
   {
     if (obj1.size() != obj2.size())
       return false;
-    return std::equal(obj1.begin(), obj1.end(), obj2.begin());
+    or_json::mArray::const_iterator iter1 = obj1.begin(), iter2 = obj2.begin();
+    for (; iter1 != obj1.end(); ++iter1, ++iter2)
+      if (!object_recognition::db::CompareJsonIntersection(*iter1, *iter2))
+        return false;
+    return true;
+  }
+
+  /** Function comparing two JSON spirit objects
+   * @param obj1
+   * @param obj2
+   * @return true if the two arrays contain the same elements
+   */
+  bool
+  CompareJsonObjects(const or_json::mObject &obj1, const or_json::mObject &obj2)
+  {
+    // Go over each key of one
+    BOOST_FOREACH(or_json::mObject::const_reference val, obj1)
+        {
+          // Don't do anything if the value is not present
+          or_json::mObject::const_iterator iter = obj2.find(val.first);
+          if (iter == obj2.end())
+            continue;
+          if (!object_recognition::db::CompareJsonIntersection(val.second, iter->second))
+            return false;
+        }
+    return true;
   }
 }
 
@@ -25,48 +50,26 @@ namespace object_recognition
   namespace db
   {
     bool
-    CompareJsonIntersection(const or_json::mObject &obj1, const or_json::mObject &obj2)
+    CompareJsonIntersection(const or_json::mValue &val1, const or_json::mValue &val2)
     {
-      // Go over each key of one
-      BOOST_FOREACH(or_json::mObject::const_reference val, obj1)
-          {
-            // Don't do anything if the value is not present
-            or_json::mObject::const_iterator iter = obj2.find(val.first);
-            if (iter == obj2.end())
-              continue;
-            // If the type is different, we are done
-            if (val.second.type() != iter->second.type())
-              return false;
-            bool is_same;
-            switch (iter->second.type())
-            {
-              case or_json::obj_type:
-                is_same = CompareJsonIntersection(val.second.get_obj(), iter->second.get_obj());
-                break;
-              case or_json::array_type:
-                is_same = CompareJsonArrays(val.second.get_array(), iter->second.get_array());
-                break;
-              case or_json::str_type:
-                is_same = val.second.get_str() == iter->second.get_str();
-                break;
-              case or_json::bool_type:
-                is_same = val.second.get_bool() == iter->second.get_bool();
-                break;
-              case or_json::int_type:
-                is_same = val.second.get_int64() == iter->second.get_int64();
-                break;
-              case or_json::real_type:
-                is_same = val.second.get_real() == iter->second.get_real();
-                break;
-              default:
-                throw std::runtime_error("non JSON spirit type");
-                break;
-            }
+      // If the type is different, we are done
+      if (val1.type() != val2.type())
+        return false;
+      bool is_same;
+      switch (val1.type())
+      {
+        case or_json::obj_type:
+          is_same = CompareJsonObjects(val1.get_obj(), val2.get_obj());
+          break;
+        case or_json::array_type:
+          is_same = CompareJsonArrays(val1.get_array(), val2.get_array());
+          break;
+        default:
+          is_same = val1 == val2;
+          break;
+      }
 
-            if (!is_same)
-              return false;
-          }
-      return true;
+      return is_same;
     }
 
     Document
@@ -87,8 +90,8 @@ namespace object_recognition
     {
       doc.set_value("object_id", object_id);
       // Convert the parameters to a property tree and insert them
-      or_json::mObject submethod = to_json(submethod_str).get_obj();
-      or_json::mObject parameters = to_json(parameters_str).get_obj();
+      or_json::mValue submethod = to_json(submethod_str);
+      or_json::mValue parameters = to_json(parameters_str);
       or_json::mValue sessions = to_json(session_ids);
 
       doc.set_value("session_ids", sessions);
@@ -107,12 +110,8 @@ namespace object_recognition
       model_documents.reserve(object_ids.size());
 
       // ext, for each object id, find the models (if any) that fit the parameters
-      or_json::mObject submethod;
-      {
-        or_json::mValue value;
-        or_json::read(json_submethod, value);
-        submethod = value.get_obj();
-      }
+      or_json::mValue submethod;
+      or_json::read(json_submethod, submethod);
 
       BOOST_FOREACH(const ModelId & object_id, object_ids)
           {
@@ -123,7 +122,7 @@ namespace object_recognition
             while (view_iterator != ViewIterator::end())
             {
               // Compare the parameters to the input ones
-              if (CompareJsonIntersection(submethod, (*view_iterator).get_value<or_json::mObject>("submethod")))
+              if (CompareJsonIntersection(submethod, (*view_iterator).get_value("submethod")))
                 model_documents.push_back(Document(db, (*view_iterator).id()));
 
               ++view_iterator;
