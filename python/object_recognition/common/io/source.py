@@ -21,20 +21,21 @@ SourceTypes = type('SourceTypes', (object,),
                         )
                    )
 
+
 class Source(object):
     '''
     An RGB, Depth Map source.
     '''
     @staticmethod
     def create_source(source_type=SourceTypes.ros_kinect, *args, **kwargs):
-        from .ros.source import KinectReader, BagReader
-        from .standalone import OpenNISource
+        from image_pipeline.io.source import create_source
+
         #extend this dict as necessary
-        source = {SourceTypes.ros_bag:BagReader,
-                  SourceTypes.ros_kinect:KinectReader,
-                  SourceTypes.openni:OpenNISource,
+        source = {SourceTypes.ros_bag:('image_pipeline', 'BagReader'),
+                  SourceTypes.ros_kinect:('image_pipeline', 'KinectReader'),
+                  SourceTypes.openni:('image_pipeline', 'OpenNISource'),
                   }
-        return source[source_type](*args, **kwargs)
+        return create_source(*source[source_type], **kwargs)
 
     @staticmethod
     def add_arguments(parser):

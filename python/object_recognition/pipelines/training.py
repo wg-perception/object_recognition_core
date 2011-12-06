@@ -2,11 +2,9 @@
 Loaders for all object recognition pipelines
 '''
 from abc import ABCMeta, abstractmethod
-import inspect
-import pkgutil
 
 import ecto
-from ecto_object_recognition import capture
+from ecto_object_recognition.object_recognition_db import ObservationReader
 from object_recognition.common.utils import list_to_cpp_json_str
 from object_recognition.common.utils.json_helper import dict_to_cpp_json_str
 
@@ -15,13 +13,13 @@ class ObservationDealer(ecto.BlackBox):
     At each iteration, will return one fully typed observation, K,R,T,image,depth,mask, etc...
     Initialized with a predetermined set of observation ids.
     '''
-    db_reader = capture.ObservationReader
+    db_reader = ObservationReader
     def declare_params(self, p):
         p.declare('observation_ids', 'An iterable of observation ids.', [])
         p.declare('db_params', 'db parameters.', '')
 
     def declare_io(self, p, i, o):
-        self.db_reader = capture.ObservationReader(db_params=p.db_params)
+        self.db_reader = ObservationReader(db_params=p.db_params)
         self.observation_dealer = ecto.Dealer(tendril=self.db_reader.inputs.at('observation'),
                                               iterable=p.observation_ids)
         o.forward_all('db_reader')
