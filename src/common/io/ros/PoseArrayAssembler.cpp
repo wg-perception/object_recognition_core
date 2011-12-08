@@ -182,9 +182,12 @@ namespace object_recognition
       ObjectIdsMsg object_ids_msg;
       // Publish the info
       ros::Time time = ros::Time::now();
-      std::string frame_id = (*image_message_)->header.frame_id;
+      if (*image_message_)
+      {
+        std::string frame_id = (*image_message_)->header.frame_id;
+        pose_array_msg.header.frame_id = frame_id;
+      }
       pose_array_msg.header.stamp = time;
-      pose_array_msg.header.frame_id = frame_id;
       MarkerArrayMsg marker_array;
 
       BOOST_FOREACH(const ObjectId &object_id, *object_ids_)
