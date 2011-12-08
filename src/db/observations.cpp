@@ -8,13 +8,13 @@
 #include <object_recognition/db/db.h>
 #include <object_recognition/db/opencv.h>
 
-#include <object_recognition/db/models/observations.hpp>
+#include <object_recognition/db/prototypes/observations.hpp>
 
 using ecto::tendrils;
 
 namespace object_recognition
 {
-  namespace capture
+  namespace prototypes
   {
     void
     Observation::declare(ecto::tendrils& t, bool required)
