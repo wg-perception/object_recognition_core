@@ -3,7 +3,8 @@
 Module defining the TOD trainer to train the TOD models
 """
 
-from ecto_object_recognition import capture, tod_training
+from ecto_object_recognition import tod_training
+import image_pipeline
 from ecto_opencv import calib, features2d, highgui
 from feature_descriptor import FeatureDescriptor
 from g2o import SbaDisparity
@@ -40,7 +41,7 @@ class TODModelBuilder(ecto.BlackBox):
         self.keypoints_to_mat = features2d.KeypointsToMat()
         self.camera_to_world = tod_training.CameraToWorld()
         self.model_stacker = tod_training.TodModelStacker()
-        self.rescale_depth = capture.RescaledRegisteredDepth() #this is for SXGA mode scale handling.
+        self.rescale_depth = image_pipeline.RescaledRegisteredDepth() #this is for SXGA mode scale handling.
         self.keypoint_validator = tod_training.KeypointsValidator()
         self.visualize = p.visualize
 

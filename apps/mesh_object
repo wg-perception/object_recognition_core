@@ -13,8 +13,9 @@ import couchdb
 import ecto,ecto_ros
 from ecto_opencv import calib, highgui, imgproc
 import object_recognition
-from object_recognition import dbtools, models, capture
-from ecto_object_recognition import reconstruction, conversion
+from object_recognition import dbtools, models
+import image_pipeline
+from ecto_object_recognition import reconstruction, conversion, object_recognition_db
 import ecto_pcl
 from tempfile import NamedTemporaryFile
 
@@ -72,17 +73,18 @@ def meshlab(filename_in, filename_out):
     os.unlink(script)
 
 def simple_mesh_session(dbs, session, args):
-    obs_ids = models.find_all_observations_for_session(dbs, session.id)
+    db_params = dbtools.args_to_db_params(args)
+    obs_ids = models.find_all_observations_for_session(db_params, session.id)
     if len(obs_ids) == 0:
         raise RuntimeError("There are no observations available.")
-    db_reader = capture.ObservationReader('Database Source',
-                                          db_params=dbtools.args_to_db_params(args))
+    db_reader = object_recognition_db.ObservationReader('Database Source',
+                                          db_params=db_params)
 
     #observation dealer will deal out each observation id.
     observation_dealer = ecto.Dealer(tendril=db_reader.inputs.at('observation'), iterable=obs_ids)
     depthTo3d = calib.DepthTo3d('Depth ~> 3D')
     erode = imgproc.Erode('Mask Erosion', kernel=3) #-> 7x7
-    rescale_depth = capture.RescaledRegisteredDepth('Depth scaling') #this is for SXGA mode scale handling.
+    rescale_depth = image_pipeline.RescaledRegisteredDepth('Depth scaling') #this is for SXGA mode scale handling.
     point_cloud_transform = reconstruction.PointCloudTransform('Object Space Transform')
     point_cloud_converter = conversion.MatToPointCloudXYZRGB('To Point Cloud')
     pre_voxel = ecto_pcl.VoxelGrid("Pre Voxel Decimation", leaf_size=0.005)
