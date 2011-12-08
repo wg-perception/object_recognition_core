@@ -6,14 +6,13 @@
 
 #include <object_recognition/db/db.h>
 #include <object_recognition/db/opencv.h>
-#include <object_recognition/db/models/observations.hpp>
+#include <object_recognition/db/prototypes/observations.hpp>
 
-#define DEFAULT_COUCHDB_URL "http://localhost:5984"
 using ecto::tendrils;
 
 namespace object_recognition
 {
-  namespace capture
+  namespace prototypes
   {
     using db::Document;
     using db::ObjectDb;
@@ -32,6 +31,7 @@ namespace object_recognition
       {
         Observation::declare(inputs, true); //required
       }
+
       ObservationInserter()
           :
             frame_number(0)
@@ -78,5 +78,5 @@ namespace object_recognition
     };
   }
 }
-ECTO_CELL(capture, object_recognition::capture::ObservationInserter, "ObservationInserter",
+ECTO_CELL(object_recognition_db, object_recognition::prototypes::ObservationInserter, "ObservationInserter",
           "Inserts observations into the database.");

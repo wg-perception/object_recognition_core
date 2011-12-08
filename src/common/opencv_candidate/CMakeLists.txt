@@ -11,3 +11,7 @@ target_link_libraries(opencv_candidate
 install(TARGETS opencv_candidate
     DESTINATION lib
     )
+set_target_properties(opencv_candidate PROPERTIES
+  VERSION ${object_recognition_VERSION}
+  SOVERSION ${object_recognition_SOVERSION}
+  )

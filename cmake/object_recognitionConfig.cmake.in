@@ -1,0 +1,27 @@
+# ==============================================================================
+#  The @PROJECT_NAME@ CMake configuration file
+#
+#             ** File generated automatically, do not modify **
+#
+#  Usage from an external project:
+#    In your CMakeLists.txt, add these lines:
+#
+#    find_package(@PROJECT_NAME@ REQUIRED)
+#
+#    This file will define the following variables:
+#      - @PROJECT_NAME@_LIBRARY_DIRS              : A list of library directories.
+#      - @PROJECT_NAME@_LIBRARIES                 : The list of libraries to link against.
+#      - @PROJECT_NAME@_INCLUDE_DIRS              : The include directories
+# ==============================================================================
+find_package(Boost REQUIRED)
+find_package(Eigen REQUIRED)
+find_package(OpenCV REQUIRED)
+
+set(object_recognition_INCLUDE_DIRS
+  @object_recognition_INCLUDE_DIRS@
+  ${EIGEN_INCLUDE_DIRS}
+  ${Boost_INCLUDE_DIRS}
+)
+
+set(@PROJECT_NAME@_LIBRARIES @object_recognition_LIBRARIES@)
+set(@PROJECT_NAME@_LIBRARY_DIRS @object_recognition_LIBRARY_DIRS@)

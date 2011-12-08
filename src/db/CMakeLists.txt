@@ -23,6 +23,7 @@ add_library(object_recognition_db SHARED
   ../../include/object_recognition/common/json_spirit/json_spirit_value.cpp
   ../../include/object_recognition/common/json_spirit/json_spirit_writer.cpp
   model_utils.cpp
+  observations.cpp
   )
 
 target_link_libraries(object_recognition_db
@@ -32,10 +33,16 @@ target_link_libraries(object_recognition_db
   boost_serialization
   boost_thread
   ${CURL_LIBRARIES}
-  ${OpenCV_LIBS}
+  opencv_core
+  opencv_highgui
   ecto
   )
 
+
+set_target_properties(object_recognition_db PROPERTIES
+  VERSION ${object_recognition_VERSION}
+  SOVERSION ${object_recognition_SOVERSION}
+  )
 #install the main shared lib
 install(TARGETS object_recognition_db
   DESTINATION lib
@@ -46,6 +53,8 @@ ectomodule(object_recognition_db
     wrap_db_parameters.cpp
     wrap_db_documents.cpp
     ModelWriter.cpp
+    ObservationReader.cpp
+    ObservationWriter.cpp
     )
 
 link_ecto(object_recognition_db
