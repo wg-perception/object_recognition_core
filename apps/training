@@ -29,8 +29,10 @@ if __name__ == '__main__':
                     sys.exit(-1)
 
                 #create a plasm using the TrainingPipeline interface.
-                plasm = pipeline.train(object_id, session_ids, observation_ids, pipeline_param['submethod'],
-                                       pipeline_param['parameters'], db_params, args)
+                plasm = pipeline.train(object_id=object_id, session_ids=session_ids, observation_ids=observation_ids,
+                                       submethod=pipeline_param.get('submethod', ''),
+                                       pipeline_params=pipeline_param.get('parameters', {}), db_params=db_params,
+                                       args=args)
 
                 if DEBUG:
                     #render the DAG with dot

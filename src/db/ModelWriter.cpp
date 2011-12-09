@@ -70,7 +70,7 @@ namespace object_recognition
                        "The method used to compute the model (e.g. 'TOD' ...).").required(true);
         params.declare(&C::model_submethod_, "json_submethod", //
                        "The discriminative parameters used, as JSON.").required(true);
-        params.declare(&C::model_parameters_, "json_parameters", //
+        params.declare(&C::model_parameters_, "json_params", //
                        "The non-discriminative parameters used, as JSON.").required(true);
       }
 

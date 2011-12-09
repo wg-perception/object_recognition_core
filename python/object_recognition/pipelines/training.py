@@ -5,7 +5,7 @@ from abc import ABCMeta, abstractmethod
 
 import ecto
 from ecto_object_recognition.object_recognition_db import ObservationReader
-from object_recognition.common.utils import list_to_cpp_json_str
+from object_recognition.common.utils import list_to_cpp_json_str, json_helper
 from object_recognition.common.utils.json_helper import dict_to_cpp_json_str
 
 class ObservationDealer(ecto.BlackBox):
@@ -70,8 +70,6 @@ class TrainingPipeline:
         '''
         raise NotImplementedError("This should return a cell .")
 
-
-    @abstractmethod
     def processor(self, *args, **kwargs):
         '''
         This should run once.
@@ -131,9 +129,15 @@ class TrainingPipeline:
         for key in set(processor.outputs.keys()).intersection(post_process.inputs.keys()):
             plasm.connect(processor[key] >> post_process[key])
         
-        mw_params = ModelWriter.inpsect().params.keys()
+        mw_params = ModelWriter.inspect().params.keys()
         kw_params = kwargs.keys()
         mw_params = dict([ (key, kwargs[key]) for key in set(mw_params).intersection(kw_params)])
-        writer = ModelWriter(*args, **mw_params)
+
+        writer = ModelWriter(session_ids=json_helper.list_to_cpp_json_str(kwargs['session_ids']),
+                             object_id=kwargs['object_id'], db_params=kwargs['db_params'],
+                             method=cls.type_name(),
+                             json_submethod=dict_to_cpp_json_str(kwargs['submethod']),
+                             json_params=dict_to_cpp_json_str(kwargs['pipeline_params']))
+
         plasm.connect(post_process["db_document"] >> writer["db_document"])
         return plasm
