@@ -27,42 +27,21 @@ namespace object_recognition
     struct ObservationReader
     {
       static void
-      declare_params(tendrils& params)
-      {
-        params.declare(&ObservationReader::db_params_, "db_params", "The DB parameters");
-      }
-      static void
       declare_io(const tendrils& params, tendrils& inputs, tendrils& outputs)
       {
-        inputs.declare<std::string>("observation", "The observation id to load.");
+        inputs.declare(&ObservationReader::observation_, "document", "The observation id to load.");
         Observation::declare(outputs, false); //not required
-        outputs.declare<int>("frame_number", "The frame id number.", 0);
       }
-      ObservationReader()
-          :
-            current_frame(0)
-      {
-      }
-      void
-      configure(const tendrils& params, const tendrils& inputs, const tendrils& outputs)
-      {
-        observation = inputs["observation"];
-        db = object_recognition::db::ObjectDb(*db_params_);
-      }
+
       int
       process(const tendrils& inputs, const tendrils& outputs)
       {
-        Document doc(db, *observation);
         Observation obs;
-        obs << doc;
+        obs << *observation_;
         obs >> outputs;
         return 0;
       }
-      int total_rows, offset;
-      ecto::spore<std::string> observation;
-      ecto::spore<db::ObjectDbParameters> db_params_;
-      ObjectDb db;
-      int current_frame;
+      ecto::spore<db::Document> observation_;
     };
   }
 }

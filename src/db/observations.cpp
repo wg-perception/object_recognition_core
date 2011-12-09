@@ -25,6 +25,7 @@ namespace object_recognition
       t.declare<cv::Mat>("R", "The orientation.").required(required);
       t.declare<cv::Mat>("T", "The translation.").required(required);
       t.declare<cv::Mat>("K", "The camera intrinsic matrix").required(required);
+      t.declare<int>("frame_number", "The frame number", 0).required(required);
     }
     void
     operator>>(Observation& o, db::Document& doc)

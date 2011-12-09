@@ -37,6 +37,7 @@
 #include <boost/function.hpp>
 #include <boost/python.hpp>
 #include <boost/python/stl_iterator.hpp>
+#include <boost/python/suite/indexing/vector_indexing_suite.hpp>
 #include <boost/shared_ptr.hpp>
 #include <object_recognition/db/db.h>
 
@@ -104,8 +105,11 @@ namespace object_recognition
     void
     wrap_db_documents()
     {
-      bp::class_<Documents, DocumentsPtr> DocumentsClass("DbDocuments");
+      bp::class_<Document>("Document").def(bp::init<>()).def(bp::init<Document>());
+
+      bp::class_<Documents> DocumentsClass("DbDocuments");
       DocumentsClass.def("__init__", bp::make_constructor(DocumentsConstructor));
+      DocumentsClass.def(boost::python::vector_indexing_suite<Documents>());
       DocumentsClass.def("size", &Documents::size);
       DocumentsClass.def_pickle(db_documents_pickle_suite());
     }

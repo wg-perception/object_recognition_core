@@ -210,6 +210,12 @@ namespace object_recognition
       Document(const ObjectDb & db);
       Document(const ObjectDb & db, const DocumentId &document_id);
 
+      bool
+      operator==(const Document & document) const
+      {
+        return document_id_ == document.document_id_;
+      }
+
       /**
        * Update the db that this document should be associated with.
        * @param db

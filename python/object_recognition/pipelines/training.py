@@ -7,6 +7,7 @@ import ecto
 from ecto_object_recognition.object_recognition_db import ObservationReader
 from object_recognition.common.utils import list_to_cpp_json_str, json_helper
 from object_recognition.common.utils.json_helper import dict_to_cpp_json_str
+from ecto_object_recognition.object_recognition_db import Document, DbDocuments
 
 class ObservationDealer(ecto.BlackBox):
     '''
@@ -19,13 +20,13 @@ class ObservationDealer(ecto.BlackBox):
         p.declare('db_params', 'db parameters.', '')
 
     def declare_io(self, p, i, o):
-        self.db_reader = ObservationReader(db_params=p.db_params)
-        self.observation_dealer = ecto.Dealer(tendril=self.db_reader.inputs.at('observation'),
-                                              iterable=p.observation_ids)
+        self.db_reader = ObservationReader()
+        self.observation_dealer = ecto.Dealer(tendril=ecto.Tendril(Document()),
+                                              iterable=DbDocuments(p.db_params, p.observation_ids))
         o.forward_all('db_reader')
 
     def connections(self):
-        graph = [self.observation_dealer[:] >> self.db_reader['observation']]
+        graph = [self.observation_dealer[:] >> self.db_reader['document']]
         return graph
 
 class ModelBuilder(ecto.BlackBox):
