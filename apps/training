@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 import roscompat
-from ecto_object_recognition import capture
 from object_recognition import models
 from object_recognition.common.utils.training_detection_args import read_arguments
 from object_recognition.pipelines import find_pipelines
