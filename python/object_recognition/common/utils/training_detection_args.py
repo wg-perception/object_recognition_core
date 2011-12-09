@@ -75,9 +75,9 @@ def read_arguments(parser=None, argv=sys.argv):
             tmp_object_ids_from_names = set([ str(x.object_id) for x in models.Model.all(db) ])
             object_ids.update(tmp_object_ids.difference(tmp_object_ids_from_names))
         if ids and ids != 'missing':
-            object_ids.update(ids[1:-1].split(','))
+            object_ids.update(ids)
         if names and names != 'missing':
-            for object_name in names[1:-1].split(','):
+            for object_name in names:
                 object_ids.update([str(x.id) for x in models.objects_by_name(db, object_name)])
         # if we got some ids through the command line, just stop here
         if object_ids:
