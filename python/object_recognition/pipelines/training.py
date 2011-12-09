@@ -61,8 +61,6 @@ class TrainingPipeline:
         '''
         raise NotImplementedError("The training pipeline class must return a string name.")
 
-
-    @abstractmethod
     def incremental_model_builder(self, *args, **kwargs):
         '''
         Given a dictionary of parameters, return a cell, or BlackBox that takes
