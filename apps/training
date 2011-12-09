@@ -9,7 +9,7 @@ from object_recognition.pipelines.training import TrainingPipeline
 DEBUG = False
 
 if __name__ == '__main__':
-    params, args, pipeline_params, visualize, db_params = read_arguments()
+    params, args, pipeline_params, visualize, db_params = read_arguments(do_commit=True)
     pipelines = find_pipelines(pipeline_params, TrainingPipeline) #map of string name to pipeline class
     for object_id in params['object_ids']:
         object_id = object_id.encode('ascii')

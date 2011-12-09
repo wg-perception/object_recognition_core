@@ -2,7 +2,7 @@ from couchdb.design import ViewDefinition
 from couchdb.mapping import TextField, ListField, DateTimeField, Document, ViewField, IntegerField
 from datetime import datetime
 from object_recognition import dbtools
-from object_recognition.dbtools import DEFAULT_SERVER_URL, init_object_databases
+from object_recognition.dbtools import DEFAULT_DB_ROOT, init_object_databases
 import couchdb
 
 class Object(Document):
@@ -245,7 +245,7 @@ def objects_by_name(objects_collection, object_name):
     return r
 
 if __name__ == "__main__":
-    couch = couchdb.Server(DEFAULT_SERVER_URL)
+    couch = couchdb.Server(DEFAULT_DB_ROOT)
     dbs = init_object_databases(couch)
     obj = Object(object_id="TestObject", object_name="A test object.", description="test objects are fun.", tags=['test', 'object', 'tod'])
     obj.store(dbs['objects'])
