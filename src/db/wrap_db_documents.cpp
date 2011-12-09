@@ -107,7 +107,7 @@ namespace object_recognition
     {
       bp::class_<Document>("Document").def(bp::init<>()).def(bp::init<Document>());
 
-      bp::class_<Documents> DocumentsClass("DbDocuments");
+      bp::class_<Documents, DocumentsPtr> DocumentsClass("DbDocuments");
       DocumentsClass.def("__init__", bp::make_constructor(DocumentsConstructor));
       DocumentsClass.def(boost::python::vector_indexing_suite<Documents>());
       DocumentsClass.def("size", &Documents::size);
