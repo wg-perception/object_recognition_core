@@ -26,8 +26,6 @@ endmacro()
 
 pytest(test_import)
 
-pytest(test_common_io_ros_source_kinect)
-pytest(test_common_io_ros_source_bag_reader)
 pytest(test_common_io_ros_sink)
 
 pytest(test_common_io_source_interface)
@@ -38,7 +36,6 @@ pytest(test_tod_training)
 pytest(test_tod_detection)
 
 #these check that atleast the help completes correctly
-pytest(test_capture_help)
 pytest(test_upload_help)
 pytest(test_training_help)
 pytest(test_mesh_object_help)
