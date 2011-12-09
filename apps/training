@@ -15,7 +15,6 @@ if __name__ == '__main__':
         object_id = object_id.encode('ascii')
         session_ids = models.find_all_sessions_for_object(db_params, object_id)
         for session_id in session_ids:
-            db_reader = capture.ObservationReader("db_reader", db_params=db_params)
             observation_ids = models.find_all_observations_for_session(db_params, session_id)
 
             if not observation_ids:
