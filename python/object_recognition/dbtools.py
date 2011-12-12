@@ -1,6 +1,6 @@
 from ecto_object_recognition.object_recognition_db import ObjectDbParameters
 
-DEFAULT_DB_COLLECTION = 'obejct_recognition'
+DEFAULT_DB_COLLECTION = 'object_recognition'
 DEFAULT_DB_ROOT = 'http://localhost:5984'
 DEFAULT_DB_TYPE = 'CouchDB'
 
