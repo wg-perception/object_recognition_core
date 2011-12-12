@@ -18,6 +18,7 @@ import image_pipeline
 from ecto_object_recognition import reconstruction, conversion, object_recognition_db
 import ecto_pcl
 from tempfile import NamedTemporaryFile
+from ecto_object_recognition.object_recognition_db import DbDocuments
 
 cloud_view = ecto_pcl.CloudViewer("Cloud Display", window_name="PCD Viewer")[:]
 imshows = dict(image=highgui.imshow('Image Display', name='image')[:], mask=highgui.imshow('Mask Display', name='mask')[:],
@@ -90,7 +91,7 @@ def simple_mesh_session(dbs, session, args):
     to_ecto_pcl = ecto_pcl.PointCloudT2PointCloud('converter', format=ecto_pcl.XYZRGB)
     plasm = ecto.Plasm()
     plasm.connect(
-      observation_dealer[:] >> db_reader['observation'],
+      observation_dealer[:] >> db_reader['document'],
       db_reader['K'] >> depthTo3d['K'],
       db_reader['image'] >> rescale_depth['image'],
       db_reader['depth'] >> rescale_depth['depth'],
