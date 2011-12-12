@@ -63,7 +63,7 @@ namespace object_recognition
         Observation obs;
         obs << inputs;
         // Use the frame_number tendril if provided
-        if (inputs.find("frame_number") != inputs.end())
+        if (inputs.find("frame_number")->second->user_supplied())
           frame_number = inputs.get<int>("frame_number");
 
         std::cout << "Inserting frame: " << frame_number << std::endl;
