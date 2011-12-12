@@ -60,10 +60,15 @@ namespace object_recognition
       int
       process(const tendrils& inputs, const tendrils& outputs)
       {
-        std::cout << "Inserting frame: " << frame_number << std::endl;
         Observation obs;
         obs << inputs;
+        // Use the frame_number tendril if provided
+        if (inputs.find("frame_number") != inputs.end())
+          frame_number = inputs.get<int>("frame_number");
+
+        std::cout << "Inserting frame: " << frame_number << std::endl;
         obs.frame_number = frame_number++;
+
         obs.object_id = object_id;
         obs.session_id = session_id;
         Document doc(db);
