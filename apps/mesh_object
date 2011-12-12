@@ -80,7 +80,7 @@ def simple_mesh_session(dbs, session, args):
     db_reader = object_recognition_db.ObservationReader('Database Source')
 
     #observation dealer will deal out each observation id.
-    observation_dealer = ecto.Dealer(tendril=db_reader.inputs.at('observation'), iterable=DbDocuments(db_params, obs_ids))
+    observation_dealer = ecto.Dealer(tendril=db_reader.inputs.at('document'), iterable=DbDocuments(db_params, obs_ids))
     depthTo3d = calib.DepthTo3d('Depth ~> 3D')
     erode = imgproc.Erode('Mask Erosion', kernel=3) #-> 7x7
     rescale_depth = image_pipeline.RescaledRegisteredDepth('Depth scaling') #this is for SXGA mode scale handling.
