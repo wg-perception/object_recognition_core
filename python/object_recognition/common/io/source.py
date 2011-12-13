@@ -32,7 +32,7 @@ class Source(object):
 
         #extend this dict as necessary
         source = {SourceTypes.ros_bag:('image_pipeline', 'BagReader'),
-                  SourceTypes.ros_kinect:('image_pipeline', 'KinectReader'),
+                  SourceTypes.ros_kinect:('image_pipeline', 'OpenNISubscriber'),
                   SourceTypes.openni:('image_pipeline', 'OpenNISource'),
                   }
         return create_source(*source[source_type], **kwargs)

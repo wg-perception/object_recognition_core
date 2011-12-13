@@ -6,6 +6,7 @@ db:
 
 pipeline1:
   method: 'TOD'
+  package: 'object_recognition'
   submethod:
     descriptor:
       type: 'ORB'

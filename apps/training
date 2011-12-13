@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 import roscompat
-from ecto_object_recognition import capture
 from object_recognition import models
 from object_recognition.common.utils.training_detection_args import read_arguments
 from object_recognition.pipelines import find_pipelines
@@ -10,13 +9,12 @@ from object_recognition.pipelines.training import TrainingPipeline
 DEBUG = False
 
 if __name__ == '__main__':
-    params, args, pipeline_params, visualize, db_params = read_arguments()
+    params, args, pipeline_params, visualize, db_params = read_arguments(do_commit=True)
     pipelines = find_pipelines(pipeline_params, TrainingPipeline) #map of string name to pipeline class
     for object_id in params['object_ids']:
         object_id = object_id.encode('ascii')
         session_ids = models.find_all_sessions_for_object(db_params, object_id)
         for session_id in session_ids:
-            db_reader = capture.ObservationReader("db_reader", db_params=db_params)
             observation_ids = models.find_all_observations_for_session(db_params, session_id)
 
             if not observation_ids:
@@ -29,8 +27,10 @@ if __name__ == '__main__':
                     sys.exit(-1)
 
                 #create a plasm using the TrainingPipeline interface.
-                plasm = pipeline.train(object_id, session_ids, observation_ids, pipeline_param['submethod'],
-                                       pipeline_param['parameters'], db_params, args)
+                plasm = pipeline.train(object_id=object_id, session_ids=session_ids, observation_ids=observation_ids,
+                                       submethod=pipeline_param.get('submethod', ''),
+                                       pipeline_params=pipeline_param.get('parameters', {}), db_params=db_params,
+                                       args=args)
 
                 if DEBUG:
                     #render the DAG with dot

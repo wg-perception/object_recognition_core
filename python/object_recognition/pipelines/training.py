@@ -5,8 +5,9 @@ from abc import ABCMeta, abstractmethod
 
 import ecto
 from ecto_object_recognition.object_recognition_db import ObservationReader
-from object_recognition.common.utils import list_to_cpp_json_str
+from object_recognition.common.utils import list_to_cpp_json_str, json_helper
 from object_recognition.common.utils.json_helper import dict_to_cpp_json_str
+from ecto_object_recognition.object_recognition_db import Document, DbDocuments
 
 class ObservationDealer(ecto.BlackBox):
     '''
@@ -19,13 +20,13 @@ class ObservationDealer(ecto.BlackBox):
         p.declare('db_params', 'db parameters.', '')
 
     def declare_io(self, p, i, o):
-        self.db_reader = ObservationReader(db_params=p.db_params)
-        self.observation_dealer = ecto.Dealer(tendril=self.db_reader.inputs.at('observation'),
-                                              iterable=p.observation_ids)
+        self.db_reader = ObservationReader()
+        self.observation_dealer = ecto.Dealer(tendril=ecto.Tendril(Document()),
+                                              iterable=DbDocuments(p.db_params, p.observation_ids))
         o.forward_all('db_reader')
 
     def connections(self):
-        graph = [self.observation_dealer[:] >> self.db_reader['observation']]
+        graph = [self.observation_dealer[:] >> self.db_reader['document']]
         return graph
 
 class ModelBuilder(ecto.BlackBox):
@@ -60,8 +61,7 @@ class TrainingPipeline:
         '''
         raise NotImplementedError("The training pipeline class must return a string name.")
 
-    @abstractmethod
-    def incremental_model_builder(self, submethod, pipeline_params, args):
+    def incremental_model_builder(self, *args, **kwargs):
         '''
         Given a dictionary of parameters, return a cell, or BlackBox that takes
         as input observations, and at each iteration and builds up a model
@@ -69,9 +69,23 @@ class TrainingPipeline:
         '''
         raise NotImplementedError("This should return a cell .")
 
-
+    def processor(self, *args, **kwargs):
+        '''
+        This should run once.
+        '''
+        db_params = kwargs.get('db_params', None)
+        observation_ids = kwargs.get('observation_ids', None)
+        #todo make this depend on the pipeline specification or something...
+        dealer = ObservationDealer(db_params=db_params, observation_ids=observation_ids)
+        incremental_model_builder = self.incremental_model_builder(*args, **kwargs)
+        model_builder = ModelBuilder(source=dealer,
+                                     incremental_model_builder=incremental_model_builder,
+                                     niter=0,
+                                     )
+        return model_builder
+        
     @abstractmethod
-    def post_processor(self, submethod, pipeline_params, args):
+    def post_processor(self, *args, **kwargs):
         '''
         Given a dictionary of parameters, return a cell, or BlackBox that
         takes the output of the incremental_model_builder and converts it into
@@ -89,7 +103,7 @@ class TrainingPipeline:
         return NotImplemented
 
     @classmethod
-    def train(cls, object_id, session_ids, observation_ids, submethod, pipeline_params, db_params, args=None):
+    def train(cls, *args, **kwargs):
         '''
         Returns a training plasm, that will be executed exactly once.
         :param object_id: The object id to train up.
@@ -104,29 +118,25 @@ class TrainingPipeline:
         :returns: A plasm, only execute once please.
         '''
         from ecto_object_recognition.object_recognition_db import ModelWriter
-
-        #todo make this depend on the pipeline specification or something...
-        dealer = ObservationDealer(db_params=db_params, observation_ids=observation_ids)
-
+        
         pipeline = cls()
-        incremental_model_builder = pipeline.incremental_model_builder(submethod, pipeline_params, args)
-        model_builder = ModelBuilder(source=dealer,
-                                     incremental_model_builder=incremental_model_builder,
-                                     niter=0,
-                                     ) #execute until a quit condition occurs.
-        post_process = pipeline.post_processor(submethod, pipeline_params, args)
+        processor = pipeline.processor(*args, **kwargs)
+        post_process = pipeline.post_processor(*args, **kwargs)
 
         plasm = ecto.Plasm()
         # Connect the model builder to the source
-        for key in set(model_builder.outputs.keys()).intersection(post_process.inputs.keys()):
-            plasm.connect(model_builder[key] >> post_process[key])
+        for key in set(processor.outputs.keys()).intersection(post_process.inputs.keys()):
+            plasm.connect(processor[key] >> post_process[key])
+        
+        mw_params = ModelWriter.inspect().params.keys()
+        kw_params = kwargs.keys()
+        mw_params = dict([ (key, kwargs[key]) for key in set(mw_params).intersection(kw_params)])
 
-        writer = ModelWriter(db_params=db_params,
-                             object_id=object_id,
-                             session_ids=list_to_cpp_json_str(session_ids),
+        writer = ModelWriter(session_ids=json_helper.list_to_cpp_json_str(kwargs['session_ids']),
+                             object_id=kwargs['object_id'], db_params=kwargs['db_params'],
                              method=cls.type_name(),
-                             json_submethod=dict_to_cpp_json_str(submethod),
-                             json_parameters=dict_to_cpp_json_str(pipeline_params),
-                             )
+                             json_submethod=dict_to_cpp_json_str(kwargs['submethod']),
+                             json_params=dict_to_cpp_json_str(kwargs['pipeline_params']))
+
         plasm.connect(post_process["db_document"] >> writer["db_document"])
         return plasm

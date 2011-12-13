@@ -3,7 +3,8 @@
 Module defining the TOD trainer to train the TOD models
 """
 
-from ecto_object_recognition import capture, tod_training
+from ecto_object_recognition import tod_training
+import image_pipeline
 from ecto_opencv import calib, features2d, highgui
 from feature_descriptor import FeatureDescriptor
 from g2o import SbaDisparity
@@ -40,7 +41,7 @@ class TODModelBuilder(ecto.BlackBox):
         self.keypoints_to_mat = features2d.KeypointsToMat()
         self.camera_to_world = tod_training.CameraToWorld()
         self.model_stacker = tod_training.TodModelStacker()
-        self.rescale_depth = capture.RescaledRegisteredDepth() #this is for SXGA mode scale handling.
+        self.rescale_depth = image_pipeline.RescaledRegisteredDepth() #this is for SXGA mode scale handling.
         self.keypoint_validator = tod_training.KeypointsValidator()
         self.visualize = p.visualize
 
@@ -54,7 +55,7 @@ class TODModelBuilder(ecto.BlackBox):
                            self.source['K'] >> self.depth_to_3d_sparse['K']]
 
         # Make sure the keypoints are in the mask and with a valid depth
-        graph += [self.feature_descriptor['keypoints', 'descriptors'] >>
+        graph += [self.feature_descriptor['keypoints', 'descriptors'] >> 
                             self.keypoint_validator['keypoints', 'descriptors'],
                             self.source['K'] >> self.keypoint_validator['K'],
                             self.source['mask'] >> self.keypoint_validator['mask'],
@@ -139,7 +140,11 @@ class TODTrainingPipeline(TrainingPipeline):
     def type_name(cls):
         return "TOD"
 
-    def incremental_model_builder(self, submethod, pipeline_params, args):
+    def incremental_model_builder(self, *args, **kwargs):
+        submethod = kwargs['submethod']
+        pipeline_params = kwargs['pipeline_params']
+        args = kwargs['args']
+        
         feature_params = pipeline_params.get("feature", False)
         if not feature_params:
             raise RuntimeError("You must supply feature_descriptor parameters for TOD.")
@@ -153,8 +158,10 @@ class TODTrainingPipeline(TrainingPipeline):
         return TODModelBuilder(json_feature_descriptor_params=dict_to_cpp_json_str(feature_descriptor_params),
                                visualize=visualize)
 
-    def post_processor(self, submethod, pipeline_params, _args):
+    def post_processor(self, *args, **kwargs):
+        pipeline_params = kwargs['pipeline_params']
         search_params = pipeline_params.get("search", False)
+
         if not search_params:
             raise RuntimeError("You must supply search parameters for TOD.")
         return TODPostProcessor(json_search_params=dict_to_cpp_json_str(search_params))

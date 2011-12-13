@@ -3,8 +3,9 @@ import roscompat
 import os, sys, argparse
 import ecto, ecto_ros, ecto_sensor_msgs, ecto_geometry_msgs
 from ecto_opencv import highgui, imgproc
-from object_recognition import dbtools, models, capture
-from object_recognition.dbtools import add_db_options, args_to_db_params
+from object_recognition import dbtools, models
+from ecto_object_recognition import object_recognition_db
+from object_recognition.dbtools import args_to_db_params
 
 def connect_observation_calc_with_mask_pose(sync, commit, object_id, session_id, db_params, debug=False):
     plasm = ecto.Plasm()
@@ -37,7 +38,7 @@ def connect_observation_calc_with_mask_pose(sync, commit, object_id, session_id,
         plasm.connect(mask[:] >> mask_display[:])
 
     if commit:
-        db_inserter = capture.ObservationInserter("db_inserter", object_id=object_id, session_id=session_id,
+        db_inserter = object_recognition_db.ObservationInserter("db_inserter", object_id=object_id, session_id=session_id,
                                                   db_params=db_params)
         plasm.connect(depth[:] >> db_inserter['depth'],
                   pose['R', 'T'] >> db_inserter['R', 'T'],
@@ -115,7 +116,7 @@ def parse_args():
     parser.add_argument('tags', metavar='TAGS', type=str, nargs='+', help='Tags to add to object description.')
     parser.add_argument('--visualize', dest='visualize', action='store_const', const=True, default=False,
                         help='Turn on visualization')
-    add_db_options(parser)
+    dbtools.add_db_arguments(parser)
     from ecto.opts import scheduler_options
     group = parser.add_argument_group('Scheduler Options')
     scheduler_options(group, default_scheduler='Singlethreaded')

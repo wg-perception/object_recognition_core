@@ -6,6 +6,7 @@ db:
 
 source:
   type: ros_kinect
+#  type: openni
   rgb_frame_id: '/camera_rgb_optical_frame'
 #  bag: /home/vrabaud/data/robot_power/poster_01.bag
 sink:
@@ -13,6 +14,7 @@ sink:
 
 pipeline1:
   method: 'TOD'
+  package: 'object_recognition'
   submethod:
     descriptor:
       type: 'ORB'

@@ -9,16 +9,22 @@ from feature_descriptor import FeatureDescriptor
 from object_recognition.common.utils import json_helper
 from object_recognition.pipelines.detection import DetectionPipeline
 import ecto
-import ecto_ros
 import ecto_sensor_msgs
 ImagePub = ecto_sensor_msgs.Publisher_Image
+
+try:
+    import ecto_ros
+    ECTO_ROS_FOUND = True
+except ImportError:
+    ECTO_ROS_FOUND = False
 
 class TodDetector(ecto.BlackBox):
     feature_descriptor = FeatureDescriptor
     descriptor_matcher = tod_detection.DescriptorMatcher
     guess_generator = tod_detection.GuessGenerator
     passthrough = ecto.PassthroughN
-    message_cvt = ecto_ros.Mat2Image
+    if ECTO_ROS_FOUND:
+        message_cvt = ecto_ros.Mat2Image
 
     def __init__(self, sub_method, parameters, model_documents, visualize=False, args={}):
         self._submethod = sub_method
@@ -30,7 +36,8 @@ class TodDetector(ecto.BlackBox):
         ecto.BlackBox.__init__(self, **args)
 
     def declare_params(self, p):
-        p.forward('rgb_frame_id', cell_name='message_cvt', cell_key='frame_id')
+        if ECTO_ROS_FOUND:
+            p.forward('rgb_frame_id', cell_name='message_cvt', cell_key='frame_id')
         #p.forward('model_documents', cell_name='descriptor_matcher', cell_key='model_documents')
 
     def declare_io(self, _p, i, o):
@@ -60,7 +67,8 @@ class TodDetector(ecto.BlackBox):
         self.descriptor_matcher = tod_detection.DescriptorMatcher("Matcher",
                                 search_json_params=json_helper.dict_to_cpp_json_str(self._parameters['search']),
                                 model_documents=self._model_documents)
-        self.message_cvt = ecto_ros.Mat2Image()
+        if ECTO_ROS_FOUND:
+            self.message_cvt = ecto_ros.Mat2Image()
 
         guess_params = self._parameters['guess'].copy()
         guess_params['visualize'] = self._visualize
@@ -81,17 +89,18 @@ class TodDetector(ecto.BlackBox):
         pub_features = ImagePub("Features Pub", topic_name='features')
         cvt_color = imgproc.cvtColor(flag=imgproc.RGB2GRAY)
 
-        draw_keypoints = features2d.DrawKeypoints()
-        connections += [ self.passthrough['image'] >> cvt_color[:],
+        if self._visualize or ECTO_ROS_FOUND:
+            draw_keypoints = features2d.DrawKeypoints()
+            connections += [ self.passthrough['image'] >> cvt_color[:],
                            cvt_color[:] >> draw_keypoints['image'],
-                           self.feature_descriptor['keypoints'] >> draw_keypoints['keypoints'],
-                           draw_keypoints['image'] >> self.message_cvt[:],
-                           self.message_cvt[:] >> pub_features[:] ]
+                           self.feature_descriptor['keypoints'] >> draw_keypoints['keypoints']
+                           ]
 
         if self._visualize:
             # visualize the found keypoints
             image_view = highgui.imshow(name="RGB")
             keypoints_view = highgui.imshow(name="Keypoints")
+
 
             connections += [ self.passthrough['image'] >> image_view['image'],
                            draw_keypoints['image'] >> keypoints_view['image']
@@ -104,6 +113,10 @@ class TodDetector(ecto.BlackBox):
             connections += [ self.passthrough['image', 'K'] >> pose_drawer['image', 'K'],
                               self.guess_generator['Rs', 'Ts'] >> pose_drawer['Rs', 'Ts'],
                               pose_drawer['output'] >> pose_view['image'] ]
+
+        if ECTO_ROS_FOUND:
+            connections += [ draw_keypoints['image'] >> self.message_cvt[:],
+                           self.message_cvt[:] >> pub_features[:] ]
 
         return connections
 

@@ -8,8 +8,13 @@ from object_recognition.dbtools import args_to_db_params
 import os
 import sys
 import yaml
+try:
+    import ecto_ros
+    ECTO_ROS_FOUND = True
+except ImportError:
+    ECTO_ROS_FOUND = False
 
-def read_arguments(parser=None, argv=sys.argv):
+def read_arguments(parser=None, do_commit=False):
     """
     Returns:
     params, pipeline_params, db_dict, db
@@ -26,18 +31,23 @@ def read_arguments(parser=None, argv=sys.argv):
     parser.add_argument('--object_names', help='If set, it overrides the list of object names in the config file')
     parser.add_argument('--visualize', help='If set, it will display some windows with temporary results',
                        default=False, action='store_true')
-    dbtools.add_db_options(parser)
 
-    try:
-        import ecto_ros
-        ecto_ros.strip_ros_args(argv)
-    except:
-        pass
+    dbtools.add_db_arguments(parser, do_default=False, do_commit=do_commit)
 
-    if '--help' in sys.argv or '-h' in sys.argv:
+    ros_group = parser.add_argument_group('ROS Parameters')
+    ros_group.add_argument('--node_name', help='The name for the node', default='object_recognition')
+
+    if ECTO_ROS_FOUND:
         args = parser.parse_args()
+
+        original_argv = sys.argv
+        ecto_ros.strip_ros_args(sys.argv)
+        args = parser.parse_args(args=sys.argv[1:])
+        
+        if args.node_name:
+            ecto_ros.init(original_argv, args.node_name, False)
     else:
-        args = parser.parse_args()#args=argv)
+        args = parser.parse_args()
 
     # define the input
     if args.config_file is None or not os.path.exists(args.config_file):
@@ -65,9 +75,9 @@ def read_arguments(parser=None, argv=sys.argv):
             tmp_object_ids_from_names = set([ str(x.object_id) for x in models.Model.all(db) ])
             object_ids.update(tmp_object_ids.difference(tmp_object_ids_from_names))
         if ids and ids != 'missing':
-            object_ids.update(ids[1:-1].split(','))
+            object_ids.update(ids)
         if names and names != 'missing':
-            for object_name in names[1:-1].split(','):
+            for object_name in names:
                 object_ids.update([str(x.id) for x in models.objects_by_name(db, object_name)])
         # if we got some ids through the command line, just stop here
         if object_ids:
