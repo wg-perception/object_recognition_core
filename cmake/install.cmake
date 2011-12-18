@@ -1,5 +1,5 @@
 set(prefix ${PROJECT_NAME}-${${PROJECT_NAME}_VERSION})
-install(DIRECTORY ${CMAKE_PROJECT_SOURCE_DIR}/include/
+install(DIRECTORY ${PROJECT_SOURCE_DIR}/include/
   DESTINATION include/${prefix}
   COMPONENT main
   )
