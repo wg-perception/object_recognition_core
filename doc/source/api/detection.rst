@@ -1,20 +1,20 @@
 Detection
 =========
 
-Sink
-----
+To implement a detection pipeline runnable with the object recognition infrastructure you will need a Python script that implements a plasm for your pipeline. To ease the implementation, we describe a simple way way to retrieve models from the database, as well as the output format of the pipeline.
 
-Detection Pipelines
--------------------
-Detection pipelines should implement the :py:class:`object_recognition.pipelines.DetectionPipeline`.
+Python Plasm
+------------
+
+Your pipeline has to provide an implementation of the :py:class:`object_recognition.pipelines.DetectionPipeline` class to be fully integrated with object recognition infrastructure:
 
 .. autoclass:: object_recognition.pipelines.DetectionPipeline
    :members:
 
-Database
---------
+Database Cell
+-------------
 
-If you are using the predefined ModelWriter, you will also want to use our ModelReader for simplicity.
+If you are using the predefined ModelWriter for training, you will also want to use our ModelReader for simplicity.
 
 Step 1
 ^^^^^^
@@ -71,3 +71,18 @@ Very important, you need to actually define a type for your cell based on ModelR
 .. code-block:: cpp
 
     typedef db::bases::ModelReaderBase<MyAwesomeModelReaderImpl> MyAwesomeModelReaderCell;
+
+Sink
+----
+
+.. toggle1:: click here for ROS instructions
+
+    If you are not using ROS, you can output results to the console or to a CSV file.
+
+.. toggle2:: click here for non-ROS instructions
+
+    If you want to use the ROS publisher that outputs object recognition messages, you need to have your recognition pipeline have the following output tendrils:
+
+    object_ids: a vector of Object ids
+    Rs: a vector of cv::Mat, each representing the pose rotation of a matching object
+    ts: a vector of cv::Mat, each representing the pose translation of a matching object

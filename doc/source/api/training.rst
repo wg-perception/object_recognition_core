@@ -2,8 +2,8 @@ Training
 ========
 
 
-Database
---------
+Database Cell
+-------------
 
 When creating your training pipeline, you will want to store your model in the database.
 By using our interface you will
@@ -56,9 +56,9 @@ First, you will need to create a cell that implements what is added to the DB do
       ecto::spore<ModelPartType> model_part_;
     };
 
-The ``process`` function fills your document with everything that makes your model specific. Use the ``set_attachment``
-member function of the ``db::Document`` to fill the different elements of the model. If your type is not supported, you
-will have to implement the following member functions (and please send us a patch containing them):
+The ``process`` function fills your document with everything that makes your model specific. Use the ``set_value`` to add fields that can be searched (strings, numerals) and the ``set_attachment``
+member function of the ``db::Document`` to fill the different binary blobs of the model. If your type is not supported, you
+will have to implement the following member functions (and please send us a patch containing them if it is a very common type):
 
 .. code-block:: cpp
     :linenos:
@@ -86,3 +86,12 @@ Very important, you need to actually define a type for your cell based on ModelW
 .. code-block:: cpp
 
     typedef db::bases::ModelWriterBase<MyAwesomeModelWriterImpl> MyAwesomeModelWriterCell;
+
+Python Plasm
+------------
+
+Your pipeline also has to provide an implementation of the :py:class:`object_recognition.pipelines.TrainingPipeline` class to be fully integrated with object recognition infrastructure:
+
+.. autoclass:: object_recognition.pipelines.TrainingPipeline
+   :members:
+
