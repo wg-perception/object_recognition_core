@@ -132,8 +132,8 @@ namespace object_recognition
     {
       inputs.declare<std::vector<ObjectId> >("object_ids", "the id's of the found objects");
       inputs.declare<sensor_msgs::ImageConstPtr>("image_message", "the image message to get the header");
-      inputs.declare<std::vector<cv::Mat> >("Rs", "The rotations of the poses of the found objects");
-      inputs.declare<std::vector<cv::Mat> >("Ts", "The translations of the poses of the found objects");
+      inputs.declare<std::vector<cv::Mat> >("Rs", "The rotation matrices of the poses of the found objects");
+      inputs.declare<std::vector<cv::Mat> >("Ts", "The translation matrices of the poses of the found objects");
 
       outputs.declare<PoseArrayMsgPtr>("pose_message", "The poses");
       outputs.declare<ObjectIdsMsgPtr>("object_ids_message", "The poses");
