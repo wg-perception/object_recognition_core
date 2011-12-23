@@ -9,22 +9,25 @@ from object_recognition.pipelines.training import TrainingPipeline
 DEBUG = False
 
 if __name__ == '__main__':
-    params, args, pipeline_params, visualize, db_params = read_arguments(do_commit=True)
+    source_params, pipeline_params, sink_params, args = read_arguments(do_commit=True)
     pipelines = find_pipelines(pipeline_params, TrainingPipeline) #map of string name to pipeline class
-    for object_id in params['object_ids']:
-        object_id = object_id.encode('ascii')
-        session_ids = models.find_all_sessions_for_object(db_params, object_id)
-        for session_id in session_ids:
-            observation_ids = models.find_all_observations_for_session(db_params, session_id)
 
-            if not observation_ids:
-                print >> sys.stderr, 'No observations found for (object,session): (%s,%s)' % (object_id, session_id)
-                continue
-            for pipeline_param in pipeline_params:
-                pipeline = pipelines.get(pipeline_param['method'], False)
-                if not pipeline:
-                    sys.stderr.write('Invalid pipeline name: %s\nMake sure that the pipeline type is defined by a TrainingPipeline class, in the name class function.' % pipeline_param['type'])
-                    sys.exit(-1)
+    for _pipeline_id, pipeline_param in pipeline_params:
+        pipeline = pipelines.get(pipeline_param['method'], False)
+        if not pipeline:
+            sys.stderr.write('Invalid pipeline name: %s\nMake sure that the pipeline type is defined by a TrainingPipeline class, in the name class function.' % pipeline_param['type'])
+            sys.exit(-1)
+        for object_id in pipeline_param['object_ids']:
+            object_id = object_id.encode('ascii')
+            # TODO: fix that
+            db_params = source_params[pipeline_param['source']]
+            session_ids = models.find_all_sessions_for_object(db_params, object_id)
+            for session_id in session_ids:
+                observation_ids = models.find_all_observations_for_session(db_params, session_id)
+    
+                if not observation_ids:
+                    print >> sys.stderr, 'No observations found for (object,session): (%s,%s)' % (object_id, session_id)
+                    continue
 
                 #create a plasm using the TrainingPipeline interface.
                 plasm = pipeline.train(object_id=object_id, session_ids=session_ids, observation_ids=observation_ids,

@@ -8,24 +8,24 @@ import sys
 DEBUG = False
 
 if __name__ == '__main__':
-    params, args, pipeline_params, visualize, db_params = read_arguments()
+    source_params, pipeline_params, sink_params, args = read_arguments()
     pipelines = find_pipelines(pipeline_params, DetectionPipeline) #map of string name to pipeline class
-    object_ids = params['object_ids']
 
-    for pipeline_param in pipeline_params:
+    # build the plasm with all the pipelines
+    for _pipeline_id, pipeline_param in pipeline_params.iteritems():
         pipeline = pipelines.get(pipeline_param['method'], False)
         if not pipeline:
             sys.stderr.write('Invalid pipeline name: %s\nMake sure that the pipeline type is defined by a TrainingPipeline class, in the name class function.' % pipeline_param['type'])
             sys.exit(-1)
 
         #create a plasm using the DetectionPipeline interface.
-        plasm = pipeline.detect(params['source'], params['sink'], pipeline_param.get('submethod', None),
+        plasm = pipeline.detect(source_params[pipeline_param['source']], sink_params[pipeline_param['sink']],
+                                pipeline_param.get('submethod', None),
                                 pipeline_param.get('parameters', {}), db_params, object_ids, args)
 
         if DEBUG:
             #render the DAG with dot
             ecto.view_plasm(plasm)
 
-        #we promise to only do on iteration of the training pipeline.
-        sched = ecto.schedulers.Singlethreaded(plasm)
-        sched.execute()
+    sched = ecto.schedulers.Singlethreaded(plasm)
+    sched.execute()
