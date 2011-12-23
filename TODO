@@ -3,6 +3,10 @@ Build:
 - no default build of tests
 - split the tests (db tests should at least be separated)
 
+Ecto:
+- remove redundant interfaces: p.declare<>, p.declare(&), p["val"], p.get<T>("val")
+- sched.execute, run_plasm
+
 Interface:
 - --all should also have a --missing. Fix missing, object_names
 - remove --db options
@@ -25,7 +29,6 @@ DB:
 - be able to only replicate models in a DB (to put on the PR2)
 - add meta data that is missing (meet with everybody). We want: timestamp of the session, the sensor id
 - save models with several sets of parameters (distinctive, acquisition)
-- non-existant views should not crash
 - use a single view for all model types
 
 
@@ -43,7 +46,6 @@ Doc:
 New cells:
 - masks, filters
 - Mike's stuff
-- better interface of several pipeline (actually broken now)
 
 Test:
 - have something for performance. Use NIST.
@@ -58,5 +60,4 @@ Plugin architecture:
 
 Organization:
 - Use image pipeline for the sources of images. Mono, stero, ros, bag, standalone, etc...
-- Capture should be its own project.
 - Breakout TOD.
