@@ -2,9 +2,9 @@
 Module that creates a function to define/read common arguments for the training/detection pipeline
 """
 
+from ecto_object_recognition.object_recognition_db import ObjectDbParameters
 from object_recognition import models, dbtools
 from object_recognition.common.utils.parser import ObjectRecognitionParser
-from object_recognition.dbtools import args_to_db_params
 import os
 import sys
 import yaml
@@ -14,16 +14,13 @@ try:
 except ImportError:
     ECTO_ROS_FOUND = False
 
-def interpret_object_ids(args, source_param, pipeline_param):
+def interpret_object_ids(args, db_params, pipeline_param):
     """
     Given command line arguments and the parameters of the pipeline, clean the 'object_ids' field to be a list of
     object ids
     """
-    # read some parameters
-    db_params = args_to_db_params(args, source_param)
-
     # initialize the DB
-    db = dbtools.db_params_to_db(db_params)
+    db = dbtools.db_params_to_db(ObjectDbParameters(db_params))
 
     # read the object_ids
     object_ids = set()
@@ -65,7 +62,9 @@ def read_arguments(parser=None, do_commit=False):
     parser.add_argument('--visualize', help='If set, it will display some windows with temporary results',
                        default=False, action='store_true')
 
-    dbtools.add_db_arguments(parser, do_default=False, do_commit=do_commit)
+    if do_commit:
+        parser.add_argument('--commit', dest='commit', action='store_true',
+                        default=False, help='Commit the data to the database.')
 
     ros_group = parser.add_argument_group('ROS Parameters')
     ros_group.add_argument('--node_name', help='The name for the node', default='object_recognition')
@@ -97,22 +96,24 @@ def read_arguments(parser=None, do_commit=False):
         if key.startswith('source'):
             source_params[int(key[6:])] = value
         elif key.startswith('pipeline'):
-            for field in [ 'object_ids', 'source', 'sink', 'method', 'submethod', 'package', 'parameters' ]:
+            # check the different fields
+            for field in [ 'object_ids', 'sources', 'sinks', 'method', 'submethod', 'package', 'parameters', 'db']:
                 if field not in value:
-                    raise RuntimeError('The pipeline parameters need to have the field "%s"' % field)
+                    raise RuntimeError('The pipeline parameters need to have the subfield "%s"' % field)
             pipeline_params[int(key[8:])] = value
         elif key.startswith('sink'):
-            pipeline_params[int(key[4:])] = value
+            sink_params[int(key[4:])] = value
 
     # for each pipeline, make sure the corresponding source/sink exist
     for _pipeline_id, pipeline_param in pipeline_params.iteritems():
-        if pipeline_param['source'] not in source_params:
-            raise RuntimeError('The pipeline parameters has an invalid source number')
-        if pipeline_param['sink'] not in sink_params:
-            raise RuntimeError('The pipeline parameters has an invalid sink number')
+        for source_id in pipeline_param['sources']:
+            if source_id not in source_params:
+                raise RuntimeError('The pipeline parameters has an invalid source number')
+        for sink_id in pipeline_param['sinks']:
+            if sink_id not in sink_params:
+                raise RuntimeError('The pipeline parameters has an invalid sink number')
         # clean the object_ids
-        pipeline_param['object_ids'] = interpret_object_ids(args, source_params[pipeline_param['source']],
-                                                            pipeline_param)
+        pipeline_param['object_ids'] = interpret_object_ids(args, pipeline_param['db'], pipeline_param)
 
     args = vars(args)
     return source_params, pipeline_params, sink_params, args

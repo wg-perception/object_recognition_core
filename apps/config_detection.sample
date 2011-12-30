@@ -1,16 +1,16 @@
-# info about the db
-db:
-  type: 'CouchDB'
-  root: 'http://localhost:5984'
-  collection: 'object_recognition'
-
-source:
+source1:
   type: ros_kinect
 #  type: openni
   rgb_frame_id: '/camera_rgb_optical_frame'
 #  bag: /home/vrabaud/data/robot_power/poster_01.bag
-sink:
+
+sink1:
   type: publisher
+  db:
+    type: 'CouchDB'
+    root: 'http://localhost:5984'
+    collection: 'object_recognition'
+  object_ids: 'all'
 
 pipeline1:
   method: 'TOD'
@@ -18,6 +18,9 @@ pipeline1:
   submethod:
     descriptor:
       type: 'ORB'
+  sources: [1]
+  sinks: [1]
+  object_ids: "all"
   parameters:
     feature:
       type: 'ORB'
@@ -35,6 +38,7 @@ pipeline1:
       n_ransac_iterations: 250
       min_inliers: 8
     sensor_error: 0.01
-
-# The list of object_ids to analyze
-object_ids: "all"
+  db:
+    type: 'CouchDB'
+    root: 'http://localhost:5984'
+    collection: 'object_recognition'

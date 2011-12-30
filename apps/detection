@@ -3,29 +3,56 @@ import roscompat
 from object_recognition.common.utils.training_detection_args import read_arguments
 from object_recognition.pipelines import find_pipelines
 from object_recognition.pipelines.detection import DetectionPipeline
+from object_recognition.common.io.sink import Sink
+from object_recognition.common.io.source import Source
 import ecto
 import sys
 DEBUG = False
 
 if __name__ == '__main__':
     source_params, pipeline_params, sink_params, args = read_arguments()
-    pipelines = find_pipelines(pipeline_params, DetectionPipeline) #map of string name to pipeline class
+    pipelines = find_pipelines(pipeline_params.values(), DetectionPipeline) #map of string name to pipeline class
+
+    # create the different source cells
+    source_cells = {}
+    for source_id, source_param in source_params.iteritems():
+        source_cells[source_id] = Source.parse_arguments(source_param)
+    # create the different sink cells
+    sink_cells = {}
+    for sink_id, sink_param in sink_params.iteritems():
+        sink_cells[sink_id] = Sink.parse_arguments(sink_param)
 
     # build the plasm with all the pipelines
+    plasm = ecto.Plasm()
     for _pipeline_id, pipeline_param in pipeline_params.iteritems():
         pipeline = pipelines.get(pipeline_param['method'], False)
         if not pipeline:
             sys.stderr.write('Invalid pipeline name: %s\nMake sure that the pipeline type is defined by a TrainingPipeline class, in the name class function.' % pipeline_param['type'])
             sys.exit(-1)
+        pipeline = pipeline().detector(**pipeline_param)
 
-        #create a plasm using the DetectionPipeline interface.
-        plasm = pipeline.detect(source_params[pipeline_param['source']], sink_params[pipeline_param['sink']],
-                                pipeline_param.get('submethod', None),
-                                pipeline_param.get('parameters', {}), db_params, object_ids, args)
+        # link to the different sources
+        for source_id in pipeline_param['sources']:
+            source = source_cells[source_id]
+            for key in set(source.outputs.keys()).intersection(pipeline.inputs.keys()):
+                plasm.connect(source[key] >> pipeline.inputs[key])
 
-        if DEBUG:
-            #render the DAG with dot
-            ecto.view_plasm(plasm)
+        # link to the different sinks
+        for sink_id in pipeline_param['sinks']:
+            sink = sink_cells[sink_id]
+            for key in set(sink.inputs.keys()).intersection(pipeline.outputs.keys()):
+                plasm.connect(pipeline.outputs[key] >> sink[key])
 
-    sched = ecto.schedulers.Singlethreaded(plasm)
+    # ROS specific
+    # make sure that we also give the image_message, in case we want to publish a topic
+    for source in source_cells.itervalues():
+        for sink in sink_cells.itervalues():
+            if 'image_message' in sink.inputs and 'image_message' in source.outputs:
+                plasm.connect(source['image_message'] >> sink['image_message'])
+
+    if DEBUG:
+        #render the DAG with dot
+        ecto.view_plasm(plasm)
+
+    sched = ecto.schedulers.Multithreaded(plasm)
     sched.execute()

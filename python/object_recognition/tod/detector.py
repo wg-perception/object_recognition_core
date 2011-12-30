@@ -4,12 +4,14 @@ Module defining the TOD detector to find objects in a scene
 """
 
 from ecto_object_recognition import tod_detection
+from ecto_object_recognition.object_recognition_db import DbModels, ObjectDbParameters
 from ecto_opencv import features2d, highgui, imgproc, calib
 from feature_descriptor import FeatureDescriptor
 from object_recognition.common.utils import json_helper
 from object_recognition.pipelines.detection import DetectionPipeline
 import ecto
 import ecto_sensor_msgs
+
 ImagePub = ecto_sensor_msgs.Publisher_Image
 
 try:
@@ -26,14 +28,14 @@ class TodDetector(ecto.BlackBox):
     if ECTO_ROS_FOUND:
         message_cvt = ecto_ros.Mat2Image
 
-    def __init__(self, sub_method, parameters, model_documents, visualize=False, args={}):
-        self._submethod = sub_method
+    def __init__(self, submethod, parameters, model_documents, visualize=False, **kwargs):
+        self._submethod = submethod
         self._parameters = parameters
         self._model_documents = model_documents
 
         self._visualize = visualize
 
-        ecto.BlackBox.__init__(self, **args)
+        ecto.BlackBox.__init__(self, **kwargs)
 
     def declare_params(self, p):
         if ECTO_ROS_FOUND:
@@ -127,6 +129,11 @@ class TodDetectionPipeline(DetectionPipeline):
     def type_name(cls):
         return 'TOD'
 
-    def detector(self, submethod, parameters, db_params, model_documents, args):
-        visualize = args.get('visualize', False)
-        return TodDetector(submethod, parameters, model_documents, visualize, args)
+    def detector(self, *args, **kwargs):
+        visualize = kwargs.get('visualize', False)
+        submethod = kwargs.get('submethod')
+        db_params = ObjectDbParameters(kwargs.get('db'))
+        object_ids = kwargs.get('object_ids')
+        parameters = kwargs.get('parameters')
+        model_documents = DbModels(db_params, object_ids, self.type_name(), json_helper.dict_to_cpp_json_str(submethod))
+        return TodDetector(submethod, parameters, model_documents, visualize, kwargs)

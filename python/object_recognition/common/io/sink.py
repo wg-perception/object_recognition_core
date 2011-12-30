@@ -38,15 +38,19 @@ class Sink(object):
     An RGB, Depth Map source.
     '''
     @staticmethod
-    def create_sink(sink_type=SinkTypes.publisher, mapping=None, *args, **kwargs):
+    def create_sink(sink_type=SinkTypes.publisher, *args, **kwargs):
         from .ros.sink import Publisher
         #extend this dict as necessary
         sinks = {SinkTypes.publisher:Publisher,
                  SinkTypes.csv_writer:GuessCsvWriter
                  }
         if sink_type == SinkTypes.publisher:
+            from ecto_object_recognition.object_recognition_db import ObjectDbParameters
+            db_params = ObjectDbParameters(kwargs.get('db'))
+            mapping = object_to_models_mapping(db_params_to_db(db_params), kwargs.get('object_ids', 'all'))
             return Publisher(mapping=mapping, **kwargs)
-        return sinks[sink_type](*args, **kwargs)
+        else:
+            return sinks[sink_type](*args, **kwargs)
 
     @staticmethod
     def add_arguments(parser):
@@ -56,7 +60,7 @@ class Sink(object):
                             help='The source type to use. default(%(default)s)')
 
     @staticmethod
-    def parse_arguments(obj, db_params, object_ids):
+    def parse_arguments(obj):
         if type(obj).__name__ == 'dict':
             dic = obj
         else:
@@ -64,10 +68,8 @@ class Sink(object):
         if 'sink_type' in dic:
             dic['type'] = dic.pop('sink_type')
 
-        sink = None
-        mapping = object_to_models_mapping(db_params_to_db(db_params), object_ids)
         if 'type' in dic:
-            sink = Sink.create_sink(sink_type=dic['type'], mapping=mapping, db_params=db_params)
+            sink = Sink.create_sink(sink_type=dic['type'], **dic)
         else:
             raise RuntimeError("Could not create a sink from the given args! %s" % str(dic))
         return _assert_sink_interface(sink)
