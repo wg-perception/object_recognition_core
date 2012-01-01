@@ -44,18 +44,8 @@ def interpret_object_ids(args, db_params, pipeline_param):
             break
     return object_ids
 
-def read_arguments(parser=None, do_commit=False):
-    """
-    Returns:
-    params, pipeline_params, db_dict, db
-    params: all the pipeline parameters specified in the config file or command line
-    pipeline_params: an array of parameters for each pipeline
-    db_dict: the dictionary of the db parameters
-    db: a db object created from those parameters
-    """
-    if parser is None:
-        parser = ObjectRecognitionParser()
-
+def common_read_params(do_commit):
+    parser = ObjectRecognitionParser()
     parser.add_argument('-c', '--config_file', help='Config file')
     parser.add_argument('--object_ids', help='If set, it overrides the list of object_ids in the config file')
     parser.add_argument('--object_names', help='If set, it overrides the list of object names in the config file')
@@ -87,33 +77,45 @@ def read_arguments(parser=None, do_commit=False):
         sys.exit(-1)
 
     params = yaml.load(open(args.config_file))
+    
 
-    # read the different parameters from the config file, for each pipeline
+        # read the different parameters from the config file, for each pipeline
     source_params = {}
     pipeline_params = {}
     sink_params = {}
+    voter_params = {}
     for key , value in params.iteritems():
         if key.startswith('source'):
             source_params[int(key[6:])] = value
         elif key.startswith('pipeline'):
             # check the different fields
-            for field in [ 'object_ids', 'sources', 'sinks', 'method', 'submethod', 'package', 'parameters', 'db']:
+            for field in [ 'sources', 'method', 'submethod', 'package', 'parameters']:
                 if field not in value:
                     raise RuntimeError('The pipeline parameters need to have the subfield "%s"' % field)
             pipeline_params[int(key[8:])] = value
         elif key.startswith('sink'):
             sink_params[int(key[4:])] = value
+        elif key.startswith('voter'):
+            voter_params[int(key[5:])] = value
+
+    return source_params, pipeline_params, sink_params, voter_params, args
+
+def read_arguments_training():
+    source_params, pipeline_params, sink_params, _voter_params, args = common_read_params(True)
+    return source_params, pipeline_params, sink_params, args
+
+def read_arguments_detector():
+    source_params, pipeline_params, sink_params, voter_params, args = common_read_params(False)
 
     # for each pipeline, make sure the corresponding source/sink exist
     for _pipeline_id, pipeline_param in pipeline_params.iteritems():
-        for source_id in pipeline_param['sources']:
-            if source_id not in source_params:
-                raise RuntimeError('The pipeline parameters has an invalid source number')
-        for sink_id in pipeline_param['sinks']:
-            if sink_id not in sink_params:
-                raise RuntimeError('The pipeline parameters has an invalid sink number')
+        for cell_type, params in [ ('source', source_params), ('sink', sink_params), ('voter', voter_params) ]:
+            for cell_id in pipeline_param.get(cell_type + 's', []):
+                if cell_id not in params:
+                    raise RuntimeError('The pipeline parameters has an invalid %s number' % type)
         # clean the object_ids
-        pipeline_param['object_ids'] = interpret_object_ids(args, pipeline_param['db'], pipeline_param)
+        pipeline_param['parameters']['object_ids'] = interpret_object_ids(args, pipeline_param['parameters']['db'],
+                                                                          pipeline_param)
 
     args = vars(args)
-    return source_params, pipeline_params, sink_params, args
+    return source_params, pipeline_params, sink_params, voter_params, args

@@ -12,8 +12,6 @@ from object_recognition.pipelines.detection import DetectionPipeline
 import ecto
 import ecto_sensor_msgs
 
-ImagePub = ecto_sensor_msgs.Publisher_Image
-
 try:
     import ecto_ros
     ECTO_ROS_FOUND = True
@@ -88,7 +86,6 @@ class TodDetector(ecto.BlackBox):
                 self.feature_descriptor['descriptors'] >> self.descriptor_matcher['descriptors'],
                 self.descriptor_matcher['matches', 'matches_3d'] >> self.guess_generator['matches', 'matches_3d'] ]
 
-        pub_features = ImagePub("Features Pub", topic_name='features')
         cvt_color = imgproc.cvtColor(flag=imgproc.RGB2GRAY)
 
         if self._visualize or ECTO_ROS_FOUND:
@@ -117,6 +114,8 @@ class TodDetector(ecto.BlackBox):
                               pose_drawer['output'] >> pose_view['image'] ]
 
         if ECTO_ROS_FOUND:
+            ImagePub = ecto_sensor_msgs.Publisher_Image
+            pub_features = ImagePub("Features Pub", topic_name='features')
             connections += [ draw_keypoints['image'] >> self.message_cvt[:],
                            self.message_cvt[:] >> pub_features[:] ]
 
@@ -130,10 +129,10 @@ class TodDetectionPipeline(DetectionPipeline):
         return 'TOD'
 
     def detector(self, *args, **kwargs):
-        visualize = kwargs.get('visualize', False)
-        submethod = kwargs.get('submethod')
-        db_params = ObjectDbParameters(kwargs.get('db'))
-        object_ids = kwargs.get('object_ids')
-        parameters = kwargs.get('parameters')
+        visualize = kwargs.pop('visualize', False)
+        submethod = kwargs.pop('submethod')
+        parameters = kwargs.pop('parameters')
+        object_ids = parameters['object_ids']
+        db_params = ObjectDbParameters(parameters['db'])
         model_documents = DbModels(db_params, object_ids, self.type_name(), json_helper.dict_to_cpp_json_str(submethod))
-        return TodDetector(submethod, parameters, model_documents, visualize, kwargs)
+        return TodDetector(submethod, parameters, model_documents, visualize, **kwargs)

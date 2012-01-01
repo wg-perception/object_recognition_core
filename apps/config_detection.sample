@@ -12,6 +12,10 @@ sink1:
     collection: 'object_recognition'
   object_ids: 'all'
 
+voter1:
+  type: 'aggregator'
+  sinks: [1]
+
 pipeline1:
   method: 'TOD'
   package: 'object_recognition'
@@ -19,9 +23,9 @@ pipeline1:
     descriptor:
       type: 'ORB'
   sources: [1]
-  sinks: [1]
-  object_ids: "all"
+  voters: [1]
   parameters:
+    object_ids: "all"
     feature:
       type: 'ORB'
       n_features: 5000
@@ -38,7 +42,7 @@ pipeline1:
       n_ransac_iterations: 250
       min_inliers: 8
     sensor_error: 0.01
-  db:
-    type: 'CouchDB'
-    root: 'http://localhost:5984'
-    collection: 'object_recognition'
+    db:
+      type: 'CouchDB'
+      root: 'http://localhost:5984'
+      collection: 'object_recognition'

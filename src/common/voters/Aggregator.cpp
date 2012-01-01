@@ -56,13 +56,13 @@ namespace object_recognition
       static void
       declare_params(ecto::tendrils& p)
       {
-        p.declare<unsigned int>("ninput", "Number of inputs to AND together").required(true);
+        p.declare<unsigned int>("n_inputs", "Number of inputs to AND together").required(true);
       }
 
       static void
       declare_io(const ecto::tendrils& p, ecto::tendrils& in, ecto::tendrils& out)
       {
-        unsigned int ninput = p.get<unsigned int>("ninput");
+        unsigned int ninput = p.get<unsigned int>("n_inputs");
         //inputs
         for (unsigned int i = 0; i < ninput; i++)
         {
