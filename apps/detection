@@ -47,24 +47,26 @@ if __name__ == '__main__':
         if not pipeline:
             sys.stderr.write('Invalid pipeline name: %s\nMake sure that the pipeline type is defined by a TrainingPipeline class, in the name class function.' % pipeline_param['type'])
             sys.exit(-1)
-        pipeline = pipeline().detector(**pipeline_param)
+        detector = pipeline().detector(**pipeline_param)
+        if 'sinks' in pipeline_param or 'voters' in pipeline_param:
+            pipeline.validate(detector)
 
         # link to the different sources
         for source_id in pipeline_param['sources']:
             source = source_cells[source_id]
-            plasm = connect_cells(source, pipeline, plasm)
+            plasm = connect_cells(source, detector, plasm)
         # link to the different sink
         for sink_id in pipeline_param.get('sinks', []):
             sink = sink_cells[sink_id]
-            plasm = connect_cells(pipeline, sink, plasm)
+            plasm = connect_cells(detector, sink, plasm)
 
         # link to the different voters
         for voter_id in pipeline_param.get('voters', []):
             voter = voter_cells[voter_id]
             # connect the common tendrils
-            plasm = connect_cells(pipeline, voter, plasm)
+            plasm = connect_cells(detector, voter, plasm)
             # connect the pose_results tendrils
-            plasm.connect(pipeline['pose_results'] >> voter['pose_results%d' % voter_n_input[voter_id] ])
+            plasm.connect(detector['pose_results'] >> voter['pose_results%d' % voter_n_input[voter_id] ])
             voter_n_input[voter_id] -= 1
 
     # link the different voters to the sinks
