@@ -47,11 +47,13 @@
 #include <opencv2/features2d/features2d.hpp>
 #include <opencv2/highgui/highgui.hpp>
 
-#include "object_recognition/common/types.h"
+#include <object_recognition/common/types.h>
+#include <object_recognition/common/io.h>
 #include "adjacency_ransac.h"
 
 using ecto::tendrils;
 using object_recognition::db::ObjectId;
+using object_recognition::io::PoseResult;
 
 namespace object_recognition
 {
@@ -94,9 +96,7 @@ namespace object_recognition
         inputs.declare<std::map<ObjectId, float> >("spans", "For each found object, its span based on known features.");
         inputs.declare<std::vector<ObjectId> >("object_ids", "The ids used in the matches");
 
-        outputs.declare<std::vector<ObjectId> >("object_ids", "the id's of the found objects");
-        outputs.declare<std::vector<cv::Mat> >("Rs", "The rotations of the poses of the found objects");
-        outputs.declare<std::vector<cv::Mat> >("Ts", "The translations of the poses of the found objects");
+        outputs.declare(&GuessGenerator::pose_results_, "pose_results", "The results of object recognition");
       }
 
       void
@@ -154,8 +154,7 @@ namespace object_recognition
             DrawClustersPerObject(keypoints, colors_, initial_image, all_object_points);
 
           // For each object, build the connectivity graph between the matches
-          std::vector<ObjectId> object_ids_final;
-          std::vector<cv::Mat> Rs_final, Ts_final;
+          pose_results_->clear();
           std::map<size_t, std::vector<std::vector<int> > > matching_query_points;
           for (OpenCVIdToObjectPoints::iterator query_iterator = all_object_points.begin();
               query_iterator != all_object_points.end(); ++query_iterator)
@@ -212,12 +211,12 @@ namespace object_recognition
                   R_mat(j, i) = coefficients[4 * j + i];
                 tvec(j, 0) = coefficients[4 * j + 3];
               }
-              R_mat = R_mat.t();
-              tvec = -R_mat * tvec;
 
-              Rs.push_back(R_mat);
-              Ts.push_back(tvec);
-              object_ids.push_back(object_id);
+              // Save the result;
+              PoseResult pose_result;
+              pose_result.R_ = R_mat.t();
+              pose_result.T_ = -R_mat * tvec;
+              pose_result.object_id_ = object_id;
               std::cout << R_mat << std::endl;
               std::cout << tvec << std::endl;
 
@@ -228,11 +227,6 @@ namespace object_recognition
 
               adjacency_ransac.InvalidateQueryIndices(query_indices);
             }
-
-            // Save all the poses;
-            Rs_final.insert(Rs_final.end(), Rs.begin(), Rs.end());
-            Ts_final.insert(Ts_final.end(), Ts.begin(), Ts.end());
-            object_ids_final.insert(object_ids_final.end(), object_ids.begin(), object_ids.end());
 
             // Clear the adjacency matrix
             adjacency_ransac.clear_adjacency();
@@ -265,13 +259,10 @@ namespace object_recognition
             cv::imshow("inliers", output_img);
           }
 
-          outputs["Rs"] << Rs_final;
-          outputs["Ts"] << Ts_final;
-          outputs["object_ids"] << object_ids_final;
-          std::cout << "********************* found " << object_ids_final.size() << " poses" << std::endl;
+          std::cout << "********************* found " << pose_results_->size() << " poses" << std::endl;
         }
 
-        return 0;
+        return ecto::OK;
       }
     private:
       /** List of very different colors, for debugging purposes */
@@ -284,6 +275,8 @@ namespace object_recognition
       ecto::spore<unsigned int> n_ransac_iterations_;
       /** How much can the sensor be wrong at most */
       ecto::spore<float> sensor_error_;
+      /** The object recognition results */
+      ecto::spore<std::vector<PoseResult> > pose_results_;
     }
     ;
   }

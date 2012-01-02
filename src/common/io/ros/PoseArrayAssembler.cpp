@@ -50,11 +50,13 @@
 
 #include <opencv2/core/core.hpp>
 
-#include "object_recognition/common/types.h"
-#include "object_recognition/db/db.h"
+#include <object_recognition/common/io.h>
+#include <object_recognition/common/types.h>
+#include <object_recognition/db/db.h>
 
 namespace bp = boost::python;
 using object_recognition::db::ObjectId;
+using object_recognition::io::PoseResult;
 
 namespace
 {
@@ -130,10 +132,8 @@ namespace object_recognition
     static void
     declare_io(const ecto::tendrils& params, ecto::tendrils& inputs, ecto::tendrils& outputs)
     {
-      inputs.declare<std::vector<ObjectId> >("object_ids", "the id's of the found objects");
       inputs.declare<sensor_msgs::ImageConstPtr>("image_message", "the image message to get the header");
-      inputs.declare<std::vector<cv::Mat> >("Rs", "The rotation matrices of the poses of the found objects");
-      inputs.declare<std::vector<cv::Mat> >("Ts", "The translation matrices of the poses of the found objects");
+      inputs.declare(&PoseArrayAssembler::pose_results_, "pose_results", "The results of object recognition");
 
       outputs.declare<PoseArrayMsgPtr>("pose_message", "The poses");
       outputs.declare<ObjectIdsMsgPtr>("object_ids_message", "The poses");
@@ -147,10 +147,7 @@ namespace object_recognition
 
       db_params_ = params["db_params"];
 
-      Rs_ = inputs["Rs"];
-      Ts_ = inputs["Ts"];
       image_message_ = inputs["image_message"];
-      object_ids_ = inputs["object_ids"];
       bp::object mapping;
       params["mapping"] >> mapping;
       bp::list l = bp::dict(mapping).items();
@@ -190,77 +187,76 @@ namespace object_recognition
       pose_array_msg.header.stamp = time;
       MarkerArrayMsg marker_array;
 
-      BOOST_FOREACH(const ObjectId &object_id, *object_ids_)
-            if (object_id_to_index_.find(object_id) == object_id_to_index_.end())
-              object_id_to_index_[object_id] = object_id_to_index_.size();
+      BOOST_FOREACH(const PoseResult & pose_result, *pose_results_)
+            if (object_id_to_index_.find(pose_result.object_id_) == object_id_to_index_.end())
+              object_id_to_index_[pose_result.object_id_] = object_id_to_index_.size();
 
       // Create poses and fill them in the message
       {
         std::vector<geometry_msgs::Pose> &poses = pose_array_msg.poses;
-        poses.resize(Rs_->size());
+        poses.resize(pose_results_->size());
 
-        unsigned int i;
-        for (i = 0; i < Rs_->size(); ++i)
-        {
-          cv::Mat_<float> T, R;
-          (*Ts_)[i].convertTo(T, CV_32F);
-          (*Rs_)[i].convertTo(R, CV_32F);
+        unsigned int marker_id = 0;
+        BOOST_FOREACH(const PoseResult & pose_result, *pose_results_)
+            {
+              cv::Mat_<float> T, R;
+              pose_result.T_.convertTo(T, CV_32F);
+              pose_result.R_.convertTo(R, CV_32F);
 
-          geometry_msgs::Pose & msg_pose = poses[i];
+              geometry_msgs::Pose & msg_pose = poses[marker_id];
 
-          Eigen::Matrix3f rotation_matrix;
-          for (unsigned int j = 0; j < 3; ++j)
-            for (unsigned int i = 0; i < 3; ++i)
-              rotation_matrix(j, i) = R(j, i);
+              Eigen::Matrix3f rotation_matrix;
+              for (unsigned int j = 0; j < 3; ++j)
+                for (unsigned int i = 0; i < 3; ++i)
+                  rotation_matrix(j, i) = R(j, i);
 
-          Eigen::Quaternion<float> quaternion(rotation_matrix);
+              Eigen::Quaternion<float> quaternion(rotation_matrix);
 
-          msg_pose.position.x = T(0);
-          msg_pose.position.y = T(1);
-          msg_pose.position.z = T(2);
-          msg_pose.orientation.x = quaternion.x();
-          msg_pose.orientation.y = quaternion.y();
-          msg_pose.orientation.z = quaternion.z();
-          msg_pose.orientation.w = quaternion.w();
+              msg_pose.position.x = T(0);
+              msg_pose.position.y = T(1);
+              msg_pose.position.z = T(2);
+              msg_pose.orientation.x = quaternion.x();
+              msg_pose.orientation.y = quaternion.y();
+              msg_pose.orientation.z = quaternion.z();
+              msg_pose.orientation.w = quaternion.w();
 
-          visualization_msgs::Marker marker;
-          marker.pose = msg_pose;
-          marker.type = visualization_msgs::Marker::MESH_RESOURCE;
-          marker.action = visualization_msgs::Marker::ADD;
-          marker.lifetime = ros::Duration(30);
-          marker.header = pose_array_msg.header;
-          marker.scale.x = 1;
-          marker.scale.y = 1;
-          marker.scale.z = 1;
+              visualization_msgs::Marker marker;
+              marker.pose = msg_pose;
+              marker.type = visualization_msgs::Marker::MESH_RESOURCE;
+              marker.action = visualization_msgs::Marker::ADD;
+              marker.lifetime = ros::Duration(30);
+              marker.header = pose_array_msg.header;
+              marker.scale.x = 1;
+              marker.scale.y = 1;
+              marker.scale.z = 1;
 
-          float hue = (360.0 / object_id_to_index_.size()) * object_id_to_index_[(*object_ids_)[i]];
+              float hue = (360.0 / object_id_to_index_.size()) * object_id_to_index_[pose_result.object_id_];
 
-          float r, g, b;
-          hsv2rgb(hue, 0.7, 1, r, g, b);
+              float r, g, b;
+              hsv2rgb(hue, 0.7, 1, r, g, b);
 
-          marker.color.a = 0.75;
-          marker.color.g = g;
-          marker.color.b = b;
-          marker.color.r = r;
-          marker.id = i;
-          //http://localhost:5984/object_recognition/_design/models/_view/by_object_id_and_mesh?key=%2212a1e6eb663a41f8a4fb9baa060f191c%22
-          if (db_params_->type_ == db::ObjectDbParameters::COUCHDB)
-            marker.mesh_resource = db_params_->root_ + std::string("/") + db_params_->collection_ + "/"
-                                   + get_mesh_id((*object_ids_)[i])
-                                   + "/mesh.stl";
-          marker_array.markers.push_back(marker);
-          marker.type = visualization_msgs::Marker::TEXT_VIEW_FACING;
-          marker.text = get_object_name((*object_ids_)[i]);
-          marker.id += Rs_->size();
-          marker.color.a = 1;
-          marker.color.g = 1;
-          marker.color.b = 1;
-          marker.color.r = 1;
-          marker.scale.z = 0.03;
-          marker.lifetime = ros::Duration(10);
+              marker.color.a = 0.75;
+              marker.color.g = g;
+              marker.color.b = b;
+              marker.color.r = r;
+              marker.id = marker_id;
+              //http://localhost:5984/object_recognition/_design/models/_view/by_object_id_and_mesh?key=%2212a1e6eb663a41f8a4fb9baa060f191c%22
+              if (db_params_->type_ == db::ObjectDbParameters::COUCHDB)
+                marker.mesh_resource = db_params_->root_ + std::string("/") + db_params_->collection_ + "/"
+                                       + get_mesh_id(pose_result.object_id_)
+                                       + "/mesh.stl";
+              marker_array.markers.push_back(marker);
+              marker.type = visualization_msgs::Marker::TEXT_VIEW_FACING;
+              marker.text = get_object_name(pose_result.object_id_);
+              marker.color.a = 1;
+              marker.color.g = 1;
+              marker.color.b = 1;
+              marker.color.r = 1;
+              marker.scale.z = 0.03;
+              marker.lifetime = ros::Duration(10);
 
-          marker_array.markers.push_back(marker);
-        }
+              marker_array.markers.push_back(marker);
+            }
       }
 
       // Add the object ids to the message
@@ -268,8 +264,8 @@ namespace object_recognition
         or_json::mObject object_ids_param_tree;
 
         std::vector<or_json::mValue> object_ids_array;
-        BOOST_FOREACH(const ObjectId & object_id, *object_ids_)
-              object_ids_array.push_back(or_json::mValue(object_id));
+        BOOST_FOREACH(const PoseResult & pose_result, *pose_results_)
+              object_ids_array.push_back(or_json::mValue(pose_result.object_id_));
         object_ids_param_tree["object_ids"] = or_json::mValue(object_ids_array);
 
         std::stringstream ssparams;
@@ -285,9 +281,7 @@ namespace object_recognition
       return 0;
     }
   private:
-    ecto::spore<std::vector<cv::Mat> > Rs_;
-    ecto::spore<std::vector<cv::Mat> > Ts_;
-    ecto::spore<std::vector<std::string> > object_ids_;
+    ecto::spore<std::vector<PoseResult> > pose_results_;
     ecto::spore<sensor_msgs::ImageConstPtr> image_message_;
 
     std::map<std::string, std::pair<std::string, std::string> > mapping_;

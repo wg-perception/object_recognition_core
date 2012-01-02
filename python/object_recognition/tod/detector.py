@@ -49,9 +49,7 @@ class TodDetector(ecto.BlackBox):
         i.forward('mask', cell_name='feature_descriptor', cell_key='mask')
         i.forward('points3d', cell_name='guess_generator', cell_key='points3d')
 
-        o.forward('object_ids', cell_name='guess_generator', cell_key='object_ids')
-        o.forward('Rs', cell_name='guess_generator', cell_key='Rs')
-        o.forward('Ts', cell_name='guess_generator', cell_key='Ts')
+        o.forward('pose_results', cell_name='guess_generator', cell_key='pose_results')
         o.forward('keypoints', cell_name='feature_descriptor', cell_key='keypoints')
 
     def configure(self, p, _i, _o):

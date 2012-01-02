@@ -63,7 +63,6 @@ if __name__ == '__main__':
     # link the different voters to the sinks
     for voter_id, voter_param in voter_params.iteritems():
         voter = voter_cells[voter_id]
-        print voter_param
         for sink_id in voter_param.get('sinks', []):
             plasm = connect_cells(voter, sink_cells[sink_id], plasm)
 

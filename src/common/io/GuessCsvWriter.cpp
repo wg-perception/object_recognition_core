@@ -19,19 +19,17 @@
 
 #include <iostream>
 
+#include <object_recognition/common/io.h>
 #include "csv.h"
 
-typedef unsigned int ObjectId;
-
 using ecto::tendrils;
+using object_recognition::db::ObjectId;
 
 namespace object_recognition
 {
   namespace io
   {
-
-    /** Ecto implementation of a module that takes
-     *
+    /** Ecto implementation of a module that takes object recognition results and writes them to a CSV file
      */
     struct GuessCsvWriter
     {
@@ -45,9 +43,7 @@ namespace object_recognition
       static void
       declare_io(const tendrils& params, tendrils& inputs, tendrils& outputs)
       {
-        inputs.declare<std::vector<ObjectId> >("object_ids", "the id's of the found objects");
-        inputs.declare<std::vector<cv::Mat> >("Rs", "The rotations of the poses of the found objects");
-        inputs.declare<std::vector<cv::Mat> >("Ts", "The translations of the poses of the found objects");
+        inputs.declare(&GuessCsvWriter::pose_results_, "pose_results", "The results of object recognition");
       }
 
       void
@@ -66,43 +62,41 @@ namespace object_recognition
       process(const tendrils& inputs, const tendrils& outputs)
       {
         // match to our objects
-        const std::vector<ObjectId> &object_ids = inputs.get<std::vector<ObjectId> >("object_ids");
-        const std::vector<cv::Mat> &Rs = inputs.get<std::vector<cv::Mat> >("Rs");
-        const std::vector<cv::Mat> &Ts = inputs.get<std::vector<cv::Mat> >("Ts");
-
         RunInfo run_info;
         run_info.ts.set();
         run_info.runID = run_number_;
         run_info.name = team_name_;
         CSVOutput csv_out = openCSV(run_info);
         int dID = 0; //detection id
-        for (unsigned int i = 0; i < object_ids.size(); ++i)
-        {
-          const ObjectId & object_id = object_ids[i];
-          cv::Mat_<float> R, T;
-          Rs[i].convertTo(R, CV_32F);
-          Ts[i].convertTo(T, CV_32F);
+        BOOST_FOREACH(const PoseResult & pose_result, *pose_results_)
+            {
+              const ObjectId & object_id = pose_result.object_id_;
+              cv::Mat_<float> R, T;
+              pose_result.R_.convertTo(R, CV_32F);
+              pose_result.T_.convertTo(T, CV_32F);
 
-          PoseInfo poseInfo;
-          for (int i = 0; i < 9; i++)
-            poseInfo.Rot[i] = R.at<float>(i % 3, i / 3);
+              PoseInfo poseInfo;
+              for (int i = 0; i < 9; i++)
+                poseInfo.Rot[i] = R.at<float>(i % 3, i / 3);
 
-          poseInfo.Tx = T.at<float>(0);
-          poseInfo.Ty = T.at<float>(1);
-          poseInfo.Tz = T.at<float>(2);
-          poseInfo.ts.set();
-          //poseInfo.frame = point_cloud.header.seq;
-          poseInfo.oID = object_id;
-          std::cout << "Found object " << object_id << " with pose (R,t) = " << std::endl << R << " " << T << std::endl;
-          poseInfo.dID = dID++; //training (only one detection per frame)
-          writeCSV(csv_out, poseInfo);
-        }
+              poseInfo.Tx = T.at<float>(0);
+              poseInfo.Ty = T.at<float>(1);
+              poseInfo.Tz = T.at<float>(2);
+              poseInfo.ts.set();
+              //poseInfo.frame = point_cloud.header.seq;
+              poseInfo.oID = object_id;
+              std::cout << "Found object " << object_id << " with pose (R,t) = " << std::endl << R << " " << T
+                        << std::endl;
+              poseInfo.dID = dID++; //training (only one detection per frame)
+              writeCSV(csv_out, poseInfo);
+            }
 
         return 0;
       }
     private:
       int run_number_;
       std::string team_name_;
+      ecto::spore<std::vector<PoseResult> > pose_results_;
     };
   }
 }

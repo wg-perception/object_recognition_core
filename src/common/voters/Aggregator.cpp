@@ -40,6 +40,9 @@
 #include <ecto/ecto.hpp>
 
 #include <object_recognition/common/types.h>
+#include <object_recognition/common/io.h>
+
+using object_recognition::io::PoseResult;
 
 namespace object_recognition
 {
@@ -60,33 +63,25 @@ namespace object_recognition
       }
 
       static void
-      declare_io(const ecto::tendrils& p, ecto::tendrils& in, ecto::tendrils& out)
+      declare_io(const ecto::tendrils& p, ecto::tendrils& inputs, ecto::tendrils& outputs)
       {
         unsigned int ninput = p.get<unsigned int>("n_inputs");
         //inputs
         for (unsigned int i = 0; i < ninput; i++)
         {
-          in.declare<std::vector<cv::Mat> >(get_input_string("Rs", i), "The rotation matrices of the object poses");
-          in.declare<std::vector<cv::Mat> >(get_input_string("Ts", i), "The translation matrices of the object poses");
-          in.declare<std::vector<db::ObjectId> >(get_input_string("object_ids", i),
-                                                 "The object ids of the found objects");
+          inputs.declare<std::vector<PoseResult> >(get_input_string("pose_results", i),
+                                                   "The results of object recognition");
         }
 
         //output
-        out.declare(&Aggregator::output_Rs_, "Rs", "The rotation matrices of the object poses");
-        out.declare(&Aggregator::output_Ts_, "Ts", "The translation matrices of the object poses");
-        out.declare(&Aggregator::output_object_ids_, "object_ids", "The object ids of the found objects");
+        outputs.declare(&Aggregator::output_pose_results_, "pose_results", "The results of object recognition");
       }
 
       void
       configure(const ecto::tendrils& p, const ecto::tendrils& in, const ecto::tendrils& out)
       {
         for (unsigned int i = 0; i < in.size(); i++)
-        {
-          input_Rs_.push_back(in[get_input_string("Rs", i)]);
-          input_Ts_.push_back(in[get_input_string("Ts", i)]);
-          input_object_ids_.push_back(in[get_input_string("object_ids", i)]);
-        }
+          input_pose_results_.push_back(in[get_input_string("pose_results", i)]);
       }
 
       int
@@ -94,28 +89,22 @@ namespace object_recognition
       {
         // Figure out the number of inputs
         unsigned int n_objects = 0;
-        for (unsigned int i = 0; i < input_Rs_.size(); i++)
-          n_objects += input_Rs_[i]->size();
+        for (unsigned int i = 0; i < input_pose_results_.size(); i++)
+          n_objects += input_pose_results_[i]->size();
 
-        output_Rs_->resize(n_objects);
-        output_Ts_->resize(n_objects);
-        output_object_ids_->resize(n_objects);
-
-        for (unsigned int i = 0; i < input_Rs_.size(); i++)
+        output_pose_results_->resize(n_objects);
+        std::vector<PoseResult>::iterator end = output_pose_results_->begin();
+        for (unsigned int i = 0; i < input_pose_results_.size(); i++)
         {
-          std::copy(input_Rs_[i]->begin(), input_Rs_[i]->end(), output_Rs_->begin());
-          std::copy(input_Ts_[i]->begin(), input_Ts_[i]->end(), output_Ts_->begin());
-          std::copy(input_object_ids_[i]->begin(), input_object_ids_[i]->end(), output_object_ids_->begin());
+          std::copy(input_pose_results_[i]->begin(), input_pose_results_[i]->end(), end);
+          end += input_pose_results_[i]->size();
         }
+
         return ecto::OK;
       }
 
-      std::vector<ecto::spore<std::vector<cv::Mat> > > input_Rs_;
-      std::vector<ecto::spore<std::vector<cv::Mat> > > input_Ts_;
-      std::vector<ecto::spore<std::vector<db::ObjectId> > > input_object_ids_;
-      ecto::spore<std::vector<cv::Mat> > output_Rs_;
-      ecto::spore<std::vector<cv::Mat> > output_Ts_;
-      ecto::spore<std::vector<db::ObjectId> > output_object_ids_;
+      std::vector<ecto::spore<std::vector<PoseResult> > > input_pose_results_;
+      ecto::spore<std::vector<PoseResult> > output_pose_results_;
     };
   }
 }
