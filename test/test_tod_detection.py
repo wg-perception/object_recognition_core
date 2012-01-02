@@ -7,6 +7,6 @@ import ecto
 T = TodDetectionPipeline()
 
 submethod = {'descriptor': {'type':'ORB'}}
-parameters = {'feature': {'type': 'ORB'}, 'search': {}, 'guess':{}, 'db': {'type': 'CouchDB', 'root': 'http://localhost:5984'}}
+parameters = {'feature': {'type': 'ORB'}, 'object_ids': [], 'search': {}, 'guess':{}, 'db': {'type': 'CouchDB', 'root': 'http://localhost:5984'}}
 
-T.detector(submethod=submethod, parameters=parameters, object_ids=[])
+T.detector(submethod=submethod, parameters=parameters)
