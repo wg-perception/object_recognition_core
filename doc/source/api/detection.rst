@@ -38,7 +38,7 @@ The cell is bit different from the ModelWriter as it reads several models at onc
 
       // The next 4 functions are the standard ecto cells ones
       static void
-      declare_io(const ecto::tendrils& params, ecto::tendrils& inputs, ecto::tendrils& outputs)
+      declare_params(ecto::tendrils& params)
       {
       }
 

@@ -9,8 +9,6 @@ Cells API
 
 .. ectomodule:: ecto_object_recognition.filters
 
-.. ectomodule:: ecto_object_recognition.capture
-
 .. ectomodule:: ecto_object_recognition.reconstruction
 
 .. ectomodule:: ecto_object_recognition.tod_training
