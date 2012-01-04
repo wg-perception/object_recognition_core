@@ -36,27 +36,63 @@
 #ifndef VIEW_TYPES_H_
 #define VIEW_TYPES_H_
 
-#include "object_recognition/common/types.h"
+#include <object_recognition/common/json_spirit/json_spirit.h>
+#include <object_recognition/common/types.h>
 
 namespace object_recognition
 {
   namespace db
   {
     // Forward declare the base class
-    class ObjectDbBase;
+    class ObjectDb;
+    class Document;
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    /** Contains the different values return when doing a query as mentioned here:
+     * http://wiki.apache.org/couchdb/Introduction_to_CouchDB_views
+     */
+    class ViewElement
+    {
+    public:
+      ViewElement(const std::string &id, const or_json::mValue & key, const or_json::mValue & value)
+          :
+            id_(id),
+            key_(key),
+            value_(value)
+      {
+      }
+
+      bool
+      operator==(const ViewElement & view_element) const
+      {
+        return id_ == view_element.id_;
+      }
+
+      std::string id_;
+      or_json::mValue key_;
+      or_json::mValue value_;
+    };
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     /** A view can be of different type, and for each, the Initialize function needs to be called with the right
      * arguments
-     * VIEW_MODEL_WHERE_OBJECT_ID_AND_MODEL_TYPE: Initialize(std::string object_id, st::string model_type)
+     * VIEW_MODEL_WHERE_OBJECT_ID_AND_MODEL_TYPE: Initialize(std::string model_type)
      */
     class View
     {
     public:
+      typedef or_json::mValue Key;
+      typedef or_json::mValue Value;
+
+      /** The list of possible Views
+       * When updating it, make sure to update AllViewTypes
+       */
       enum ViewType
       {
         VIEW_MODEL_WHERE_OBJECT_ID_AND_MODEL_TYPE
+      //!< VIEW_MODEL_WHERE_OBJECT_ID_AND_MODEL_TYPE
       };
 
       View(ViewType type)
@@ -65,25 +101,64 @@ namespace object_recognition
       }
 
       void
-      Initialize(const std::string & arg1, const std::string &arg2)
+      Initialize(const std::string & arg1)
       {
         switch (type_)
         {
           case VIEW_MODEL_WHERE_OBJECT_ID_AND_MODEL_TYPE:
-            //TODO
-            parameters_["object_id"] = or_json::mValue(arg1);
-            parameters_["model_type"] = or_json::mValue(arg2);
+            parameters_["model_type"] = or_json::mValue(arg1);
             break;
           default:
-            throw std::runtime_error("Not a valid View type for initialization arguments: std::string, std::string");
+            throw std::runtime_error("Not a valid View type for initialization arguments: std::string");
             break;
         }
       }
+
+      /** Given a document, returns whether it is in the view, and if so, returns the key and value
+       * @param document
+       * @param key
+       * @param value
+       * @return
+       */
+      bool
+      GetKey(const or_json::mObject & document, Key & key, Value & value);
+
+      /** Set the results to have one specific key
+       * @param key
+       */
+      void
+      set_key(const Key & key);
+
+      /** Set the view to return all results, no matter the key
+       */
+      void
+      unset_key();
+
+      /** Return the key to which the view is set
+       * @param key
+       * @return true if the key is set, false otherwise
+       */
+      bool
+      key(Key & key)
+      {
+        key = key_;
+        return is_key_set_;
+      }
+
+      static std::vector<ViewType>
+      AllViewTypes()
+      {
+        View::ViewType all_views[] =
+        { View::VIEW_MODEL_WHERE_OBJECT_ID_AND_MODEL_TYPE };
+        return std::vector<View::ViewType>(all_views, all_views + 1);
+      }
+
       ViewType
       type() const
       {
         return type_;
       }
+
       const or_json::mObject &
       parameters() const
       {
@@ -92,6 +167,8 @@ namespace object_recognition
     private:
       ViewType type_;
       or_json::mObject parameters_;
+      bool is_key_set_;
+      or_json::mValue key_;
     };
   }
 }

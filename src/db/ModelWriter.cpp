@@ -89,7 +89,6 @@ namespace object_recognition
       int
       process(const ecto::tendrils& inputs, const ecto::tendrils& outputs)
       {
-        //TODO move this logic to a function call.
         Document doc_new = *db_document_;
         doc_new.update_db(db_);
         PopulateDoc(*object_id_, *session_ids_, *model_method_, *model_submethod_, *model_parameters_, doc_new);
@@ -99,7 +98,8 @@ namespace object_recognition
 
         // Find all the models of that type for that object
         View view(View::VIEW_MODEL_WHERE_OBJECT_ID_AND_MODEL_TYPE);
-        view.Initialize(*object_id_, *model_method_);
+        view.Initialize(*model_method_);
+        view.set_key(*object_id_);
         ViewIterator view_iterator(view, db_);
 
         ViewIterator iter = view_iterator.begin(), end = view_iterator.end();
@@ -111,7 +111,7 @@ namespace object_recognition
           // Yes, this is ugly but it's to make sure that we convert the old databases to the new style
           try
           {
-            db_parameters = (*iter).get_value("subtype");
+            db_parameters = (*iter).value_.get_obj().find("subtype")->second;
           } catch (...)
           {
             is_incomplete_model_type = true;
@@ -120,8 +120,9 @@ namespace object_recognition
           // If they are the same, delete the current model in the database
           if ((CompareJsonIntersection(in_parameters, db_parameters)) || is_incomplete_model_type)
           {
-            std::cout << "Deleting the previous model " << (*iter).id() << " of object " << *object_id_ << std::endl;
-            db_.Delete((*iter).id());
+            DocumentId model_id = (*iter).value_.get_obj().find("key")->second.get_str();
+            std::cout << "Deleting the previous model " << model_id << " of object " << *object_id_ << std::endl;
+            db_.Delete(model_id);
           }
         }
         doc_new.Persist();

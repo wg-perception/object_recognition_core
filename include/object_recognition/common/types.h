@@ -35,6 +35,8 @@
 #ifndef TYPES_H_
 #define TYPES_H_
 
+#include <string>
+
 namespace object_recognition
 {
   namespace db

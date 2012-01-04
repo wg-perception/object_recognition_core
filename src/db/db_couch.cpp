@@ -193,7 +193,7 @@ ObjectDbCouch::Delete(const ObjectId & id)
 
 void
 ObjectDbCouch::Query(const object_recognition::db::View & view, int limit_rows, int start_offset, int& total_rows,
-                     int& offset, std::vector<DocumentId> & document_ids)
+                     int& offset, std::vector<ViewElement> & view_elements)
 {
   json_reader_stream_.str("");
   or_json::mObject parameters = view.parameters();
@@ -204,17 +204,20 @@ ObjectDbCouch::Query(const object_recognition::db::View & view, int limit_rows, 
     case object_recognition::db::View::VIEW_MODEL_WHERE_OBJECT_ID_AND_MODEL_TYPE:
       url = root_ + "/" + collection_ + "/_design/models/_view/by_object_id_and_" + parameters["model_type"].get_str();
       do_throw = false;
+
+      ObjectId object_id;
+      const std::string options;
+      if (view.key(object_id))
+        options = "&startkey=\"" + object_id + "\"&endkey=\"" + object_id + "\"";
+      QueryView(url, limit_rows, start_offset, options, total_rows, offset, view_elements, do_throw);
+
       break;
   }
-
-  ObjectId object_id = parameters["object_id"].get_str();
-  QueryView(url, limit_rows, start_offset, "&startkey=\"" + object_id + "\"&endkey=\"" + object_id + "\"", total_rows,
-            offset, document_ids, do_throw);
 }
 
 void
 ObjectDbCouch::Query(const std::vector<std::string> & queries, int limit_rows, int start_offset, int& total_rows,
-                     int& offset, std::vector<DocumentId> & document_ids)
+                     int& offset, std::vector<ViewElement> & view_elements)
 {
   {
     or_json::mObject fields;
@@ -226,7 +229,7 @@ ObjectDbCouch::Query(const std::vector<std::string> & queries, int limit_rows, i
     write_json(fields, json_reader_stream_);
   }
 
-  QueryView(root_ + "/" + collection_ + "/_temp_view", limit_rows, start_offset, "", total_rows, offset, document_ids,
+  QueryView(root_ + "/" + collection_ + "/_temp_view", limit_rows, start_offset, "", total_rows, offset, view_elements,
             true);
 }
 
@@ -235,7 +238,7 @@ ObjectDbCouch::Query(const std::vector<std::string> & queries, int limit_rows, i
  */
 void
 ObjectDbCouch::QueryView(const std::string & in_url, int limit_rows, int start_offset, const std::string &options,
-                         int& total_rows, int& offset, std::vector<DocumentId> & document_ids, bool do_throw)
+                         int& total_rows, int& offset, std::vector<ViewElement> & view_elements, bool do_throw)
 {
   if (limit_rows <= 0)
     limit_rows = std::numeric_limits<int>::max();
@@ -270,13 +273,16 @@ ObjectDbCouch::QueryView(const std::string & in_url, int limit_rows, int start_o
   read_json(json_writer_stream_, fields);
 
   total_rows = fields["total_rows"].get_int();
-  document_ids.clear();
+  view_elements.clear();
+  view_elements.reserve(fields["rows"].get_array().size());
   BOOST_FOREACH(or_json::mValue & v, fields["rows"].get_array())
       {
         // values are: id, key, value
-        document_ids.push_back(v.get_obj()["id"].get_str());
+        const or_json::mObject & object = v.get_obj();
+        view_elements.push_back(
+            ViewElement(object.find("id")->second.get_str(), object.find("key")->second, object.find("value")->second));
       }
-  offset = fields["offset"].get_int() + document_ids.size();
+  offset = fields["offset"].get_int() + view_elements.size();
 }
 
 void

@@ -48,7 +48,6 @@
 
 #include "object_recognition/common/types.h"
 #include "object_recognition/common/json_spirit/json_spirit.h"
-#include "object_recognition/db/view_types.h"
 
 namespace object_recognition
 {
@@ -56,7 +55,8 @@ namespace object_recognition
   {
     //Forward declare some classes
     class ObjectDbBase;
-    class ViewIterator;
+    class View;
+    class ViewElement;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -107,7 +107,7 @@ namespace object_recognition
     {
     public:
       typedef boost::function<void
-      (int limit_rows, int start_offset, int& total_rows, int& offset, std::vector<DocumentId> &)> QueryFunction;
+      (int limit_rows, int start_offset, int& total_rows, int& offset, std::vector<ViewElement> &)> QueryFunction;
 
       ObjectDb()
       {
@@ -189,7 +189,7 @@ namespace object_recognition
     private:
       void
       Query_(const View &view, int limit_rows, int start_offset, int& total_rows, int& offset,
-             std::vector<DocumentId> & document_ids);
+             std::vector<ViewElement> & view_elements);
 
       /** The DB from which we'll get all the info */
       boost::shared_ptr<ObjectDbBase> db_;
@@ -335,6 +335,13 @@ namespace object_recognition
           throw std::runtime_error("Not a valid key for that JSON tree");
       }
 
+      /** Get a specific value */
+      or_json::mValue
+      fields() const
+      {
+        return or_json::mValue(fields_);
+      }
+
       /** Set a specific value */
       template<typename T>
       void
@@ -449,13 +456,7 @@ namespace object_recognition
       static const unsigned int BATCH_SIZE;
       ViewIterator();
 
-      ViewIterator(const View &view, ObjectDb& db)
-          :
-            start_offset_(0),
-            query_(db.Query(view)),
-            db_(db)
-      {
-      }
+      ViewIterator(const View &view, ObjectDb& db);
 
       /** Perform the query itself
        * @param db The db on which the query is performed
@@ -483,10 +484,10 @@ namespace object_recognition
       bool
       operator!=(const ViewIterator & document_view) const;
 
-      Document
+      ViewElement
       operator*() const;
     private:
-      std::vector<DocumentId> document_ids_;
+      std::vector<ViewElement> view_elements_;
       int start_offset_;
       int total_rows_;
       /** The strings to send to the db_ to perform the query */

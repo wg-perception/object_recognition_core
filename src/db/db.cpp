@@ -39,8 +39,9 @@
 #include "db_base.h"
 #include "db_couch.h"
 #include "db_filesystem.h"
-#include "object_recognition/db/db.h"
+#include <object_recognition/db/db.h>
 #include <object_recognition/db/opencv.h>
+#include <object_recognition/db/view_types.h>
 
 #define PRECONDITION_DB() if(!db_) throw std::runtime_error(std::string("This ObjectDb instance is uninitialized."));
 namespace object_recognition
@@ -230,10 +231,10 @@ namespace object_recognition
 
     void
     ObjectDb::Query_(const View &view, int limit_rows, int start_offset, int& total_rows, int& offset,
-                     std::vector<DocumentId> & document_ids)
+                     std::vector<ViewElement> & view_elements)
     {
       PRECONDITION_DB()
-      db_->Query(view, limit_rows, start_offset, total_rows, offset, document_ids);
+      db_->Query(view, limit_rows, start_offset, total_rows, offset, view_elements);
     }
 
     std::string
@@ -417,73 +418,7 @@ namespace object_recognition
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    const unsigned int ViewIterator::BATCH_SIZE = 100;
-
-    ViewIterator::ViewIterator()
-        :
-          start_offset_(0)
-    {
-    }
-
-    /** Set the db on which to perform the Query
-     * @param db The db on which the query is performed
-     */
-    void
-    ViewIterator::set_db(const ObjectDb & db)
-    {
-      db_ = db;
-    }
-
-    /** Perform the query itself
-     * @return an Iterator that will iterate over each result
-     */
-    ViewIterator &
-    ViewIterator::begin()
-    {
-      // Process the query and get the ids of several objects
-      query_(BATCH_SIZE, start_offset_, total_rows_, start_offset_, document_ids_);
-      return *this;
-    }
-
-    ViewIterator
-    ViewIterator::end()
-    {
-      return ViewIterator();
-    }
-
-    ViewIterator &
-    ViewIterator::operator++()
-    {
-      // If we have nothing else to pop, try to get more from the DB
-      if (document_ids_.empty())
-      {
-        // Figure out if we need to query for more document ids
-        if (start_offset_ < total_rows_)
-          query_(BATCH_SIZE, start_offset_, total_rows_, start_offset_, document_ids_);
-      }
-      else if (!document_ids_.empty())
-        document_ids_.pop_back();
-      return *this;
-    }
-
-    bool
-    ViewIterator::operator!=(const ViewIterator & document_view) const
-    {
-      if (document_view.document_ids_.empty())
-        return (!document_ids_.empty());
-      if (document_ids_.size() >= document_view.document_ids_.size())
-        return std::equal(document_ids_.begin(), document_ids_.end(), document_view.document_ids_.begin());
-      else
-        return std::equal(document_view.document_ids_.begin(), document_view.document_ids_.end(), document_ids_.begin());
-    }
-
-    Document
-    ViewIterator::operator*() const
-    {
-      return Document(db_, document_ids_.back());
-    }
-
-    // Specializations for cv::Mat
+// Specializations for cv::Mat
     template<>
     void
     Document::get_attachment<cv::Mat>(const AttachmentName &attachment_name, cv::Mat & value) const
@@ -517,6 +452,83 @@ namespace object_recognition
       ss_map[attachment_name] = value;
       object_recognition::db::mats2yaml(ss_map, ss, true);
       set_attachment_stream(attachment_name, ss, "text/x-yaml");
+    }
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    ViewIterator::ViewIterator(const View &view, ObjectDb& db)
+        :
+          start_offset_(0),
+          query_(db.Query(view)),
+          db_(db)
+    {
+    }
+
+    const unsigned int ViewIterator::BATCH_SIZE = 100;
+
+    ViewIterator::ViewIterator()
+        :
+          start_offset_(0)
+    {
+    }
+
+    /** Set the db on which to perform the Query
+     * @param db The db on which the query is performed
+     */
+    void
+    ViewIterator::set_db(const ObjectDb & db)
+    {
+      db_ = db;
+    }
+
+    /** Perform the query itself
+     * @return an Iterator that will iterate over each result
+     */
+    ViewIterator &
+    ViewIterator::begin()
+    {
+      // Process the query and get the ids of several objects
+      query_(BATCH_SIZE, start_offset_, total_rows_, start_offset_, view_elements_);
+      return *this;
+    }
+
+    ViewIterator
+    ViewIterator::end()
+    {
+      return ViewIterator();
+    }
+
+    ViewIterator &
+    ViewIterator::operator++()
+    {
+      // If we have nothing else to pop, try to get more from the DB
+      if (view_elements_.empty())
+      {
+        // Figure out if we need to query for more document ids
+        if (start_offset_ < total_rows_)
+          query_(BATCH_SIZE, start_offset_, total_rows_, start_offset_, view_elements_);
+      }
+      else if (!view_elements_.empty())
+        view_elements_.pop_back();
+      return *this;
+    }
+
+    bool
+    ViewIterator::operator!=(const ViewIterator & document_view) const
+    {
+      if (document_view.view_elements_.empty())
+        return (!view_elements_.empty());
+      if (view_elements_.size() >= document_view.view_elements_.size())
+        return std::equal(view_elements_.begin(), view_elements_.end(), document_view.view_elements_.begin());
+      else
+        return std::equal(document_view.view_elements_.begin(), document_view.view_elements_.end(),
+                          view_elements_.begin());
+    }
+
+    ViewElement
+    ViewIterator::operator*() const
+    {
+      return view_elements_.back();
     }
   }
 }

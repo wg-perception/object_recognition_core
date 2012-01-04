@@ -88,11 +88,11 @@ namespace object_recognition
       virtual
       void
       Query(const View & view, int limit_rows, int start_offset, int& total_rows, int& offset,
-            std::vector<DocumentId> & document_ids) = 0;
+            std::vector<ViewElement> & view_elements) = 0;
 
       virtual void
       Query(const std::vector<std::string> & queries, int limit_rows, int start_offset, int& total_rows, int& offset,
-            std::vector<DocumentId> & document_ids) = 0;
+            std::vector<ViewElement> & view_elements) = 0;
 
       virtual void
       set_attachment_stream(const DocumentId & document_id, const AttachmentName& attachment_name,

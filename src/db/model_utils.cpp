@@ -1,8 +1,9 @@
 #include <algorithm>
 
 #include "object_recognition/common/json_spirit/json_spirit_reader_template.h"
-#include <object_recognition/db/model_utils.h>
 #include <object_recognition/common/json.hpp>
+#include <object_recognition/db/model_utils.h>
+#include <object_recognition/db/view_types.h>
 
 namespace
 {
@@ -116,14 +117,15 @@ namespace object_recognition
       BOOST_FOREACH(const ModelId & object_id, object_ids)
           {
             View view(View::VIEW_MODEL_WHERE_OBJECT_ID_AND_MODEL_TYPE);
-            view.Initialize(object_id, method);
+            view.Initialize(method);
+            view.set_key(object_id);
             ViewIterator view_iterator = ViewIterator(view, db).begin();
 
             while (view_iterator != ViewIterator::end())
             {
               // Compare the parameters to the input ones
-              if (CompareJsonIntersection(submethod, (*view_iterator).get_value("submethod")))
-                model_documents.push_back(Document(db, (*view_iterator).id()));
+              if (CompareJsonIntersection(submethod, (*view_iterator).value_.get_obj().find("submethod")->second))
+                model_documents.push_back(Document(db, (*view_iterator).key_.get_str()));
 
               ++view_iterator;
             }

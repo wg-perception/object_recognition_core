@@ -91,6 +91,8 @@ ObjectDbFilesystem::persist_fields(const DocumentId & document_id, const or_json
   write_json(fields, file);
   file.close();
 
+  // TODO update all the views
+
   revision_id = DEFAULT_REVISION_ID_;
 }
 
@@ -151,100 +153,47 @@ ObjectDbFilesystem::get_attachment_stream(const DocumentId & document_id, const 
 }
 
 void
-ObjectDbFilesystem::Delete(const ObjectId & id)
+ObjectDbFilesystem::Delete(const DocumentId & id)
 {
   boost::filesystem::remove_all(url_id(id));
+
+  // For each pre-defined view, figure out the potential keys, and delete those
+  BOOST_FOREACH(const object_recognition::db::View::ViewType & view_type, object_recognition::db::View::AllViewTypes())
+      {
+        object_recognition::db::View view(view_type);
+        // TODO read the document from the file
+        or_json::mObject document;
+        or_json::mValue key;
+        or_json::mValue value;
+        if (view.GetKey(document, key, value))
+        {
+          // Delete the element from the view
+        }
+      }
 }
 
 void
 ObjectDbFilesystem::Query(const object_recognition::db::View & view, int limit_rows, int start_offset, int& total_rows,
-                          int& offset, std::vector<DocumentId> & document_ids)
+                          int& offset, std::vector<ViewElement> & view_elements)
 {
-  throw std::runtime_error("Function not implemented in the Filesystem DB.");
-  /*json_reader_stream_.str("");
-   or_json::mObject parameters = view.parameters();
-   std::string url;
-   bool do_throw;
-   switch (view.type())
-   {
-   case object_recognition::db::View::VIEW_MODEL_WHERE_OBJECT_ID_AND_MODEL_TYPE:
-   url = url_ + "/" + collection_ + "/_design/models/_view/by_object_id_and_" + parameters["model_type"].get_str();
-   do_throw = false;
-   break;
-   }
-
-   ObjectId object_id = parameters["object_id"].get_str();
-   QueryView(url, limit_rows, start_offset, "&startkey=\"" + object_id + "\"&endkey=\"" + object_id + "\"", total_rows,
-   offset, document_ids, do_throw);*/
+  or_json::mObject parameters = view.parameters();
+  boost::filesystem::path path;
+  switch (view.type())
+  {
+    case object_recognition::db::View::VIEW_MODEL_WHERE_OBJECT_ID_AND_MODEL_TYPE:
+      path = path_ / collection_ / "view" / "designdoc1"
+             / std::string("by_object_id_and_" + parameters["model_type"].get_str());
+      // TODO go over the symlinks in the folder and return the ids
+      throw std::runtime_error("Function not implemented in the Filesystem DB.");
+      break;
+  }
 }
 
 void
 ObjectDbFilesystem::Query(const std::vector<std::string> & queries, int limit_rows, int start_offset, int& total_rows,
-                          int& offset, std::vector<DocumentId> & document_ids)
+                          int& offset, std::vector<ViewElement> & view_elements)
 {
   throw std::runtime_error("Function not implemented in the Filesystem DB.");
-  /*{
-   or_json::mObject fields;
-   BOOST_FOREACH(const std::string& query, queries)
-   {
-   fields["map"] = or_json::mValue(query);
-   }
-   json_reader_stream_.str("");
-   write_json(fields, json_reader_stream_);
-   }
-
-   QueryView(url_ + "/" + collection_ + "/_temp_view", limit_rows, start_offset, "", total_rows, offset, document_ids,
-   true);*/
-}
-
-/** Once json_reader_stream_ has been filled, call that function to get the results of the view
- *
- */
-void
-ObjectDbFilesystem::QueryView(const std::string & in_url, int limit_rows, int start_offset, const std::string &options,
-                              int& total_rows, int& offset, std::vector<DocumentId> & document_ids, bool do_throw)
-{
-  throw std::runtime_error("Function not implemented in the Filesystem DB.");
-  /*if (limit_rows <= 0)
-   limit_rows = std::numeric_limits<int>::max();
-   json_writer_stream_.str("");
-   curl_.reset();
-   curl_.setReader(&json_reader_);
-   curl_.setWriter(&json_writer_);
-   std::string url = in_url + "?limit=" + boost::lexical_cast<std::string>(limit_rows) + "&skip="
-   + boost::lexical_cast<std::string>(start_offset)
-   + options;
-   curl_.setURL(url);
-   curl_.setHeader("Content-Type: application/json");
-   curl_.setCustomRequest("GET");
-   curl_.perform();
-
-   if (curl_.get_response_code() != object_recognition::curl::cURL::OK)
-   {
-   if (do_throw)
-   throw std::runtime_error(curl_.get_response_reason_phrase() + " : " + curl_.getURL());
-   else
-   {
-   total_rows = 0;
-   offset = 0;
-   return;
-   }
-   }
-
-   json_reader_stream_.seekg(0);
-   json_writer_stream_.seekg(0);
-
-   or_json::mObject fields;
-   read_json(json_writer_stream_, fields);
-
-   total_rows = fields["total_rows"].get_int();
-   document_ids.clear();
-   BOOST_FOREACH(or_json::mValue & v, fields["rows"].get_array())
-   {
-   // values are: id, key, value
-   document_ids.push_back(v.get_obj()["id"].get_str());
-   }
-   offset = fields["offset"].get_int() + document_ids.size();*/
 }
 
 void
@@ -283,5 +232,12 @@ ObjectDbFilesystem::DeleteCollection(const CollectionName &collection)
   std::string status;
   Status(status);
   if (boost::filesystem::exists(path_ / collection))
+  {
+    // First, figure out all the DocumentId's in the collection
+    //TODO
+    // For each, delete it (which will also delete it from the views)
+    //TODO
+    // Delete the folder infrastructure
     boost::filesystem::remove_all(path_ / collection);
+  }
 }

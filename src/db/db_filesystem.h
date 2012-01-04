@@ -42,7 +42,6 @@
 #include "db_base.h"
 #include "object_recognition/common/types.h"
 
-using object_recognition::db::View;
 using object_recognition::db::AttachmentName;
 using object_recognition::db::CollectionName;
 using object_recognition::db::DbType;
@@ -50,6 +49,8 @@ using object_recognition::db::DocumentId;
 using object_recognition::db::ObjectId;
 using object_recognition::db::MimeType;
 using object_recognition::db::RevisionId;
+using object_recognition::db::View;
+using object_recognition::db::ViewElement;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -99,16 +100,16 @@ public:
 
   virtual
   void
-  Delete(const ObjectId & id);
+  Delete(const DocumentId & id);
 
   virtual
   void
   Query(const View & view, int limit_rows, int start_offset, int& total_rows, int& offset,
-        std::vector<DocumentId> & document_ids);
+        std::vector<ViewElement> & view_elements);
 
   virtual void
   Query(const std::vector<std::string> & queries, int limit_rows, int start_offset, int& total_rows, int& offset,
-        std::vector<DocumentId> & document_ids);
+        std::vector<ViewElement> & view_elements);
 
   virtual std::string
   Status();
@@ -171,13 +172,6 @@ private:
   {
     return url_id(id) / "attachments";
   }
-
-  /** Once json_reader_stream_ has been filled, call that function to get the results of the view
-   *
-   */
-  void
-  QueryView(const CollectionName & collection_name, int limit_rows, int start_offset, const std::string &options,
-            int& total_rows, int& offset, std::vector<DocumentId> & document_ids, bool do_throw);
 
   boost::filesystem::path path_;
 };
