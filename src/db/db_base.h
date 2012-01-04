@@ -48,7 +48,7 @@
 
 #include "object_recognition/common/types.h"
 #include "object_recognition/common/json_spirit/json_spirit.h"
-#include "object_recognition/db/view_types.h"
+#include <object_recognition/db/view.h>
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 

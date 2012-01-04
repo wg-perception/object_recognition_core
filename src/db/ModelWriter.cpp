@@ -41,7 +41,7 @@
 
 #include <object_recognition/db/db.h>
 #include <object_recognition/db/model_utils.h>
-#include <object_recognition/db/view_types.h>
+#include <object_recognition/db/view.h>
 
 namespace object_recognition
 {

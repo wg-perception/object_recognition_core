@@ -205,10 +205,10 @@ ObjectDbCouch::Query(const object_recognition::db::View & view, int limit_rows, 
       url = root_ + "/" + collection_ + "/_design/models/_view/by_object_id_and_" + parameters["model_type"].get_str();
       do_throw = false;
 
-      ObjectId object_id;
-      const std::string options;
-      if (view.key(object_id))
-        options = "&startkey=\"" + object_id + "\"&endkey=\"" + object_id + "\"";
+      object_recognition::db::View::Key key;
+      std::string options;
+      if (view.key(key))
+        options = "&startkey=\"" + key.get_str() + "\"&endkey=\"" + key.get_str() + "\"";
       QueryView(url, limit_rows, start_offset, options, total_rows, offset, view_elements, do_throw);
 
       break;

@@ -45,7 +45,7 @@
 #include "object_recognition/common/json_spirit/json_spirit_reader_template.h"
 #include "object_recognition/common/types.h"
 #include "object_recognition/db/model_utils.h"
-#include "object_recognition/db/view_types.h"
+#include "object_recognition/db/view.h"
 
 namespace object_recognition
 {

@@ -24,7 +24,7 @@ add_library(object_recognition_db SHARED
   ../../include/object_recognition/common/json_spirit/json_spirit_writer.cpp
   model_utils.cpp
   observations.cpp
-  view_types.cpp
+  view.cpp
   )
 
 target_link_libraries(object_recognition_db

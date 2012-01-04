@@ -41,7 +41,7 @@
 #include "db_filesystem.h"
 #include <object_recognition/db/db.h>
 #include <object_recognition/db/opencv.h>
-#include <object_recognition/db/view_types.h>
+#include <object_recognition/db/view.h>
 
 #define PRECONDITION_DB() if(!db_) throw std::runtime_error(std::string("This ObjectDb instance is uninitialized."));
 namespace object_recognition

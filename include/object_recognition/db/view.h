@@ -139,7 +139,7 @@ namespace object_recognition
        * @return true if the key is set, false otherwise
        */
       bool
-      key(Key & key)
+      key(Key & key) const
       {
         key = key_;
         return is_key_set_;
