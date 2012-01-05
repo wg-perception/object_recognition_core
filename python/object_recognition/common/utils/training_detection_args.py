@@ -57,7 +57,8 @@ def common_read_params(do_commit):
                         default=False, help='Commit the data to the database.')
 
     ros_group = parser.add_argument_group('ROS Parameters')
-    ros_group.add_argument('--node_name', help='The name for the node', default='object_recognition')
+    ros_group.add_argument('--node_name', help='The name for the node. If "", it is not run in a ROS node',
+                           default='object_recognition')
 
     if ECTO_ROS_FOUND:
         args = parser.parse_args()
@@ -65,7 +66,7 @@ def common_read_params(do_commit):
         original_argv = sys.argv
         ecto_ros.strip_ros_args(sys.argv)
         args = parser.parse_args(args=sys.argv[1:])
-        
+
         if args.node_name:
             ecto_ros.init(original_argv, args.node_name, False)
     else:
