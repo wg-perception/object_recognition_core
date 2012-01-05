@@ -321,7 +321,7 @@ namespace object_recognition
         if (iter != fields_.end())
           return iter->second.get_value<T>();
         else
-          throw std::runtime_error("Not a valid key for that JSON tree");
+          throw std::runtime_error("\"" + key + "\" not a valid key for the JSON tree: " + or_json::write(fields_));
       }
 
       /** Get a specific value */
@@ -332,7 +332,7 @@ namespace object_recognition
         if (iter != fields_.end())
           return iter->second;
         else
-          throw std::runtime_error("Not a valid key for that JSON tree");
+          throw std::runtime_error("\"" + key + "\" not a valid key for the JSON tree: " + or_json::write(fields_));
       }
 
       /** Get a specific value */

@@ -115,7 +115,7 @@ def read_arguments_detector():
                     raise RuntimeError('The pipeline parameters has an invalid %s number' % type)
         # clean the object_ids
         pipeline_param['parameters']['object_ids'] = interpret_object_ids(args, pipeline_param['parameters']['db'],
-                                                                          pipeline_param)
+                                                                          pipeline_param['parameters'])
 
     args = vars(args)
     return source_params, pipeline_params, sink_params, voter_params, args

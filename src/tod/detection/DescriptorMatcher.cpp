@@ -207,6 +207,11 @@ namespace object_recognition
         // Perform radius search
         if (radius_)
         {
+          if (matcher_->getTrainDescriptors().empty())
+          {
+            std::cerr << "No descriptors loaded" << std::endl;
+            return ecto::OK;
+          }
           // Perform radius search
           matcher_->radiusMatch(descriptors, matches, radius_);
         }

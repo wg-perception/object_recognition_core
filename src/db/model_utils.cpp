@@ -123,9 +123,10 @@ namespace object_recognition
 
             while (view_iterator != ViewIterator::end())
             {
+              const or_json::mObject & obj = (*view_iterator).value_.get_obj();
               // Compare the parameters to the input ones
-              if (CompareJsonIntersection(submethod, (*view_iterator).value_.get_obj().find("submethod")->second))
-                model_documents.push_back(Document(db, (*view_iterator).key_.get_str()));
+              if (CompareJsonIntersection(submethod, obj.find("submethod")->second))
+                model_documents.push_back(Document(db, obj.find("_id")->second.get_str()));
 
               ++view_iterator;
             }
