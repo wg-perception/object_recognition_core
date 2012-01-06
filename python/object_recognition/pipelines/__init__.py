@@ -1,7 +1,6 @@
 '''
 Loaders for all object recognition pipelines
 '''
-import roscompat
 from abc import ABCMeta, abstractmethod
 from object_recognition.common.io.sink import Sink
 from object_recognition.common.io.source import Source
