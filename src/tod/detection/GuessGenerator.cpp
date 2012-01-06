@@ -217,6 +217,7 @@ namespace object_recognition
               pose_result.R_ = R_mat.t();
               pose_result.T_ = -R_mat * tvec;
               pose_result.object_id_ = object_id;
+              pose_results_->push_back(pose_result);
               std::cout << R_mat << std::endl;
               std::cout << tvec << std::endl;
 
