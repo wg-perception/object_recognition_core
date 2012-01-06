@@ -61,11 +61,10 @@ def common_read_params(do_commit):
                            default='object_recognition')
 
     if ECTO_ROS_FOUND:
-        args = parser.parse_args()
-
         original_argv = sys.argv
-        ecto_ros.strip_ros_args(sys.argv)
-        args = parser.parse_args(args=sys.argv[1:])
+        clean_args = sys.argv
+        ecto_ros.strip_ros_args(clean_args)
+        args = parser.parse_args(args=clean_args[1:])
 
         if args.node_name:
             ecto_ros.init(original_argv, args.node_name, False)
