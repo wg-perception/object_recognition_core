@@ -117,3 +117,5 @@ def create_detection_plasm():
         for sink in sink_cells.itervalues():
             if 'image_message' in sink.inputs and 'image_message' in source.outputs:
                 plasm.connect(source['image_message'] >> sink['image_message'])
+
+    return plasm
