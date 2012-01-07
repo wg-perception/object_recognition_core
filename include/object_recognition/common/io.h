@@ -47,6 +47,8 @@ namespace object_recognition
     class PoseResult
     {
     public:
+      PoseResult() {};
+      PoseResult(const PoseResult &pose_result) : R_(pose_result.R_), T_(pose_result.T_), object_id_(pose_result.object_id_) {};
       /** The rotation matrix of the estimated pose */
       cv::Mat R_;
       /** The translation matrix of the estimated pose */
