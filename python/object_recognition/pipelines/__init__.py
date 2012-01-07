@@ -80,7 +80,7 @@ def create_detection_plasm():
     for _pipeline_id, pipeline_param in pipeline_params.iteritems():
         pipeline = pipelines.get(pipeline_param['method'], False)
         if not pipeline:
-            sys.stderr.write('Invalid pipeline name: %s\nMake sure that the pipeline type is defined by a TrainingPipeline class, in the name class function.' % pipeline_param['type'])
+            sys.stderr.write('Invalid pipeline name: %s\nMake sure that the pipeline type is defined by a TrainingPipeline class, in the name class function.' % pipeline_param['method'])
             sys.exit(-1)
         detector = pipeline().detector(**pipeline_param)
         if 'sinks' in pipeline_param or 'voters' in pipeline_param:
