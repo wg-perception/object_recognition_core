@@ -33,7 +33,7 @@ pipeline1:
       scale_factor: 1.2
     search:
       key_size: 16
-      multi_probe_level: 2
+      multi_probe_level: 1
       n_tables: 10
       radius: 50
       ratio: 0.8

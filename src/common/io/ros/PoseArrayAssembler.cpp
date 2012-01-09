@@ -256,6 +256,7 @@ namespace object_recognition
               marker.lifetime = ros::Duration(10);
 
               marker_array.markers.push_back(marker);
+              ++marker_id;
             }
       }
 
