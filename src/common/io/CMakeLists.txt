@@ -9,6 +9,7 @@ ectomodule(io
   )
 
 link_ecto(io
+  ${OpenCV_LIBS}
   ${Boost_LIBRARIES}
   )
 
