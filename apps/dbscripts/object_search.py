@@ -9,7 +9,7 @@ def parse_args():
     parser = argparse.ArgumentParser(description='Search for an objects in the DB based on tags..')
     parser.add_argument('-t', '--tag', metavar='TAG', dest='tag', type=str, default='',
                        help='Tag to search for.')
-    object_recognition.dbtools.add_db_options(parser)
+    object_recognition.dbtools.add_db_arguments(parser)
     args = parser.parse_args()
     return args
 

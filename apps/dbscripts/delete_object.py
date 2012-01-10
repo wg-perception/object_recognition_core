@@ -9,7 +9,7 @@ def parse_args():
     parser = argparse.ArgumentParser(description='Delete objects from the database.')
     parser.add_argument('objects', metavar='OBJECT', type=str, nargs='+',
                    help='Object ids to delete.')
-    object_recognition.dbtools.add_db_options(parser)
+    object_recognition.dbtools.add_db_arguments(parser)
     args = parser.parse_args()
     return args
 

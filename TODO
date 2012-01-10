@@ -32,7 +32,8 @@ DB:
 - save models with several sets of parameters (distinctive, acquisition)
 - use a single view for all model types
 - is models.py obsolete?
-
+- fix meshing so that it uses current db interface
+- make more db manipulation scripts apps/dbscripts ... FIXME don't break these.
 Capture:
 - SBA should be a blackbox for pose adjustment: maybe in capture, or in TOD training
 - GUI for capturing obejcts on a dot pattern: the current box is hacky

@@ -31,7 +31,7 @@ def upload_mesh(db, session, cloud_file, mesh_file=None):
         print "updating model:", model
         break
     if not m:
-        m = models.Model(object_id=session.object_id, ModelType='mesh')
+        m = models.Model(object_id=session.object_id, method='mesh')
         print "creating new model."
     m.store(db)
     with open(cloud_file, 'r') as mesh:

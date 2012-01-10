@@ -5,8 +5,6 @@ Cells API
 
 .. ectomodule:: ecto_object_recognition.io_ros
 
-.. ectomodule:: ecto_object_recognition.conversion
-
 .. ectomodule:: ecto_object_recognition.filters
 
 .. ectomodule:: ecto_object_recognition.reconstruction
