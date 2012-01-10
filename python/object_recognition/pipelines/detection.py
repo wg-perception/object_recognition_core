@@ -4,7 +4,10 @@ ABC for Detection pipelines
 from abc import ABCMeta
 
 class DetectionPipeline:
-    ''' An abstract base class for creating object training pipelines.
+    '''
+    An abstract base class for creating object training pipelines.
+    When creating a new detection pipeline, it has to inherit from this one and implement the
+    type_name and detector functions.
     '''
     __metaclass__ = ABCMeta
 

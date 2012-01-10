@@ -13,18 +13,15 @@ import inspect
 import pkgutil
 import sys
 
-def find_pipelines(pipeline_params, pipeline_type):
+def find_pipelines(modules, pipeline_type):
     '''
     Given a list of python packages, or modules, find all TrainingPipeline implementations.
-    :param pipeline_params: The pipeline parameters from the config file
+    :param modules: The names of the modules to look into
     :returns: A list of TrainingPipeline implementation classes.
     '''
     pipelines = {}
     ms = []
-    for pipeline_param in pipeline_params:
-        if 'package' not in pipeline_param:
-            continue
-        module = pipeline_param['package']
+    for module in modules:
         m = __import__(module)
         ms += [m]
         for loader, module_name, is_pkg in  pkgutil.walk_packages(m.__path__):
@@ -52,7 +49,8 @@ def create_detection_plasm():
     Function that returns the detection plasm corresponding to the input arguments
     """
     source_params, pipeline_params, sink_params, voter_params, args = read_arguments_detector()
-    pipelines = find_pipelines(pipeline_params.values(), DetectionPipeline) #map of string name to pipeline class
+    pipelines = find_pipelines([ pipeline_param['package'] for pipeline_param in pipeline_params.itervalues()],
+                               DetectionPipeline) #map of string name to pipeline class
 
     # create the different source cells
     source_cells = {}

@@ -31,10 +31,8 @@ pytest(test_common_io_ros_sink)
 pytest(test_common_io_source_interface)
 pytest(test_common_io_source_creation)
 
-#these check that atleast the help completes correctly
-pytest(test_upload_help)
-pytest(test_training_help)
-pytest(test_mesh_object_help)
+# check that at least the help completes correctly
+pytest(test_help)
 
 desktop_test(view_observations)
 
