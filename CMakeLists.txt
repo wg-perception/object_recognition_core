@@ -1,5 +1,6 @@
 cmake_minimum_required(VERSION 2.8)
 project(object_recognition)
+include(cmake/test.cmake)
 include(cmake/version.cmake)
 
 if(NOT CMAKE_BUILD_TYPE)
@@ -48,7 +49,6 @@ install(DIRECTORY apps/
 #these setup the lib to be used by others
 include(cmake/install.cmake)
 include(cmake/config.cmake)
-
   
 #install targets for all things python
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/python/

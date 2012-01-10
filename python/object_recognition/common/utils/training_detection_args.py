@@ -45,6 +45,8 @@ def interpret_object_ids(args, db_params, pipeline_param):
     return list(object_ids)
 
 def common_read_params(extra_pipeline_fields, do_commit):
+    def filter_node_name(node_name):
+        return node_name
     parser = ObjectRecognitionParser()
     parser.add_argument('-c', '--config_file', help='Config file')
     parser.add_argument('--object_ids', help='If set, it overrides the list of object_ids in the config file')
@@ -58,7 +60,7 @@ def common_read_params(extra_pipeline_fields, do_commit):
 
     ros_group = parser.add_argument_group('ROS Parameters')
     ros_group.add_argument('--node_name', help='The name for the node. If "", it is not run in a ROS node',
-                           default='object_recognition')
+                           default='object_recognition', type=filter_node_name)
 
     if ECTO_ROS_FOUND:
         original_argv = sys.argv
@@ -66,7 +68,7 @@ def common_read_params(extra_pipeline_fields, do_commit):
         ecto_ros.strip_ros_args(clean_args)
         args = parser.parse_args(args=clean_args[1:])
 
-        if args.node_name:
+        if args.node_name and args.node_name != '""':
             ecto_ros.init(original_argv, args.node_name, False)
     else:
         args = parser.parse_args()
