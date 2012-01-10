@@ -19,7 +19,7 @@
 
 #include <iostream>
 
-#include <object_recognition/common/io.h>
+#include <object_recognition/common/pose_result.h>
 #include "csv.h"
 
 using ecto::tendrils;
@@ -68,12 +68,12 @@ namespace object_recognition
         run_info.name = team_name_;
         CSVOutput csv_out = openCSV(run_info);
         int dID = 0; //detection id
-        BOOST_FOREACH(const PoseResult & pose_result, *pose_results_)
+        BOOST_FOREACH(const common::PoseResult & pose_result, *pose_results_)
             {
-              const ObjectId & object_id = pose_result.object_id_;
+              const ObjectId & object_id = pose_result.object_id();
               cv::Mat_<float> R, T;
-              pose_result.R_.convertTo(R, CV_32F);
-              pose_result.T_.convertTo(T, CV_32F);
+              pose_result.R().convertTo(R, CV_32F);
+              pose_result.T().convertTo(T, CV_32F);
 
               PoseInfo poseInfo;
               for (int i = 0; i < 9; i++)
@@ -96,7 +96,7 @@ namespace object_recognition
     private:
       int run_number_;
       std::string team_name_;
-      ecto::spore<std::vector<PoseResult> > pose_results_;
+      ecto::spore<std::vector<common::PoseResult> > pose_results_;
     };
   }
 }

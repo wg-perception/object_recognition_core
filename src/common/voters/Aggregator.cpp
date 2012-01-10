@@ -40,9 +40,9 @@
 #include <ecto/ecto.hpp>
 
 #include <object_recognition/common/types.h>
-#include <object_recognition/common/io.h>
+#include <object_recognition/common/pose_result.h>
 
-using object_recognition::io::PoseResult;
+using object_recognition::common::PoseResult;
 
 namespace object_recognition
 {
