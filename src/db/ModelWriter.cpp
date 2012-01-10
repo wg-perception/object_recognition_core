@@ -94,7 +94,7 @@ namespace object_recognition
         PopulateDoc(*object_id_, *session_ids_, *model_method_, *model_submethod_, *model_parameters_, doc_new);
 
         // Read the input model parameters
-        or_json::mValue in_parameters = to_json(*model_submethod_);
+        or_json::mValue in_submethod = to_json(*model_submethod_);
 
         // Find all the models of that type for that object
         View view(View::VIEW_MODEL_WHERE_OBJECT_ID_AND_MODEL_TYPE);
@@ -107,20 +107,18 @@ namespace object_recognition
         {
           // Compare the parameters
           bool is_incomplete_model_type = false;
-          or_json::mValue db_parameters;
-          // Yes, this is ugly but it's to make sure that we convert the old databases to the new style
-          try
-          {
-            db_parameters = (*iter).value_.get_obj().find("subtype")->second;
-          } catch (...)
-          {
+          or_json::mValue db_submethod;
+
+          // If it does not have a submethod, it is the old model type, so delete it
+          if ((*iter).value_.get_obj().find("submethod") == (*iter).value_.get_obj().end())
             is_incomplete_model_type = true;
-          }
+          else
+            db_submethod = (*iter).value_.get_obj().find("submethod")->second;
 
           // If they are the same, delete the current model in the database
-          if ((CompareJsonIntersection(in_parameters, db_parameters)) || is_incomplete_model_type)
+          if ((CompareJsonIntersection(in_submethod, db_submethod)) || is_incomplete_model_type)
           {
-            DocumentId model_id = (*iter).value_.get_obj().find("key")->second.get_str();
+            DocumentId model_id = (*iter).value_.get_obj().find("_id")->second.get_str();
             std::cout << "Deleting the previous model " << model_id << " of object " << *object_id_ << std::endl;
             db_.Delete(model_id);
           }
