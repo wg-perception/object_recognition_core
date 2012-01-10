@@ -26,14 +26,13 @@ class Publisher(ecto.BlackBox):
         p.declare('pose_topic', 'The ROS topic to use for the pose array.', 'poses')
         p.declare('object_ids_topic', 'The ROS topic to use for the object meta info string', 'object_ids')
         p.declare('latched', 'Determines if the topics will be latched.', True)
-        p.declare('mapping', 'A mapping from object id to mesh id', {'na':'na'})
         p.declare('db_params', 'The DB parameters', ObjectDbParameters({}))
 
     def declare_io(self, _p, i, _o):
         i.forward_all('_pose_array_assembler')
 
     def configure(self, p, _i, _o):
-        self._pose_array_assembler = Publisher._pose_array_assembler(mapping=p.mapping, db_params=p.db_params)
+        self._pose_array_assembler = Publisher._pose_array_assembler()
         self._pose_pub = Publisher._pose_pub(topic_name=p.pose_topic, latched=p.latched)
         self._object_ids_pub = Publisher._object_ids_pub(topic_name=p.object_ids_topic, latched=p.latched)
         self._marker_pub = Publisher._marker_pub(topic_name=p.markers_topic,latched=p.latched)
@@ -42,4 +41,3 @@ class Publisher(ecto.BlackBox):
                 self._pose_array_assembler['object_ids_message'] >> self._object_ids_pub[:],
                 self._pose_array_assembler['marker_message']>> self._marker_pub[:]
                ]
-
