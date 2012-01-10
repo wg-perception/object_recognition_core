@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 import roscompat
 import object_recognition
-from object_recognition import dbtools, models
+from object_recognition import dbtools
 import couchdb
 import argparse
 
@@ -12,7 +12,7 @@ def parse_args():
     parser.add_argument('--remote_collection',
                    dest='remote_collection', type=str,
                    help='Remote collection.')
-    object_recognition.dbtools.add_db_options(parser)
+    object_recognition.dbtools.add_db_arguments(parser)
     args = parser.parse_args()
     return args
 

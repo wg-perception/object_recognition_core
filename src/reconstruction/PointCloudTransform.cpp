@@ -28,7 +28,7 @@
 #include <opencv2/core/eigen.hpp>
 #include <fstream>
 
-#include <object_recognition/common/conversions.hpp>
+#include <image_pipeline/pcl/conversions.hpp>
 #include <ecto_pcl/ecto_pcl.hpp>
 
 using ecto::tendrils;
@@ -82,7 +82,7 @@ namespace object_recognition
         pcl::concatenateFields(*cloud, normals, *cloud_with_normals);
 
         bool inverse = true;
-        Eigen::Affine3f transform = RT2Transform(*R, *T, inverse); //compute the inverse transform
+        Eigen::Affine3f transform = image_pipeline::RT2Transform(*R, *T, inverse); //compute the inverse transform
         if (*do_transform)
         {
           CloudNormalT::Ptr tempc(new CloudNormalT);

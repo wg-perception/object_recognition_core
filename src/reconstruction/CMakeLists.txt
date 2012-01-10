@@ -1,22 +1,25 @@
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
 find_ros_package(pcl) #find the ros version of pcl for now.
-
 if(NOT pcl_FOUND)
 message(STATUS "pcl could not be found, so not building reconstruction.")
 return()
 endif()
 
+find_package(image_pipeline REQUIRED)
 find_package(ecto_pcl REQUIRED)
-include_directories(${ecto_pcl_INCLUDE_DIRS})
+
+include_directories(${ecto_pcl_INCLUDE_DIRS}
+    ${image_pipeline_INCLUDE_DIRS}
+    )
 
 #deal with the objcog module
 ectomodule(reconstruction
   module.cpp
-  surfel_conversion.cpp
-  surfels.cpp
+  #surfel_conversion.cpp
+  #surfels.cpp
   reconstruction_db.cpp
-  SurfelReconstruction.cpp
+  #SurfelReconstruction.cpp
   PointCloudTransform.cpp
   PointCloudAccumulator.cpp
   PointCloudMesh.cpp
@@ -24,7 +27,7 @@ ectomodule(reconstruction
 
 set_target_properties(reconstruction_ectomodule
       PROPERTIES
-      COMPILE_FLAGS "-Wno-unknown-pragmas"
+      COMPILE_FLAGS "-Wno-unknown-pragmas -Wno-unused-but-set-variable"
       )
 
 link_ecto(reconstruction
