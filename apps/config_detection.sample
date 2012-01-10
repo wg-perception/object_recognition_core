@@ -6,10 +6,6 @@ source1:
 
 sink1:
   type: publisher
-  db:
-    type: 'CouchDB'
-    root: 'http://localhost:5984'
-    collection: 'object_recognition'
   object_ids: 'all'
 
 voter1:

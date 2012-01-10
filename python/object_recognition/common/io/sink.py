@@ -45,10 +45,7 @@ class Sink(object):
                  SinkTypes.csv_writer:GuessCsvWriter
                  }
         if sink_type == SinkTypes.publisher:
-            from ecto_object_recognition.object_recognition_db import ObjectDbParameters
-            db_params = ObjectDbParameters(kwargs.get('db'))
-            mapping = object_to_models_mapping(db_params_to_db(db_params), kwargs.get('object_ids', 'all'))
-            return Publisher(mapping=mapping, **kwargs)
+            return Publisher(**kwargs)
         else:
             return sinks[sink_type](*args, **kwargs)
 

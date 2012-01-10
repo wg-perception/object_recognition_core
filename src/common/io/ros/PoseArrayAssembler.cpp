@@ -50,13 +50,13 @@
 
 #include <opencv2/core/core.hpp>
 
-#include <object_recognition/common/io.h>
+#include <object_recognition/common/pose_result.h>
 #include <object_recognition/common/types.h>
 #include <object_recognition/db/db.h>
 
 namespace bp = boost::python;
 using object_recognition::db::ObjectId;
-using object_recognition::io::PoseResult;
+using object_recognition::common::PoseResult;
 
 namespace
 {
@@ -125,8 +125,6 @@ namespace object_recognition
     static void
     declare_params(ecto::tendrils& params)
     {
-      params.declare<bp::object>("mapping", "Mapping from object ids to mesh ids.").required(true);
-      params.declare<db::ObjectDbParameters>("db_params", "The DB parameters").required(true);
     }
 
     static void
@@ -145,33 +143,10 @@ namespace object_recognition
     {
       ecto::py::scoped_call_back_to_python scb;
 
-      db_params_ = params["db_params"];
-
       image_message_ = inputs["image_message"];
       bp::object mapping;
-      params["mapping"] >> mapping;
-      bp::list l = bp::dict(mapping).items();
-      for (int j = 0, end = bp::len(l); j < end; ++j)
-      {
-        bp::object key = l[j][0];
-        bp::object value = l[j][1];
-        std::string object_id = bp::extract<std::string>(key);
-        std::string mesh_id = bp::extract<std::string>(value[0]);
-        std::string object_name = bp::extract<std::string>(value[1]);
-        mapping_[object_id] = std::make_pair(mesh_id, object_name);
-      }
     }
 
-    std::string
-    get_mesh_id(const std::string& object_id)
-    {
-      return mapping_[object_id].first;
-    }
-    std::string
-    get_object_name(const std::string& object_id)
-    {
-      return mapping_[object_id].second;
-    }
     int
     process(const ecto::tendrils& inputs, const ecto::tendrils& outputs)
     {
@@ -187,9 +162,9 @@ namespace object_recognition
       pose_array_msg.header.stamp = time;
       MarkerArrayMsg marker_array;
 
-      BOOST_FOREACH(const PoseResult & pose_result, *pose_results_)
-            if (object_id_to_index_.find(pose_result.object_id_) == object_id_to_index_.end())
-              object_id_to_index_[pose_result.object_id_] = object_id_to_index_.size();
+      BOOST_FOREACH(const common::PoseResult & pose_result, *pose_results_)
+            if (object_id_to_index_.find(pose_result.object_id()) == object_id_to_index_.end())
+              object_id_to_index_[pose_result.object_id()] = object_id_to_index_.size();
 
       // Create poses and fill them in the message
       {
@@ -197,11 +172,11 @@ namespace object_recognition
         poses.resize(pose_results_->size());
 
         unsigned int marker_id = 0;
-        BOOST_FOREACH(const PoseResult & pose_result, *pose_results_)
+        BOOST_FOREACH(const common::PoseResult & pose_result, *pose_results_)
             {
               cv::Mat_<float> T, R;
-              pose_result.T_.convertTo(T, CV_32F);
-              pose_result.R_.convertTo(R, CV_32F);
+              pose_result.T().convertTo(T, CV_32F);
+              pose_result.R().convertTo(R, CV_32F);
 
               geometry_msgs::Pose & msg_pose = poses[marker_id];
 
@@ -230,7 +205,7 @@ namespace object_recognition
               marker.scale.y = 1;
               marker.scale.z = 1;
 
-              float hue = (360.0 / object_id_to_index_.size()) * object_id_to_index_[pose_result.object_id_];
+              float hue = (360.0 / object_id_to_index_.size()) * object_id_to_index_[pose_result.object_id()];
 
               float r, g, b;
               hsv2rgb(hue, 0.7, 1, r, g, b);
@@ -240,14 +215,10 @@ namespace object_recognition
               marker.color.b = b;
               marker.color.r = r;
               marker.id = marker_id;
-              //http://localhost:5984/object_recognition/_design/models/_view/by_object_id_and_mesh?key=%2212a1e6eb663a41f8a4fb9baa060f191c%22
-              if (db_params_->type_ == db::ObjectDbParameters::COUCHDB)
-                marker.mesh_resource = db_params_->root_ + std::string("/") + db_params_->collection_ + "/"
-                                       + get_mesh_id(pose_result.object_id_)
-                                       + "/mesh.stl";
+              marker.mesh_resource = pose_result.mesh_resource();
               marker_array.markers.push_back(marker);
               marker.type = visualization_msgs::Marker::TEXT_VIEW_FACING;
-              marker.text = get_object_name(pose_result.object_id_);
+              marker.text = pose_result.name();
               marker.color.a = 1;
               marker.color.g = 1;
               marker.color.b = 1;
@@ -266,7 +237,7 @@ namespace object_recognition
 
         std::vector<or_json::mValue> object_ids_array;
         BOOST_FOREACH(const PoseResult & pose_result, *pose_results_)
-              object_ids_array.push_back(or_json::mValue(pose_result.object_id_));
+              object_ids_array.push_back(or_json::mValue(pose_result.object_id()));
         object_ids_param_tree["object_ids"] = or_json::mValue(object_ids_array);
 
         std::stringstream ssparams;
@@ -282,12 +253,10 @@ namespace object_recognition
       return 0;
     }
   private:
-    ecto::spore<std::vector<PoseResult> > pose_results_;
+    ecto::spore<std::vector<common::PoseResult> > pose_results_;
     ecto::spore<sensor_msgs::ImageConstPtr> image_message_;
 
-    std::map<std::string, std::pair<std::string, std::string> > mapping_;
     static std::map<ObjectId, unsigned int> object_id_to_index_;
-    ecto::spore<db::ObjectDbParameters> db_params_;
   };
   std::map<ObjectId, unsigned int> PoseArrayAssembler::object_id_to_index_;
 }
