@@ -17,6 +17,7 @@ link_ecto(io_ros
     ${sensor_msgs_LIBRARIES}
     ${OpenCV_LIBS}
     object_recognition_db
+    object_recognition_common
     )
 
 install_ecto_module(io_ros)
