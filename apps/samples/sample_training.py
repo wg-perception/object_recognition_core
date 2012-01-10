@@ -13,7 +13,7 @@ def parse_args():
     parser = argparse.ArgumentParser(description='Train MyAlgorithm on views from the database.')
     parser.add_argument('objects', metavar='OBJECT', type=str, nargs='+',
                    help='Object ids to train.')
-    dbtools.add_db_options(parser)
+    dbtools.add_db_arguments(parser)
     args = parser.parse_args()
     return args
 

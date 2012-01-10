@@ -5,18 +5,15 @@ module that loads all the NIST bags and puts them in the DB
 
 from argparse import ArgumentParser
 import os
-from object_recognition.dbtools import add_db_options
+from object_recognition.dbtools import add_db_arguments
 import subprocess
 from object_recognition.ingest.bag_upload import upload_bag
 from object_recognition import models
 import roslib; roslib.load_manifest('rosbag')
-import rosbag
-from std_msgs.msg import Int32, String
 import random
 import ecto
 import ecto_ros
 import ecto_sensor_msgs
-import ecto_object_recognition
 import sys
 
 ImageBagger = ecto_sensor_msgs.Bagger_Image
@@ -78,7 +75,7 @@ if __name__ == '__main__':
 
     parser = ArgumentParser()
     parser.add_argument('--folder', dest='folder', help='The Folder where all the NIST bags are located', required=True)
-    add_db_options(parser)
+    add_db_arguments(parser)
     args = parser.parse_args()
 
     # process all the bags in the folder

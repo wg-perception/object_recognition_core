@@ -80,7 +80,7 @@ def parse_args():
     parser.add_argument('--visualize', dest='visualize', action='store_const',
                         const=True, default=False,
                         help='Turn on visiualization')
-    object_recognition.dbtools.add_db_options(parser)
+    object_recognition.dbtools.add_db_arguments(parser)
 
     sched_group = parser.add_argument_group('Scheduler Options')
     from ecto.opts import scheduler_options

@@ -2,7 +2,7 @@
 import ecto
 from ecto_opencv.highgui import imshow
 from ecto_openni import OpenNICapture, DEPTH_RGB, enumerate_devices
-from ecto_object_recognition.conversion import MatToPointCloudXYZRGB
+from image_pipeline_conversion import MatToPointCloudXYZRGB
 from ecto_pcl import PointCloudT2PointCloud, CloudViewer, XYZRGB
 from object_recognition.common.io.standalone import OpenNISource
 

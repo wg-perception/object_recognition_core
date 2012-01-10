@@ -23,7 +23,7 @@
 #include <opencv2/core/eigen.hpp>
 #include <fstream>
 
-#include <object_recognition/common/conversions.hpp>
+#include <image_pipeline/pcl/conversions.hpp>
 #include <ecto_pcl/ecto_pcl.hpp>
 
 using ecto::pcl::xyz_cloud_variant_t;

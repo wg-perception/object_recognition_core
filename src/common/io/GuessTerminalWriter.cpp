@@ -43,10 +43,10 @@
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/features2d/features2d.hpp>
 
-#include <object_recognition/common/io.h>
+#include <object_recognition/common/pose_result.h>
 
 using ecto::tendrils;
-using object_recognition::io::PoseResult;
+using object_recognition::common::PoseResult;
 using object_recognition::db::ObjectId;
 
 namespace object_recognition
@@ -80,12 +80,12 @@ namespace object_recognition
       process(const tendrils& inputs, const tendrils& outputs)
       {
         // match to our objects
-        BOOST_FOREACH(const PoseResult & pose_result, *pose_results_)
+        BOOST_FOREACH(const common::PoseResult & pose_result, *pose_results_)
             {
-              const ObjectId & object_id = pose_result.object_id_;
+              const ObjectId & object_id = pose_result.object_id();
               cv::Mat_<float> R, T;
-              pose_result.R_.convertTo(R, CV_32F);
-              pose_result.T_.convertTo(T, CV_32F);
+              pose_result.R().convertTo(R, CV_32F);
+              pose_result.T().convertTo(T, CV_32F);
 
               //poseInfo.frame = point_cloud.header.seq;
               std::cout << "Found object " << object_id << " with pose (R,t) = " << std::endl << R << " " << T
@@ -96,7 +96,7 @@ namespace object_recognition
       }
     private:
       /** The object recognition results */
-      ecto::spore<std::vector<PoseResult> > pose_results_;
+      ecto::spore<std::vector<common::PoseResult> > pose_results_;
     };
   }
 }

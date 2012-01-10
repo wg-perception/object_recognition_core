@@ -24,7 +24,7 @@
 #include <opencv2/calib3d/calib3d.hpp>
 #include <fstream>
 
-#include <object_recognition/common/conversions.hpp>
+#include <image_pipeline/pcl/conversions.hpp>
 
 using ecto::tendrils;
 namespace object_recognition

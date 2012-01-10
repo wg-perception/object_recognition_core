@@ -1,7 +1,7 @@
 /*
  * Software License Agreement (BSD License)
  *
- *  Copyright (c) 2011, Willow Garage, Inc.
+ *  Copyright (c) 2009, Willow Garage, Inc.
  *  All rights reserved.
  *
  *  Redistribution and use in source and binary forms, with or without
@@ -33,30 +33,54 @@
  *
  */
 
-#ifndef IO_H_
-#define IO_H_
+#include <map>
 
-#include "types.h"
+#include <object_recognition/common/pose_result.h>
 
 namespace object_recognition
 {
-  namespace io
+  namespace common
   {
-    /** Class storing an object recognition result: an object_id, with its pose and confidence
-     */
-    class PoseResult
+    /** Define the static member */
+    std::map<std::string, PoseResult::DbInfo> PoseResult::cached_name_mesh_id_ = std::map<std::string, DbInfo>();
+
+    /** Read the name_ and mesh_id_ from the DB and store it */
+    void
+    PoseResult::check_db() const
     {
-    public:
-      PoseResult() {};
-      PoseResult(const PoseResult &pose_result) : R_(pose_result.R_), T_(pose_result.T_), object_id_(pose_result.object_id_) {};
-      /** The rotation matrix of the estimated pose */
-      cv::Mat R_;
-      /** The translation matrix of the estimated pose */
-      cv::Mat T_;
-      /** The object id of the found object */
-      db::ObjectId object_id_;
-    };
+      if (is_db_checked_)
+        return;
+      is_db_checked_ = true;
+
+      // Check if the data is already cached
+      {
+        std::map<std::string, DbInfo>::const_iterator iter = cached_name_mesh_id_.find(cache_key());
+        if (iter != cached_name_mesh_id_.end())
+        {
+          db_info_ = iter->second;
+          return;
+        }
+      }
+
+      // Find all the models of that type for that object
+      db::View view(db::View::VIEW_MODEL_WHERE_OBJECT_ID_AND_MODEL_TYPE);
+      view.Initialize("mesh");
+      view.set_key(object_id_);
+      db::ObjectDb db(db_params_);
+      db::ViewIterator view_iterator(view, db);
+
+      db::ViewIterator iter = view_iterator.begin(), end = view_iterator.end();
+      for (; iter != end; ++iter)
+      {
+        // Get the mesh_id_
+        db_info_.mesh_id_ = (*iter).value_.get_obj().find("_id")->second.get_str();
+        // Get the object name
+        db::Document doc(db, object_id_);
+        db_info_.name_ = doc.get_value("object_name").get_str();
+      }
+
+      // Cache all the results
+      cached_name_mesh_id_[cache_key()] = db_info_;
+    }
   }
 }
-
-#endif /* IO_H_ */
