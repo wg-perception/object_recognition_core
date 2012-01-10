@@ -5,19 +5,14 @@
  *      Author: vrabaud
  */
 
+#include <iostream>
+
 #include <boost/filesystem.hpp>
 #include <boost/foreach.hpp>
 
 #include <ecto/ecto.hpp>
 
 #include <opencv2/core/core.hpp>
-#include <opencv2/imgproc/imgproc.hpp>
-#include <opencv2/features2d/features2d.hpp>
-
-#include <pcl/point_types.h>
-#include <pcl/point_cloud.h>
-
-#include <iostream>
 
 #include <object_recognition/common/pose_result.h>
 #include "csv.h"
