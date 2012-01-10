@@ -1,26 +1,30 @@
 #!/usr/bin/env python
 import roscompat
+from ecto_object_recognition.object_recognition_db import ObjectDbParameters
 from object_recognition import models
 from object_recognition.common.utils.training_detection_args import read_arguments_training
 from object_recognition.pipelines import find_pipelines
+from object_recognition.pipelines.training import TrainingPipeline
 import ecto
 import sys
-from object_recognition.pipelines.training import TrainingPipeline
 DEBUG = False
 
 if __name__ == '__main__':
     source_params, pipeline_params, sink_params, args = read_arguments_training()
-    pipelines = find_pipelines(pipeline_params.values(), TrainingPipeline) #map of string name to pipeline class
+    pipelines = find_pipelines([ pipeline_param['package'] for pipeline_param in pipeline_params.itervalues()],
+                               TrainingPipeline) #map of string name to pipeline class
 
-    for _pipeline_id, pipeline_param in pipeline_params:
+    for _pipeline_id, pipeline_param in pipeline_params.iteritems():
         pipeline = pipelines.get(pipeline_param['method'], False)
         if not pipeline:
-            sys.stderr.write('Invalid pipeline name: %s\nMake sure that the pipeline type is defined by a TrainingPipeline class, in the name class function.' % pipeline_param['type'])
+            sys.stderr.write('Invalid pipeline name: %s\nMake sure that the pipeline type is defined by a TrainingPipeline class, in the name class function.\n' % pipeline_param['method'])
             sys.exit(-1)
-        for object_id in pipeline_param['object_ids']:
+        for object_id in pipeline_param['parameters']['object_ids']:
             object_id = object_id.encode('ascii')
-            # TODO: fix that
-            db_params = pipeline_param.get('db', {})
+            db_params = pipeline_param['parameters'].get('db', {})
+            if not db_params:
+                continue
+            db_params = ObjectDbParameters(db_params)
             session_ids = models.find_all_sessions_for_object(db_params, object_id)
             for session_id in session_ids:
                 observation_ids = models.find_all_observations_for_session(db_params, session_id)

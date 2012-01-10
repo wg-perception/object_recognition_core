@@ -42,9 +42,9 @@ def interpret_object_ids(args, db_params, pipeline_param):
         # if we got some ids through the command line, just stop here
         if object_ids:
             break
-    return object_ids
+    return list(object_ids)
 
-def common_read_params(do_commit):
+def common_read_params(extra_pipeline_fields, do_commit):
     parser = ObjectRecognitionParser()
     parser.add_argument('-c', '--config_file', help='Config file')
     parser.add_argument('--object_ids', help='If set, it overrides the list of object_ids in the config file')
@@ -89,7 +89,7 @@ def common_read_params(do_commit):
             source_params[int(key[6:])] = value
         elif key.startswith('pipeline'):
             # check the different fields
-            for field in [ 'sources', 'method', 'submethod', 'package', 'parameters']:
+            for field in [ 'method', 'submethod', 'package', 'parameters'] + extra_pipeline_fields:
                 if field not in value:
                     raise RuntimeError('The pipeline parameters need to have the subfield "%s"' % field)
             pipeline_params[int(key[8:])] = value
@@ -101,11 +101,18 @@ def common_read_params(do_commit):
     return source_params, pipeline_params, sink_params, voter_params, args
 
 def read_arguments_training():
-    source_params, pipeline_params, sink_params, _voter_params, args = common_read_params(True)
+    source_params, pipeline_params, sink_params, _voter_params, args = common_read_params([], True)
+    # for each pipeline, get the right object ids
+    for _pipeline_id, pipeline_param in pipeline_params.iteritems():
+        # clean the object_ids
+        pipeline_param['parameters']['object_ids'] = interpret_object_ids(args, pipeline_param['parameters']['db'],
+                                                                          pipeline_param['parameters'])
+
+    args = vars(args)
     return source_params, pipeline_params, sink_params, args
 
 def read_arguments_detector():
-    source_params, pipeline_params, sink_params, voter_params, args = common_read_params(False)
+    source_params, pipeline_params, sink_params, voter_params, args = common_read_params([ 'sources' ], False)
 
     # for each pipeline, make sure the corresponding source/sink exist
     for _pipeline_id, pipeline_param in pipeline_params.iteritems():

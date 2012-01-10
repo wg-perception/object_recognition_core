@@ -1,12 +1,7 @@
 # info about the db
-db:
-  type: 'CouchDB'
-  root: 'http://localhost:5984'
-  collection: 'object_recognition'
-
 pipeline1:
   method: 'TOD'
-  package: 'object_recognition'
+  package: 'tod'
   submethod:
     descriptor:
       type: 'ORB'
@@ -23,6 +18,10 @@ pipeline1:
       radius: 55
       ratio: 0.8
       type: 'LSH'
+    db:
+      type: 'CouchDB'
+      root: 'http://localhost:5984'
+      collection: 'object_recognition'
 
-# The list of object_ids to analyze
-object_ids: "all"
+    # The list of object_ids to analyze
+    object_ids: "all"
