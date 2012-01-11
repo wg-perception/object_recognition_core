@@ -12,5 +12,3 @@ print 'upload'
 subprocess.check_call(['%s/../apps/upload'%path,'--help'])
 print 'mesh_object'
 subprocess.check_call(['%s/../apps/mesh_object'%path,'--help'])
-print 'feature_viewer'
-subprocess.check_call(['%s/../apps/feature_viewer'%path,'--help'])
