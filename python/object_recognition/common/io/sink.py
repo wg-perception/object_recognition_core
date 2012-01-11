@@ -86,7 +86,7 @@ def _assert_sink_interface(cell):
     for x in ['pose_results']:
         type_name = cell.inputs.at(x).type_name
         #TODO add more explicit types.
-        if type_name not in ['std::vector<object_recognition::io::PoseResult, std::allocator<object_recognition::io::PoseResult> >']:
+        if type_name not in ['std::vector<object_recognition::common::PoseResult, std::allocator<object_recognition::common::PoseResult> >']:
             raise NotImplementedError('This cell does not correctly implement the sink interface.\n'
                                       'Must have an output named %s, with type %s\n'
                                       'This cells input at %s has type %s' % (x, 'std::vector<PoseResult>', x, type_name))
