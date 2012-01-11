@@ -5,12 +5,16 @@ It is not meant to be run as a test of object_recognition but as a test for and 
 pipeline independently.
 """
 
-from object_recognition.common.utils.training_detection_args import read_arguments_detector
+from object_recognition.common.utils.training_detection_args import common_create_parser, common_parse_config_file
 from object_recognition.pipelines import find_pipelines
 from object_recognition.pipelines.detection import DetectionPipeline
 
 if __name__ == '__main__':
-    source_params, pipeline_params, sink_params, voter_params, args = read_arguments_detector()
+    # read the config file
+    parser = common_create_parser()
+    args = parser.parse_args()
+    source_params, pipeline_params, sink_params, voter_params = common_parse_config_file(args.config_file, [])
+
     pipelines = find_pipelines([ pipeline_param['package'] for pipeline_param in pipeline_params.itervalues()],
                                DetectionPipeline) #map of string name to pipeline class
 

@@ -14,19 +14,31 @@ try:
 except ImportError:
     ECTO_ROS_FOUND = False
 
-def interpret_object_ids(args, db_params, pipeline_param):
+def common_interpret_object_ids(pipeline_param_full, args=None):
     """
     Given command line arguments and the parameters of the pipeline, clean the 'object_ids' field to be a list of
     object ids
     """
-    # initialize the DB
-    db = dbtools.db_params_to_db(ObjectDbParameters(db_params))
+    db_params = pipeline_param_full['parameters']['db']
+    pipeline_param = pipeline_param_full['parameters']
 
     # read the object_ids
     object_ids = set()
-    for obj in (args.__dict__, pipeline_param):
+    if args:
+        objs = [pipeline_param]
+    else:
+        objs = [args.__dict__, pipeline_param]
+
+    for obj in objs:
         ids = obj.get('object_ids', None)
         names = obj.get('object_names', None)
+
+        if not ids and not names:
+            continue
+
+        # initialize the DB
+        db = dbtools.db_params_to_db(ObjectDbParameters(db_params))
+
         if 'all' in (ids, names):
             object_ids = set([ str(x.id) for x in models.Object.all(db) ]) #unicode without the str()
             break
@@ -42,9 +54,9 @@ def interpret_object_ids(args, db_params, pipeline_param):
         # if we got some ids through the command line, just stop here
         if object_ids:
             break
-    return list(object_ids)
+    pipeline_param_full['parameters']['object_ids'] = list(object_ids)
 
-def common_read_params(extra_pipeline_fields, do_commit):
+def common_create_parser():
     def filter_node_name(node_name):
         return node_name
     parser = ObjectRecognitionParser()
@@ -54,14 +66,12 @@ def common_read_params(extra_pipeline_fields, do_commit):
     parser.add_argument('--visualize', help='If set, it will display some windows with temporary results',
                        default=False, action='store_true')
 
-    if do_commit:
-        parser.add_argument('--commit', dest='commit', action='store_true',
-                        default=False, help='Commit the data to the database.')
-
     ros_group = parser.add_argument_group('ROS Parameters')
     ros_group.add_argument('--node_name', help='The name for the node. If "", it is not run in a ROS node',
                            default='object_recognition', type=filter_node_name)
+    return parser
 
+def common_parse_args(parser):
     if ECTO_ROS_FOUND:
         original_argv = sys.argv
         clean_args = sys.argv
@@ -73,15 +83,17 @@ def common_read_params(extra_pipeline_fields, do_commit):
     else:
         args = parser.parse_args()
 
+    return args
+
+def common_parse_config_file(config_file_path, extra_pipeline_fields):
     # define the input
-    if args.config_file is None or not os.path.exists(args.config_file):
+    if config_file_path is None or not os.path.exists(config_file_path):
         print >> sys.stderr, "The option file does not exist. --help for usage."
         sys.exit(-1)
 
-    params = yaml.load(open(args.config_file))
-    
+    params = yaml.load(open(config_file_path))
 
-        # read the different parameters from the config file, for each pipeline
+    # read the different parameters from the config file, for each pipeline
     source_params = {}
     pipeline_params = {}
     sink_params = {}
@@ -100,21 +112,28 @@ def common_read_params(extra_pipeline_fields, do_commit):
         elif key.startswith('voter'):
             voter_params[int(key[5:])] = value
 
-    return source_params, pipeline_params, sink_params, voter_params, args
+    return source_params, pipeline_params, sink_params, voter_params
 
 def read_arguments_training():
-    source_params, pipeline_params, sink_params, _voter_params, args = common_read_params([], True)
+    parser = common_create_parser()
+    parser.add_argument('--commit', dest='commit', action='store_true',
+                        default=False, help='Commit the data to the database.')
+    args = common_parse_args(parser)
+
+    source_params, pipeline_params, sink_params, _voter_params = common_parse_config_file(args.config_file, [])
     # for each pipeline, get the right object ids
     for _pipeline_id, pipeline_param in pipeline_params.iteritems():
         # clean the object_ids
-        pipeline_param['parameters']['object_ids'] = interpret_object_ids(args, pipeline_param['parameters']['db'],
-                                                                          pipeline_param['parameters'])
+        common_interpret_object_ids(pipeline_param, args)
 
     args = vars(args)
     return source_params, pipeline_params, sink_params, args
 
 def read_arguments_detector():
-    source_params, pipeline_params, sink_params, voter_params, args = common_read_params([ 'sources' ], False)
+    parser = common_create_parser()
+    args = common_parse_args(parser)
+
+    source_params, pipeline_params, sink_params, voter_params = common_parse_config_file(args.config_file, [ 'sources' ])
 
     # for each pipeline, make sure the corresponding source/sink exist
     for _pipeline_id, pipeline_param in pipeline_params.iteritems():
@@ -123,8 +142,7 @@ def read_arguments_detector():
                 if cell_id not in params:
                     raise RuntimeError('The pipeline parameters has an invalid %s number' % type)
         # clean the object_ids
-        pipeline_param['parameters']['object_ids'] = interpret_object_ids(args, pipeline_param['parameters']['db'],
-                                                                          pipeline_param['parameters'])
+        common_interpret_object_ids(pipeline_param, args)
 
     args = vars(args)
     return source_params, pipeline_params, sink_params, voter_params, args
