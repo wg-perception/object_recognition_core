@@ -30,11 +30,12 @@ command line interface
 .. program-output:: apps/training --help
    :in_srcdir:
 
-Extras
-^^^^^^
+..
+   Extras
+   ^^^^^^
 
-To verify that the model is good looking, you can (at least for the TOD models), launch the feature_viewer script in
-the apps folder.
+   To verify that the model is good looking, you can (at least for the TOD models), launch the feature_viewer script in
+   the apps folder.
 
-.. program-output:: apps/feature_viewer --help
-   :in_srcdir:
+   .. program-output:: apps/feature_viewer --help
+      :in_srcdir:
