@@ -210,7 +210,11 @@ def find_all_sessions_for_object(db_params, object_id):
         sess = db[x.id]
         sessions_by_date_added.append((sess['added'], x.id))
     sessions_by_date_added = sorted(sessions_by_date_added)
-    return zip(*sessions_by_date_added)[1]
+    tmp = zip(*sessions_by_date_added)
+    if tmp:
+        return tmp[1]
+    else:
+        return []
 
 def find_all_observations_for_object(db_params, object_id):
     ''' Finds all of the observations associated with an object, and returns a list

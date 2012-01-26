@@ -25,12 +25,12 @@ def common_interpret_object_ids(pipeline_param_full, args=None):
     # read the object_ids
     object_ids = set()
     if args:
-        objs = [pipeline_param]
-    else:
         objs = [args.__dict__, pipeline_param]
+    else:
+        objs = [pipeline_param]
 
     for obj in objs:
-        ids = obj.get('object_ids', None)
+        ids = eval(obj.get('object_ids', None))
         names = obj.get('object_names', None)
 
         if not ids and not names:
@@ -61,7 +61,7 @@ def common_create_parser():
         return node_name
     parser = ObjectRecognitionParser()
     parser.add_argument('-c', '--config_file', help='Config file')
-    parser.add_argument('--object_ids', help='If set, it overrides the list of object_ids in the config file')
+    parser.add_argument('--object_ids', help='If set, it overrides the list of object_ids in the config file. E.g.: \'["1ef112f21f12"]\'')
     parser.add_argument('--object_names', help='If set, it overrides the list of object names in the config file')
     parser.add_argument('--visualize', help='If set, it will display some windows with temporary results',
                        default=False, action='store_true')

@@ -20,6 +20,7 @@ if __name__ == '__main__':
             sys.stderr.write('Invalid pipeline name: %s\nMake sure that the pipeline type is defined by a TrainingPipeline class, in the name class function.\n' % pipeline_param['method'])
             sys.exit(-1)
         for object_id in pipeline_param['parameters']['object_ids']:
+            print 'computing object_id: %s' % object_id
             object_id = object_id.encode('ascii')
             db_params = pipeline_param['parameters'].get('db', {})
             if not db_params:
