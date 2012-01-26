@@ -24,14 +24,23 @@ macro(object_recognition_data_download PATH_VAR DATA_FILE)
   endif()
 endmacro()
 
+# macro testing a detection pipeline
 macro(object_recognition_detection_test config_file)
   add_test(${PROJECT_NAME}_detection
     ${object_recognition_SHARE_DIRS}/test/run_test.sh ${CMAKE_BINARY_DIR}/python_path.sh "${object_recognition_SHARE_DIRS}/test/test_detection_pipeline.py -c ${config_file} --node_name \"\""
     )
 endmacro()
 
+# macro testing a training pipeline
 macro(object_recognition_training_test config_file)
   add_test(${PROJECT_NAME}_training
     ${object_recognition_SHARE_DIRS}/test/run_test.sh ${CMAKE_BINARY_DIR}/python_path.sh "${object_recognition_SHARE_DIRS}/test/test_training_pipeline.py -c ${config_file} --node_name \"\""
+    )
+endmacro()
+
+# macro testing a script with --help: "script" must contain the whole path
+macro(object_recognition_help_test script)
+  add_test(${PROJECT_NAME}_help_script
+    ${object_recognition_SHARE_DIRS}/test/run_test.sh ${CMAKE_BINARY_DIR}/python_path.sh "${object_recognition_SHARE_DIRS}/test/test_help.py ${script}"
     )
 endmacro()
