@@ -71,7 +71,7 @@ def common_create_parser():
                            default='object_recognition', type=filter_node_name)
     return parser
 
-def common_parse_args(parser):
+def ros_common_parse_args(parser):
     if ECTO_ROS_FOUND:
         original_argv = sys.argv
         clean_args = sys.argv
@@ -105,7 +105,8 @@ def common_parse_config_file(config_file_path, extra_pipeline_fields):
             # check the different fields
             for field in [ 'method', 'submethod', 'package', 'parameters'] + extra_pipeline_fields:
                 if field not in value:
-                    raise RuntimeError('The pipeline parameters need to have the subfield "%s"' % field)
+                    raise RuntimeError('The pipeline parameters need to have the subfield "%s", current parameters: %s' %
+                                       (field, str(value)))
             pipeline_params[int(key[8:])] = value
         elif key.startswith('sink'):
             sink_params[int(key[4:])] = value
@@ -118,7 +119,7 @@ def read_arguments_training():
     parser = common_create_parser()
     parser.add_argument('--commit', dest='commit', action='store_true',
                         default=False, help='Commit the data to the database.')
-    args = common_parse_args(parser)
+    args = parser.parse_args()
 
     source_params, pipeline_params, sink_params, _voter_params = common_parse_config_file(args.config_file, [])
     # for each pipeline, get the right object ids
@@ -131,7 +132,7 @@ def read_arguments_training():
 
 def read_arguments_detector():
     parser = common_create_parser()
-    args = common_parse_args(parser)
+    args = ros_common_parse_args(parser)
 
     source_params, pipeline_params, sink_params, voter_params = common_parse_config_file(args.config_file, [ 'sources' ])
 
