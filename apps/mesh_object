@@ -15,6 +15,7 @@ from ecto_opencv import calib, highgui, imgproc
 import object_recognition
 from object_recognition import dbtools, models
 import image_pipeline
+import image_pipeline_conversion
 from ecto_object_recognition import reconstruction, object_recognition_db
 import ecto_pcl
 from tempfile import NamedTemporaryFile
@@ -86,7 +87,7 @@ def simple_mesh_session(dbs, session, args):
     erode = imgproc.Erode('Mask Erosion', kernel=3) #-> 7x7
     rescale_depth = image_pipeline.RescaledRegisteredDepth('Depth scaling') #this is for SXGA mode scale handling.
     point_cloud_transform = reconstruction.PointCloudTransform('Object Space Transform')
-    point_cloud_converter = image_pipeline.MatToPointCloudXYZRGB('To Point Cloud')
+    point_cloud_converter = image_pipeline_conversion.MatToPointCloudXYZRGB('To Point Cloud')
     pre_voxel = ecto_pcl.VoxelGrid("Pre Voxel Decimation", leaf_size=0.005)
     to_ecto_pcl = ecto_pcl.PointCloudT2PointCloud('converter', format=ecto_pcl.XYZRGB)
     plasm = ecto.Plasm()
