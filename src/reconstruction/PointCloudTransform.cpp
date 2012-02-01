@@ -18,8 +18,7 @@
 #include <pcl/features/integral_image_normal.h>
 #include <pcl/features/normal_3d.h>
 #include <pcl/registration/transforms.h>
-#include <pcl/kdtree/kdtree.h>
-#include <pcl/kdtree/kdtree_flann.h>
+#include <pcl/search/kdtree.h>
 #include <pcl/filters/voxel_grid.h>
 #include "opencv2/core/core.hpp"
 #include "opencv2/imgproc/imgproc.hpp"
@@ -70,10 +69,10 @@ namespace object_recognition
         CloudT::ConstPtr cloud = cloudin->cast<CloudT>();
         if(!cloud || cloud->size()<1)
           return ecto::OK;
-        pcl::KdTree<Point>::Ptr tree_;
+        pcl::search::KdTree<Point>::Ptr tree_;
         pcl::NormalEstimation<Point, pcl::Normal> impl;
         pcl::PointCloud<pcl::Normal> normals;
-        tree_.reset(new pcl::KdTreeFLANN<Point>);
+        tree_.reset(new pcl::search::KdTree<Point>);
         impl.setSearchMethod(tree_);
         impl.setInputCloud(cloud);
         impl.setKSearch(50);

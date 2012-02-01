@@ -93,7 +93,7 @@ namespace object_recognition
         typedef pcl::PointXYZRGBNormal Point;
         typedef pcl::PointCloud<Point> Cloud;
         typedef boost::shared_ptr<const Cloud> CloudT;
-        typedef pcl::KdTreeFLANN<Point> KdTree;
+        typedef pcl::search::KdTree<Point> KdTree;
         typedef KdTree::Ptr KdTreePtr;
 
         void
