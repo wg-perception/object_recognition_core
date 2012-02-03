@@ -23,6 +23,7 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/ecto_object
 find_package(Boost COMPONENTS system filesystem serialization REQUIRED)
 find_package(ecto REQUIRED)
 find_package(OpenCV REQUIRED)
+find_package(PCL REQUIRED)
 
 set_ecto_install_package_name(ecto_object_recognition)
 
@@ -30,9 +31,9 @@ configure_file(python/__init__.py.in
   ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/__init__.py
   @ONLY)
 
-ecto_python_env_gen(${CMAKE_BINARY_DIR}/lib ${CMAKE_CURRENT_SOURCE_DIR}/python)
-
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
+include_directories(SYSTEM ${PCL_INCLUDE_DIRS})
+
 add_subdirectory(src)
 add_subdirectory(web_ui)
 option(BUILD_TEST "Build tests" ON)
@@ -61,3 +62,4 @@ install(FILES ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/__init__.py
         DESTINATION ${PYTHON_PACKAGES_PATH}/ecto_object_recognition
         )
 
+catkin_add_env_hooks(10object_recognition_core SHELLS all )

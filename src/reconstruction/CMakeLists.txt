@@ -1,10 +1,6 @@
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
-find_ros_package(pcl) #find the ros version of pcl for now.
-if(NOT pcl_FOUND)
-message(STATUS "pcl could not be found, so not building reconstruction.")
-return()
-endif()
+find_package(PCL REQUIRED)
 
 find_package(image_pipeline REQUIRED)
 find_package(ecto_pcl REQUIRED)

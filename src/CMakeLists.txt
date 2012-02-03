@@ -1,9 +1,9 @@
 
 find_package(Eigen REQUIRED)
 include_directories(${EIGEN_INCLUDE_DIRS})
-find_ros_package(pcl) #find the ros version of pcl for now.
+find_package(PCL)
 
-if(NOT pcl_FOUND)
+if(NOT PCL_FOUND)
 message(FATAL_ERROR "pcl could not be found, so not building tod.")
 endif()
 

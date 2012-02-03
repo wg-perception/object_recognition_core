@@ -1,0 +1,11 @@
+Catkin-ProjectName: object_recognition_core
+Version: 0.2.3
+Description: Object_recognition_core contains tools to launch several recognition pipelines, train objects, sotre models ...
+Author: Ethan Rublee <erublee@willowgarage.com>, Vincent Rabaud <vrabaud@willowgarage.com>
+Maintainer:  Vincent Rabaud <vrabaud@willowgarage.com>
+Homepage:  http://ecto.willowgarage.com/recognition
+
+Depends: catkin, boost, ecto, pcl, ecto_ros, image_pipeline
+
+Catkin-CopyrightType:  willowgarage
+Catkin-DebRulesType: cmake
