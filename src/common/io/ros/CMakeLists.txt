@@ -1,6 +1,6 @@
 # deal with the detection TOD module
 
-find_package(ROS COMPONENTS geometry_msgs rosbag roscpp sensor_msgs visualization_msgs REQUIRED)
+find_package(ROS REQUIRED geometry_msgs rosbag roscpp sensor_msgs visualization_msgs)
 find_package(ecto_ros REQUIRED)
 
 include_directories(${ecto_ros_INCLUDE_DIRS})
