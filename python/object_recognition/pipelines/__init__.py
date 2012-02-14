@@ -9,32 +9,7 @@ from object_recognition.common.utils.training_detection_args import read_argumen
 from object_recognition.pipelines.detection import DetectionPipeline
 from object_recognition.pipelines.training import TrainingPipeline
 import ecto
-import inspect
-import pkgutil
 import sys
-
-def find_pipelines(modules, pipeline_type):
-    '''
-    Given a list of python packages, or modules, find all TrainingPipeline implementations.
-    :param modules: The names of the modules to look into
-    :returns: A list of TrainingPipeline implementation classes.
-    '''
-    pipelines = {}
-    ms = []
-    for module in modules:
-        m = __import__(module)
-        ms += [m]
-        for loader, module_name, is_pkg in  pkgutil.walk_packages(m.__path__):
-            if is_pkg:
-                module = loader.find_module(module_name).load_module(module_name)
-                ms.append(module)
-    for pymodule in ms:
-        for x in dir(pymodule):
-            potential_pipeline = getattr(pymodule, x)
-            if inspect.isclass(potential_pipeline) and potential_pipeline != pipeline_type and \
-                                                            issubclass(potential_pipeline, pipeline_type):
-                pipelines[potential_pipeline.type_name()] = potential_pipeline
-    return pipelines
 
 def connect_cells(cell1, cell2, plasm):
     """

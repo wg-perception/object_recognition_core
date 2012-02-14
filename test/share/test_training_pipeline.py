@@ -7,7 +7,7 @@ pipeline independently.
 
 from object_recognition.common.utils.training_detection_args import common_create_parser, common_parse_config_file
 from ecto_object_recognition.object_recognition_db import ObjectDbParameters
-from object_recognition.pipelines import find_pipelines
+from object_recognition import find_cells
 from object_recognition.pipelines.training import TrainingPipeline
 
 if __name__ == '__main__':
@@ -16,7 +16,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
     source_params, pipeline_params, sink_params, voter_params = common_parse_config_file(args.config_file, [])
 
-    pipelines = find_pipelines([ pipeline_param['package'] for pipeline_param in pipeline_params.itervalues()],
+    pipelines = find_cells([ pipeline_param['package'] for pipeline_param in pipeline_params.itervalues()],
                                TrainingPipeline) #map of string name to pipeline class
 
     for _pipeline_id, pipeline_param in pipeline_params.iteritems():
