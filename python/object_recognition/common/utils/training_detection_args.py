@@ -19,24 +19,30 @@ def common_interpret_object_ids(pipeline_param_full, args=None):
     Given command line arguments and the parameters of the pipeline, clean the 'object_ids' field to be a list of
     object ids
     """
-    db_params = pipeline_param_full['parameters']['db']
     pipeline_param = pipeline_param_full['parameters']
 
     # read the object_ids
-    object_ids = set()
+    object_ids = None
     if args:
         objs = [args.__dict__, pipeline_param]
     else:
         objs = [pipeline_param]
 
     for obj in objs:
-        ids = eval(obj.get('object_ids', None))
+        ids = obj.get('object_ids', None)
         names = obj.get('object_names', None)
 
         if not ids and not names:
             continue
 
+        for val in [ ids, names ]:
+            if val is not 'all' and ids is not 'missing' and isinstance(ids, str):
+                val = eval(val)
+
+        if object_ids is None:
+            object_ids = set()
         # initialize the DB
+        db_params = pipeline_param_full['parameters']['db']
         db = dbtools.db_params_to_db(ObjectDbParameters(db_params))
 
         if 'all' in (ids, names):
@@ -54,7 +60,8 @@ def common_interpret_object_ids(pipeline_param_full, args=None):
         # if we got some ids through the command line, just stop here
         if object_ids:
             break
-    pipeline_param_full['parameters']['object_ids'] = list(object_ids)
+    if object_ids is not None:
+        pipeline_param_full['parameters']['object_ids'] = list(object_ids)
 
 def common_create_parser():
     def filter_node_name(node_name):
