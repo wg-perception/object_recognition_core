@@ -2,6 +2,7 @@
 ABC for Detection pipelines
 '''
 from abc import ABCMeta
+import warnings
 
 class DetectionPipeline:
     '''
@@ -34,17 +35,16 @@ class DetectionPipeline:
         '''
         raise NotImplementedError("The detector has to be implemented.")
 
-    @classmethod
-    def validate(cls, detector):
-        """
-        Makes sure that the detector is valid
-        """
-        # check for the pose_results output
-        if 'pose_results' not in detector.outputs:
-            raise NotImplementedError("The detector needs to have a 'pose_results' output tendril.")
-        # check for the right type for the pose_results output
-        type_name = detector.outputs.at('pose_results').type_name
-        if type_name not in ['std::vector<object_recognition::common::PoseResult, std::allocator<object_recognition::common::PoseResult> >']:
-            raise NotImplementedError("The detector does not have a 'pose_results' tendril of the right type.\n"
-                                      "Must have an output named 'pose_results', with type %s\n"
-                                      "This cells output at 'pose_results' has type %s" % ('std::vector<PoseResult>', type_name))
+def validate_detection_pipeline(detector):
+    """
+    Makes sure that the detector is valid
+    """
+    # check for the pose_results output
+    if 'pose_results' not in detector.outputs:
+        warnings.warn("The detector needs to have a 'pose_results' output tendril.")
+    # check for the right type for the pose_results output
+    type_name = detector.outputs.at('pose_results').type_name
+    if type_name not in ['std::vector<object_recognition::common::PoseResult, std::allocator<object_recognition::common::PoseResult> >']:
+        warnings.warn("The detector does not have a 'pose_results' tendril of the right type.\n"
+                                  "Must have an output named 'pose_results', with type %s\n"
+                                  "This cells output at 'pose_results' has type %s" % ('std::vector<PoseResult>', type_name))

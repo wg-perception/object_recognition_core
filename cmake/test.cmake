@@ -44,3 +44,41 @@ macro(object_recognition_help_test script)
     ${object_recognition_SHARE_DIRS}/test/run_test.sh ${CMAKE_BINARY_DIR}/setup.sh "${object_recognition_SHARE_DIRS}/test/test_help.py ${script}"
     )
 endmacro()
+
+# macro testing a Source
+macro(object_recognition_source_test source_name)
+  if (${ARGC} EQUAL 1)
+    add_test(${PROJECT_NAME}_source
+      ${object_recognition_SHARE_DIRS}/test/run_test.sh ${CMAKE_BINARY_DIR}/setup.sh "${object_recognition_SHARE_DIRS}/test/test_source.py ${source_name}"
+    )
+  endif()
+  if (${ARGC} EQUAL 2)
+    add_test(${PROJECT_NAME}_source
+      ${object_recognition_SHARE_DIRS}/test/run_test.sh ${CMAKE_BINARY_DIR}/setup.sh "${object_recognition_SHARE_DIRS}/test/test_source.py ${source_name} ${ARGV1}"
+    )
+  endif()
+  if (${ARGC} EQUAL 3)
+    add_test(${PROJECT_NAME}_source
+      ${object_recognition_SHARE_DIRS}/test/run_test.sh ${CMAKE_BINARY_DIR}/setup.sh "${object_recognition_SHARE_DIRS}/test/test_source.py ${source_name} ${ARGV1} ${ARGV2}"
+    )
+  endif()
+endmacro()
+
+# macro testing a Sink
+macro(object_recognition_sink_test sink_name)
+  if (${ARGC} EQUAL 1)
+    add_test(${PROJECT_NAME}_sink
+      ${object_recognition_SHARE_DIRS}/test/run_test.sh ${CMAKE_BINARY_DIR}/setup.sh "${object_recognition_SHARE_DIRS}/test/test_sink.py ${sink_name}"
+    )
+  endif()
+  if (${ARGC} EQUAL 2)
+    add_test(${PROJECT_NAME}_sink
+      ${object_recognition_SHARE_DIRS}/test/run_test.sh ${CMAKE_BINARY_DIR}/setup.sh "${object_recognition_SHARE_DIRS}/test/test_sink.py ${sink_name} ${ARGV1}"
+    )
+  endif()
+  if (${ARGC} EQUAL 3)
+    add_test(${PROJECT_NAME}_sink
+      ${object_recognition_SHARE_DIRS}/test/run_test.sh ${CMAKE_BINARY_DIR}/setup.sh "${object_recognition_SHARE_DIRS}/test/test_sink.py ${sink_name} ${ARGV1} ${ARGV2}"
+    )
+  endif()
+endmacro()

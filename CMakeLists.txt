@@ -36,11 +36,6 @@ include_directories(SYSTEM ${PCL_INCLUDE_DIRS})
 
 add_subdirectory(src)
 add_subdirectory(web_ui)
-option(BUILD_TEST "Build tests" ON)
-if(BUILD_TEST)
-  enable_testing()
-  add_subdirectory(test)
-endif()
 
 install(DIRECTORY apps/
         DESTINATION bin
@@ -63,3 +58,10 @@ install(FILES ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/__init__.py
         )
 
 catkin_add_env_hooks(10object_recognition_core SHELLS all )
+
+# add tests
+option(BUILD_TEST "Build tests" ON)
+if(BUILD_TEST)
+  enable_testing()
+  add_subdirectory(test)
+endif()

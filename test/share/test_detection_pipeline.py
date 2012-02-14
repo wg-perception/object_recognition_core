@@ -7,7 +7,7 @@ pipeline independently.
 
 from object_recognition_core.utils.training_detection_args import common_create_parser, common_parse_config_file
 from object_recognition_core import find_cells
-from object_recognition_core.pipelines.detection import DetectionPipeline
+from object_recognition_core.pipelines.detection import DetectionPipeline, validate_detection_pipeline
 
 if __name__ == '__main__':
     # read the config file
@@ -20,11 +20,12 @@ if __name__ == '__main__':
 
     for _pipeline_id, pipeline_param in pipeline_params.iteritems():
         # make sure object_ids is empty (so that we don't have to deal with the DB
-        pipeline_param['parameters']['object_ids'] = []
+        if 'object_ids' in pipeline_param['parameters']:
+            pipeline_param['parameters']['object_ids'] = []
         pipeline = pipelines.get(pipeline_param['method'], False)
         if not pipeline:
             sys.stderr.write('Invalid pipeline name: %s\nMake sure that the pipeline type is defined by a DetectionPipeline class, in the name class function.' % pipeline_param['method'])
             sys.exit(-1)
         detector = pipeline().detector(**pipeline_param)
         if 'sinks' in pipeline_param or 'voters' in pipeline_param:
-            pipeline.validate(detector)
+            validate_detection_pipeline(detector)
