@@ -44,7 +44,9 @@
 #include <boost/foreach.hpp>
 #include <boost/function.hpp>
 
+#ifdef CV_MAJOR_VERSION
 #include <opencv2/core/core.hpp>
+#endif
 
 #include "object_recognition/common/types.h"
 #include "object_recognition/common/json_spirit/json_spirit.h"
@@ -431,7 +433,9 @@ namespace object_recognition
       or_json::mObject fields_;
     };
 
+#ifdef CV_MAJOR_VERSION
     // Specializations for cv::Mat
+
     template<>
     void
     Document::get_attachment<cv::Mat>(const AttachmentName &attachment_name, cv::Mat & value) const;
@@ -443,6 +447,7 @@ namespace object_recognition
     template<>
     void
     Document::set_attachment<cv::Mat>(const AttachmentName &attachment_name, const cv::Mat & value);
+#endif
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 

@@ -6,6 +6,7 @@ add_library(object_recognition_common SHARED pose_result.cpp)
 
 target_link_libraries(object_recognition_common
   ${OpenCV_LIBS}
+  object_recognition_db
 )
 
 set_target_properties(object_recognition_common PROPERTIES

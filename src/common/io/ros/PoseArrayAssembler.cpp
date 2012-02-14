@@ -174,9 +174,7 @@ namespace object_recognition
         unsigned int marker_id = 0;
         BOOST_FOREACH(const common::PoseResult & pose_result, *pose_results_)
             {
-              cv::Mat_<float> T, R;
-              pose_result.T().convertTo(T, CV_32F);
-              pose_result.R().convertTo(R, CV_32F);
+              cv::Mat_<float> T = pose_result.T<cv::Mat_<float> >(), R = pose_result.R<cv::Mat_<float> >();
 
               geometry_msgs::Pose & msg_pose = poses[marker_id];
 

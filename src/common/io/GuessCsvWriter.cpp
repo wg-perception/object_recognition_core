@@ -66,9 +66,7 @@ namespace object_recognition
         BOOST_FOREACH(const common::PoseResult & pose_result, *pose_results_)
             {
               const ObjectId & object_id = pose_result.object_id();
-              cv::Mat_<float> R, T;
-              pose_result.R().convertTo(R, CV_32F);
-              pose_result.T().convertTo(T, CV_32F);
+              cv::Mat_<float> R = pose_result.R<cv::Mat_<float> >(), T = pose_result.T<cv::Mat_<float> >();
 
               PoseInfo poseInfo;
               for (int i = 0; i < 9; i++)
