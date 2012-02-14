@@ -3,8 +3,8 @@ Module that creates a function to define/read common arguments for the training/
 """
 
 from ecto_object_recognition.object_recognition_db import ObjectDbParameters
-from object_recognition import models, dbtools
-from object_recognition.common.utils.parser import ObjectRecognitionParser
+from object_recognition_core.db import models, dbtools
+from object_recognition_core.utils.parser import ObjectRecognitionParser
 import os
 import sys
 import yaml

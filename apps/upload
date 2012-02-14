@@ -3,9 +3,9 @@ import roscompat
 import os, sys, argparse
 import ecto, ecto_ros, ecto_sensor_msgs, ecto_geometry_msgs
 from ecto_opencv import highgui, imgproc
-from object_recognition import dbtools, models
+from object_recognition_core.db import dbtools, models
 from ecto_object_recognition import object_recognition_db
-from object_recognition.dbtools import args_to_db_params
+from object_recognition_core.db.dbtools import args_to_db_params
 
 def connect_observation_calc_with_mask_pose(sync, commit, object_id, session_id, db_params, debug=False):
     plasm = ecto.Plasm()

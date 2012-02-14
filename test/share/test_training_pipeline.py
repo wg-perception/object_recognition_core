@@ -5,10 +5,10 @@ It is not meant to be run as a test of object_recognition but as a test for and 
 pipeline independently.
 """
 
-from object_recognition.common.utils.training_detection_args import common_create_parser, common_parse_config_file
+from object_recognition_core.utils.training_detection_args import common_create_parser, common_parse_config_file
 from ecto_object_recognition.object_recognition_db import ObjectDbParameters
-from object_recognition import find_cells
-from object_recognition.pipelines.training import TrainingPipeline
+from object_recognition_core import find_cells
+from object_recognition_core.pipelines.training import TrainingPipeline
 
 if __name__ == '__main__':
     # read the config file

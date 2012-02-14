@@ -1,6 +1,6 @@
 #!/usr/bin/env python
-from object_recognition.common.io.source import _assert_source_interface
-from object_recognition.common.io.source import Source
+from object_recognition_core.io.source import _assert_source_interface
+from object_recognition_core.io.source import Source
 
 import argparse
 parser = argparse.ArgumentParser(description='An source reader.')

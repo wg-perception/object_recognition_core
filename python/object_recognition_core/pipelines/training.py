@@ -5,8 +5,8 @@ from abc import ABCMeta, abstractmethod
 
 import ecto
 from ecto_object_recognition.object_recognition_db import ObservationReader
-from object_recognition.common.utils import list_to_cpp_json_str, json_helper
-from object_recognition.common.utils.json_helper import dict_to_cpp_json_str
+from object_recognition_core.utils import list_to_cpp_json_str, json_helper
+from object_recognition_core.utils.json_helper import dict_to_cpp_json_str
 from ecto_object_recognition.object_recognition_db import Document, DbDocuments
 
 class ObservationDealer(ecto.BlackBox):

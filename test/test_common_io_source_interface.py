@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-from object_recognition.common.io.source import _assert_source_interface
+from object_recognition_core.io.source import _assert_source_interface
 
 #test that names have to be correct.
 try:

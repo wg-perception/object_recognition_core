@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-from object_recognition.common.io.ros.sink import Publisher
+from object_recognition_core.io.ros.sink import Publisher
 import sys
 
 p = Publisher()

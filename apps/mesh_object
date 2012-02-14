@@ -12,8 +12,8 @@ import couchdb
 
 import ecto,ecto_ros
 from ecto_opencv import calib, highgui, imgproc
-import object_recognition
-from object_recognition import dbtools, models
+import object_recognition_core
+from object_recognition_core.db import dbtools, models
 import image_pipeline
 import image_pipeline_conversion
 from ecto_object_recognition import reconstruction, object_recognition_db

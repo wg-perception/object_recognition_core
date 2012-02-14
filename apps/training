@@ -1,10 +1,10 @@
 #!/usr/bin/env python
 import roscompat
 from ecto_object_recognition.object_recognition_db import ObjectDbParameters
-from object_recognition import models
-from object_recognition.common.utils.training_detection_args import read_arguments_training
-from object_recognition.pipelines import find_pipelines
-from object_recognition.pipelines.training import TrainingPipeline
+from object_recognition_core.db import models
+from object_recognition_core.common.utils.training_detection_args import read_arguments_training
+from object_recognition_core.common.pipelines import find_pipelines
+from object_recognition_core.common.pipelines.training import TrainingPipeline
 import ecto
 import sys
 DEBUG = False
