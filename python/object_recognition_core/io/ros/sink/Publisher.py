@@ -6,13 +6,15 @@ import ecto
 import ecto_geometry_msgs, ecto_std_msgs
 from ecto_object_recognition.io_ros import PoseArrayAssembler, Publisher_MarkerArray
 from ecto_object_recognition.object_recognition_db import ObjectDbParameters
+from object_recognition_core.io.sink import Sink
 
 PoseArrayPub = ecto_geometry_msgs.Publisher_PoseArray
 MarkerArrayPub = Publisher_MarkerArray
 StringPub = ecto_std_msgs.Publisher_String
+
 ########################################################################################################################
 
-class Publisher(ecto.BlackBox):
+class PublisherBlackBox(ecto.BlackBox):
     """Class publishing the different results of object recognition as ROS topics
     http://ecto.willowgarage.com/releases/amoeba-beta3/ros/geometry_msgs.html#Publisher_PoseArray
     """
@@ -32,12 +34,24 @@ class Publisher(ecto.BlackBox):
         i.forward_all('_pose_array_assembler')
 
     def configure(self, p, _i, _o):
-        self._pose_array_assembler = Publisher._pose_array_assembler()
-        self._pose_pub = Publisher._pose_pub(topic_name=p.pose_topic, latched=p.latched)
-        self._object_ids_pub = Publisher._object_ids_pub(topic_name=p.object_ids_topic, latched=p.latched)
-        self._marker_pub = Publisher._marker_pub(topic_name=p.markers_topic,latched=p.latched)
+        self._pose_array_assembler = PublisherBlackBox._pose_array_assembler()
+        self._pose_pub = PublisherBlackBox._pose_pub(topic_name=p.pose_topic, latched=p.latched)
+        self._object_ids_pub = PublisherBlackBox._object_ids_pub(topic_name=p.object_ids_topic, latched=p.latched)
+        self._marker_pub = PublisherBlackBox._marker_pub(topic_name=p.markers_topic,latched=p.latched)
     def connections(self):
         return [self._pose_array_assembler['pose_message'] >> self._pose_pub[:],
                 self._pose_array_assembler['object_ids_message'] >> self._object_ids_pub[:],
                 self._pose_array_assembler['marker_message']>> self._marker_pub[:]
                ]
+
+########################################################################################################################
+
+class Publisher(Sink):
+
+    @classmethod
+    def type_name(cls):
+        return 'publisher'
+
+    @classmethod
+    def sink(self, *args, **kwargs):
+        return PublisherBlackBox(*args, **kwargs)
