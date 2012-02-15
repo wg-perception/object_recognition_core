@@ -1,7 +1,6 @@
 '''
 Loaders for all object recognition pipelines
 '''
-from abc import ABCMeta, abstractmethod
 from object_recognition_core.io.sink import Sink
 from object_recognition_core.io.source import Source
 from object_recognition_core.io.voter import Voter
@@ -32,11 +31,12 @@ def find_cells(modules, pipeline_type):
             if is_pkg:
                 module = loader.find_module(module_name).load_module(module_name)
                 ms.append(module)
+
     for pymodule in ms:
-        for x in dir(pymodule):
-            potential_pipeline = getattr(pymodule, x)
+
+        for name, potential_pipeline in inspect.getmembers(pymodule):
             if inspect.isclass(potential_pipeline) and potential_pipeline != pipeline_type and \
-                                                            issubclass(potential_pipeline, pipeline_type):
+                                                                issubclass(potential_pipeline, pipeline_type):
                 pipelines[potential_pipeline.type_name()] = potential_pipeline
     return pipelines
 

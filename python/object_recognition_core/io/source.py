@@ -13,6 +13,7 @@ All source cells will have the following outputs:
 """
 
 from abc import ABCMeta
+from image_pipeline.io.source import create_source
 
 ########################################################################################################################
 

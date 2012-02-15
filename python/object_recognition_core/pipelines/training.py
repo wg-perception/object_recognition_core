@@ -62,7 +62,7 @@ class TrainingPipeline:
         raise NotImplementedError("The training pipeline class must return a string name.")
 
     @classmethod
-    def incremental_model_builder(self, *args, **kwargs):
+    def incremental_model_builder(cls, *args, **kwargs):
         '''
         Given a dictionary of parameters, return a cell, or BlackBox that takes
         as input observations, and at each iteration and builds up a model
@@ -71,7 +71,7 @@ class TrainingPipeline:
         raise NotImplementedError("This should return a cell .")
 
     @classmethod
-    def processor(self, *args, **kwargs):
+    def processor(cls, *args, **kwargs):
         '''
         This should run once.
         '''
@@ -79,7 +79,7 @@ class TrainingPipeline:
         observation_ids = kwargs.get('observation_ids', None)
         #todo make this depend on the pipeline specification or something...
         dealer = ObservationDealer(db_params=db_params, observation_ids=observation_ids)
-        incremental_model_builder = self.incremental_model_builder(*args, **kwargs)
+        incremental_model_builder = cls.incremental_model_builder(*args, **kwargs)
         model_builder = ModelBuilder(source=dealer,
                                      incremental_model_builder=incremental_model_builder,
                                      niter=0,
@@ -87,7 +87,7 @@ class TrainingPipeline:
         return model_builder
         
     @classmethod
-    def post_processor(self, *args, **kwargs):
+    def post_processor(cls, *args, **kwargs):
         '''
         Given a dictionary of parameters, return a cell, or BlackBox that
         takes the output of the incremental_model_builder and converts it into
