@@ -36,7 +36,7 @@ def common_interpret_object_ids(pipeline_param_full, args=None):
             continue
 
         for val in [ ids, names ]:
-            if val is not 'all' and ids is not 'missing' and isinstance(ids, str):
+            if val is not 'all' and val is not 'missing' and isinstance(val, str):
                 val = eval(val)
 
         if object_ids is None:
