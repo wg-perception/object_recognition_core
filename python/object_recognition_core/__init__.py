@@ -5,7 +5,7 @@ from object_recognition_core.io.sink import Sink
 from object_recognition_core.io.source import Source
 from object_recognition_core.io.voter import Voter
 from object_recognition_core.utils.training_detection_args import read_arguments_detector
-from object_recognition_core.pipelines.detection import DetectionPipeline
+from object_recognition_core.pipelines.detection import DetectionPipeline, validate_detection_pipeline
 from object_recognition_core.pipelines.training import TrainingPipeline
 import ecto
 import inspect
@@ -93,7 +93,7 @@ def create_detection_plasm():
             sys.exit(-1)
         detector = pipeline.detector(**pipeline_param)
         if 'sinks' in pipeline_param or 'voters' in pipeline_param:
-            pipeline.validate(detector)
+            validate_detection_pipeline(detector)
 
         # link to the different sources
         for source_id in pipeline_param['sources']:
