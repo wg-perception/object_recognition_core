@@ -107,18 +107,18 @@ def common_parse_config_file(config_file_path, extra_pipeline_fields):
     voter_params = {}
     for key , value in params.iteritems():
         if key.startswith('source'):
-            source_params[int(key[6:])] = value
+            source_params[key] = value
         elif key.startswith('pipeline'):
             # check the different fields
             for field in [ 'method', 'submethod', 'package', 'parameters'] + extra_pipeline_fields:
                 if field not in value:
                     raise RuntimeError('The pipeline parameters need to have the subfield "%s", current parameters: %s' %
                                        (field, str(value)))
-            pipeline_params[int(key[8:])] = value
+            pipeline_params[key] = value
         elif key.startswith('sink'):
-            sink_params[int(key[4:])] = value
+            sink_params[key] = value
         elif key.startswith('voter'):
-            voter_params[int(key[5:])] = value
+            voter_params[key] = value
 
     return source_params, pipeline_params, sink_params, voter_params
 
@@ -147,8 +147,8 @@ def read_arguments_detector():
     for _pipeline_id, pipeline_param in pipeline_params.iteritems():
         for cell_type, params in [ ('source', source_params), ('sink', sink_params), ('voter', voter_params) ]:
             for cell_id in pipeline_param.get(cell_type + 's', []):
-                if cell_id not in params:
-                    raise RuntimeError('The pipeline parameters has an invalid %s number' % type)
+                if cell_id not in params and cell_id not in pipeline_params:
+                    raise RuntimeError('The pipeline parameters has an invalid %s number' % cell_id)
         # clean the object_ids
         common_interpret_object_ids(pipeline_param, args)
 

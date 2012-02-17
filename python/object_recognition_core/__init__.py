@@ -67,14 +67,23 @@ def create_detection_plasm():
     source_cells = {}
     for source_id, source_param in source_params.iteritems():
         source_cells[source_id] = sources[source_param['type']].source(**source_param)
+
     # create the different sink cells
     sink_cells = {}
     for sink_id, sink_param in sink_params.iteritems():
-        sink_cells[source_id] = sinks[sink_param['type']].sink(**sink_param)
+        sink_cells[sink_id] = sinks[sink_param['type']].sink(**sink_param)
 
-    # for each voter id, figure out the number of pipelines connected to it as an input
+    # create the different pipeline cells
+    pipeline_cells = {}
     voter_n_input = {}
-    for pipeline_param in pipeline_params.itervalues():
+    for pipeline_id, pipeline_param in pipeline_params.iteritems():
+        pipeline = pipelines.get(pipeline_param['method'], False)
+        if not pipeline:
+            sys.stderr.write('Invalid pipeline name: %s\nMake sure that the pipeline type is defined by a TrainingPipeline class, in the name class function.' % pipeline_param['method'])
+            sys.exit(-1)
+        pipeline_cells[pipeline_id] = pipeline.detector(**pipeline_param)
+
+        # for each voter id, figure out the number of pipelines connected to it as an input
         for cell_id in pipeline_param.get('voters', []):
             voter_n_input.setdefault(cell_id, 0)
             voter_n_input[cell_id] += 1
@@ -86,18 +95,17 @@ def create_detection_plasm():
 
     # build the plasm with all the pipelines
     plasm = ecto.Plasm()
-    for _pipeline_id, pipeline_param in pipeline_params.iteritems():
-        pipeline = pipelines.get(pipeline_param['method'], False)
-        if not pipeline:
-            sys.stderr.write('Invalid pipeline name: %s\nMake sure that the pipeline type is defined by a TrainingPipeline class, in the name class function.' % pipeline_param['method'])
-            sys.exit(-1)
-        detector = pipeline.detector(**pipeline_param)
+    for pipeline_id, detector in pipeline_cells.iteritems():
+        pipeline_param = pipeline_params[pipeline_id]
         if 'sinks' in pipeline_param or 'voters' in pipeline_param:
             validate_detection_pipeline(detector)
 
         # link to the different sources
         for source_id in pipeline_param['sources']:
-            source = source_cells[source_id]
+            if source_id in source_cells:
+                source = source_cells[source_id]
+            else:
+                source = pipeline_cells[source_id]
             plasm = connect_cells(source, detector, plasm)
         # link to the different sink
         for sink_id in pipeline_param.get('sinks', []):
