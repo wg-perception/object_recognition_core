@@ -53,8 +53,8 @@ namespace object_recognition
   {
     namespace bases
     {
-      /** When creating your own cell to insert models in the DB first have an implementation class that inherits from
-       * ModelReaderImpl
+      /** When creating your own cell to read models from the DB, first have an implementation class that inherits from
+       * ModelReaderImpl that does its job
        */
       struct ModelReaderImpl
       {
@@ -63,6 +63,11 @@ namespace object_recognition
         {
         }
 
+        /** The only function that matters. It basically does something when the list of obejcts to study changes.
+         * A typical example is to re-compute a search structure (kd-tree, LSH ...) because the
+         * descriptors/templates/whatever have changed
+         * @param db_documents
+         */
         virtual void
         ParameterCallback(const Documents & db_documents) = 0;
 
@@ -88,11 +93,11 @@ namespace object_recognition
         }
       };
 
-      /** Class inserting the arbitrary Models into the DB. If you want to create a cell that persists to the DB, first
-       * implement a ModelReaderImpl class and then have your model inserter class inherit the ModelReaderBase as
-       * follows:
-       * struct MyAwesomeModelReader db::bases::ModelReaderNase<MyAwesomeModelReaderImpl> {};
-       *
+      /** Class reading arbitrary Models from DB. If you want to create a cell that reads from the DB, first
+       * implement a ModelReaderImpl class and then declare your model reader cell as follows:
+       * struct MyAwesomeModelReader db::bases::ModelReaderBase<MyAwesomeModelReaderImpl> {};
+       * ECTO_CELL(watever_module_name, object_recognition::db::bases::ModelReaderBase<whatever_cell_impl>,
+       * "WhateverName", "Whatever description");
        * You have to jump through those hoops because of the static member functions
        */
       template<typename T>
