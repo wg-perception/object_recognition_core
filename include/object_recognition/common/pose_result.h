@@ -242,12 +242,20 @@ namespace object_recognition
 #endif
 
 #ifdef EIGEN_CORE_H
-  // OpenCV specializations
+  // Eigen specializations
   template<>
   inline void
   PoseResult::set_R(const Eigen::Matrix3f & R_float)
   {
     std::copy(R_float.data(),R_float.data()+R_float.size(),R_.begin());
+  }
+
+  template<>
+  inline void
+  PoseResult::set_R(const Eigen::Quaternionf & quaternion)
+  {
+    Eigen::Matrix3f m(quaternion);
+    set_R(m);
   }
 
   template<>
