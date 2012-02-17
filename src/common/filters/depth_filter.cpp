@@ -49,7 +49,7 @@ namespace object_recognition
       declare_params(ecto::tendrils& params)
       {
         params.declare<float>("d_min", "The minimal distance at which object become interesting (in meters)",
-                              std::numeric_limits<float>::min());
+                              -std::numeric_limits<float>::max());
         params.declare<float>("d_max", "The maximal distance at which object become interesting (in meters)",
                               std::numeric_limits<float>::max());
       }
