@@ -15,6 +15,7 @@ Interface:
 - autogeneration of parameter files:autogenerate if it does not exist
 - normalize source parameters.  training and detection use a config file, everything else uses args...
 - All apps should support the sources? ros kinect, ros bag, openni
+- add an 'any' cell type in the config file
 
 Performance:
 - SBA
@@ -32,6 +33,7 @@ DB:
 - is models.py obsolete?
 - fix meshing so that it uses current db interface
 - make more db manipulation scripts apps/dbscripts ... FIXME don't break these.
+
 Capture:
 - SBA should be a blackbox for pose adjustment: maybe in capture, or in TOD training
 - GUI for capturing obejcts on a dot pattern: the current box is hacky
