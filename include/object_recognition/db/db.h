@@ -140,6 +140,8 @@ namespace object_recognition
       set_parameters(const std::string& json_params);
       void
       set_parameters(const ObjectDbParameters &in_params);
+      void
+      set_db_and_parameters(const boost::shared_ptr<object_recognition::db::ObjectDbBase>&, const object_recognition::db::ObjectDbParameters&);
 
       /*** Get the parameters */
       const ObjectDbParameters &

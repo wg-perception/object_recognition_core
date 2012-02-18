@@ -36,10 +36,10 @@
 #include <string>
 #include <boost/bind.hpp>
 
-#include "db_base.h"
 #include "db_couch.h"
 #include "db_filesystem.h"
 #include <object_recognition/db/db.h>
+#include <object_recognition_core/db/db_base.h>
 #include <object_recognition/db/opencv.h>
 #include <object_recognition/db/view.h>
 
@@ -175,6 +175,12 @@ namespace object_recognition
         default:
           throw std::runtime_error("No set_parameters implemeted for that db type.");
       }
+    }
+
+    void
+    ObjectDb::set_db_and_parameters(const boost::shared_ptr<ObjectDbBase> & db_base, const ObjectDbParameters &in_params) {
+      db_ = db_base;
+      parameters_ = in_params;
     }
 
     void
