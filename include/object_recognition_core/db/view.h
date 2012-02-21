@@ -36,10 +36,10 @@
 #ifndef VIEW_TYPES_H_
 #define VIEW_TYPES_H_
 
-#include <object_recognition/common/json_spirit/json_spirit.h>
-#include <object_recognition/common/types.h>
+#include <object_recognition_core/common/json_spirit/json_spirit.h>
+#include <object_recognition_core/common/types.h>
 
-namespace object_recognition
+namespace object_recognition_core
 {
   namespace db
   {

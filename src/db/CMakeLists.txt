@@ -8,26 +8,26 @@ find_package(Boost COMPONENTS
   )
 
 find_package(CURL REQUIRED)
-find_package(OpenCV)
+find_package(OpenCV REQUIRED)
 
 include_directories(
   ${CMAKE_CURRENT_SOURCE_DIR}
   )
 
-add_library(object_recognition_db SHARED
+add_library(object_recognition_core_db SHARED
   db.cpp
   db_couch.cpp
   db_filesystem.cpp
   opencv.cpp
-  ../../include/object_recognition/common/json_spirit/json_spirit_reader.cpp
-  ../../include/object_recognition/common/json_spirit/json_spirit_value.cpp
-  ../../include/object_recognition/common/json_spirit/json_spirit_writer.cpp
+  ../../include/object_recognition_core/common/json_spirit/json_spirit_reader.cpp
+  ../../include/object_recognition_core/common/json_spirit/json_spirit_value.cpp
+  ../../include/object_recognition_core/common/json_spirit/json_spirit_writer.cpp
   model_utils.cpp
   observations.cpp
   view.cpp
   )
 
-target_link_libraries(object_recognition_db
+target_link_libraries(object_recognition_core_db
   boost_filesystem
   boost_regex
   boost_system
@@ -40,16 +40,16 @@ target_link_libraries(object_recognition_db
   )
 
 
-set_target_properties(object_recognition_db PROPERTIES
+set_target_properties(object_recognition_core_db PROPERTIES
   VERSION ${object_recognition_VERSION}
   SOVERSION ${object_recognition_SOVERSION}
   )
 #install the main shared lib
-install(TARGETS object_recognition_db
+install(TARGETS object_recognition_core_db
   DESTINATION lib
   )
 
-ectomodule(object_recognition_db
+ectomodule(object_recognition_core_db
     module.cpp
     wrap_db_parameters.cpp
     wrap_db_documents.cpp
@@ -58,8 +58,8 @@ ectomodule(object_recognition_db
     ObservationWriter.cpp
     )
 
-link_ecto(object_recognition_db
-  object_recognition_db
-  )
+link_ecto(object_recognition_core_db
+    object_recognition_core_db
+)
 
-install_ecto_module(object_recognition_db)
+install_ecto_module(object_recognition_core_db)

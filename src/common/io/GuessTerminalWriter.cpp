@@ -41,13 +41,13 @@
 
 #include <opencv2/core/core.hpp>
 
-#include <object_recognition/common/pose_result.h>
+#include <object_recognition_core/common/pose_result.h>
 
 using ecto::tendrils;
-using object_recognition::common::PoseResult;
-using object_recognition::db::ObjectId;
+using object_recognition_core::common::PoseResult;
+using object_recognition_core::db::ObjectId;
 
-namespace object_recognition
+namespace object_recognition_core
 {
   namespace io
   {
@@ -97,5 +97,5 @@ namespace object_recognition
   }
 }
 
-ECTO_CELL(io, object_recognition::io::GuessTerminalWriter, "GuessCsvWriter",
+ECTO_CELL(io, object_recognition_core::io::GuessTerminalWriter, "GuessCsvWriter",
           "Given guesses, writes them to the terminal.");

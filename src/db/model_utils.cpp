@@ -1,9 +1,9 @@
 #include <algorithm>
 
-#include "object_recognition/common/json_spirit/json_spirit_reader_template.h"
-#include <object_recognition/common/json.hpp>
-#include <object_recognition/db/model_utils.h>
-#include <object_recognition/db/view.h>
+#include <object_recognition_core/common/json_spirit/json_spirit_reader_template.h>
+#include <object_recognition_core/common/json.hpp>
+#include <object_recognition_core/db/model_utils.h>
+#include <object_recognition_core/db/view.h>
 
 namespace
 {
@@ -19,7 +19,7 @@ namespace
       return false;
     or_json::mArray::const_iterator iter1 = obj1.begin(), iter2 = obj2.begin();
     for (; iter1 != obj1.end(); ++iter1, ++iter2)
-      if (!object_recognition::db::CompareJsonIntersection(*iter1, *iter2))
+      if (!object_recognition_core::db::CompareJsonIntersection(*iter1, *iter2))
         return false;
     return true;
   }
@@ -39,14 +39,14 @@ namespace
           or_json::mObject::const_iterator iter = obj2.find(val.first);
           if (iter == obj2.end())
             continue;
-          if (!object_recognition::db::CompareJsonIntersection(val.second, iter->second))
+          if (!object_recognition_core::db::CompareJsonIntersection(val.second, iter->second))
             return false;
         }
     return true;
   }
 }
 
-namespace object_recognition
+namespace object_recognition_core
 {
   namespace db
   {

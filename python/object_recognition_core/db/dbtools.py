@@ -1,4 +1,4 @@
-from ecto_object_recognition.object_recognition_db import ObjectDbParameters
+from ecto_object_recognition_core.object_recognition_core_db import ObjectDbParameters
 
 DEFAULT_DB_COLLECTION = 'object_recognition'
 DEFAULT_DB_ROOT = 'http://localhost:5984'

@@ -17,12 +17,12 @@ find_package(Boost REQUIRED)
 find_package(Eigen REQUIRED)
 find_package(OpenCV REQUIRED)
 
-set(object_recognition_INCLUDE_DIRS
-  @object_recognition_INCLUDE_DIRS@
+set(object_recognition_core_INCLUDE_DIRS
+  @object_recognition_core_INCLUDE_DIRS@
   ${EIGEN_INCLUDE_DIRS}
   ${Boost_INCLUDE_DIRS}
 )
 
-set(@PROJECT_NAME@_LIBRARIES @object_recognition_LIBRARIES@)
-set(@PROJECT_NAME@_LIBRARY_DIRS @object_recognition_LIBRARY_DIRS@)
-set(@PROJECT_NAME@_SHARE_DIRS @object_recognition_SHARE_DIRS@)
+set(@PROJECT_NAME@_LIBRARIES @object_recognition_core_LIBRARIES@)
+set(@PROJECT_NAME@_LIBRARY_DIRS @object_recognition_core_LIBRARY_DIRS@)
+set(@PROJECT_NAME@_SHARE_DIRS @object_recognition_core_SHARE_DIRS@)

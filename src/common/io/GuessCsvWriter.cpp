@@ -14,13 +14,13 @@
 
 #include <opencv2/core/core.hpp>
 
-#include <object_recognition/common/pose_result.h>
+#include <object_recognition_core/common/pose_result.h>
 #include "csv.h"
 
 using ecto::tendrils;
-using object_recognition::db::ObjectId;
+using object_recognition_core::db::ObjectId;
 
-namespace object_recognition
+namespace object_recognition_core
 {
   namespace io
   {
@@ -94,5 +94,5 @@ namespace object_recognition
   }
 }
 
-ECTO_CELL(io, object_recognition::io::GuessCsvWriter, "GuessCsvWriter",
+ECTO_CELL(io, object_recognition_core::io::GuessCsvWriter, "GuessCsvWriter",
           "Given guesses, writes them to a CSV in the NIST format.");

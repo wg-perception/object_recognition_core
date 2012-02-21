@@ -158,9 +158,9 @@ ObjectDbFilesystem::Delete(const DocumentId & id)
   boost::filesystem::remove_all(url_id(id));
 
   // For each pre-defined view, figure out the potential keys, and delete those
-  BOOST_FOREACH(const object_recognition::db::View::ViewType & view_type, object_recognition::db::View::AllViewTypes())
+  BOOST_FOREACH(const object_recognition_core::db::View::ViewType & view_type, object_recognition_core::db::View::AllViewTypes())
       {
-        object_recognition::db::View view(view_type);
+        object_recognition_core::db::View view(view_type);
         // TODO read the document from the file
         or_json::mObject document;
         or_json::mValue key;
@@ -173,14 +173,14 @@ ObjectDbFilesystem::Delete(const DocumentId & id)
 }
 
 void
-ObjectDbFilesystem::Query(const object_recognition::db::View & view, int limit_rows, int start_offset, int& total_rows,
+ObjectDbFilesystem::Query(const object_recognition_core::db::View & view, int limit_rows, int start_offset, int& total_rows,
                           int& offset, std::vector<ViewElement> & view_elements)
 {
   or_json::mObject parameters = view.parameters();
   boost::filesystem::path path;
   switch (view.type())
   {
-    case object_recognition::db::View::VIEW_MODEL_WHERE_OBJECT_ID_AND_MODEL_TYPE:
+    case object_recognition_core::db::View::VIEW_MODEL_WHERE_OBJECT_ID_AND_MODEL_TYPE:
       path = path_ / collection_ / "view" / "designdoc1"
              / std::string("by_object_id_and_" + parameters["model_type"].get_str());
       // TODO go over the symlinks in the folder and return the ids

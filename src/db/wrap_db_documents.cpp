@@ -39,13 +39,13 @@
 #include <boost/python/stl_iterator.hpp>
 #include <boost/python/suite/indexing/vector_indexing_suite.hpp>
 #include <boost/shared_ptr.hpp>
-#include <object_recognition/db/db.h>
 
-#include "object_recognition/db/model_utils.h"
+#include <object_recognition_core/db/db.h>
+#include <object_recognition_core/db/model_utils.h>
 
 namespace bp = boost::python;
 
-namespace object_recognition
+namespace object_recognition_core
 {
   namespace db
   {
@@ -67,7 +67,7 @@ namespace object_recognition
       // Create the Documents from the ids
       DocumentsPtr p(new Documents());
       p->reserve(document_ids.size());
-      object_recognition::db::ObjectDb db(db_params);
+      object_recognition_core::db::ObjectDb db(db_params);
 
       BOOST_FOREACH(const DocumentId & document_id, document_ids)
           {

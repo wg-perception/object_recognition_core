@@ -35,15 +35,14 @@
 
 #include <ecto/ecto.hpp>
 
-#include <object_recognition/common/json_spirit/json_spirit_reader_template.h>
-#include <object_recognition/common/types.h>
-#include <object_recognition/common/json.hpp>
+#include <object_recognition_core/common/json.hpp>
+#include <object_recognition_core/common/json_spirit/json_spirit_reader_template.h>
+#include <object_recognition_core/common/types.h>
+#include <object_recognition_core/db/db.h>
+#include <object_recognition_core/db/model_utils.h>
+#include <object_recognition_core/db/view.h>
 
-#include <object_recognition/db/db.h>
-#include <object_recognition/db/model_utils.h>
-#include <object_recognition/db/view.h>
-
-namespace object_recognition
+namespace object_recognition_core
 {
   namespace db
   {
@@ -136,6 +135,6 @@ namespace object_recognition
   }
 }
 
-ECTO_CELL( object_recognition_db, object_recognition::db::ModelWriter, "ModelWriter",
-          "Takes a document, that should be considered as a Model, and persists it."
-          " Also stores common meta data that is useful for searching.");
+ECTO_CELL(object_recognition_core_db, object_recognition_core::db::ModelWriter, "ModelWriter",
+    "Takes a document, that should be considered as a Model, and persists it."
+    " Also stores common meta data that is useful for searching.");

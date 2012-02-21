@@ -37,22 +37,22 @@
 #define DB_COUCH_H_
 
 #include "curl_interface.h"
-#include "object_recognition/common/types.h"
+#include <object_recognition_core/common/types.h>
 #include <object_recognition_core/db/db_base.h>
 
-using object_recognition::db::AttachmentName;
-using object_recognition::db::CollectionName;
-using object_recognition::db::DbType;
-using object_recognition::db::DocumentId;
-using object_recognition::db::ObjectId;
-using object_recognition::db::MimeType;
-using object_recognition::db::RevisionId;
-using object_recognition::db::View;
-using object_recognition::db::ViewElement;
+using object_recognition_core::db::AttachmentName;
+using object_recognition_core::db::CollectionName;
+using object_recognition_core::db::DbType;
+using object_recognition_core::db::DocumentId;
+using object_recognition_core::db::ObjectId;
+using object_recognition_core::db::MimeType;
+using object_recognition_core::db::RevisionId;
+using object_recognition_core::db::View;
+using object_recognition_core::db::ViewElement;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-class ObjectDbCouch: public object_recognition::db::ObjectDbBase
+class ObjectDbCouch: public object_recognition_core::db::ObjectDbBase
 {
 public:
   ObjectDbCouch();
@@ -168,11 +168,11 @@ private:
             int& total_rows, int& offset, std::vector<ViewElement> & view_elements, bool do_throw);
 
   // These mutable are they are internals/temporary variables
-  mutable object_recognition::curl::cURL curl_;
+  mutable object_recognition_core::curl::cURL curl_;
   mutable std::stringstream json_writer_stream_, json_reader_stream_;
 
-  object_recognition::curl::writer json_writer_;
-  object_recognition::curl::reader json_reader_;
+  object_recognition_core::curl::writer json_writer_;
+  object_recognition_core::curl::reader json_reader_;
 };
 
 #endif /* DB_COUCH_H_ */

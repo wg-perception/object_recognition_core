@@ -14,7 +14,7 @@ add_executable(or-db-test
 
 target_link_libraries(or-db-test
   ${GTEST_LIBRARIES}
-  object_recognition_db
+  object_recognition_core_db
   )
 
-add_test(object_recognition_db_tests ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/or-db-test)
+add_test(object_recognition_core_db_tests ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/or-db-test)

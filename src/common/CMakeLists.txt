@@ -2,18 +2,18 @@ add_subdirectory(filters)
 add_subdirectory(io)
 add_subdirectory(voters)
 
-add_library(object_recognition_common SHARED pose_result.cpp)
+add_library(object_recognition_core_common SHARED pose_result.cpp)
 
-target_link_libraries(object_recognition_common
+target_link_libraries(object_recognition_core_common
   ${OpenCV_LIBS}
-  object_recognition_db
+  object_recognition_core_db
 )
 
-set_target_properties(object_recognition_common PROPERTIES
+set_target_properties(object_recognition_core_common PROPERTIES
   VERSION ${object_recognition_VERSION}
   SOVERSION ${object_recognition_SOVERSION}
   )
 
-install(TARGETS object_recognition_common
+install(TARGETS object_recognition_core_common
   DESTINATION lib
   )

@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8)
-project(object_recognition)
+project(object_recognition_core)
 include(cmake/config.cmake)
 include(cmake/test.cmake)
 include(cmake/version.cmake)
@@ -18,14 +18,14 @@ if (NOT CMAKE_LIBRARY_OUTPUT_DIRECTORY)
   set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 endif()
 
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/ecto_object_recognition)
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/ecto_object_recognition_core)
 
-find_package(Boost COMPONENTS system filesystem serialization REQUIRED)
+find_package(Boost REQUIRED system filesystem serialization)
 find_package(ecto REQUIRED)
 find_package(OpenCV REQUIRED)
 find_package(PCL REQUIRED)
 
-set_ecto_install_package_name(ecto_object_recognition)
+set_ecto_install_package_name(ecto_object_recognition_core)
 
 configure_file(python/__init__.py.in
   ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/__init__.py
@@ -54,7 +54,7 @@ install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/python/
 )
 
 install(FILES ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/__init__.py
-        DESTINATION ${PYTHON_PACKAGES_PATH}/ecto_object_recognition
+        DESTINATION ${PYTHON_PACKAGES_PATH}/ecto_object_recognition_core
         )
 
 catkin_add_env_hooks(10object_recognition_core SHELLS all )

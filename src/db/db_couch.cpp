@@ -36,7 +36,7 @@
 #include <sstream>
 #include "db_couch.h"
 
-object_recognition::curl::cURL_GS curl_init_cleanup;
+object_recognition_core::curl::cURL_GS curl_init_cleanup;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -87,7 +87,7 @@ ObjectDbCouch::load_fields(const DocumentId & document_id, or_json::mObject &fie
 
   curl_.perform();
 
-  if (curl_.get_response_code() != object_recognition::curl::cURL::OK)
+  if (curl_.get_response_code() != object_recognition_core::curl::cURL::OK)
   {
     throw std::runtime_error(curl_.get_response_reason_phrase() + " : " + curl_.getURL());
   }
@@ -102,7 +102,7 @@ ObjectDbCouch::set_attachment_stream(const DocumentId & document_id, const Attac
   precondition_id(document_id);
   precondition_rev(revision_id);
 
-  object_recognition::curl::reader binary_reader(stream);
+  object_recognition_core::curl::reader binary_reader(stream);
   curl_.reset();
   curl_.setReader(&binary_reader);
   json_writer_stream_.str("");
@@ -118,14 +118,14 @@ void
 ObjectDbCouch::get_attachment_stream(const DocumentId & document_id, const std::string& attachment_name,
                                      const std::string& content_type, std::ostream& stream, RevisionId & revision_id)
 {
-  object_recognition::curl::writer binary_writer(stream);
+  object_recognition_core::curl::writer binary_writer(stream);
   curl_.reset();
   json_writer_stream_.str("");
   curl_.setWriter(&binary_writer);
   curl_.setURL(url_id(document_id) + "/" + attachment_name);
   curl_.GET();
   curl_.perform();
-  if (curl_.get_response_code() != object_recognition::curl::cURL::OK)
+  if (curl_.get_response_code() != object_recognition_core::curl::cURL::OK)
   {
     throw std::runtime_error(curl_.get_response_reason_phrase() + " : " + curl_.getURL());
   }
@@ -158,7 +158,7 @@ void
 ObjectDbCouch::Delete(const ObjectId & id)
 {
   std::string status = Status(collection_ + "/" + id);
-  if (curl_.get_response_code() == object_recognition::curl::cURL::OK)
+  if (curl_.get_response_code() == object_recognition_core::curl::cURL::OK)
   {
     DocumentId document_id;
     RevisionId revision_id;
@@ -180,7 +180,7 @@ ObjectDbCouch::Delete(const ObjectId & id)
     write_json(params, json_reader_stream_);
     curl_.setCustomRequest("DELETE");
     curl_.perform();
-    if (curl_.get_response_code() != object_recognition::curl::cURL::OK)
+    if (curl_.get_response_code() != object_recognition_core::curl::cURL::OK)
     {
       throw std::runtime_error(curl_.get_response_reason_phrase() + " : " + curl_.getURL());
     }
@@ -192,7 +192,7 @@ ObjectDbCouch::Delete(const ObjectId & id)
 }
 
 void
-ObjectDbCouch::Query(const object_recognition::db::View & view, int limit_rows, int start_offset, int& total_rows,
+ObjectDbCouch::Query(const object_recognition_core::db::View & view, int limit_rows, int start_offset, int& total_rows,
                      int& offset, std::vector<ViewElement> & view_elements)
 {
   json_reader_stream_.str("");
@@ -201,11 +201,11 @@ ObjectDbCouch::Query(const object_recognition::db::View & view, int limit_rows, 
   bool do_throw;
   switch (view.type())
   {
-    case object_recognition::db::View::VIEW_MODEL_WHERE_OBJECT_ID_AND_MODEL_TYPE:
+    case object_recognition_core::db::View::VIEW_MODEL_WHERE_OBJECT_ID_AND_MODEL_TYPE:
       url = root_ + "/" + collection_ + "/_design/models/_view/by_object_id_and_" + parameters["model_type"].get_str();
       do_throw = false;
 
-      object_recognition::db::View::Key key;
+      object_recognition_core::db::View::Key key;
       std::string options;
       if (view.key(key))
         options = "&startkey=\"" + key.get_str() + "\"&endkey=\"" + key.get_str() + "\"";
@@ -254,7 +254,7 @@ ObjectDbCouch::QueryView(const std::string & in_url, int limit_rows, int start_o
   curl_.setCustomRequest("GET");
   curl_.perform();
 
-  if (curl_.get_response_code() != object_recognition::curl::cURL::OK)
+  if (curl_.get_response_code() != object_recognition_core::curl::cURL::OK)
   {
     if (do_throw)
       throw std::runtime_error(curl_.get_response_reason_phrase() + " : " + curl_.getURL());
@@ -302,7 +302,7 @@ ObjectDbCouch::CreateCollection(const CollectionName &collection)
     curl_.setReader(&json_reader_);
     curl_.setCustomRequest("PUT");
     curl_.perform();
-    if (curl_.get_response_code() != object_recognition::curl::cURL::Created)
+    if (curl_.get_response_code() != object_recognition_core::curl::cURL::Created)
     {
       throw std::runtime_error(curl_.get_response_reason_phrase() + " : " + curl_.getURL());
     }
@@ -337,7 +337,7 @@ ObjectDbCouch::Status()
   curl_.setURL(root_);
   curl_.setCustomRequest("GET");
   curl_.perform();
-  if (curl_.get_response_code() != object_recognition::curl::cURL::OK)
+  if (curl_.get_response_code() != object_recognition_core::curl::cURL::OK)
   {
     throw std::runtime_error(curl_.get_response_reason_phrase() + " : " + curl_.getURL());
   }
@@ -366,11 +366,11 @@ void
 ObjectDbCouch::DeleteCollection(const CollectionName &collection)
 {
   std::string status = Status(collection);
-  if (curl_.get_response_code() == object_recognition::curl::cURL::OK)
+  if (curl_.get_response_code() == object_recognition_core::curl::cURL::OK)
   {
     curl_.setCustomRequest("DELETE");
     curl_.perform();
-    if (curl_.get_response_code() != object_recognition::curl::cURL::OK)
+    if (curl_.get_response_code() != object_recognition_core::curl::cURL::OK)
     {
       throw std::runtime_error(curl_.get_response_reason_phrase() + " : " + curl_.getURL());
     }

@@ -2,7 +2,7 @@
 #include <string>
 #include <sstream>
 #include "json_spirit/json_spirit.h"
-namespace object_recognition
+namespace object_recognition_core
 {
   inline or_json::mValue
   to_json(const std::string& str)

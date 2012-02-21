@@ -7,16 +7,14 @@
 #include <boost/lexical_cast.hpp>
 #include <string>
 
-#include "object_recognition/common/types.h"
-#include <object_recognition/db/db.h>
-#include <object_recognition/db/opencv.h>
-#include <object_recognition/db/prototypes/observations.hpp>
-
-#include "object_recognition/db/db.h"
+#include <object_recognition_core/common/types.h>
+#include <object_recognition_core/db/db.h>
+#include <object_recognition_core/db/opencv.h>
+#include <object_recognition_core/db/prototypes/observations.hpp>
 
 #define DEFAULT_COUCHDB_URL "http://localhost:5984"
 using ecto::tendrils;
-namespace object_recognition
+namespace object_recognition_core
 {
   namespace prototypes
   {
@@ -45,5 +43,5 @@ namespace object_recognition
     };
   }
 }
-ECTO_CELL(object_recognition_db, object_recognition::prototypes::ObservationReader, "ObservationReader",
+ECTO_CELL(object_recognition_core_db, object_recognition_core::prototypes::ObservationReader, "ObservationReader",
           "Reads observations from the database.");

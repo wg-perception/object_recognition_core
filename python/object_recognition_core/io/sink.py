@@ -3,7 +3,7 @@ Module defining several outputs for the object recognition pipeline
 '''
 
 from abc import ABCMeta
-from ecto_object_recognition.io import GuessCsvWriter
+from ecto_object_recognition_core.io import GuessCsvWriter
 
 ########################################################################################################################
 
@@ -58,3 +58,13 @@ class Sink(object):
         return cell
 
 ########################################################################################################################
+
+class GuessCsvWriterPython(Sink):
+
+    @classmethod
+    def type_name(cls):
+        return 'csv_writer'
+
+    @classmethod
+    def sink(self, *args, **kwargs):
+        return GuessCsvWriter()

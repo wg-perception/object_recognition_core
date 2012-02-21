@@ -9,9 +9,9 @@ ectomodule(io
   )
 
 link_ecto(io
-  object_recognition_common
-  ${OpenCV_LIBS}
-  ${Boost_LIBRARIES}
-  )
+    object_recognition_core_common
+    ${OpenCV_LIBS}
+    ${Boost_LIBRARIES}
+)
 
 install_ecto_module(io)

@@ -2,12 +2,10 @@
 Loaders for all object recognition pipelines
 '''
 from abc import ABCMeta, abstractmethod
-
-import ecto
-from ecto_object_recognition.object_recognition_db import ObservationReader
+from ecto_object_recognition_core.object_recognition_core_db import Document, DbDocuments, ObservationReader
 from object_recognition_core.utils import list_to_cpp_json_str, json_helper
 from object_recognition_core.utils.json_helper import dict_to_cpp_json_str
-from ecto_object_recognition.object_recognition_db import Document, DbDocuments
+import ecto
 
 class ObservationDealer(ecto.BlackBox):
     '''

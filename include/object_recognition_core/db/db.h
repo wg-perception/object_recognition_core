@@ -48,10 +48,10 @@
 #include <opencv2/core/core.hpp>
 #endif
 
-#include "object_recognition/common/types.h"
-#include "object_recognition/common/json_spirit/json_spirit.h"
+#include <object_recognition_core/common/types.h>
+#include <object_recognition_core/common/json_spirit/json_spirit.h>
 
-namespace object_recognition
+namespace object_recognition_core
 {
   namespace db
   {
@@ -141,7 +141,7 @@ namespace object_recognition
       void
       set_parameters(const ObjectDbParameters &in_params);
       void
-      set_db_and_parameters(const boost::shared_ptr<object_recognition::db::ObjectDbBase>&, const object_recognition::db::ObjectDbParameters&);
+      set_db_and_parameters(const boost::shared_ptr<object_recognition_core::db::ObjectDbBase>&, const object_recognition_core::db::ObjectDbParameters&);
 
       /*** Get the parameters */
       const ObjectDbParameters &

@@ -5,11 +5,10 @@ ectomodule(voters
   )
 
 link_ecto(voters
-  ${OpenCV_LIBS}
-  object_recognition_db
-  ${pcl_LIBRARIES}
-  ${Boost_LIBRARIES}
-  opencv_candidate
-  )
+    ${OpenCV_LIBS}
+    object_recognition_core_db
+    ${pcl_LIBRARIES}
+    ${Boost_LIBRARIES}
+)
 
 install_ecto_module(voters)

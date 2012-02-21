@@ -2,7 +2,7 @@
 Module defining several voters for the object recognition pipeline
 """
 
-from ecto_object_recognition.voters import Aggregator
+from ecto_object_recognition_core.voters import Aggregator
 
 class Voter(object):
     '''

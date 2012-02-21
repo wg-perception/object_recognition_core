@@ -39,18 +39,18 @@
 #include <boost/filesystem.hpp>
 
 #include "curl_interface.h"
+#include <object_recognition_core/common/types.h>
 #include <object_recognition_core/db/db_base.h>
-#include "object_recognition/common/types.h"
 
-using object_recognition::db::AttachmentName;
-using object_recognition::db::CollectionName;
-using object_recognition::db::DbType;
-using object_recognition::db::DocumentId;
-using object_recognition::db::ObjectId;
-using object_recognition::db::MimeType;
-using object_recognition::db::RevisionId;
-using object_recognition::db::View;
-using object_recognition::db::ViewElement;
+using object_recognition_core::db::AttachmentName;
+using object_recognition_core::db::CollectionName;
+using object_recognition_core::db::DbType;
+using object_recognition_core::db::DocumentId;
+using object_recognition_core::db::ObjectId;
+using object_recognition_core::db::MimeType;
+using object_recognition_core::db::RevisionId;
+using object_recognition_core::db::View;
+using object_recognition_core::db::ViewElement;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -74,7 +74,7 @@ using object_recognition::db::ViewElement;
  *                 doc (this is a symlink to something like `all_docs/id1'
  *                 value
  */
-class ObjectDbFilesystem: public object_recognition::db::ObjectDbBase
+class ObjectDbFilesystem: public object_recognition_core::db::ObjectDbBase
 {
 public:
   ObjectDbFilesystem();

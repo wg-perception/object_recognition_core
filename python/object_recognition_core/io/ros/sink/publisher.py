@@ -4,8 +4,8 @@ Module defining several outputs for the object recognition pipeline
 
 import ecto
 import ecto_geometry_msgs, ecto_std_msgs
-from ecto_object_recognition.io_ros import PoseArrayAssembler, Publisher_MarkerArray
-from ecto_object_recognition.object_recognition_db import ObjectDbParameters
+from ecto_object_recognition_core.io_ros import PoseArrayAssembler, Publisher_MarkerArray
+from ecto_object_recognition_core.object_recognition_core_db import ObjectDbParameters
 from object_recognition_core.io.sink import Sink
 
 PoseArrayPub = ecto_geometry_msgs.Publisher_PoseArray

@@ -5,13 +5,13 @@
 
 #include <gtest/gtest.h>
 
-#include "object_recognition/common/json_spirit/json_spirit.h"
-#include <object_recognition/db/db.h>
+#include <object_recognition_core/common/json_spirit/json_spirit.h>
+#include <object_recognition_core/db/db.h>
 
 const char* db_url = "http://localhost:5984";
 
-using namespace object_recognition::db;
-using object_recognition::db::ObjectDbParameters;
+using namespace object_recognition_core::db;
+using object_recognition_core::db::ObjectDbParameters;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Functions related to parameters

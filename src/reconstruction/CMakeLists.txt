@@ -5,9 +5,10 @@ find_package(PCL REQUIRED)
 find_package(image_pipeline REQUIRED)
 find_package(ecto_pcl REQUIRED)
 
-include_directories(${ecto_pcl_INCLUDE_DIRS}
+include_directories(SYSTEM
+    ${ecto_pcl_INCLUDE_DIRS}
     ${image_pipeline_INCLUDE_DIRS}
-    )
+)
 
 #deal with the objcog module
 ectomodule(reconstruction
@@ -27,9 +28,9 @@ set_target_properties(reconstruction_ectomodule
       )
 
 link_ecto(reconstruction
-  ${pcl_LIBRARIES}
-  ${OpenCV_LIBS}
-  object_recognition_db
-  )
+    ${pcl_LIBRARIES}
+    ${OpenCV_LIBS}
+    object_recognition_core_db
+)
 
 install_ecto_module(reconstruction)

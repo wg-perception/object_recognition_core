@@ -1,7 +1,7 @@
 /*
  * Software License Agreement (BSD License)
  *
- *  Copyright (c) 2011, Willow Garage, Inc.
+ *  Copyright (c) 2009, Willow Garage, Inc.
  *  All rights reserved.
  *
  *  Redistribution and use in source and binary forms, with or without
@@ -30,36 +30,41 @@
  *  LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
  *  ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  *  POSSIBILITY OF SUCH DAMAGE.
+ *
  */
 
-#ifndef TYPES_H_
-#define TYPES_H_
-
+#pragma once
+#include <ecto/ecto.hpp>
 #include <string>
 
-namespace object_recognition
+#include <opencv2/core/core.hpp>
+#include <object_recognition_core/db/db.h>
+
+namespace object_recognition_core
 {
-  namespace db
+  namespace prototypes
   {
-    /** The unique identifier of an object in the DB */
-    typedef std::string ObjectId;
+    struct Observation
+    {
+      //fields
+      std::string object_id, session_id;
+      int frame_number;
 
-    /** The unique identifier of a model in the DB */
-    typedef std::string ModelId;
+      //attachments
+      cv::Mat K, R, T; //yaml files
+      cv::Mat image, depth, mask; //png images
 
-    typedef std::string AttachmentName;
-    typedef std::string CollectionName;
-    typedef std::string DocumentId;
-    typedef std::string DbType;
-    typedef std::string Field;
-    typedef std::string MimeType;
-    typedef std::string RevisionId;
+      static void
+      declare(ecto::tendrils& t, bool required);
+    };
 
-    const std::string MIME_TYPE_DEFAULT = "application/octet-stream";
-
-    /** The type of a model in the DB */
-    typedef std::string ModelType;
+    void
+    operator>>(Observation& o, db::Document& doc);
+    void
+    operator<<(Observation& o, db::Document& doc);
+    void
+    operator>>(Observation& obs, const ecto::tendrils& o);
+    void
+    operator<<(Observation& obs, const ecto::tendrils& i);
   }
 }
-
-#endif /* TYPES_H_ */

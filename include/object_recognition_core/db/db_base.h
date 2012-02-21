@@ -41,18 +41,17 @@
 #include <map>
 #include <vector>
 
-#include <boost/foreach.hpp>
 #include <boost/any.hpp>
-
+#include <boost/foreach.hpp>
 #include <boost/shared_ptr.hpp>
 
-#include "object_recognition/common/types.h"
-#include "object_recognition/common/json_spirit/json_spirit.h"
-#include <object_recognition/db/view.h>
+#include <object_recognition_core/common/types.h>
+#include <object_recognition_core/common/json_spirit/json_spirit.h>
+#include <object_recognition_core/db/view.h>
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-namespace object_recognition
+namespace object_recognition_core
 {
   namespace db
   {

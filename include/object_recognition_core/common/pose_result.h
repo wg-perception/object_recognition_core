@@ -37,8 +37,8 @@
 #define IO_H_
 
 #include "types.h"
-#include <object_recognition/db/db.h>
-#include <object_recognition/db/view.h>
+#include <object_recognition_core/db/db.h>
+#include <object_recognition_core/db/view.h>
 
 #ifdef CV_MAJOR_VERSION
 #include <opencv2/core/core.hpp>
@@ -49,7 +49,7 @@
 #include <Eigen/Eigen>
 #endif
 
-namespace object_recognition
+namespace object_recognition_core
 {
   namespace common
   {

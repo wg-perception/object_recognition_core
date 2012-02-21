@@ -33,10 +33,10 @@
  *
  */
 
-#include <object_recognition/db/db.h>
-#include <object_recognition/db/view.h>
+#include <object_recognition_core/db/db.h>
+#include <object_recognition_core/db/view.h>
 
-namespace object_recognition
+namespace object_recognition_core
 {
   namespace db
   {

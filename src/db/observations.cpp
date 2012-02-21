@@ -5,14 +5,13 @@
 #include <boost/format.hpp>
 #include <string>
 
-#include <object_recognition/db/db.h>
-#include <object_recognition/db/opencv.h>
-
-#include <object_recognition/db/prototypes/observations.hpp>
+#include <object_recognition_core/db/db.h>
+#include <object_recognition_core/db/opencv.h>
+#include <object_recognition_core/db/prototypes/observations.hpp>
 
 using ecto::tendrils;
 
-namespace object_recognition
+namespace object_recognition_core
 {
   namespace prototypes
   {
@@ -35,12 +34,12 @@ namespace object_recognition
       extrinsics["R"] = o.R;
       extrinsics["T"] = o.T;
       std::stringstream intr_ss, extr_ss;
-      object_recognition::db::mats2yaml(intrinsics, intr_ss);
-      object_recognition::db::mats2yaml(extrinsics, extr_ss);
+      object_recognition_core::db::mats2yaml(intrinsics, intr_ss);
+      object_recognition_core::db::mats2yaml(extrinsics, extr_ss);
 
-      object_recognition::db::png_attach(o.image, doc, "image");
-      object_recognition::db::png_attach(o.depth, doc, "depth");
-      object_recognition::db::png_attach(o.mask, doc, "mask");
+      object_recognition_core::db::png_attach(o.image, doc, "image");
+      object_recognition_core::db::png_attach(o.depth, doc, "depth");
+      object_recognition_core::db::png_attach(o.mask, doc, "mask");
       doc.set_attachment_stream("intrinsics.yml", intr_ss, "text/x-yaml");
       doc.set_attachment_stream("extrinsics.yml", extr_ss, "text/x-yaml");
       doc.set_value("Type", "Observation");
@@ -55,9 +54,9 @@ namespace object_recognition
       o.object_id = doc.get_value<std::string>("object_id");
       o.session_id = doc.get_value<std::string>("session_id");
       o.frame_number = doc.get_value<int>("frame_number");
-      object_recognition::db::get_png_attachment(o.image, doc, "image");
-      object_recognition::db::get_png_attachment(o.depth, doc, "depth");
-      object_recognition::db::get_png_attachment(o.mask, doc, "mask");
+      object_recognition_core::db::get_png_attachment(o.image, doc, "image");
+      object_recognition_core::db::get_png_attachment(o.depth, doc, "depth");
+      object_recognition_core::db::get_png_attachment(o.mask, doc, "mask");
       std::stringstream intr_ss, extr_ss;
       doc.get_attachment_stream_and_cache("intrinsics.yml", intr_ss);
       doc.get_attachment_stream_and_cache("extrinsics.yml", extr_ss);
@@ -65,8 +64,8 @@ namespace object_recognition
       intrinsics["K"] = cv::Mat();
       extrinsics["R"] = cv::Mat();
       extrinsics["T"] = cv::Mat();
-      object_recognition::db::yaml2mats(intrinsics, intr_ss);
-      object_recognition::db::yaml2mats(extrinsics, extr_ss);
+      object_recognition_core::db::yaml2mats(intrinsics, intr_ss);
+      object_recognition_core::db::yaml2mats(extrinsics, extr_ss);
       o.K = intrinsics["K"];
       o.R = extrinsics["R"];
       o.T = extrinsics["T"];

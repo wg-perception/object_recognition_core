@@ -38,13 +38,13 @@
 
 #include "db_couch.h"
 #include "db_filesystem.h"
-#include <object_recognition/db/db.h>
+#include <object_recognition_core/db/db.h>
 #include <object_recognition_core/db/db_base.h>
-#include <object_recognition/db/opencv.h>
-#include <object_recognition/db/view.h>
+#include <object_recognition_core/db/opencv.h>
+#include <object_recognition_core/db/view.h>
 
 #define PRECONDITION_DB() if(!db_) throw std::runtime_error(std::string("This ObjectDb instance is uninitialized."));
-namespace object_recognition
+namespace object_recognition_core
 {
   namespace db
   {
@@ -434,7 +434,7 @@ namespace object_recognition
       get_attachment_stream(attachment_name, ss, "text/x-yaml");
       std::map<std::string, cv::Mat> ss_map;
       ss_map[attachment_name] = cv::Mat();
-      object_recognition::db::yaml2mats(ss_map, ss, true);
+      object_recognition_core::db::yaml2mats(ss_map, ss, true);
       value = ss_map[attachment_name];
     }
 
@@ -446,7 +446,7 @@ namespace object_recognition
       get_attachment_stream_and_cache(attachment_name, ss, "text/x-yaml");
       std::map<std::string, cv::Mat> ss_map;
       ss_map[attachment_name] = cv::Mat();
-      object_recognition::db::yaml2mats(ss_map, ss, true);
+      object_recognition_core::db::yaml2mats(ss_map, ss, true);
       value = ss_map[attachment_name];
     }
 
@@ -457,7 +457,7 @@ namespace object_recognition
       std::stringstream ss;
       std::map<std::string, cv::Mat> ss_map;
       ss_map[attachment_name] = value;
-      object_recognition::db::mats2yaml(ss_map, ss, true);
+      object_recognition_core::db::mats2yaml(ss_map, ss, true);
       set_attachment_stream(attachment_name, ss, "text/x-yaml");
     }
 #endif

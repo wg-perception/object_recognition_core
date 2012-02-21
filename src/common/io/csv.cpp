@@ -37,7 +37,7 @@
 
 #include "csv.h"
 
-namespace object_recognition
+namespace object_recognition_core
 {
   namespace io
   {

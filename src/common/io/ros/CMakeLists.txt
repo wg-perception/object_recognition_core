@@ -17,8 +17,8 @@ link_ecto(io_ros
     ${OpenCV_LIBS}
     ${rosbag_LIBRARIES}
     ${roscpp_LIBRARIES}
-    object_recognition_db
-    object_recognition_common
-    )
+    object_recognition_core_db
+    object_recognition_core_common
+)
 
 install_ecto_module(io_ros)

@@ -37,7 +37,8 @@
 
 #include <boost/python.hpp>
 #include <boost/shared_ptr.hpp>
-#include <object_recognition/db/db.h>
+
+#include <object_recognition_core/db/db.h>
 
 namespace bp = boost::python;
 
@@ -71,7 +72,7 @@ namespace
   }
 }
 
-namespace object_recognition
+namespace object_recognition_core
 {
   namespace db
   {

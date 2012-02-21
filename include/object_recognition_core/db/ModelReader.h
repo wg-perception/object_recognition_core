@@ -42,12 +42,12 @@
 
 #include <ecto/ecto.hpp>
 
-#include "object_recognition/common/json_spirit/json_spirit_reader_template.h"
-#include "object_recognition/common/types.h"
-#include "object_recognition/db/model_utils.h"
-#include "object_recognition/db/view.h"
+#include <object_recognition_core/common/json_spirit/json_spirit_reader_template.h>
+#include <object_recognition_core/common/types.h>
+#include <object_recognition_core/db/model_utils.h>
+#include <object_recognition_core/db/view.h>
 
-namespace object_recognition
+namespace object_recognition_core
 {
   namespace db
   {

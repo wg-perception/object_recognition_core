@@ -50,13 +50,13 @@
 
 #include <opencv2/core/core.hpp>
 
-#include <object_recognition/common/pose_result.h>
-#include <object_recognition/common/types.h>
-#include <object_recognition/db/db.h>
+#include <object_recognition_core/common/pose_result.h>
+#include <object_recognition_core/common/types.h>
+#include <object_recognition_core/db/db.h>
 
 namespace bp = boost::python;
-using object_recognition::db::ObjectId;
-using object_recognition::common::PoseResult;
+using object_recognition_core::db::ObjectId;
+using object_recognition_core::common::PoseResult;
 
 namespace
 {
@@ -111,7 +111,7 @@ namespace
   }
 }
 
-namespace object_recognition
+namespace object_recognition_core
 {
   struct PoseArrayAssembler
   {
@@ -259,5 +259,5 @@ namespace object_recognition
   std::map<ObjectId, unsigned int> PoseArrayAssembler::object_id_to_index_;
 }
 
-ECTO_CELL(io_ros, object_recognition::PoseArrayAssembler, "PoseArrayAssembler",
+ECTO_CELL(io_ros, object_recognition_core::PoseArrayAssembler, "PoseArrayAssembler",
           "Given object ids and poses, create PoseArray message.");

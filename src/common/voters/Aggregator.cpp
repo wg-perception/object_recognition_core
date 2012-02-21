@@ -39,12 +39,12 @@
 
 #include <ecto/ecto.hpp>
 
-#include <object_recognition/common/types.h>
-#include <object_recognition/common/pose_result.h>
+#include <object_recognition_core/common/types.h>
+#include <object_recognition_core/common/pose_result.h>
 
-using object_recognition::common::PoseResult;
+using object_recognition_core::common::PoseResult;
 
-namespace object_recognition
+namespace object_recognition_core
 {
   namespace voters
   {
@@ -109,5 +109,5 @@ namespace object_recognition
   }
 }
 
-ECTO_CELL(voters, object_recognition::voters::Aggregator, "Aggregator",
+ECTO_CELL(voters, object_recognition_core::voters::Aggregator, "Aggregator",
           "Simply aggregates the results from several pipelines");

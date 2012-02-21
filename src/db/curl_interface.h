@@ -50,7 +50,7 @@
 
 #include <curl/curl.h>
 
-namespace object_recognition
+namespace object_recognition_core
 {
 namespace curl
 {

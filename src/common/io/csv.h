@@ -37,7 +37,7 @@
 #include <stdexcept>
 #include <boost/shared_ptr.hpp>
 
-namespace object_recognition
+namespace object_recognition_core
 {
   namespace io
   {

@@ -35,9 +35,9 @@
 
 #include <map>
 
-#include <object_recognition/common/pose_result.h>
+#include <object_recognition_core/common/pose_result.h>
 
-namespace object_recognition
+namespace object_recognition_core
 {
   namespace common
   {

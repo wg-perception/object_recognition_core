@@ -1,5 +1,5 @@
 #include <ecto/ecto.hpp>
-namespace object_recognition
+namespace object_recognition_core
 {
   namespace db
   {
@@ -8,9 +8,9 @@ namespace object_recognition
     void wrap_db_parameters();
   }
 }
-ECTO_DEFINE_MODULE(object_recognition_db)
+ECTO_DEFINE_MODULE(object_recognition_core_db)
 {
-  using namespace object_recognition::db;
+  using namespace object_recognition_core::db;
   wrap_db_documents();
   wrap_db_models();
   wrap_db_parameters();
