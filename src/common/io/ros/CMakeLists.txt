@@ -2,8 +2,12 @@
 
 find_package(ROS REQUIRED geometry_msgs rosbag roscpp sensor_msgs visualization_msgs)
 find_package(ecto_ros REQUIRED)
+find_package(Eigen REQUIRED)
 
-include_directories(${ecto_ros_INCLUDE_DIRS})
+include_directories(SYSTEM
+                    ${EIGEN_INCLUDE_DIRS}
+                    ${ecto_ros_INCLUDE_DIRS}
+)
 
 ectomodule(io_ros
     module.cpp

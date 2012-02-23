@@ -5,7 +5,7 @@ It is not meant to be run as a test of object_recognition but as a test for and 
 pipeline independently.
 """
 
-from ecto_object_recognition_core.object_recognition_core_db import ObjectDbParameters
+from object_recognition_core.db.interface import ObjectDbParameters
 from object_recognition_core import find_cells
 from object_recognition_core.pipelines.training import TrainingPipeline
 from object_recognition_core.utils.training_detection_args import common_create_parser, common_parse_config_file

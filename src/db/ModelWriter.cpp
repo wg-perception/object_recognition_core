@@ -135,6 +135,6 @@ namespace object_recognition_core
   }
 }
 
-ECTO_CELL(object_recognition_core_db, object_recognition_core::db::ModelWriter, "ModelWriter",
+ECTO_CELL(db, object_recognition_core::db::ModelWriter, "ModelWriter",
     "Takes a document, that should be considered as a Model, and persists it."
     " Also stores common meta data that is useful for searching.");

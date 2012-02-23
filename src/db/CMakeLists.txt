@@ -10,56 +10,76 @@ find_package(Boost COMPONENTS
 find_package(CURL REQUIRED)
 find_package(OpenCV REQUIRED)
 
-include_directories(
-  ${CMAKE_CURRENT_SOURCE_DIR}
-  )
+include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
-add_library(object_recognition_core_db SHARED
-  db.cpp
-  db_couch.cpp
-  db_filesystem.cpp
-  opencv.cpp
-  ../../include/object_recognition_core/common/json_spirit/json_spirit_reader.cpp
-  ../../include/object_recognition_core/common/json_spirit/json_spirit_value.cpp
-  ../../include/object_recognition_core/common/json_spirit/json_spirit_writer.cpp
-  model_utils.cpp
-  observations.cpp
-  view.cpp
-  )
-
-target_link_libraries(object_recognition_core_db
-  boost_filesystem
-  boost_regex
-  boost_system
-  boost_serialization
-  boost_thread
-  ${CURL_LIBRARIES}
-  opencv_core
-  opencv_highgui
-  ecto
-  )
-
-
-set_target_properties(object_recognition_core_db PROPERTIES
-  VERSION ${object_recognition_VERSION}
-  SOVERSION ${object_recognition_SOVERSION}
-  )
-#install the main shared lib
-install(TARGETS object_recognition_core_db
-  DESTINATION lib
-  )
-
-ectomodule(object_recognition_core_db
-    module.cpp
-    wrap_db_parameters.cpp
-    wrap_db_documents.cpp
-    ModelWriter.cpp
-    ObservationReader.cpp
-    ObservationWriter.cpp
-    )
-
-link_ecto(object_recognition_core_db
-    object_recognition_core_db
+# create a shared library to deal with the different DB components
+add_library(object_recognition_core_db
+            SHARED
+            db.cpp
+            db_couch.cpp
+            db_filesystem.cpp
+            opencv.cpp
+            ../../include/object_recognition_core/common/json_spirit/json_spirit_reader.cpp
+            ../../include/object_recognition_core/common/json_spirit/json_spirit_value.cpp
+            ../../include/object_recognition_core/common/json_spirit/json_spirit_writer.cpp
+            model_utils.cpp
+            observations.cpp
+            view.cpp
 )
 
-install_ecto_module(object_recognition_core_db)
+target_link_libraries(object_recognition_core_db
+                      boost_filesystem
+                      boost_regex
+                      boost_system
+                      boost_serialization
+                      boost_thread
+                      ${CURL_LIBRARIES}
+                      opencv_core
+                      opencv_highgui
+                      ecto
+)
+
+set_target_properties(object_recognition_core_db PROPERTIES
+                      VERSION ${object_recognition_core_VERSION}
+                      SOVERSION ${object_recognition_core_SOVERSION}
+                      LIBRARY_OUTPUT_DIRECTORY lib
+)
+
+install(TARGETS object_recognition_core_db
+        DESTINATION lib
+)
+
+# create a Python module to wrap the DB functionalities
+add_library(db_interface SHARED
+            module_python.cpp
+            wrap_db_parameters.cpp
+            wrap_db_documents.cpp
+)
+
+target_link_libraries(db_interface
+                      object_recognition_core_db
+)
+
+set_target_properties(db_interface PROPERTIES
+                      LIBRARY_OUTPUT_DIRECTORY ${python_LIBRARY_OUTPUT_DIRECTORY}/db
+                      OUTPUT_NAME interface
+                      PREFIX ""
+)
+
+install(TARGETS db_interface
+        DESTINATION ${PYTHON_PACKAGES_PATH}/object_recognition_core/db
+)
+
+# Create the ecto module with a few cells
+ectomodule(db
+           module.cpp
+           ModelWriter.cpp
+           ObservationReader.cpp
+           ObservationWriter.cpp
+)
+
+link_ecto(db
+          object_recognition_core_db
+)
+
+install_ecto_module(db)

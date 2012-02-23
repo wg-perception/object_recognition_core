@@ -10,9 +10,9 @@ target_link_libraries(object_recognition_core_common
 )
 
 set_target_properties(object_recognition_core_common PROPERTIES
-  VERSION ${object_recognition_VERSION}
-  SOVERSION ${object_recognition_SOVERSION}
-  )
+                      VERSION ${object_recognition_core_VERSION}
+                      SOVERSION ${object_recognition_core_SOVERSION}
+)
 
 install(TARGETS object_recognition_core_common
   DESTINATION lib

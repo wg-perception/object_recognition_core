@@ -2,7 +2,7 @@
 Module that creates a function to define/read common arguments for the training/detection pipeline
 """
 
-from ecto_object_recognition_core.object_recognition_core_db import ObjectDbParameters
+from object_recognition_core.db.interface import ObjectDbParameters
 from object_recognition_core.db import models, dbtools
 from object_recognition_core.utils.parser import ObjectRecognitionParser
 import os

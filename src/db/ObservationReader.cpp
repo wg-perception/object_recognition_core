@@ -43,5 +43,5 @@ namespace object_recognition_core
     };
   }
 }
-ECTO_CELL(object_recognition_core_db, object_recognition_core::prototypes::ObservationReader, "ObservationReader",
-          "Reads observations from the database.");
+ECTO_CELL(db, object_recognition_core::prototypes::ObservationReader, "ObservationReader",
+    "Reads observations from the database.");
