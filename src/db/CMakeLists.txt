@@ -54,6 +54,7 @@ add_library(db_interface SHARED
             module_python.cpp
             wrap_db_parameters.cpp
             wrap_db_documents.cpp
+            wrap_object_db.cpp
 )
 
 target_link_libraries(db_interface

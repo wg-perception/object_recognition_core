@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 import roscompat
-from ecto_object_recognition.object_recognition_db import ObjectDbParameters
+from object_recognition_core.db import ObjectDbParameters
+from object_recognition_core.db.object_db import ObjectDb
 from object_recognition_core.db import models
 from object_recognition_core.utils.training_detection_args import read_arguments_training
 from object_recognition_core import find_cells
@@ -25,6 +26,7 @@ if __name__ == '__main__':
             db_params = pipeline_param['parameters'].get('db', {})
             if not db_params:
                 continue
+            object_db = ObjectDb(db_params)
             db_params = ObjectDbParameters(db_params)
             session_ids = models.find_all_sessions_for_object(db_params, object_id)
             for session_id in session_ids:
@@ -37,8 +39,8 @@ if __name__ == '__main__':
                 #create a plasm using the TrainingPipeline interface.
                 plasm = pipeline.train(object_id=object_id, session_ids=session_ids, observation_ids=observation_ids,
                                        submethod=pipeline_param.get('submethod', ''),
-                                       pipeline_params=pipeline_param.get('parameters', {}), db_params=db_params,
-                                       args=args)
+                                       pipeline_params=pipeline_param.get('parameters', {}), object_db=object_db,
+                                       db_params=db_params, args=args)
 
                 if DEBUG:
                     #render the DAG with dot

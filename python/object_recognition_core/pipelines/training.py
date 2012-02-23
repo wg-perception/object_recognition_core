@@ -16,12 +16,12 @@ class ObservationDealer(ecto.BlackBox):
     db_reader = ObservationReader
     def declare_params(self, p):
         p.declare('observation_ids', 'An iterable of observation ids.', [])
-        p.declare('db_params', 'db parameters.', '')
+        p.declare('object_db', 'The db to query the parameters from.', '')
 
     def declare_io(self, p, i, o):
         self.db_reader = ObservationReader()
         self.observation_dealer = ecto.Dealer(tendril=ecto.Tendril(Document()),
-                                              iterable=DbDocuments(p.db_params, p.observation_ids))
+                                              iterable=DbDocuments(p.object_db, p.observation_ids))
         o.forward_all('db_reader')
 
     def connections(self):
@@ -74,10 +74,10 @@ class TrainingPipeline:
         '''
         This should run once.
         '''
-        db_params = kwargs.get('db_params', None)
-        observation_ids = kwargs.get('observation_ids', None)
+        object_db = kwargs.get('object_db')
+        observation_ids = kwargs.get('observation_ids')
         #todo make this depend on the pipeline specification or something...
-        dealer = ObservationDealer(db_params=db_params, observation_ids=observation_ids)
+        dealer = ObservationDealer(object_db=object_db, observation_ids=observation_ids)
         incremental_model_builder = cls.incremental_model_builder(*args, **kwargs)
         model_builder = ModelBuilder(source=dealer,
                                      incremental_model_builder=incremental_model_builder,

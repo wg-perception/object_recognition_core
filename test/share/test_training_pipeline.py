@@ -5,7 +5,7 @@ It is not meant to be run as a test of object_recognition but as a test for and 
 pipeline independently.
 """
 
-from object_recognition_core.db.interface import ObjectDbParameters
+from object_recognition_core.db.object_db import ObjectDb
 from object_recognition_core import find_cells
 from object_recognition_core.pipelines.training import TrainingPipeline
 from object_recognition_core.utils.training_detection_args import common_create_parser, common_parse_config_file
@@ -27,8 +27,8 @@ if __name__ == '__main__':
         if not pipeline:
             sys.stderr.write('Invalid pipeline name: %s\nMake sure that the pipeline type is defined by a TrainingPipeline class, in the name class function.' % pipeline_param['method'])
             sys.exit(-1)
-        db_params = ObjectDbParameters(pipeline_param['parameters'].get('db', {}))
-        kwargs = {'db_params':db_params, 'observation_ids':[],
+        object_db = ObjectDb(pipeline_param['parameters'].get('db', {}))
+        kwargs = {'object_db':object_db, 'observation_ids':[],
                                          'pipeline_params':pipeline_param.get('parameters', {}),
                                          'submethod':pipeline_param['submethod'],
                                          'args':''}

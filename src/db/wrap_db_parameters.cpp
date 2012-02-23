@@ -155,7 +155,7 @@ namespace object_recognition_core
       ObjectDbParametersClass.add_property("root", root, "The root of the database.");
       ObjectDbParametersClass.add_property("type", type, "The type of the database.");
       ObjectDbParametersClass.def_pickle(db_parameters_pickle_suite());
-      bp::enum_<ObjectDbParameters::ObjectDbType>("color").value("COUCHDB", ObjectDbParameters::COUCHDB).value(
+      bp::enum_<ObjectDbParameters::ObjectDbType>("db_types").value("COUCHDB", ObjectDbParameters::COUCHDB).value(
           "EMPTY", ObjectDbParameters::EMPTY).value("FILESYSTEM", ObjectDbParameters::FILESYSTEM);
     }
   }
