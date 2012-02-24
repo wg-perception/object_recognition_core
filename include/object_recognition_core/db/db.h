@@ -462,7 +462,7 @@ namespace object_recognition_core
       static const unsigned int BATCH_SIZE;
       ViewIterator();
 
-      ViewIterator(const View &view, ObjectDb& db);
+      ViewIterator(const View &view, const ObjectDb& db);
 
       /** Perform the query itself
        * @param db The db on which the query is performed

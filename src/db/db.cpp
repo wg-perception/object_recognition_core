@@ -452,7 +452,7 @@ namespace object_recognition_core
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    ViewIterator::ViewIterator(const View &view, ObjectDb& db)
+    ViewIterator::ViewIterator(const View &view, const ObjectDb& db)
         :
           start_offset_(0),
           query_(db.Query(view)),
