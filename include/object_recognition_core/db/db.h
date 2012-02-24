@@ -124,6 +124,12 @@ namespace object_recognition_core
       {
       }
 
+      /** Constructor
+       * @param in_params any class that inherits from ObjectDbBaseParameters
+       */
+      explicit
+      ObjectDb(const ObjectDbParameters &in_params);
+
       ObjectDb&
       operator=(const ObjectDb &db)
       {
@@ -132,15 +138,11 @@ namespace object_recognition_core
         return *this;
       }
 
-      /** Constructor
-       * @param in_params any class that inherits from ObjectDbBaseParameters
-       */
-      ObjectDb(const ObjectDbParameters &in_params);
-
       void
       set_parameters(const ObjectDbParameters &in_params);
       void
-      set_db_and_parameters(const boost::shared_ptr<object_recognition_core::db::ObjectDbBase>&, const object_recognition_core::db::ObjectDbParameters&);
+      set_db_and_parameters(const boost::shared_ptr<object_recognition_core::db::ObjectDbBase>&,
+                            const object_recognition_core::db::ObjectDbParameters&);
 
       /*** Get the parameters */
       const ObjectDbParameters &
