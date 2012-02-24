@@ -388,12 +388,12 @@ TEST(OR_db, ParamsGarbage)
 {
   try
   {
-    ObjectDb db(params_garbage());
+    ObjectDbParameters db_params(params_garbage());
     ASSERT_FALSE(true);
   } catch (std::runtime_error& e)
   {
     std::string error(e.what());
-    EXPECT_TRUE(error.find(std::string("Invalid type.")) != std::string::npos);
+    EXPECT_TRUE(error.find(std::string("No implementation for that db type.")) != std::string::npos);
   }
 }
 

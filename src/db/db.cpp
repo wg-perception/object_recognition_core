@@ -81,7 +81,7 @@ namespace object_recognition_core
         }
         default:
         {
-          throw std::runtime_error("No implementation for that db enum type.");
+          throw std::runtime_error("No implementation for that db type.");
           break;
         }
       }
@@ -145,16 +145,7 @@ namespace object_recognition_core
     {
       set_parameters(in_params);
     }
-    ObjectDb::ObjectDb(const std::string& json_params)
-    {
-      set_parameters(json_params);
-    }
 
-    void
-    ObjectDb::set_parameters(const std::string& json_params)
-    {
-      set_parameters(ObjectDbParameters(json_params));
-    }
     void
     ObjectDb::set_parameters(const ObjectDbParameters &in_params)
     {

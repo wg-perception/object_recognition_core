@@ -135,11 +135,8 @@ namespace object_recognition_core
       /** Constructor
        * @param in_params any class that inherits from ObjectDbBaseParameters
        */
-      ObjectDb(const std::string& json_params);
       ObjectDb(const ObjectDbParameters &in_params);
 
-      void
-      set_parameters(const std::string& json_params);
       void
       set_parameters(const ObjectDbParameters &in_params);
       void
