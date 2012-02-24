@@ -52,6 +52,7 @@ namespace
     for (int j = 0, end = bp::len(l); j < end; ++j)
     {
       std::string key = bp::extract<std::string>(l[j][0]);
+      // Try to extract a string
       {
         bp::extract<std::string> extract(l[j][1]);
         if (extract.check())
@@ -59,8 +60,17 @@ namespace
           params[key] = or_json::mValue(std::string(extract));
           continue;
         }
-        throw std::runtime_error("BpDictToMap unimplemented type");
       }
+      // Try to extract an int
+      {
+        bp::extract<int> extract(l[j][1]);
+        if (extract.check())
+        {
+          params[key] = or_json::mValue(int(extract));
+          continue;
+        }
+      }
+      throw std::runtime_error("BpDictToMap unimplemented type");
     }
     return params;
   }
@@ -73,6 +83,9 @@ namespace
     {
       switch (iter->second.type())
       {
+        case or_json::int_type:
+          bp_dict[iter->first] = iter->second.get_int();
+          break;
         case or_json::str_type:
           bp_dict[iter->first] = iter->second.get_str();
           break;
@@ -139,7 +152,7 @@ namespace object_recognition_core
       }
     };
 
-    // Define some fucntions to access the members
+    // Define some functions to access the members
     std::string
     collection(const ObjectDbParametersPtr &params)
     {
@@ -175,7 +188,8 @@ namespace object_recognition_core
       ObjectDbParametersClass.add_property("raw", raw, "The raw parameters of the database.");
       ObjectDbParametersClass.def_pickle(db_parameters_pickle_suite());
       bp::enum_<ObjectDbParameters::ObjectDbType>("db_types").value("COUCHDB", ObjectDbParameters::COUCHDB).value(
-          "EMPTY", ObjectDbParameters::EMPTY).value("FILESYSTEM", ObjectDbParameters::FILESYSTEM);
+          "EMPTY", ObjectDbParameters::EMPTY).value("FILESYSTEM", ObjectDbParameters::FILESYSTEM).value(
+          "NONCORE", ObjectDbParameters::NONCORE);
     }
   }
 }

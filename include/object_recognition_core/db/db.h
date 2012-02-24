@@ -62,13 +62,15 @@ namespace object_recognition_core
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    /** A class that stores the common parameters for the object DB */
+    /** A class that stores the common parameters for the object DB
+     * If it is not from a type provided by object_recognition_core, it is of type NONCORE
+     */
     class ObjectDbParameters
     {
     public:
       enum ObjectDbType
       {
-        EMPTY, COUCHDB, FILESYSTEM
+        EMPTY, COUCHDB, FILESYSTEM, NONCORE
       };
       ObjectDbParameters();
 

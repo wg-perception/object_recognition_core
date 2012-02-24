@@ -101,7 +101,7 @@ namespace object_recognition_core
       else if (type_str == "filesystem")
         return FILESYSTEM;
       else
-        throw std::runtime_error(type_str + ": Invalid type. Possible are 'CouchDB', 'empty' and 'filesystem'");
+        return NONCORE;
     }
 
     std::string
@@ -116,7 +116,7 @@ namespace object_recognition_core
         case FILESYSTEM:
           return "filesystem";
         default:
-          throw std::runtime_error("No conversion to string implemented for that type");
+          return "noncore";
       }
       return "";
     }
@@ -170,7 +170,7 @@ namespace object_recognition_core
           db_ = boost::shared_ptr<ObjectDbBase>(new ObjectDbFilesystem(parameters_.root_, parameters_.collection_));
           return;
         default:
-          throw std::runtime_error("No set_parameters implemented for that db type.");
+          return;
       }
     }
 
