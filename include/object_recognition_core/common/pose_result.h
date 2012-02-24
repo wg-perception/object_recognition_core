@@ -73,15 +73,15 @@ namespace object_recognition_core
             R_(pose_result.R_),
             T_(pose_result.T_),
             object_id_(pose_result.object_id_),
-            db_params_(pose_result.db_params_),
+            db_(pose_result.db_),
             is_db_checked_(false)
       {
       }
 
       void
-      set_object_id(const db::ObjectDbParameters & db_params, const db::ObjectId &object_id)
+      set_object_id(const db::ObjectDb & db, const db::ObjectId &object_id)
       {
-        db_params_ = db_params;
+        db_ = db;
         object_id_ = object_id;
         is_db_checked_ = false;
       }
@@ -130,11 +130,12 @@ namespace object_recognition_core
       inline std::string
       mesh_resource() const
       {
-        switch (db_params_.type_)
+        switch (db_.parameters().type_)
         {
           case db::ObjectDbParameters::COUCHDB:
             // E.g. http://localhost:5984/object_recognition/_design/models/_view/by_object_id_and_mesh?key=%2212a1e6eb663a41f8a4fb9baa060f191c%22
-            return db_params_.root_ + std::string("/") + db_params_.collection_ + "/" + mesh_id() + "/mesh.stl";
+            return db_.parameters().root_ + std::string("/") + db_.parameters().collection_ + "/" + mesh_id()
+                   + "/mesh.stl";
           default:
             return "";
         }
@@ -152,7 +153,8 @@ namespace object_recognition_core
       inline std::string
       cache_key() const
       {
-        return db_params_.TypeToString(db_params_.type_) + db_params_.root_ + db_params_.collection_;
+        return db_.parameters().TypeToString(db_.parameters().type_) + db_.parameters().root_
+               + db_.parameters().collection_;
       }
 
       /** Read the name_ and mesh_id_ from the DB and store it */
@@ -165,8 +167,8 @@ namespace object_recognition_core
       std::vector<float> T_;
       /** The object id of the found object */
       db::ObjectId object_id_;
-      /** The parameters that define the db in which the object_id is */
-      db::ObjectDbParameters db_params_;
+      /** The db in which the object_id is */
+      db::ObjectDb db_;
 
       /** True if the name_ and mesh_id_ have been read from the DB */
       mutable bool is_db_checked_;

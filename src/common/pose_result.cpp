@@ -66,8 +66,12 @@ namespace object_recognition_core
       db::View view(db::View::VIEW_MODEL_WHERE_OBJECT_ID_AND_MODEL_TYPE);
       view.Initialize("mesh");
       view.set_key(object_id_);
-      db::ObjectDb db(db_params_);
-      db::ViewIterator view_iterator(view, db);
+
+      // Make sure the db_ is valid
+      if (db_.parameters().type_ == db::ObjectDbParameters::EMPTY)
+        throw std::runtime_error("Db not set in the PoseResult");
+
+      db::ViewIterator view_iterator(view, db_);
 
       db::ViewIterator iter = view_iterator.begin(), end = view_iterator.end();
       for (; iter != end; ++iter)
@@ -75,7 +79,7 @@ namespace object_recognition_core
         // Get the mesh_id_
         db_info_.mesh_id_ = (*iter).value_.get_obj().find("_id")->second.get_str();
         // Get the object name
-        db::Document doc(db, object_id_);
+        db::Document doc(db_, object_id_);
         db_info_.name_ = doc.get_value("object_name").get_str();
       }
 
