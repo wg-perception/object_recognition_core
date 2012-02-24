@@ -36,18 +36,19 @@ def common_interpret_object_ids(pipeline_param_full, args=None):
         if not ids and not names:
             continue
 
-        for val in [ ids, names ]:
-            if val is not 'all' and val is not 'missing' and isinstance(val, str):
-                val = eval(val)
-
-        if object_ids is None:
-            object_ids = set()
         # initialize the DB
         db_params = pipeline_param_full['parameters']['db']
         type = db_params.get('type', None)
         if type.lower() not in core_db_types():
             continue
         db = dbtools.db_params_to_db(ObjectDbParameters(db_params))
+
+        for val in [ ids, names ]:
+            if val is not 'all' and val is not 'missing' and isinstance(val, str):
+                val = eval(val)
+
+        if object_ids is None:
+            object_ids = set()
 
         if 'all' in (ids, names):
             object_ids = set([ str(x.id) for x in models.Object.all(db) ]) #unicode without the str()

@@ -48,6 +48,7 @@ def core_db_types():
     from object_recognition_core.db.interface import db_types as db_types
     for type in db_types.values.itervalues():
         types.append(str(type).split('.')[-1].lower())
+    types.remove('noncore')
     return types
 
 def ObjectDb(db_params):
