@@ -5,7 +5,7 @@ It is not meant to be run as a test of object_recognition but as a test for and 
 pipeline independently.
 """
 
-from object_recognition_core import find_cells
+from object_recognition_core.utils.find_classes import find_classes
 from object_recognition_core.io.sink import Sink
 import sys
 
@@ -20,7 +20,7 @@ if __name__ == '__main__':
     else:
         package_names = [ 'object_recognition_core.io.sink' ]
 
-    sinks = find_cells(package_names, Sink)
+    sinks = find_classes(package_names, Sink)
     if sink_name not in sinks:
         raise RuntimeError('Invalid sink name: ' + sink_name + '\n'
                            'Make sure that the sink type is defined by a Sink class, in the name class function.\n'

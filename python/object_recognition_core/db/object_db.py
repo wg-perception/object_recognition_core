@@ -5,6 +5,7 @@ Module defining a common Python interface to an ObjectDb
 from abc import ABCMeta
 from image_pipeline.io.source import create_source
 from object_recognition_core.db.interface import ObjectDb as ObjectDbCpp, ObjectDbParameters
+from object_recognition_core.utils.find_classes import find_classes
 
 ########################################################################################################################
 
@@ -65,7 +66,7 @@ def ObjectDb(db_params):
     module = db_params.get('module', None)
     if not module:
         raise RuntimeError("The 'module' property is not set. It is required to find the DB object")
-    object_db_bases = find_cells(module, ObjectDbBase)
+    object_db_bases = find_classes([module], ObjectDbBase)
     if type not in object_db_bases:
         raise RuntimeError('The db type %s was not found in module %s' % (type, module))
     return ObjectDbBase.object_db(db_params)

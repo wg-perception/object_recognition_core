@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 import roscompat
-from object_recognition_core import create_detection_plasm
+from object_recognition_core.pipelines.plasm import create_detection_plasm
 import ecto
 
 DEBUG = False

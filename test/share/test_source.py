@@ -5,7 +5,7 @@ It is not meant to be run as a test of object_recognition but as a test for and 
 pipeline independently.
 """
 
-from object_recognition_core import find_cells
+from object_recognition_core.utils.find_classes import find_classes
 from object_recognition_core.io.source import Source
 import sys
 
@@ -20,7 +20,7 @@ if __name__ == '__main__':
     else:
         package_names = [ 'object_recognition_core.io.source' ]
 
-    sources = find_cells(package_names, Source)
+    sources = find_classes(package_names, Source)
     if source_name not in sources:
         raise RuntimeError('Invalid source name: ' + source_name + '\n'
                            'Make sure that the source type is defined by a Source class, in the name class function.\n'
