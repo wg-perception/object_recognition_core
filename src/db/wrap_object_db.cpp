@@ -32,17 +32,8 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  *
  */
-#include <string>
 
-#include <boost/function.hpp>
-#include <boost/python.hpp>
-#include <boost/python/return_value_policy.hpp>
-#include <boost/python/stl_iterator.hpp>
-#include <boost/python/suite/indexing/vector_indexing_suite.hpp>
-#include <boost/shared_ptr.hpp>
-
-#include <object_recognition_core/db/db.h>
-#include <object_recognition_core/db/model_utils.h>
+#include <object_recognition_core/db/wrap_object_db.h>
 
 namespace bp = boost::python;
 
@@ -50,8 +41,6 @@ namespace object_recognition_core
 {
   namespace db
   {
-    typedef boost::shared_ptr<ObjectDb> ObjectDbPtr;
-
     /** Function used to create an ObjectDb object from Python
      * @param db_params
      * @param python_document_ids
@@ -65,41 +54,10 @@ namespace object_recognition_core
       return p;
     }
 
-    // Define the pickling of the object
-    struct object_db_pickle_suite: boost::python::pickle_suite
-    {
-      static boost::python::tuple
-      getinitargs(const ObjectDbParameters& db_params)
-      {
-        return boost::python::make_tuple();
-      }
-
-      static boost::python::tuple
-      getstate(const ObjectDbParameters& db_params)
-      {
-        // TODO
-        return boost::python::make_tuple();
-      }
-
-      static
-      void
-      setstate(ObjectDbParameters& db_params, boost::python::tuple state)
-      {
-        using namespace boost::python;
-        // TODO
-      }
-    };
-
     void
-    wrap_object_db()
+    wrap_object_db_local()
     {
-      bp::class_ < ObjectDb > ("ObjectDb").def(bp::init<>()).def(bp::init<ObjectDb>());
-
-      bp::class_<ObjectDb, ObjectDbPtr> ObjectDbClass("ObjectDb");
-      ObjectDbClass.def("__init__", bp::make_constructor(ObjectDbConstructor));
-      ObjectDbClass.def("parameters", &ObjectDb::parameters,
-                        boost::python::return_value_policy<boost::python::copy_const_reference>());
-      ObjectDbClass.def_pickle(object_db_pickle_suite());
+      wrap_object_db(ObjectDbConstructor);
     }
   }
 }

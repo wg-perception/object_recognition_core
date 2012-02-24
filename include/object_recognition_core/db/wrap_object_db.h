@@ -36,6 +36,7 @@
 
 #include <boost/function.hpp>
 #include <boost/python.hpp>
+#include <boost/python/return_value_policy.hpp>
 #include <boost/python/stl_iterator.hpp>
 #include <boost/python/suite/indexing/vector_indexing_suite.hpp>
 #include <boost/shared_ptr.hpp>
@@ -49,35 +50,11 @@ namespace object_recognition_core
 {
   namespace db
   {
-    typedef boost::shared_ptr<Documents> DocumentsPtr;
+    typedef boost::shared_ptr<ObjectDb> ObjectDbPtr;
 
-    /** Function used to create a vector of db Document's from Python
-     * @param db_params
-     * @param python_document_ids
-     * @return
+    /** Provide a default empty pickling infrastructure
      */
-    DocumentsPtr
-    DocumentsConstructor(object_recognition_core::db::ObjectDb & db, const bp::object & python_document_ids)
-    {
-      // Read the document ids from the input
-      std::vector<DocumentId> document_ids;
-      boost::python::stl_input_iterator<std::string> begin(python_document_ids), end;
-      std::copy(begin, end, std::back_inserter(document_ids));
-
-      // Create the Documents from the ids
-      DocumentsPtr p(new Documents());
-      p->reserve(document_ids.size());
-
-      BOOST_FOREACH(const DocumentId & document_id, document_ids)
-          {
-            p->push_back(Document(db, document_id));
-          }
-
-      return p;
-    }
-
-    // Define the pickling of the object
-    struct db_documents_pickle_suite: boost::python::pickle_suite
+    struct object_db_pickle_suite: boost::python::pickle_suite
     {
       static boost::python::tuple
       getinitargs(const ObjectDbParameters& db_params)
@@ -101,41 +78,33 @@ namespace object_recognition_core
       }
     };
 
+    /** If you have your own Db to deal with, just call that function to make it visible from Python
+     * You can override some Python definition after calling it
+     * @param object_db_name
+     */
+    template<typename Constructor>
     void
-    wrap_db_documents()
+    wrap_object_db(const std::string &object_db_name, Constructor constructor)
     {
-      bp::class_<Documents, DocumentsPtr> DocumentsClass("DbDocuments");
-      DocumentsClass.def("__init__", bp::make_constructor(DocumentsConstructor));
-      DocumentsClass.def(boost::python::vector_indexing_suite<Documents>());
-      DocumentsClass.def("size", &Documents::size);
-      DocumentsClass.def_pickle(db_documents_pickle_suite());
-    }
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-    DocumentsPtr
-    ModelDocumentsFromPython(object_recognition_core::db::ObjectDb & db, const bp::object & bp_object_ids,
-                             const std::string & method, const std::string & json_submethod)
-    {
-      DocumentsPtr p(new Documents());
-
-      std::vector<ObjectId> object_ids;
-      {
-        boost::python::stl_input_iterator<ObjectId> object_begin(bp_object_ids), end;
-        std::copy(object_begin, end, std::back_inserter(object_ids));
-      }
-
-      if (!object_ids.empty())
-      {
-        *p = ModelDocuments(db, object_ids, method, json_submethod);
-      }
-      return p;
+      bp::class_<ObjectDb, ObjectDbPtr> ObjectDbClass(object_db_name);
+      ObjectDbClass.def("__init__", bp::make_constructor(constructor));
+      ObjectDbClass.def("parameters", &ObjectDb::parameters,
+                        boost::python::return_value_policy<boost::python::copy_const_reference>());
+      ObjectDbClass.def_pickle(object_db_pickle_suite());
     }
 
-    // DbModels are DbDocuments that are models
+    /** If you have your own Db to deal with, just call that function to make it visible from Python
+     * You can override some Python definition after calling it
+     */
+    template<typename Constructor>
     void
-    wrap_db_models()
+    wrap_object_db(Constructor constructor)
     {
-      boost::python::def("DbModels", ModelDocumentsFromPython);
+      bp::class_<ObjectDb, ObjectDbPtr> ObjectDbClass("ObjectDb");
+      ObjectDbClass.def("__init__", bp::make_constructor(constructor));
+      ObjectDbClass.def("parameters", &ObjectDb::parameters,
+                        boost::python::return_value_policy<boost::python::copy_const_reference>());
+      ObjectDbClass.def_pickle(object_db_pickle_suite());
     }
   }
 }

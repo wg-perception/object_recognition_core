@@ -11,7 +11,7 @@ namespace object_recognition_core
     void
     wrap_db_parameters();
     void
-    wrap_object_db();
+    wrap_object_db_local();
   }
 }
 
@@ -20,6 +20,6 @@ BOOST_PYTHON_MODULE(interface)
   using namespace object_recognition_core::db;
   wrap_db_documents();
   wrap_db_models();
-  wrap_object_db();
+  wrap_object_db_local();
   wrap_db_parameters();
 }
