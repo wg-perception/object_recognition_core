@@ -82,7 +82,7 @@ namespace object_recognition_core
        * @param params A map between some db parameters and their value
        */
       explicit
-      ObjectDbParameters(const std::map<std::string, std::string>& params);
+      ObjectDbParameters(const or_json::mObject& params);
 
       static ObjectDbType
       StringToType(const std::string & type);
@@ -96,11 +96,11 @@ namespace object_recognition_core
       std::string root_;
       /** The type of the collection 'CouchDB' ... */
       ObjectDbType type_;
-      /** All the raw parameters */
-      std::map<std::string, std::string> all_parameters_;
+      /** All the raw parameters: they are of integral types */
+      or_json::mObject raw_;
     protected:
       void
-      FillParameters(const std::map<std::string, std::string>& json_params);
+      FillParameters(const or_json::mObject& json_params);
     };
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

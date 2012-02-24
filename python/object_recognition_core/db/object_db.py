@@ -40,23 +40,24 @@ class ObjectDbBase(object):
 
 ########################################################################################################################
 
+def core_db_types():
+    """\
+    Return the current DB types implemented in object_recognition_core
+    """
+    types = []
+    from object_recognition_core.db.interface import db_types as db_types
+    for type in db_types.values.itervalues():
+        types.append(str(type).split('.')[-1].lower())
+    return types
+
 def ObjectDb(db_params):
     """
     Returns the ObjectDb for the given db_params given as a dictionary
     """
-    def _core_types():
-        """\
-        Return the current DB types implemented in object_recognition_core
-        """
-        types = []
-        from object_recognition_core.db.interface import db_types as db_types
-        for type in db_types.values.itervalues():
-            types.append(str(type).split('.')[-1].lower())
-        return types
 
     # check if it is a conventional DB from object_recognition_core
     type = db_params.get('type', None)
-    if type.lower() in _core_types():
+    if type.lower() in core_db_types():
         return ObjectDbCpp(ObjectDbParameters(db_params))
 
     # otherwise, look for the possible modules for that DB type

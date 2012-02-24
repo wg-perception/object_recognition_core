@@ -86,7 +86,7 @@ namespace object_recognition_core
         }
       }
     }
-    ObjectDbParameters::ObjectDbParameters(const std::map<std::string, std::string>& parameters)
+    ObjectDbParameters::ObjectDbParameters(const or_json::mObject& parameters)
     {
       FillParameters(parameters);
     }
@@ -122,24 +122,21 @@ namespace object_recognition_core
     }
 
     void
-    ObjectDbParameters::FillParameters(const std::map<std::string, std::string>& parameters)
+    ObjectDbParameters::FillParameters(const or_json::mObject& parameters)
     {
-      all_parameters_ = parameters;
-      if (all_parameters_.find("type") == all_parameters_.end())
+      raw_ = parameters;
+      if (raw_.find("type") == raw_.end())
       {
         throw std::runtime_error("You must supply a database type. e.g. CouchDB");
       }
-      type_ = StringToType(all_parameters_.at("type"));
+      type_ = StringToType(raw_.at("type").get_str());
       if (type_ == ObjectDbParameters::EMPTY)
         return;
 
-      if (all_parameters_.find("root") == all_parameters_.end())
-      {
-        throw std::runtime_error("You must supply a root . e.g. /home/me, http://localhost:5984");
-      }
-      root_ = all_parameters_.at("root");
-      if (all_parameters_.find("collection") != all_parameters_.end())
-        collection_ = all_parameters_.at("collection");
+      if (raw_.find("collection") != raw_.end())
+        collection_ = raw_.at("collection").get_str();
+      if (raw_.find("root") != raw_.end())
+        root_ = raw_.at("root").get_str();
     }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -173,7 +170,7 @@ namespace object_recognition_core
           db_ = boost::shared_ptr<ObjectDbBase>(new ObjectDbFilesystem(parameters_.root_, parameters_.collection_));
           return;
         default:
-          throw std::runtime_error("No set_parameters implemeted for that db type.");
+          throw std::runtime_error("No set_parameters implemented for that db type.");
       }
     }
 

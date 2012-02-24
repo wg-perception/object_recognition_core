@@ -27,7 +27,7 @@ db_types()
 ObjectDbParameters
 params_bogus(const std::string& url = db_url)
 {
-  std::map<std::string, std::string> params;
+  or_json::mObject params;
   params["urld"] = url;
   return ObjectDbParameters(params);
 }

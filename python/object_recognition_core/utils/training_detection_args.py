@@ -3,6 +3,7 @@ Module that creates a function to define/read common arguments for the training/
 """
 
 from object_recognition_core.db.interface import ObjectDbParameters
+from object_recognition_core.db.object_db import ObjectDb, core_db_types
 from object_recognition_core.db import models, dbtools
 from object_recognition_core.utils.parser import ObjectRecognitionParser
 import os
@@ -43,6 +44,9 @@ def common_interpret_object_ids(pipeline_param_full, args=None):
             object_ids = set()
         # initialize the DB
         db_params = pipeline_param_full['parameters']['db']
+        type = db_params.get('type', None)
+        if type.lower() not in core_db_types():
+            continue
         db = dbtools.db_params_to_db(ObjectDbParameters(db_params))
 
         if 'all' in (ids, names):

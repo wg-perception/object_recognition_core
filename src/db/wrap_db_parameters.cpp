@@ -44,29 +44,41 @@ namespace bp = boost::python;
 
 namespace
 {
-  std::map<std::string, std::string>
+  or_json::mObject
   BpDictToMap(const bp::dict &bp_dict)
   {
-    std::map<std::string, std::string> params;
+    or_json::mObject params;
     bp::list l = bp_dict.items();
     for (int j = 0, end = bp::len(l); j < end; ++j)
     {
       std::string key = bp::extract<std::string>(l[j][0]);
-      std::string value = bp::extract<std::string>(l[j][1]);
-      params[key] = value;
+      {
+        bp::extract<std::string> extract(l[j][1]);
+        if (extract.check())
+        {
+          params[key] = or_json::mValue(std::string(extract));
+          continue;
+        }
+        throw std::runtime_error("BpDictToMap unimplemented type");
+      }
     }
     return params;
   }
 
   bp::dict
-  MapToBpDict(const std::map<std::string, std::string> & map)
+  MapToBpDict(const or_json::mObject & map)
   {
     bp::dict bp_dict;
-    for (std::map<std::string, std::string>::const_iterator iter = map.begin(), end = map.end(); iter != end; ++iter)
+    for (or_json::mObject::const_iterator iter = map.begin(), end = map.end(); iter != end; ++iter)
     {
-      std::cerr << iter->second;
-      std::cerr << iter->first << " " << iter->second << std::endl;
-      bp_dict[iter->first] = iter->second;
+      switch (iter->second.type())
+      {
+        case or_json::str_type:
+          bp_dict[iter->first] = iter->second.get_str();
+          break;
+        default:
+          throw std::runtime_error("MapToBpDict unimplemented type");
+      }
     }
     return bp_dict;
   }
@@ -85,7 +97,7 @@ namespace object_recognition_core
     boost::shared_ptr<ObjectDbParameters>
     ObjectDbParametersConstructor(const bp::dict &obj)
     {
-      std::map<std::string, std::string> params = BpDictToMap(bp::dict(obj));
+      or_json::mObject params = BpDictToMap(obj);
       if (params.empty())
         params.insert(std::make_pair("type", ObjectDbParameters::TypeToString(ObjectDbParameters::EMPTY)));
       ObjectDbParametersPtr p(new ObjectDbParameters(params));
@@ -106,7 +118,7 @@ namespace object_recognition_core
       getstate(const ObjectDbParameters& db_params)
       {
         return boost::python::make_tuple(ObjectDbParameters::TypeToString(db_params.type_), db_params.root_,
-                                         db_params.collection_, MapToBpDict(db_params.all_parameters_));
+                                         db_params.collection_, MapToBpDict(db_params.raw_));
       }
 
       static
@@ -123,7 +135,7 @@ namespace object_recognition_core
         db_params.type_ = ObjectDbParameters::StringToType(extract<std::string>(state[0]));
         db_params.root_ = extract<std::string>(state[1]);
         db_params.collection_ = extract<std::string>(state[2]);
-        db_params.all_parameters_ = BpDictToMap(extract<bp::dict>(state[3]));
+        db_params.raw_ = BpDictToMap(extract<bp::dict>(state[3]));
       }
     };
 
@@ -146,6 +158,12 @@ namespace object_recognition_core
       return ObjectDbParameters::TypeToString(params->type_);
     }
 
+    or_json::mObject
+    raw(const ObjectDbParametersPtr &params)
+    {
+      return params->raw_;
+    }
+
     void
     wrap_db_parameters()
     {
@@ -154,6 +172,7 @@ namespace object_recognition_core
       ObjectDbParametersClass.add_property("collection", collection, "The collection of the database.");
       ObjectDbParametersClass.add_property("root", root, "The root of the database.");
       ObjectDbParametersClass.add_property("type", type, "The type of the database.");
+      ObjectDbParametersClass.add_property("raw", raw, "The raw parameters of the database.");
       ObjectDbParametersClass.def_pickle(db_parameters_pickle_suite());
       bp::enum_<ObjectDbParameters::ObjectDbType>("db_types").value("COUCHDB", ObjectDbParameters::COUCHDB).value(
           "EMPTY", ObjectDbParameters::EMPTY).value("FILESYSTEM", ObjectDbParameters::FILESYSTEM);
