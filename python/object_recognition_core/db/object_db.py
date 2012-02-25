@@ -29,7 +29,7 @@ class ObjectDbBase(object):
         """
         Return the code name for your ObjectDb
         """
-        raise NotImplementedError("The ObjectDb class must return a string name.")
+        raise NotImplementedError("The ObjectDb type_name function must return a string name.")
 
     @classmethod
     def object_db(cls, db_params):
@@ -37,7 +37,7 @@ class ObjectDbBase(object):
         Return the ObjectDbBase object
         :db_params a dictionary of the parameters to use
         """
-        raise NotImplementedError("The ObjectDb class must return a string name.")
+        raise NotImplementedError("The ObjectDb object_db function must return a C++ wrapped ObjectDb.")
 
 ########################################################################################################################
 
@@ -69,4 +69,4 @@ def ObjectDb(db_params):
     object_db_bases = find_classes([module], ObjectDbBase)
     if type not in object_db_bases:
         raise RuntimeError('The db type %s was not found in module %s' % (type, module))
-    return ObjectDbBase.object_db(db_params)
+    return object_db_bases[type].object_db(db_params)
