@@ -1,7 +1,18 @@
 # deal with the detection TOD module
 
-find_package(ROS REQUIRED geometry_msgs rosbag roscpp sensor_msgs visualization_msgs)
+rosbuild_lite_init()
+
 find_package(ecto_ros REQUIRED)
+
+if (ROS_ELECTRIC_FOUND)
+  find_ros_package(geometry_msgs)
+  find_ros_package(sensor_msgs)
+  find_ros_package(visualization_msgs) #find the ros version of pcl for now.
+  include_directories(${ecto_ros_INCLUDE_DIRS})
+else()
+find_package(ROS REQUIRED geometry_msgs rosbag roscpp sensor_msgs visualization_msgs)
+endif()
+
 find_package(Eigen REQUIRED)
 
 include_directories(SYSTEM

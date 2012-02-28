@@ -3,7 +3,8 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 find_package(ecto_pcl REQUIRED)
 find_package(Eigen REQUIRED)
 find_package(image_pipeline REQUIRED)
-find_package(PCL REQUIRED)
+
+find_pcl_package()
 
 include_directories(SYSTEM
                     ${ecto_pcl_INCLUDE_DIRS}
