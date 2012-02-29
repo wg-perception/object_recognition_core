@@ -109,5 +109,5 @@ namespace object_recognition_core
   }
 }
 
-ECTO_CELL(voters, object_recognition_core::voters::Aggregator, "Aggregator",
+ECTO_CELL(voter, object_recognition_core::voters::Aggregator, "Aggregator",
           "Simply aggregates the results from several pipelines");

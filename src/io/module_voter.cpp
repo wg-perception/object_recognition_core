@@ -35,6 +35,6 @@
 
 #include <ecto/ecto.hpp>
 
-ECTO_DEFINE_MODULE(voters)
+ECTO_DEFINE_MODULE(voter)
 {
 }

@@ -1,7 +1,3 @@
-add_subdirectory(filters)
-add_subdirectory(io)
-add_subdirectory(voters)
-
 add_library(object_recognition_core_common SHARED pose_result.cpp)
 
 target_link_libraries(object_recognition_core_common
