@@ -3,7 +3,7 @@ Module defining several outputs for the object recognition pipeline
 '''
 
 from abc import ABCMeta
-from ecto_object_recognition_core.io import GuessCsvWriter
+from object_recognition_core.io import GuessCsvWriter
 
 ########################################################################################################################
 

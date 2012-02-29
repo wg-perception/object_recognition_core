@@ -2,11 +2,12 @@
 Module defining several outputs for the object recognition pipeline
 """
 
-import ecto
-import ecto_geometry_msgs, ecto_std_msgs
-from ecto_object_recognition_core.io_ros import PoseArrayAssembler, Publisher_MarkerArray
 from object_recognition_core.db.interface import ObjectDbParameters
+from object_recognition_core.io.io_ros import PoseArrayAssembler, Publisher_MarkerArray
 from object_recognition_core.io.sink import Sink
+import ecto
+import ecto_ros.ecto_geometry_msgs as ecto_geometry_msgs
+import ecto_ros.ecto_std_msgs as ecto_std_msgs
 
 PoseArrayPub = ecto_geometry_msgs.Publisher_PoseArray
 MarkerArrayPub = Publisher_MarkerArray

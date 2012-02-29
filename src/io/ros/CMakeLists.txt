@@ -36,4 +36,12 @@ link_ecto(io_ros
     object_recognition_core_common
 )
 
-install_ecto_module(io_ros)
+set_target_properties(io_ros_ectomodule PROPERTIES
+                      LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/${ecto_module_PYTHON_INSTALL}/io
+                      PREFIX ""
+)
+
+install(TARGETS io_ros_ectomodule
+        DESTINATION ${ecto_module_PYTHON_INSTALL}/io
+        COMPONENT main
+)

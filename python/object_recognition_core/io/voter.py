@@ -2,7 +2,10 @@
 Module defining several voters for the object recognition pipeline
 """
 
-from ecto_object_recognition_core.voter import Aggregator
+from object_recognition_core.utils.load_pybindings import load_pybindings
+load_pybindings(__name__)
+
+from object_recognition_core.io.voter import Aggregator
 
 class Voter(object):
     '''

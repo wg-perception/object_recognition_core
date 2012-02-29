@@ -10,7 +10,7 @@ import os
 import sys
 import yaml
 try:
-    import ecto_ros
+    import ecto_ros.ecto_ros as ecto_ros
     ECTO_ROS_FOUND = True
 except ImportError:
     ECTO_ROS_FOUND = False

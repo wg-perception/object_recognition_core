@@ -18,18 +18,28 @@ if (NOT CMAKE_LIBRARY_OUTPUT_DIRECTORY)
   set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 endif()
 
-set(python_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/object_recognition_core)
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/ecto_object_recognition_core)
+set(python_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/${PYTHON_PACKAGES_PATH}/object_recognition_core)
 
 find_package(Boost REQUIRED system filesystem serialization)
 find_package(ecto REQUIRED)
 find_package(OpenCV REQUIRED)
 
-set_ecto_install_package_name(ecto_object_recognition_core)
+set_ecto_install_package_name(object_recognition_core)
+
+#install targets for all things python
+install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/python/
+  DESTINATION ${PYTHON_PACKAGES_PATH}
+  COMPONENT main
+)
 
 configure_file(python/__init__.py.in
-  ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/__init__.py
-  @ONLY)
+               ${python_LIBRARY_OUTPUT_DIRECTORY}/__init__.py
+               @ONLY
+)
+
+install(FILES ${python_LIBRARY_OUTPUT_DIRECTORY}/__init__.py
+        DESTINATION ${PYTHON_PACKAGES_PATH}/object_recognition_core
+)
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
 
@@ -45,16 +55,6 @@ install(DIRECTORY apps/
 
 #these setup the lib to be used by others
 include(cmake/install.cmake)
-  
-#install targets for all things python
-install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/python/
-  DESTINATION ${PYTHON_PACKAGES_PATH}
-  COMPONENT main
-)
-
-install(FILES ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/__init__.py
-        DESTINATION ${PYTHON_PACKAGES_PATH}/ecto_object_recognition_core
-        )
 
 catkin_add_env_hooks(10object_recognition_core SHELLS all )
 
