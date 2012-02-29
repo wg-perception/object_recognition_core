@@ -82,6 +82,8 @@ namespace object_recognition_core
         db::Document doc(db_, object_id_);
         db_info_.name_ = doc.get_value("object_name").get_str();
       }
+      if (db_info_.name_.empty())
+        db_info_.name_ = object_id_;
 
       // Cache all the results
       cached_name_mesh_id_[cache_key()] = db_info_;
