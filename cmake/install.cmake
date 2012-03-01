@@ -1,12 +1,10 @@
-set(prefix ${PROJECT_NAME}-${${PROJECT_NAME}_VERSION})
 install(DIRECTORY ${PROJECT_SOURCE_DIR}/include/
-  DESTINATION include/${prefix}
-  COMPONENT main
-  )
+        DESTINATION include/${PROJECT_NAME}
+        COMPONENT main
+)
 
 #install the unix_install
 install(DIRECTORY ${CMAKE_BINARY_DIR}/share/
-  DESTINATION share/${prefix}
-  COMPONENT main
-  )
-
+        DESTINATION share/${PROJECT_NAME}
+        COMPONENT main
+)

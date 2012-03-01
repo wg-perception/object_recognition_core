@@ -17,8 +17,8 @@ configure_file(cmake/${PROJECT_NAME}Config-version.cmake.in
 )
 
 #this is a bit simple.
-set(${PROJECT_NAME}_INCLUDE_DIRS ${CMAKE_INSTALL_PREFIX}/include/${prefix})
-set(${PROJECT_NAME}_SHARE_DIRS ${CMAKE_INSTALL_PREFIX}/share/${prefix})
+set(${PROJECT_NAME}_INCLUDE_DIRS ${CMAKE_INSTALL_PREFIX}/include/${PROJECT_NAME})
+set(${PROJECT_NAME}_SHARE_DIRS ${CMAKE_INSTALL_PREFIX}/share/${PROJECT_NAME})
 set(${PROJECT_NAME}_LIBRARY_DIRS ${CMAKE_INSTALL_PREFIX}/lib) 
 set(${PROJECT_NAME}_LIBRARIES
     object_recognition_core_common
