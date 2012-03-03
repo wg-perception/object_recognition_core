@@ -1,5 +1,4 @@
-# deal with the detection TOD module
-
+# create the cells to output messages
 rosbuild_lite_init()
 
 find_package(ecto_ros REQUIRED)
@@ -45,3 +44,22 @@ install(TARGETS io_ros_ectomodule
         DESTINATION ${ecto_module_PYTHON_INSTALL}/io
         COMPONENT main
 )
+
+# create the messages
+find_package(genmsg REQUIRED)
+
+if (genmsg_FOUND)
+    if (ROS_ELECTRIC_FOUND)
+        find_ros_package(geometry_msgs)
+        find_ros_package(sensor_msgs)
+        find_ros_package(visualization_msgs)
+        include_directories(${ecto_ros_INCLUDE_DIRS})
+    else()
+        find_package(ROS REQUIRED geometry_msgs rosbag roscpp sensor_msgs visualization_msgs)
+    endif()
+    add_message_files(DIRECTORY msg FILES Object.msg ObjectArray.msg)
+
+    generate_messages(DEPENDENCIES geometry_msgs sensor_msgs std_msgs visualization_msgs)
+    # generate ecto cells to wrap the different messages
+    #pubsub_gen_wrap(object_recognition_core)
+endif()
