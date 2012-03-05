@@ -1,0 +1,5 @@
+<launch>
+  <include file="$(find pr2_machine)/$(env ROBOT).machine"/>
+  <node pkg="object_recognition_server" ns="/object_recognition" name="object_recognition_server" output="screen" type="server.py" machine="c2" args="-c $(find object_recognition_server)/config_detection.sample">
+  </node>
+</launch>

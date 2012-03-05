@@ -1,0 +1,9 @@
+# Empty goal its just a thunk
+---
+# Define the result
+Header header
+geometry_msgs/Pose[] poses
+string[] object_ids
+float32[] confidence
+---
+#no feedback

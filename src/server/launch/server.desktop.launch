@@ -1,0 +1,4 @@
+<launch>
+  <node pkg="object_recognition_server" ns="/object_recognition" name="object_recognition_server" output="screen" type="server.py" args="-c $(find object_recognition_server)/config_detection.sample">
+  </node>
+</launch>
