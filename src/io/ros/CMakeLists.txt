@@ -57,7 +57,7 @@ if (genmsg_FOUND)
     else()
         find_package(ROS REQUIRED geometry_msgs rosbag roscpp sensor_msgs visualization_msgs)
     endif()
-    add_message_files(DIRECTORY msg FILES Object.msg ObjectArray.msg)
+    add_message_files(DIRECTORY msg FILES ObjectRecognition.msg ObjectArrayRecognition.msg)
 
     generate_messages(DEPENDENCIES geometry_msgs sensor_msgs std_msgs visualization_msgs)
     # generate ecto cells to wrap the different messages
