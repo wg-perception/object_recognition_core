@@ -79,6 +79,12 @@ namespace object_recognition_core
       }
 
       void
+      set_confidence(float confidence)
+      {
+        confidence_ = confidence;
+      }
+
+      void
       set_object_id(const db::ObjectDb & db, const db::ObjectId &object_id)
       {
         db_ = db;
@@ -93,6 +99,13 @@ namespace object_recognition_core
       template<typename Type>
       void
       set_T(const Type & T);
+
+      // Getter functions
+      float
+      confidence() const
+      {
+        return confidence_;
+      }
 
       inline const db::ObjectId &
       object_id() const
@@ -154,7 +167,7 @@ namespace object_recognition_core
       cache_key() const
       {
         return db_.parameters().TypeToString(db_.parameters().type_) + db_.parameters().root_
-               + db_.parameters().collection_;
+               + db_.parameters().collection_ + object_id_;
       }
 
       /** Read the name_ and mesh_id_ from the DB and store it */
@@ -165,6 +178,8 @@ namespace object_recognition_core
       std::vector<float> R_;
       /** The translation vector of the estimated pose */
       std::vector<float> T_;
+      /** The absolute confidence, between 0 and 1 */
+      float confidence_;
       /** The object id of the found object */
       db::ObjectId object_id_;
       /** The db in which the object_id is */
@@ -179,7 +194,7 @@ namespace object_recognition_core
     };
 
 #ifdef CV_MAJOR_VERSION
-  // OpenCV specializations
+// OpenCV specializations
   template<>
   inline void
   PoseResult::set_R(const cv::Mat_<float> & R_float)
@@ -244,7 +259,7 @@ namespace object_recognition_core
 #endif
 
 #ifdef EIGEN_CORE_H
-  // Eigen specializations
+// Eigen specializations
   template<>
   inline void
   PoseResult::set_R(const Eigen::Matrix3f & R_float)
