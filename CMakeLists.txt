@@ -11,7 +11,7 @@ if(NOT CMAKE_BUILD_TYPE)
       FORCE)
 endif()
 
-add_definitions("-Wno-pragmas -fno-strict-aliasing -Wall -Wl,--no-undefined -pedantic -Werror")
+add_definitions("-Wno-pragmas -fno-strict-aliasing -Wall -Wl,--no-undefined -Werror")
 
 #set the default path for built libraries to the lib directory
 if (NOT CMAKE_LIBRARY_OUTPUT_DIRECTORY)
@@ -81,7 +81,7 @@ if (genmsg_FOUND)
         find_package(ROS REQUIRED actionlib_msgs geometry_msgs rosbag roscpp sensor_msgs visualization_msgs)
     endif()
 
-    add_message_files(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/src/io/ros/msg FILES ObjectRecognition.msg ObejctRecognitionScene.msg ObjectRecognitionSceneArray.msg)
+    add_message_files(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/src/io/ros/msg FILES ObjectRecognition.msg ObjectRecognitionScene.msg ObjectRecognitionSceneArray.msg)
 #    add_action_files(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/src/server/action FILES ObjectRecognition.action)
 
     generate_messages(DEPENDENCIES actionlib_msgs geometry_msgs sensor_msgs std_msgs visualization_msgs)
