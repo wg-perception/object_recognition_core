@@ -85,4 +85,4 @@ namespace object_recognition_core
 }
 
 ECTO_CELL(db, object_recognition_core::prototypes::ObservationInserter, "ObservationInserter",
-    "Inserts observations into the database.");
+    "Inserts observations into the database.")

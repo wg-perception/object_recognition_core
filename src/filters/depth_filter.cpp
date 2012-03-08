@@ -86,4 +86,4 @@ namespace object_recognition
 }
 
 ECTO_CELL(filters, object_recognition::filters::DepthFilter, "depth_filter",
-          "Given a depth image, return the mask of what is between two depths.");
+          "Given a depth image, return the mask of what is between two depths.")

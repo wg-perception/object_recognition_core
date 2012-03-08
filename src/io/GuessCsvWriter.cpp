@@ -95,4 +95,4 @@ namespace object_recognition_core
 }
 
 ECTO_CELL(io, object_recognition_core::io::GuessCsvWriter, "GuessCsvWriter",
-          "Given guesses, writes them to a CSV in the NIST format.");
+          "Given guesses, writes them to a CSV in the NIST format.")

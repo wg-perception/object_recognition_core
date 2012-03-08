@@ -44,4 +44,4 @@ namespace object_recognition_core
   }
 }
 ECTO_CELL(db, object_recognition_core::prototypes::ObservationReader, "ObservationReader",
-    "Reads observations from the database.");
+    "Reads observations from the database.")

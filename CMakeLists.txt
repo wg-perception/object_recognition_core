@@ -11,9 +11,9 @@ if(NOT CMAKE_BUILD_TYPE)
       FORCE)
 endif()
 
-add_definitions("-Wno-pragmas -fno-strict-aliasing -Wall -Wl,--no-undefined")
+add_definitions("-Wno-pragmas -fno-strict-aliasing -Wall -Wl,--no-undefined -pedantic -Werror")
 
-#set the default path for built libraries to the "ecto_opencv" directory
+#set the default path for built libraries to the lib directory
 if (NOT CMAKE_LIBRARY_OUTPUT_DIRECTORY)
   set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 endif()
@@ -74,7 +74,9 @@ if (genmsg_FOUND)
         find_ros_package(geometry_msgs)
         find_ros_package(sensor_msgs)
         find_ros_package(visualization_msgs)
-        include_directories(${ecto_ros_INCLUDE_DIRS})
+        include_directories(SYSTEM
+                            ${ecto_ros_INCLUDE_DIRS}
+        )
     else()
         find_package(ROS REQUIRED actionlib_msgs geometry_msgs rosbag roscpp sensor_msgs visualization_msgs)
     endif()
