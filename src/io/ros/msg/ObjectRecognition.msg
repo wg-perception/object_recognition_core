@@ -27,7 +27,7 @@ sensor_msgs/PointCloud2 ground_truth_point_cloud
 ################################################ OBJECT CLUSTERS #######################################################
 
 # Sometimes you can extract the 3d points that belong to the object
-sensor_msgs/PointCloud2 point_cloud
+sensor_msgs/PointCloud2[] point_cloud
 
 # Sometimes, you can only provide a bounding box/shape, even in 3d
 visualization_msgs/Marker bounding_mesh
@@ -35,13 +35,6 @@ visualization_msgs/Marker bounding_mesh
 # Sometimes, you only have 2d input so you can't really give a pose, you just get a contour, or a box
 # The last point will be linked to the first one automatically
 geometry_msgs/Point[] bounding_contour
-
-##################################################### SEARCH ###########################################################
-
-# The confidence is independent of the pose and is between 0 and 1: e.g. you have a technique that can find cans of soda
-# but cannot differentiate between Coke and Sprite. If it only has those two in the DB, it will give a confidence of 0.5
-# for each
-float32 confidence
 
 #################################################### POSE INFO #########################################################
 
