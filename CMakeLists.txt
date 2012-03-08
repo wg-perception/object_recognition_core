@@ -81,8 +81,8 @@ if (genmsg_FOUND)
         find_package(ROS REQUIRED actionlib_msgs geometry_msgs rosbag roscpp sensor_msgs visualization_msgs)
     endif()
 
-    add_message_files(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/src/io/ros/msg FILES ObjectRecognition.msg ObjectRecognitionArray.msg)
-    add_action_files(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/src/server/action FILES ObjectRecognition.action)
+    add_message_files(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/src/io/ros/msg FILES ObjectRecognition.msg ObejctRecognitionScene.msg ObjectRecognitionSceneArray.msg)
+#    add_action_files(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/src/server/action FILES ObjectRecognition.action)
 
     generate_messages(DEPENDENCIES actionlib_msgs geometry_msgs sensor_msgs std_msgs visualization_msgs)
     # generate ecto cells to wrap the different messages
