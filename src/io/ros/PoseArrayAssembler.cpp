@@ -163,8 +163,8 @@ namespace object_recognition_core
       MarkerArrayMsg marker_array;
 
       BOOST_FOREACH(const common::PoseResult & pose_result, *pose_results_)
-            if (object_id_to_index_.find(pose_result.object_id()) == object_id_to_index_.end())
-              object_id_to_index_[pose_result.object_id()] = object_id_to_index_.size();
+        if (object_id_to_index_.find(pose_result.object_id()) == object_id_to_index_.end())
+          object_id_to_index_[pose_result.object_id()] = object_id_to_index_.size();
 
       // Create poses and fill them in the message
       {
@@ -173,60 +173,60 @@ namespace object_recognition_core
 
         unsigned int marker_id = 0;
         BOOST_FOREACH(const common::PoseResult & pose_result, *pose_results_)
-            {
-              cv::Mat_<float> T = pose_result.T<cv::Mat_<float> >(), R = pose_result.R<cv::Mat_<float> >();
+        {
+          cv::Mat_<float> T = pose_result.T<cv::Mat_<float> >(), R = pose_result.R<cv::Mat_<float> >();
 
-              geometry_msgs::Pose & msg_pose = poses[marker_id];
+          geometry_msgs::Pose & msg_pose = poses[marker_id];
 
-              Eigen::Matrix3f rotation_matrix;
-              for (unsigned int j = 0; j < 3; ++j)
-                for (unsigned int i = 0; i < 3; ++i)
-                  rotation_matrix(j, i) = R(j, i);
+          Eigen::Matrix3f rotation_matrix;
+          for (unsigned int j = 0; j < 3; ++j)
+            for (unsigned int i = 0; i < 3; ++i)
+              rotation_matrix(j, i) = R(j, i);
 
-              Eigen::Quaternion<float> quaternion(rotation_matrix);
+          Eigen::Quaternion<float> quaternion(rotation_matrix);
 
-              msg_pose.position.x = T(0);
-              msg_pose.position.y = T(1);
-              msg_pose.position.z = T(2);
-              msg_pose.orientation.x = quaternion.x();
-              msg_pose.orientation.y = quaternion.y();
-              msg_pose.orientation.z = quaternion.z();
-              msg_pose.orientation.w = quaternion.w();
+          msg_pose.position.x = T(0);
+          msg_pose.position.y = T(1);
+          msg_pose.position.z = T(2);
+          msg_pose.orientation.x = quaternion.x();
+          msg_pose.orientation.y = quaternion.y();
+          msg_pose.orientation.z = quaternion.z();
+          msg_pose.orientation.w = quaternion.w();
 
-              visualization_msgs::Marker marker;
-              marker.pose = msg_pose;
-              marker.type = visualization_msgs::Marker::MESH_RESOURCE;
-              marker.action = visualization_msgs::Marker::ADD;
-              marker.lifetime = ros::Duration(30);
-              marker.header = pose_array_msg.header;
-              marker.scale.x = 1;
-              marker.scale.y = 1;
-              marker.scale.z = 1;
+          visualization_msgs::Marker marker;
+          marker.pose = msg_pose;
+          marker.type = visualization_msgs::Marker::MESH_RESOURCE;
+          marker.action = visualization_msgs::Marker::ADD;
+          marker.lifetime = ros::Duration(30);
+          marker.header = pose_array_msg.header;
+          marker.scale.x = 1;
+          marker.scale.y = 1;
+          marker.scale.z = 1;
 
-              float hue = (360.0 / object_id_to_index_.size()) * object_id_to_index_[pose_result.object_id()];
+          float hue = (360.0 / object_id_to_index_.size()) * object_id_to_index_[pose_result.object_id()];
 
-              float r, g, b;
-              hsv2rgb(hue, 0.7, 1, r, g, b);
+          float r, g, b;
+          hsv2rgb(hue, 0.7, 1, r, g, b);
 
-              marker.color.a = 0.75;
-              marker.color.g = g;
-              marker.color.b = b;
-              marker.color.r = r;
-              marker.id = marker_id;
-              marker.mesh_resource = pose_result.mesh_resource();
-              marker_array.markers.push_back(marker);
-              marker.type = visualization_msgs::Marker::TEXT_VIEW_FACING;
-              marker.text = pose_result.name();
-              marker.color.a = 1;
-              marker.color.g = 1;
-              marker.color.b = 1;
-              marker.color.r = 1;
-              marker.scale.z = 0.03;
-              marker.lifetime = ros::Duration(10);
+          marker.color.a = 0.75;
+          marker.color.g = g;
+          marker.color.b = b;
+          marker.color.r = r;
+          marker.id = marker_id;
+          marker.mesh_resource = pose_result.get_attribute<std::string>("mesh_uri");
+          marker_array.markers.push_back(marker);
+          marker.type = visualization_msgs::Marker::TEXT_VIEW_FACING;
+          marker.text = pose_result.get_attribute<std::string>("name");
+          marker.color.a = 1;
+          marker.color.g = 1;
+          marker.color.b = 1;
+          marker.color.r = 1;
+          marker.scale.z = 0.03;
+          marker.lifetime = ros::Duration(10);
 
-              marker_array.markers.push_back(marker);
-              ++marker_id;
-            }
+          marker_array.markers.push_back(marker);
+          ++marker_id;
+        }
       }
 
       // Add the object ids to the message
@@ -235,7 +235,7 @@ namespace object_recognition_core
 
         std::vector<or_json::mValue> object_ids_array;
         BOOST_FOREACH(const PoseResult & pose_result, *pose_results_)
-              object_ids_array.push_back(or_json::mValue(pose_result.object_id()));
+          object_ids_array.push_back(or_json::mValue(pose_result.object_id()));
         object_ids_param_tree["object_ids"] = or_json::mValue(object_ids_array);
 
         std::stringstream ssparams;

@@ -55,6 +55,12 @@ namespace object_recognition_core
   {
     /** Class storing an object recognition result: an object_id, with its pose and confidence
      * It is not meant to be fast, but it is meant to be flexible (uses Eigen, OpenCV ...)
+     * Also, part of the info it contains is "extra" and not really part of the result (e.g. the object name).
+     * It can either be filled by the pipeline itself or through custom views that are used in the check_db()
+     * function.
+     * The possible attributes are as follows:
+     * - std::string name: the name of the object, some string you can understand: "Can of Coke"
+     * - std::string mesh_uri: the full URI of where the mesh can be retrieved (this can be useful for RViz)
      */
     class PoseResult
     {
@@ -65,7 +71,6 @@ namespace object_recognition_core
       {
         R_.resize(9);
         T_.resize(3);
-
       }
 
       PoseResult(const PoseResult &pose_result)
@@ -78,12 +83,18 @@ namespace object_recognition_core
       {
       }
 
+      // Setter functions
+
       void
       set_confidence(float confidence)
       {
         confidence_ = confidence;
       }
 
+      /** An object id only makes sense with respect to a DB so you have to set the two together
+       * @param db the DB where the object is stored
+       * @param object_id the id of the found object
+       */
       void
       set_object_id(const db::ObjectDb & db, const db::ObjectId &object_id)
       {
@@ -99,6 +110,18 @@ namespace object_recognition_core
       template<typename Type>
       void
       set_T(const Type & T);
+
+      /** Get some attribute from the db or, if already stored, from whatever the pipeline put in.
+       * See the class definition to see the keys that can be stored
+       * @param key
+       * @return
+       */
+      template<typename T>
+      T
+      set_attribute(const std::string& key, const T &val) const
+      {
+        attributes_.fields_[key] = or_json::mValue(val);
+      }
 
       // Getter functions
       float
@@ -121,46 +144,37 @@ namespace object_recognition_core
       Type
       T() const;
 
-      inline const std::string &
-      name() const
-      {
-        if (!is_db_checked_)
-          check_db();
-        return db_info_.name_;
-      }
-
-      inline const std::string &
-      mesh_id() const
-      {
-        if (!is_db_checked_)
-          check_db();
-        return db_info_.mesh_id_;
-      }
-
-      /** Returns the URL where the mesh of the obejct is stored
+      /** Get some attribute from the db or, if already stored, from whatever the pipeline put in.
+       * See the class definition to see the keys that can be stored
+       * @param key
        * @return
        */
-      inline std::string
-      mesh_resource() const
+      template<typename T>
+      T
+      get_attribute(const std::string& key) const
       {
-        switch (db_.parameters().type_)
-        {
-          case db::ObjectDbParameters::COUCHDB:
-            // E.g. http://localhost:5984/object_recognition/_design/models/_view/by_object_id_and_mesh?key=%2212a1e6eb663a41f8a4fb9baa060f191c%22
-            return db_.parameters().root_ + std::string("/") + db_.parameters().collection_ + "/" + mesh_id()
-                   + "/mesh.stl";
-          default:
-            return "";
-        }
-      }
+        or_json::mObject::const_iterator iter = attributes_.fields_.find(key);
+        if (iter != attributes_.fields_.end())
+          return iter->second.get_value<T>();
 
+        if (!is_db_checked_)
+        {
+          check_db();
+          iter = attributes_.fields_.find(key);
+          if (iter != attributes_.fields_.end())
+            return iter->second.get_value<T>();
+        }
+
+        throw std::runtime_error(
+            "\"" + key + "\" not a valid key for the JSON tree: " + or_json::write(attributes_.fields_));
+      }
     private:
-      struct DbInfo
+      /** This class contains whatever extra info that can be retrieved from the DB
+       */
+      struct Attributes
       {
-        /** Object name as queried from the db */
-        mutable std::string name_;
-        /** Mesh id as queried from the db */
-        mutable std::string mesh_id_;
+        /** contains the fields: they are of integral types */
+        or_json::mObject fields_;
       };
 
       inline std::string
@@ -188,9 +202,9 @@ namespace object_recognition_core
       /** True if the name_ and mesh_id_ have been read from the DB */
       mutable bool is_db_checked_;
       /** DB info */
-      mutable DbInfo db_info_;
+      mutable Attributes attributes_;
 
-      static std::map<std::string, DbInfo> cached_name_mesh_id_;
+      static std::map<std::string, Attributes> cached_name_mesh_id_;
     };
 
 #ifdef CV_MAJOR_VERSION
