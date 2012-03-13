@@ -159,33 +159,40 @@ ObjectDbFilesystem::Delete(const DocumentId & id)
 
   // For each pre-defined view, figure out the potential keys, and delete those
   BOOST_FOREACH(const object_recognition_core::db::View::ViewType & view_type, object_recognition_core::db::View::AllViewTypes())
-      {
-        object_recognition_core::db::View view(view_type);
-        // TODO read the document from the file
-        or_json::mObject document;
-        or_json::mValue key;
-        or_json::mValue value;
-        if (view.GetKey(document, key, value))
-        {
-          // Delete the element from the view
-        }
-      }
+  {
+    object_recognition_core::db::View view(view_type);
+    // TODO read the document from the file
+    or_json::mObject document;
+    or_json::mValue key;
+    or_json::mValue value;
+    if (view.GetKey(document, key, value))
+    {
+      // Delete the element from the view
+    }
+  }
 }
 
 void
-ObjectDbFilesystem::Query(const object_recognition_core::db::View & view, int limit_rows, int start_offset, int& total_rows,
-                          int& offset, std::vector<ViewElement> & view_elements)
+ObjectDbFilesystem::Query(const object_recognition_core::db::View & view, int limit_rows, int start_offset,
+                          int& total_rows, int& offset, std::vector<ViewElement> & view_elements)
 {
   or_json::mObject parameters = view.parameters();
   boost::filesystem::path path;
   switch (view.type())
   {
     case object_recognition_core::db::View::VIEW_MODEL_WHERE_OBJECT_ID_AND_MODEL_TYPE:
+    {
       path = path_ / collection_ / "view" / "designdoc1"
              / std::string("by_object_id_and_" + parameters["model_type"].get_str());
       // TODO go over the symlinks in the folder and return the ids
       throw std::runtime_error("Function not implemented in the Filesystem DB.");
       break;
+    }
+    case object_recognition_core::db::View::VIEW_OBJECT_INFO_WHERE_OBJECT_ID:
+    {
+      throw std::runtime_error("Function not implemented in the Filesystem DB.");
+      break;
+    }
   }
 }
 

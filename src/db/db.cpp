@@ -166,7 +166,9 @@ namespace object_recognition_core
     }
 
     void
-    ObjectDb::set_db_and_parameters(const boost::shared_ptr<ObjectDbBase> & db_base, const ObjectDbParameters &in_params) {
+    ObjectDb::set_db_and_parameters(const boost::shared_ptr<ObjectDbBase> & db_base,
+                                    const ObjectDbParameters &in_params)
+    {
       db_ = db_base;
       parameters_ = in_params;
     }
@@ -382,21 +384,21 @@ namespace object_recognition_core
      * @param content_type the MIME type of the stream
      */
     void
-    Document::set_attachment_stream(const AttachmentName &attachment_name, const std::istream& stream,
-                                    const MimeType& mime_type)
+    DummyDocument::set_attachment_stream(const AttachmentName &attachment_name, const std::istream& stream,
+                                         const MimeType& mime_type)
     {
       StreamAttachment::ptr stream_attachment(new StreamAttachment(mime_type, stream));
       attachments_[attachment_name] = stream_attachment;
     }
 
     void
-    Document::ClearAllFields()
+    DummyDocument::ClearAllFields()
     {
       fields_.clear();
     }
 
     void
-    Document::ClearField(const std::string& key)
+    DummyDocument::ClearField(const std::string& key)
     {
       fields_.erase(key);
     }
@@ -413,25 +415,13 @@ namespace object_recognition_core
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 #ifdef CV_MAJOR_VERSION
-// Specializations for cv::Mat
+    // Specializations for cv::Mat
     template<>
     void
     Document::get_attachment<cv::Mat>(const AttachmentName &attachment_name, cv::Mat & value) const
     {
       std::stringstream ss;
       get_attachment_stream(attachment_name, ss, "text/x-yaml");
-      std::map<std::string, cv::Mat> ss_map;
-      ss_map[attachment_name] = cv::Mat();
-      object_recognition_core::db::yaml2mats(ss_map, ss, true);
-      value = ss_map[attachment_name];
-    }
-
-    template<>
-    void
-    Document::get_attachment_and_cache<cv::Mat>(const AttachmentName &attachment_name, cv::Mat & value)
-    {
-      std::stringstream ss;
-      get_attachment_stream_and_cache(attachment_name, ss, "text/x-yaml");
       std::map<std::string, cv::Mat> ss_map;
       ss_map[attachment_name] = cv::Mat();
       object_recognition_core::db::yaml2mats(ss_map, ss, true);
@@ -447,6 +437,19 @@ namespace object_recognition_core
       ss_map[attachment_name] = value;
       object_recognition_core::db::mats2yaml(ss_map, ss, true);
       set_attachment_stream(attachment_name, ss, "text/x-yaml");
+    }
+
+    // Specializations for cv::Mat
+    template<>
+    void
+    Document::get_attachment_and_cache<cv::Mat>(const AttachmentName &attachment_name, cv::Mat & value)
+    {
+      std::stringstream ss;
+      get_attachment_stream_and_cache(attachment_name, ss, "text/x-yaml");
+      std::map<std::string, cv::Mat> ss_map;
+      ss_map[attachment_name] = cv::Mat();
+      object_recognition_core::db::yaml2mats(ss_map, ss, true);
+      value = ss_map[attachment_name];
     }
 #endif
 

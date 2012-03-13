@@ -34,14 +34,14 @@ namespace
   {
     // Go over each key of one
     BOOST_FOREACH(or_json::mObject::const_reference val, obj1)
-        {
-          // Don't do anything if the value is not present
-          or_json::mObject::const_iterator iter = obj2.find(val.first);
-          if (iter == obj2.end())
-            continue;
-          if (!object_recognition_core::db::CompareJsonIntersection(val.second, iter->second))
-            return false;
-        }
+    {
+      // Don't do anything if the value is not present
+      or_json::mObject::const_iterator iter = obj2.find(val.first);
+      if (iter == obj2.end())
+        continue;
+      if (!object_recognition_core::db::CompareJsonIntersection(val.second, iter->second))
+        return false;
+    }
     return true;
   }
 }
@@ -115,22 +115,22 @@ namespace object_recognition_core
       or_json::read(json_submethod, submethod);
 
       BOOST_FOREACH(const ModelId & object_id, object_ids)
-          {
-            View view(View::VIEW_MODEL_WHERE_OBJECT_ID_AND_MODEL_TYPE);
-            view.Initialize(method);
-            view.set_key(object_id);
-            ViewIterator view_iterator = ViewIterator(view, db).begin();
+      {
+        View view(View::VIEW_MODEL_WHERE_OBJECT_ID_AND_MODEL_TYPE);
+        view.Initialize(method);
+        view.set_key(object_id);
+        ViewIterator view_iterator = ViewIterator(view, db).begin();
 
-            while (view_iterator != ViewIterator::end())
-            {
-              const or_json::mObject & obj = (*view_iterator).value_.get_obj();
-              // Compare the parameters to the input ones
-              if (CompareJsonIntersection(submethod, obj.find("submethod")->second))
-                model_documents.push_back(Document(db, obj.find("_id")->second.get_str()));
+        while (view_iterator != ViewIterator::end())
+        {
+          const or_json::mObject & obj = (*view_iterator).fields();
+          // Compare the parameters to the input ones
+          if (CompareJsonIntersection(submethod, obj.find("submethod")->second))
+            model_documents.push_back(Document(db, obj.find("_id")->second.get_str()));
 
-              ++view_iterator;
-            }
-          }
+          ++view_iterator;
+        }
+      }
       return model_documents;
     }
   }

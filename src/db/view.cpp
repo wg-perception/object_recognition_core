@@ -40,6 +40,39 @@ namespace object_recognition_core
 {
   namespace db
   {
+    /** Extract the stream of a specific attachment for a Document from the DB
+     * Not const because it might change the revision_id_
+     * @param db the db to read from
+     * @param attachment_name the name of the attachment
+     * @param stream the string of data to write to
+     * @param mime_type the MIME type as stored in the DB
+     * @param do_use_cache if true, try to load and store data in the object itself
+     */
+    void
+    ViewElement::get_attachment_stream(const AttachmentName &attachment_name, std::ostream& stream,
+                                       MimeType mime_type) const
+    {
+      // check if it is loaded
+      AttachmentMap::const_iterator val = attachments_.find(attachment_name);
+      if (val == attachments_.end())
+      {
+        throw std::runtime_error(attachment_name + " attachment does not exist.");
+      }
+      else
+      {
+        stream << val->second->stream_.rdbuf();
+        return;
+      }
+    }
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    ViewElement::~ViewElement()
+    {
+    }
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
     /** Given a document, returns whether it is in the view, and if so, returns the key and value
      * @param document
      * @param key
@@ -52,6 +85,7 @@ namespace object_recognition_core
       switch (type_)
       {
         case VIEW_MODEL_WHERE_OBJECT_ID_AND_MODEL_TYPE:
+        {
           if (document.find("method")->second == parameters_.find("model_type")->second)
           {
             key = document.find("_id")->second.get_str();
@@ -59,6 +93,13 @@ namespace object_recognition_core
             return true;
           }
           break;
+        }
+        case VIEW_OBJECT_INFO_WHERE_OBJECT_ID:
+        {
+          // It is a dummy document so it never belong to the db
+          return false;
+          break;
+        }
       }
       return false;
     }

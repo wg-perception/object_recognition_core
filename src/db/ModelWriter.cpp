@@ -109,15 +109,16 @@ namespace object_recognition_core
           or_json::mValue db_submethod;
 
           // If it does not have a submethod, it is the old model type, so delete it
-          if ((*iter).value_.get_obj().find("submethod") == (*iter).value_.get_obj().end())
+          const or_json::mObject & fields = (*iter).fields();
+          if (fields.find("submethod") == fields.end())
             is_incomplete_model_type = true;
           else
-            db_submethod = (*iter).value_.get_obj().find("submethod")->second;
+            db_submethod = fields.find("submethod")->second;
 
           // If they are the same, delete the current model in the database
           if ((CompareJsonIntersection(in_submethod, db_submethod)) || is_incomplete_model_type)
           {
-            DocumentId model_id = (*iter).value_.get_obj().find("_id")->second.get_str();
+            DocumentId model_id = fields.find("_id")->second.get_str();
             std::cout << "Deleting the previous model " << model_id << " of object " << *object_id_ << std::endl;
             db_.Delete(model_id);
           }
@@ -136,5 +137,5 @@ namespace object_recognition_core
 }
 
 ECTO_CELL(db, object_recognition_core::db::ModelWriter, "ModelWriter",
-    "Takes a document, that should be considered as a Model, and persists it."
-    " Also stores common meta data that is useful for searching.")
+          "Takes a document, that should be considered as a Model, and persists it."
+          " Also stores common meta data that is useful for searching.")

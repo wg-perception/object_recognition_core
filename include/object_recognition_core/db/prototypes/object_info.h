@@ -106,7 +106,7 @@ namespace object_recognition_core
 
       /** Read the name_ and mesh_id_ from the DB and store it */
       void
-      check_db();
+      check_db() const;
 
       /** The object id of the found object */
       db::ObjectId object_id_;
@@ -114,7 +114,7 @@ namespace object_recognition_core
       db::ObjectDb db_;
 
       /** DB info */
-      Attributes attributes_;
+      mutable Attributes attributes_;
 
       static std::map<std::string, Attributes> cached_name_mesh_id_;
     };

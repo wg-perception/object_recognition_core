@@ -202,6 +202,7 @@ ObjectDbCouch::Query(const object_recognition_core::db::View & view, int limit_r
   switch (view.type())
   {
     case object_recognition_core::db::View::VIEW_MODEL_WHERE_OBJECT_ID_AND_MODEL_TYPE:
+    {
       url = root_ + "/" + collection_ + "/_design/models/_view/by_object_id_and_" + parameters["model_type"].get_str();
       do_throw = false;
 
@@ -212,6 +213,20 @@ ObjectDbCouch::Query(const object_recognition_core::db::View & view, int limit_r
       QueryView(url, limit_rows, start_offset, options, total_rows, offset, view_elements, do_throw);
 
       break;
+    }
+    case object_recognition_core::db::View::VIEW_OBJECT_INFO_WHERE_OBJECT_ID:
+    {
+      url = root_ + "/" + collection_ + "/_design/models/_view/by_object_id_and_" + parameters["model_type"].get_str();
+      do_throw = false;
+
+      object_recognition_core::db::View::Key key;
+      std::string options;
+      if (view.key(key))
+        options = "&startkey=\"" + key.get_str() + "\"&endkey=\"" + key.get_str() + "\"";
+      QueryView(url, limit_rows, start_offset, options, total_rows, offset, view_elements, do_throw);
+
+      break;
+    }
   }
 }
 
@@ -222,9 +237,9 @@ ObjectDbCouch::Query(const std::vector<std::string> & queries, int limit_rows, i
   {
     or_json::mObject fields;
     BOOST_FOREACH(const std::string& query, queries)
-        {
-          fields["map"] = or_json::mValue(query);
-        }
+    {
+      fields["map"] = or_json::mValue(query);
+    }
     json_reader_stream_.str("");
     write_json(fields, json_reader_stream_);
   }
@@ -247,8 +262,7 @@ ObjectDbCouch::QueryView(const std::string & in_url, int limit_rows, int start_o
   curl_.setReader(&json_reader_);
   curl_.setWriter(&json_writer_);
   std::string url = in_url + "?limit=" + boost::lexical_cast<std::string>(limit_rows) + "&skip="
-                    + boost::lexical_cast<std::string>(start_offset)
-                    + options;
+                    + boost::lexical_cast<std::string>(start_offset) + options;
   curl_.setURL(url);
   curl_.setHeader("Content-Type: application/json");
   curl_.setCustomRequest("GET");
@@ -276,12 +290,12 @@ ObjectDbCouch::QueryView(const std::string & in_url, int limit_rows, int start_o
   view_elements.clear();
   view_elements.reserve(fields["rows"].get_array().size());
   BOOST_FOREACH(or_json::mValue & v, fields["rows"].get_array())
-      {
-        // values are: id, key, value
-        const or_json::mObject & object = v.get_obj();
-        view_elements.push_back(
-            ViewElement(object.find("id")->second.get_str(), object.find("key")->second, object.find("value")->second));
-      }
+  {
+    // values are: id, key, value
+    const or_json::mObject & object = v.get_obj();
+    view_elements.push_back(ViewElement(object.find("id")->second.get_str(), object.find("key")->second));
+    view_elements.back().set_values(object.find("value")->second.get_obj());
+  }
   offset = fields["offset"].get_int() + view_elements.size();
 }
 

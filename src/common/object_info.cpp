@@ -1,7 +1,7 @@
 /*
  * Software License Agreement (BSD License)
  *
- *  Copyright (c) 2009, Willow Garage, Inc.
+ *  Copyright (c) 2012, Willow Garage, Inc.
  *  All rights reserved.
  *
  *  Redistribution and use in source and binary forms, with or without
@@ -47,7 +47,7 @@ namespace object_recognition_core
 
     /** Read the name_ and mesh_id_ from the DB and store it */
     void
-    ObjectInfo::check_db()
+    ObjectInfo::check_db() const
     {
       // Check if the data is already cached
       {
@@ -74,7 +74,7 @@ namespace object_recognition_core
       std::string mesh_id;
       for (; iter != end; ++iter)
       {
-        const or_json::mObject &fields = (*iter).value_.get_obj();
+        const or_json::mObject &fields = (*iter).fields();
 
         // Get the object name
         if (fields.find("name") == fields.end())

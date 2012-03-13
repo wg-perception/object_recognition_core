@@ -36,6 +36,10 @@
 #ifndef VIEW_TYPES_H_
 #define VIEW_TYPES_H_
 
+#ifdef CV_MAJOR_VERSION
+#include <opencv2/core/core.hpp>
+#endif
+
 #include <object_recognition_core/common/json_spirit/json_spirit.h>
 #include <object_recognition_core/common/types.h>
 
@@ -49,19 +53,189 @@ namespace object_recognition_core
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+    /** A dummy document just contains fields and attachments
+     */
+    class DummyDocument
+    {
+    public:
+      DummyDocument()
+      {
+      }
+
+      virtual
+      ~DummyDocument()
+      {
+      }
+
+      /** Extract a specific attachment from a document in the DB
+       * @param db the db to read from
+       * @param attachment_name
+       * @param value
+       * @param do_use_cache if true, try to load and store data in the object itself
+       */
+      template<typename T>
+      void
+      get_attachment(const AttachmentName &attachment_name, T & value) const;
+
+      /** Extract the stream of a specific attachment for a Document from the DB
+       * @param db the db to read from
+       * @param attachment_name the name of the attachment
+       * @param stream the string of data to write to
+       * @param mime_type the MIME type as stored in the DB
+       * @param do_use_cache if true, try to load and store data in the object itself
+       */
+      virtual void
+      get_attachment_stream(const AttachmentName &attachment_name, std::ostream& stream, MimeType mime_type =
+          MIME_TYPE_DEFAULT) const = 0;
+
+      /** Add a specific field to a Document (that has been pre-loaded or not)
+       * @param attachment_name the name of the attachment
+       * @param value the attachment itself, that needs to be boost serializable
+       */
+      template<typename T>
+      void
+      set_attachment(const AttachmentName &attachment_name, const T & value);
+
+      /** Add a stream attachment to a a Document
+       * @param attachment_name the name of the stream
+       * @param stream the stream itself
+       * @param content_type the MIME type of the stream
+       */
+      void
+      set_attachment_stream(const AttachmentName &attachment_name, const std::istream& stream,
+                            const MimeType& mime_type = MIME_TYPE_DEFAULT);
+
+      /** Get a specific value */
+      template<typename T>
+      T
+      get_value(const std::string& key) const
+      {
+        or_json::mObject::const_iterator iter = fields_.find(key);
+        if (iter != fields_.end())
+          return iter->second.get_value<T>();
+        else
+          throw std::runtime_error("\"" + key + "\" not a valid key for the JSON tree: " + or_json::write(fields_));
+      }
+
+      /** Get a specific value */
+      or_json::mValue
+      get_value(const std::string& key) const
+      {
+        or_json::mObject::const_iterator iter = fields_.find(key);
+        if (iter != fields_.end())
+          return iter->second;
+        else
+          throw std::runtime_error("\"" + key + "\" not a valid key for the JSON tree: " + or_json::write(fields_));
+      }
+
+      /** Get a specific value */
+      const or_json::mObject &
+      fields() const
+      {
+        return fields_;
+      }
+
+      /** Set a specific value */
+      template<typename T>
+      void
+      set_value(const std::string& key, const T& val)
+      {
+        fields_[key] = or_json::mValue(val);
+      }
+
+      /** Set several values by inserting a property tree */
+      void
+      set_values(const or_json::mObject & json_tree)
+      {
+        fields_.insert(json_tree.begin(), json_tree.end());
+      }
+
+      /** Set several values by inserting a property tree at a specific key*/
+      void
+      set_values(const std::string& key, const or_json::mObject & json_tree)
+      {
+        or_json::mObject::const_iterator iter = fields_.find(key);
+        if (iter == fields_.end())
+          fields_.insert(std::make_pair(key, json_tree));
+        else
+          iter->second.get_value<or_json::mObject>().insert(json_tree.begin(), json_tree.end());
+      }
+
+      /** Clear all the fields, there are no fields left after */
+      void
+      ClearAllFields();
+
+      /** Remove a specific field */
+      void
+      ClearField(const std::string& key);
+
+    protected:
+      /** contains the attachments: binary blobs */
+      struct StreamAttachment: boost::noncopyable
+      {
+        StreamAttachment()
+        {
+        }
+
+        StreamAttachment(const MimeType &type)
+            :
+              type_(type)
+        {
+        }
+
+        StreamAttachment(const MimeType &type, const std::istream &stream)
+            :
+              type_(type)
+        {
+          copy_from(stream);
+        }
+        void
+        copy_from(const std::istream& stream)
+        {
+          stream_ << stream.rdbuf();
+          stream_.seekg(0);
+        }
+        MimeType type_;
+        std::stringstream stream_;
+        typedef boost::shared_ptr<StreamAttachment> ptr;
+      };
+
+      typedef std::map<AttachmentName, StreamAttachment::ptr> AttachmentMap;
+
+      /** ALl the attachments */
+      AttachmentMap attachments_;
+
+      /** contains the fields: they are of integral types */
+      or_json::mObject fields_;
+    };
+
+#ifdef CV_MAJOR_VERSION
+    // Specializations for cv::Mat
+    template<>
+    void
+    DummyDocument::get_attachment<cv::Mat>(const AttachmentName &attachment_name, cv::Mat & value) const;
+
+    template<>
+    void
+    DummyDocument::set_attachment<cv::Mat>(const AttachmentName &attachment_name, const cv::Mat & value);
+#endif
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
     /** Contains the different values return when doing a query as mentioned here:
      * http://wiki.apache.org/couchdb/Introduction_to_CouchDB_views
      */
-    class ViewElement
+    class ViewElement: public DummyDocument
     {
     public:
-      ViewElement(const std::string &id, const or_json::mValue & key, const or_json::mValue & value)
+      ViewElement(const std::string &id, const or_json::mValue & key)
           :
             id_(id),
-            key_(key),
-            value_(value)
+            key_(key)
       {
       }
+
+      ~ViewElement();
 
       bool
       operator==(const ViewElement & view_element) const
@@ -69,9 +243,13 @@ namespace object_recognition_core
         return id_ == view_element.id_;
       }
 
+      virtual void
+      get_attachment_stream(const AttachmentName &attachment_name, std::ostream& stream, MimeType mime_type =
+          MIME_TYPE_DEFAULT) const;
+
+      /** contains the fields: they are of integral types */
       std::string id_;
       or_json::mValue key_;
-      or_json::mValue value_;
     };
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

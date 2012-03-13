@@ -39,17 +39,12 @@
 #include <sstream>
 #include <map>
 
-#include <boost/archive/binary_iarchive.hpp>
-#include <boost/archive/binary_oarchive.hpp>
 #include <boost/foreach.hpp>
 #include <boost/function.hpp>
 
-#ifdef CV_MAJOR_VERSION
-#include <opencv2/core/core.hpp>
-#endif
-
 #include <object_recognition_core/common/types.h>
 #include <object_recognition_core/common/json_spirit/json_spirit.h>
+#include <object_recognition_core/db/view.h>
 
 namespace object_recognition_core
 {
@@ -207,7 +202,7 @@ namespace object_recognition_core
     /** A Document holds fields (in the CouchDB sense) which are strings that are queryable, and attachments (that are
      * un-queryable binary blobs)
      */
-    class Document
+    class Document: public DummyDocument
     {
     public:
       Document();
@@ -233,23 +228,20 @@ namespace object_recognition_core
       void
       Persist();
 
-      /** Extract a specific attachment from a document in the DB
-       * @param db the db to read from
-       * @param attachment_name
-       * @param value
-       * @param do_use_cache if true, try to load and store data in the object itself
-       */
-      template<typename T>
+      /** Set the id and the revision number */
       void
-      get_attachment(const AttachmentName &attachment_name, T & value) const
+      SetIdRev(const std::string& id, const std::string& rev);
+
+      const std::string &
+      id() const
       {
-        typedef boost::archive::binary_iarchive InputArchive;
-        std::stringstream stream;
-        std::string tmp_mime_type;
-        get_attachment_stream(attachment_name, stream, tmp_mime_type);
-        stream.seekg(0);
-        InputArchive ar(stream);
-        ar & value;
+        return document_id_;
+      }
+
+      const std::string &
+      rev() const
+      {
+        return revision_id_;
       }
 
       /** Extract a specific attachment from a document in the DB
@@ -260,16 +252,7 @@ namespace object_recognition_core
        */
       template<typename T>
       void
-      get_attachment_and_cache(const AttachmentName &attachment_name, T & value)
-      {
-        typedef boost::archive::binary_iarchive InputArchive;
-        std::stringstream stream;
-        std::string tmp_mime_type;
-        get_attachment_stream_and_cache(attachment_name, stream, tmp_mime_type);
-        stream.seekg(0);
-        InputArchive ar(stream);
-        ar & value;
-      }
+      get_attachment(const AttachmentName &attachment_name, T & value) const;
 
       /** Extract the stream of a specific attachment for a Document from the DB
        * @param db the db to read from
@@ -278,9 +261,19 @@ namespace object_recognition_core
        * @param mime_type the MIME type as stored in the DB
        * @param do_use_cache if true, try to load and store data in the object itself
        */
-      void
+      virtual void
       get_attachment_stream(const AttachmentName &attachment_name, std::ostream& stream, MimeType mime_type =
           MIME_TYPE_DEFAULT) const;
+
+      /** Extract a specific attachment from a document in the DB
+       * @param db the db to read from
+       * @param attachment_name
+       * @param value
+       * @param do_use_cache if true, try to load and store data in the object itself
+       */
+      template<typename T>
+      void
+      get_attachment_and_cache(const AttachmentName &attachment_name, T & value);
 
       /** Extract the stream of a specific attachment for a Document from the DB
        * @param db the db to read from
@@ -299,157 +292,26 @@ namespace object_recognition_core
        */
       template<typename T>
       void
-      set_attachment(const AttachmentName &attachment_name, const T & value)
-      {
-        typedef boost::archive::binary_oarchive OutputArchive;
-        std::stringstream ss;
-        OutputArchive ar(ss);
-        ar & value;
-        set_attachment_stream(attachment_name, ss);
-      }
-
-      /** Add a stream attachment to a a Document
-       * @param attachment_name the name of the stream
-       * @param stream the stream itself
-       * @param content_type the MIME type of the stream
-       */
-      void
-      set_attachment_stream(const AttachmentName &attachment_name, const std::istream& stream,
-                            const MimeType& mime_type = MIME_TYPE_DEFAULT);
-
-      /** Get a specific value */
-      template<typename T>
-      T
-      get_value(const std::string& key) const
-      {
-        or_json::mObject::const_iterator iter = fields_.find(key);
-        if (iter != fields_.end())
-          return iter->second.get_value<T>();
-        else
-          throw std::runtime_error("\"" + key + "\" not a valid key for the JSON tree: " + or_json::write(fields_));
-      }
-
-      /** Get a specific value */
-      or_json::mValue
-      get_value(const std::string& key) const
-      {
-        or_json::mObject::const_iterator iter = fields_.find(key);
-        if (iter != fields_.end())
-          return iter->second;
-        else
-          throw std::runtime_error("\"" + key + "\" not a valid key for the JSON tree: " + or_json::write(fields_));
-      }
-
-      /** Get a specific value */
-      or_json::mValue
-      fields() const
-      {
-        return or_json::mValue(fields_);
-      }
-
-      /** Set a specific value */
-      template<typename T>
-      void
-      set_value(const std::string& key, const T& val)
-      {
-        fields_[key] = or_json::mValue(val);
-      }
-
-      /** Set several values by inserting a property tree */
-      void
-      set_values(const or_json::mObject & json_tree)
-      {
-        fields_.insert(json_tree.begin(), json_tree.end());
-      }
-
-      /** Set several values by inserting a property tree at a specific key*/
-      void
-      set_values(const std::string& key, const or_json::mObject & json_tree)
-      {
-        or_json::mObject::const_iterator iter = fields_.find(key);
-        if (iter == fields_.end())
-          fields_.insert(std::make_pair(key, json_tree));
-        else
-          iter->second.get_value<or_json::mObject>().insert(json_tree.begin(), json_tree.end());
-      }
-
-      /** Clear all the fields, there are no fields left after */
-      void
-      ClearAllFields();
-
-      /** Remove a specific field */
-      void
-      ClearField(const std::string& key);
-
-      /** Set the id and the revision number */
-      void
-      SetIdRev(const std::string& id, const std::string& rev);
-
-      const std::string &
-      id() const
-      {
-        return document_id_;
-      }
-
-      const std::string &
-      rev() const
-      {
-        return revision_id_;
-      }
+      set_attachment(const AttachmentName &attachment_name, const T & value);
     private:
-      /** contains the attachments: binary blobs */
-      struct StreamAttachment: boost::noncopyable
-      {
-        StreamAttachment()
-        {
-        }
-
-        StreamAttachment(const MimeType &type)
-            :
-              type_(type)
-        {
-        }
-
-        StreamAttachment(const MimeType &type, const std::istream &stream)
-            :
-              type_(type)
-        {
-          copy_from(stream);
-        }
-        void
-        copy_from(const std::istream& stream)
-        {
-          stream_ << stream.rdbuf();
-          stream_.seekg(0);
-        }
-        MimeType type_;
-        std::stringstream stream_;
-        typedef boost::shared_ptr<StreamAttachment> ptr;
-      };
-
       ObjectDb db_;
       DocumentId document_id_;
       RevisionId revision_id_;
-      typedef std::map<AttachmentName, StreamAttachment::ptr> AttachmentMap;
-      AttachmentMap attachments_;
-      /** contains the fields: they are of integral types */
-      or_json::mObject fields_;
     };
 
 #ifdef CV_MAJOR_VERSION
     // Specializations for cv::Mat
+    template<>
+    void
+    DummyDocument::get_attachment<cv::Mat>(const AttachmentName &attachment_name, cv::Mat & value) const;
 
     template<>
     void
-    Document::get_attachment<cv::Mat>(const AttachmentName &attachment_name, cv::Mat & value) const;
+    DummyDocument::set_attachment<cv::Mat>(const AttachmentName &attachment_name, const cv::Mat & value);
 
     template<>
     void
     Document::get_attachment_and_cache<cv::Mat>(const AttachmentName &attachment_name, cv::Mat & value);
-
-    template<>
-    void
-    Document::set_attachment<cv::Mat>(const AttachmentName &attachment_name, const cv::Mat & value);
 #endif
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
