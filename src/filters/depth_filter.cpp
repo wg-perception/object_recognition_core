@@ -39,7 +39,7 @@
 
 #include <opencv2/core/core.hpp>
 
-namespace object_recognition
+namespace object_recognition_core
 {
   namespace filters
   {
@@ -85,5 +85,5 @@ namespace object_recognition
   }
 }
 
-ECTO_CELL(filters, object_recognition::filters::DepthFilter, "depth_filter",
+ECTO_CELL(filters, object_recognition_core::filters::DepthFilter, "depth_filter",
           "Given a depth image, return the mask of what is between two depths.")
