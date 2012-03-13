@@ -35,19 +35,19 @@
 
 #include <map>
 
-#include <object_recognition_core/common/pose_result.h>
+#include <object_recognition_core/db/prototypes/object_info.h>
 
 namespace object_recognition_core
 {
-  namespace common
+  namespace prototypes
   {
     /** Define the static member */
-    std::map<std::string, PoseResult::Attributes> PoseResult::cached_name_mesh_id_ =
+    std::map<std::string, ObjectInfo::Attributes> ObjectInfo::cached_name_mesh_id_ =
         std::map<std::string, Attributes>();
 
     /** Read the name_ and mesh_id_ from the DB and store it */
     void
-    PoseResult::check_db() const
+    ObjectInfo::check_db()
     {
       if (is_db_checked_)
         return;
@@ -81,7 +81,7 @@ namespace object_recognition_core
 
       // Make sure the db_ is valid
       if (db_.parameters().type_ == db::ObjectDbParameters::EMPTY)
-        throw std::runtime_error("Db not set in the PoseResult");
+        throw std::runtime_error("Db not set in the ObjectInfo");
 
       // Get the mesh id
       db::ViewIterator view_iterator(view, db_);

@@ -109,7 +109,7 @@ namespace object_recognition_core
 
       /** Read the name_ and mesh_id_ from the DB and store it */
       void
-      check_db() const;
+      check_db();
 
       /** The object id of the found object */
       db::ObjectId object_id_;

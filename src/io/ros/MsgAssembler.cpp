@@ -216,10 +216,10 @@ namespace object_recognition_core
           marker.color.b = b;
           marker.color.r = r;
           marker.id = marker_id;
-          marker.mesh_resource = pose_result.get_attribute<std::string>("mesh_uri");
+          //marker.mesh_resource = pose_result.get_attribute<std::string>("mesh_uri");
           marker_array.markers.push_back(marker);
           marker.type = visualization_msgs::Marker::TEXT_VIEW_FACING;
-          marker.text = pose_result.get_attribute<std::string>("name");
+          //marker.text = pose_result.get_attribute<std::string>("name");
           marker.color.a = 1;
           marker.color.g = 1;
           marker.color.b = 1;

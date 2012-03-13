@@ -66,8 +66,6 @@ namespace object_recognition_core
     {
     public:
       PoseResult()
-          :
-            is_db_checked_(false)
       {
         R_.resize(9);
         T_.resize(3);
@@ -78,8 +76,7 @@ namespace object_recognition_core
             R_(pose_result.R_),
             T_(pose_result.T_),
             object_id_(pose_result.object_id_),
-            db_(pose_result.db_),
-            is_db_checked_(false)
+            db_(pose_result.db_)
       {
       }
 
@@ -100,7 +97,6 @@ namespace object_recognition_core
       {
         db_ = db;
         object_id_ = object_id;
-        is_db_checked_ = false;
       }
 
       template<typename Type>
@@ -110,18 +106,6 @@ namespace object_recognition_core
       template<typename Type>
       void
       set_T(const Type & T);
-
-      /** Get some attribute from the db or, if already stored, from whatever the pipeline put in.
-       * See the class definition to see the keys that can be stored
-       * @param key
-       * @return
-       */
-      template<typename T>
-      T
-      set_attribute(const std::string& key, const T &val) const
-      {
-        attributes_.fields_[key] = or_json::mValue(val);
-      }
 
       // Getter functions
       float
@@ -143,51 +127,7 @@ namespace object_recognition_core
       template<typename Type>
       Type
       T() const;
-
-      /** Get some attribute from the db or, if already stored, from whatever the pipeline put in.
-       * See the class definition to see the keys that can be stored
-       * @param key
-       * @return
-       */
-      template<typename T>
-      T
-      get_attribute(const std::string& key) const
-      {
-        or_json::mObject::const_iterator iter = attributes_.fields_.find(key);
-        if (iter != attributes_.fields_.end())
-          return iter->second.get_value<T>();
-
-        if (!is_db_checked_)
-        {
-          check_db();
-          iter = attributes_.fields_.find(key);
-          if (iter != attributes_.fields_.end())
-            return iter->second.get_value<T>();
-        }
-
-        throw std::runtime_error(
-            "\"" + key + "\" not a valid key for the JSON tree: " + or_json::write(attributes_.fields_));
-      }
     private:
-      /** This class contains whatever extra info that can be retrieved from the DB
-       */
-      struct Attributes
-      {
-        /** contains the fields: they are of integral types */
-        or_json::mObject fields_;
-      };
-
-      inline std::string
-      cache_key() const
-      {
-        return db_.parameters().TypeToString(db_.parameters().type_) + db_.parameters().root_
-               + db_.parameters().collection_ + object_id_;
-      }
-
-      /** Read the name_ and mesh_id_ from the DB and store it */
-      void
-      check_db() const;
-
       /** The rotation matrix of the estimated pose, stored row by row */
       std::vector<float> R_;
       /** The translation vector of the estimated pose */
@@ -198,13 +138,6 @@ namespace object_recognition_core
       db::ObjectId object_id_;
       /** The db in which the object_id is */
       db::ObjectDb db_;
-
-      /** True if the name_ and mesh_id_ have been read from the DB */
-      mutable bool is_db_checked_;
-      /** DB info */
-      mutable Attributes attributes_;
-
-      static std::map<std::string, Attributes> cached_name_mesh_id_;
     };
 
 #ifdef CV_MAJOR_VERSION
