@@ -53,16 +53,13 @@ namespace object_recognition_core
     {
     public:
       ObjectInfo()
-          :
-            is_db_checked_(false)
       {
       }
 
       ObjectInfo(const db::ObjectId &object_id, const db::ObjectDb &db)
           :
             object_id_(object_id),
-            db_(db),
-            is_db_checked_(false)
+            db_(db)
       {
       }
 
@@ -76,7 +73,6 @@ namespace object_recognition_core
       {
         db_ = db;
         object_id_ = object_id;
-        is_db_checked_ = false;
       }
 
       // Getter functions
@@ -89,6 +85,7 @@ namespace object_recognition_core
       const or_json::mObject &
       attributes() const
       {
+        check_db();
         return attributes_.fields_;
       }
     private:
@@ -116,8 +113,6 @@ namespace object_recognition_core
       /** The db in which the object_id is */
       db::ObjectDb db_;
 
-      /** True if the name_ and mesh_id_ have been read from the DB */
-      bool is_db_checked_;
       /** DB info */
       Attributes attributes_;
 

@@ -79,6 +79,8 @@ namespace object_recognition_core
     /** A view can be of different type, and for each, the Initialize function needs to be called with the right
      * arguments
      * VIEW_MODEL_WHERE_OBJECT_ID_AND_MODEL_TYPE: Initialize(std::string model_type)
+     * VIEW_OBJECT_INFO_WHERE_OBJECT_ID: no need to initialize. Returns a document that contains the
+     *                           following attributes: name (std:string), mesh_uri (std::string)
      */
     class View
     {
@@ -91,8 +93,7 @@ namespace object_recognition_core
        */
       enum ViewType
       {
-        VIEW_MODEL_WHERE_OBJECT_ID_AND_MODEL_TYPE
-      //!< VIEW_MODEL_WHERE_OBJECT_ID_AND_MODEL_TYPE
+        VIEW_MODEL_WHERE_OBJECT_ID_AND_MODEL_TYPE, VIEW_OBJECT_INFO_WHERE_OBJECT_ID
       };
 
       View(ViewType type)
@@ -149,7 +150,7 @@ namespace object_recognition_core
       AllViewTypes()
       {
         View::ViewType all_views[] =
-        { View::VIEW_MODEL_WHERE_OBJECT_ID_AND_MODEL_TYPE };
+        { View::VIEW_MODEL_WHERE_OBJECT_ID_AND_MODEL_TYPE, View::VIEW_OBJECT_INFO_WHERE_OBJECT_ID };
         return std::vector<View::ViewType>(all_views, all_views + 1);
       }
 

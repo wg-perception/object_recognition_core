@@ -49,10 +49,6 @@ namespace object_recognition_core
     void
     ObjectInfo::check_db()
     {
-      if (is_db_checked_)
-        return;
-      is_db_checked_ = true;
-
       // Check if the data is already cached
       {
         std::map<std::string, Attributes>::const_iterator iter = cached_name_mesh_id_.find(cache_key());
@@ -63,20 +59,8 @@ namespace object_recognition_core
         }
       }
 
-      // Get the object name if not set
-      if (attributes_.fields_.find("name") == attributes_.fields_.end())
-      {
-        db::Document doc(db_, object_id_);
-        attributes_.fields_["name"] = doc.get_value("object_name").get_str();
-
-        // If no name, set one
-        if (attributes_.fields_["name"].get_str().empty())
-          attributes_.fields_["name"] = object_id_;
-      }
-
       // Find all the models of that type for that object
-      db::View view(db::View::VIEW_MODEL_WHERE_OBJECT_ID_AND_MODEL_TYPE);
-      view.Initialize("mesh");
+      db::View view(db::View::VIEW_OBJECT_INFO_WHERE_OBJECT_ID);
       view.set_key(object_id_);
 
       // Make sure the db_ is valid
@@ -90,9 +74,23 @@ namespace object_recognition_core
       std::string mesh_id;
       for (; iter != end; ++iter)
       {
-        // Get the mesh_id if not set
-        if (attributes_.fields_.find("mesh_id") == attributes_.fields_.end())
-          mesh_id = (*iter).value_.get_obj().find("_id")->second.get_str();
+        const or_json::mObject &fields = (*iter).value_.get_obj();
+
+        // Get the object name
+        if (fields.find("name") == fields.end())
+          attributes_.fields_["name"] = "";
+        else
+          attributes_.fields_["name"] = fields.find("name")->second.get_str();
+
+        // If no name, set one
+        if (attributes_.fields_["name"].get_str().empty())
+          attributes_.fields_["name"] = object_id_;
+
+        // Get the mesh_id
+        if (fields.find("mesh_uri") == fields.end())
+          attributes_.fields_["mesh_uri"] = "";
+        else
+          attributes_.fields_["mesh_uri"] = fields.find("mesh_uri")->second.get_str();
 
         // The view should return only one element
         break;
