@@ -12,24 +12,30 @@ string id
 # There is no conventional format for those parameters and it's nice to keep that flexibility.
 string db
 
-############################################## EXTRA OBJECT INFO #######################################################
+#confidence: how sure you are it is that object and not another one
+float32 confidence
+
+############################################## VISUALIZATION INFO ######################################################
+################### THIS INFO SHOULD BE OBTAINED INDEPENDENTLY FROM THE CORE, LIKE IN AN RVIZ PLUGIN ###################
 
 # The human readable name of the object
 string name
 
 # The full mesh of the object: this can be useful for display purposes, augmented reality ... but it can be big
 # Make sure the type is MESH_RESOURCE
-visualization_msgs/Marker ground_truth_mesh
+object_recognition_core/Shape ground_truth_mesh
+geometry_msgs/PoseStamped ground_truth_mesh_pose
 
 # Sometimes, you only have a cloud in the DB
-sensor_msgs/PointCloud2 ground_truth_point_cloud
+# Make sure the type is POINTS
+sensor_msgs/PointCloud2[] ground_truth_point_cloud
 
 ################################################ OBJECT CLUSTERS #######################################################
 
 # Sometimes you can extract the 3d points that belong to the object
 sensor_msgs/PointCloud2[] point_cloud
 
-# Sometimes, you can only provide a bounding box/shape, even in 3d
+# Sometimes, you can only provide a bounding box/shape, even in 3d. We probably need a non visualization type there
 visualization_msgs/Marker bounding_mesh
 
 # Sometimes, you only have 2d input so you can't really give a pose, you just get a contour, or a box
@@ -40,10 +46,4 @@ geometry_msgs/Point[] bounding_contour
 
 # This is the result that everybody expects : the pose in some frame given with the input. The units are radian/meters
 # as usual
-geometry_msgs/PoseStamped pose
-
-# The covariance matrix for the rotation angles in Rodrigues notation, in row major notation
-float32[] covariance_rotation
-
-# The covariance matrix for the translation vector, in row major notation
-float32[] covariance_translation
+geometry_msgs/PoseWithCovarianceStamped pose

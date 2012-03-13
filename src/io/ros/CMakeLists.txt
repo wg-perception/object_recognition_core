@@ -19,13 +19,15 @@ find_package(Eigen REQUIRED)
 include_directories(SYSTEM
                     ${EIGEN_INCLUDE_DIRS}
                     ${ecto_ros_INCLUDE_DIRS}
+                    ${geometry_msgs_INCLUDE_DIRS}
 )
 
 ectomodule(io_ros
-    module.cpp
-    PoseArrayAssembler.cpp
-    visualization_msgs_MarkerArray.cpp
-    )
+           module.cpp
+           MsgAssembler.cpp
+           visualization_msgs_MarkerArray.cpp
+           VisualizationMsgAssembler.cpp
+)
 
 link_ecto(io_ros
     ${geometry_msgs_LIBRARIES}

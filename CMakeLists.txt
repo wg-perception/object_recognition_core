@@ -81,7 +81,7 @@ if (genmsg_FOUND)
         find_package(ROS REQUIRED actionlib_msgs geometry_msgs rosbag roscpp sensor_msgs visualization_msgs)
     endif()
 
-    add_message_files(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/src/io/ros/msg FILES ObjectRecognition.msg ObjectRecognitionScene.msg ObjectRecognitionSceneArray.msg)
+    add_message_files(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/src/io/ros/msg FILES RecognizedObject.msg RecognizedObjectArray.msg Shape.msg)
 #    add_action_files(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/src/server/action FILES ObjectRecognition.action)
 
     generate_messages(DEPENDENCIES actionlib_msgs geometry_msgs sensor_msgs std_msgs visualization_msgs)
