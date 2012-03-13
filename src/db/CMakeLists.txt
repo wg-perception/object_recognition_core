@@ -36,7 +36,7 @@ target_link_libraries(object_recognition_core_db
                       ${CURL_LIBRARIES}
                       opencv_core
                       opencv_highgui
-                      ecto
+                      ${ecto_LIBRARIES}
 )
 
 set_target_properties(object_recognition_core_db PROPERTIES
