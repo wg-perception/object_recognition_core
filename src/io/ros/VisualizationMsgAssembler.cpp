@@ -252,5 +252,5 @@ namespace object_recognition_core
   std::map<ObjectId, unsigned int> VisualizationMsgAssembler::object_id_to_index_;
 }
 
-ECTO_CELL(io_ros, object_recognition_core::VisualizationMsgAssembler, "VisualizationAssembler",
+ECTO_CELL(io_ros, object_recognition_core::VisualizationMsgAssembler, "VisualizationMsgAssembler",
           "Given an existing message, create visualization messages from it.");

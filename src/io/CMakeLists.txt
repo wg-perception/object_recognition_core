@@ -29,11 +29,4 @@ link_ecto(voter
           ${Boost_LIBRARIES}
 )
 
-set_target_properties(voter_ectomodule PROPERTIES
-                      LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/${ecto_module_PYTHON_INSTALL}/io
-)
-
-install(TARGETS voter_ectomodule
-        DESTINATION ${ecto_module_PYTHON_INSTALL}/io
-        COMPONENT main
-)
+install_ecto_module(voter)

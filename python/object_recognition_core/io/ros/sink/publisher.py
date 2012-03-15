@@ -2,8 +2,8 @@
 Module defining several outputs for the object recognition pipeline
 """
 
-from object_recognition_core.db.interface import ObjectDbParameters
-from object_recognition_core.io.io_ros import PoseArrayAssembler, Publisher_MarkerArray
+from object_recognition_core.boost.interface import ObjectDbParameters
+from object_recognition_core.ecto_cells.io_ros import MsgAssembler, VisualizationMsgAssembler, Publisher_MarkerArray
 from object_recognition_core.io.sink import Sink
 import ecto
 import ecto_ros.ecto_geometry_msgs as ecto_geometry_msgs
@@ -19,7 +19,7 @@ class PublisherBlackBox(ecto.BlackBox):
     """Class publishing the different results of object recognition as ROS topics
     http://ecto.willowgarage.com/releases/amoeba-beta3/ros/geometry_msgs.html#Publisher_PoseArray
     """
-    _pose_array_assembler = PoseArrayAssembler
+    _pose_array_assembler = VisualizationMsgAssembler
     _pose_pub = PoseArrayPub
     _marker_pub = MarkerArrayPub
     _object_ids_pub = StringPub

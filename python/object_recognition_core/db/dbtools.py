@@ -1,4 +1,4 @@
-from object_recognition_core.db.interface import ObjectDbParameters
+from object_recognition_core.boost.interface import ObjectDbParameters
 
 DEFAULT_DB_COLLECTION = 'object_recognition'
 DEFAULT_DB_ROOT = 'http://localhost:5984'

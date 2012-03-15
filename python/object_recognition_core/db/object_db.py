@@ -3,8 +3,9 @@ Module defining a common Python interface to an ObjectDb
 """
 
 from abc import ABCMeta
-from image_pipeline.io.source import create_source
-from object_recognition_core.db.interface import ObjectDb as ObjectDbCpp, ObjectDbParameters
+from ecto_image_pipeline.io.source import create_source
+from object_recognition_core.boost.interface import ObjectDb as ObjectDbCpp, ObjectDbParameters
+from object_recognition_core.boost.interface import Document, DbDocuments
 from object_recognition_core.utils.find_classes import find_classes
 
 ########################################################################################################################
@@ -42,11 +43,11 @@ class ObjectDbBase(object):
 ########################################################################################################################
 
 def core_db_types():
-    """\
+    """
     Return the current DB types implemented in object_recognition_core
     """
     types = []
-    from object_recognition_core.db.interface import db_types as db_types
+    from object_recognition_core.boost.interface import db_types as db_types
     for type in db_types.values.itervalues():
         types.append(str(type).split('.')[-1].lower())
     types.remove('noncore')

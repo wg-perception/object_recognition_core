@@ -62,13 +62,13 @@ target_link_libraries(db_interface
 )
 
 set_target_properties(db_interface PROPERTIES
-                      LIBRARY_OUTPUT_DIRECTORY ${python_LIBRARY_OUTPUT_DIRECTORY}/db
+                      LIBRARY_OUTPUT_DIRECTORY ${python_LIBRARY_OUTPUT_DIRECTORY}/boost
                       OUTPUT_NAME interface
                       PREFIX ""
 )
 
 install(TARGETS db_interface
-        DESTINATION ${PYTHON_PACKAGES_PATH}/object_recognition_core/db
+        DESTINATION ${PYTHON_PACKAGES_PATH}/object_recognition_core/boost
 )
 
 # Create the ecto module with a few cells

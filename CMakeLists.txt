@@ -24,7 +24,7 @@ find_package(Boost REQUIRED system filesystem serialization)
 find_package(ecto REQUIRED)
 find_package(OpenCV REQUIRED)
 
-set_ecto_install_package_name(object_recognition_core)
+set_ecto_install_package_name(object_recognition_core/ecto_cells)
 
 #install targets for all things python
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/python/
@@ -32,14 +32,7 @@ install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/python/
   COMPONENT main
 )
 
-configure_file(python/__init__.py.in
-               ${python_LIBRARY_OUTPUT_DIRECTORY}/__init__.py
-               @ONLY
-)
-
-install(FILES ${python_LIBRARY_OUTPUT_DIRECTORY}/__init__.py
-        DESTINATION ${PYTHON_PACKAGES_PATH}/object_recognition_core
-)
+add_subdirectory(python)
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
 

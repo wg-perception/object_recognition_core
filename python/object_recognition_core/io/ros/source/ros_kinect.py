@@ -3,7 +3,7 @@ Module defining several outputs for the object recognition pipeline
 """
 
 from object_recognition_core.io.source import Source
-from image_pipeline.io.source import create_source
+from ecto_image_pipeline.io.source import create_source
 
 ########################################################################################################################
 
