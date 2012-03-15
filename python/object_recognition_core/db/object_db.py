@@ -5,7 +5,7 @@ Module defining a common Python interface to an ObjectDb
 from abc import ABCMeta
 from ecto_image_pipeline.io.source import create_source
 from object_recognition_core.boost.interface import ObjectDb as ObjectDbCpp, ObjectDbParameters
-from object_recognition_core.boost.interface import Document, DbDocuments
+from object_recognition_core.boost.interface import Document, DbDocuments, DbModels
 from object_recognition_core.utils.find_classes import find_classes
 
 ########################################################################################################################
