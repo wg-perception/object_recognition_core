@@ -43,7 +43,9 @@
 
 // ROS includes
 #include <std_msgs/String.h>
-#include <geometry_msgs/PoseWithCovarianceStamped.h>
+// TODO: use the following one and delete the one after
+//#include <geometry_msgs/PoseWithCovarianceStamped.h>
+#include <geometry_msgs/PoseArray.h>
 #include <visualization_msgs/MarkerArray.h>
 
 #include <opencv2/core/core.hpp>
@@ -117,8 +119,11 @@ namespace object_recognition_core
    */
   struct VisualizationMsgAssembler
   {
-    typedef std::vector<geometry_msgs::PoseWithCovarianceStamped> PoseArrayMsg;
+    // TODO, switch to the one below or simply remove it from here, that should only be doing visualization
+    //typedef std::vector<geometry_msgs::PoseWithCovarianceStamped> PoseArrayMsg;
+    typedef geometry_msgs::PoseArray PoseArrayMsg;
     typedef boost::shared_ptr<PoseArrayMsg> PoseArrayMsgPtr;
+    typedef boost::shared_ptr<const PoseArrayMsg> PoseArrayMsgConstPtr;
     typedef visualization_msgs::MarkerArrayConstPtr MarkerArrayMsgPtr;
     typedef visualization_msgs::MarkerArray MarkerArrayMsg;
     typedef std_msgs::StringConstPtr ObjectIdsMsgPtr;
@@ -134,7 +139,7 @@ namespace object_recognition_core
     {
       inputs.declare(&VisualizationMsgAssembler::recognized_objects_, "msg", "The object recognition array msg");
 
-      outputs.declare<PoseArrayMsgPtr>("pose_message", "The poses");
+      outputs.declare<PoseArrayMsgConstPtr>("pose_message", "The poses");
       outputs.declare<ObjectIdsMsgPtr>("object_ids_message", "The poses");
       outputs.declare<MarkerArrayMsgPtr>("marker_message", "Visualization markers for ROS.");
     }
@@ -157,7 +162,8 @@ namespace object_recognition_core
 
       // Create poses and fill them in the message
       {
-        pose_array_msg.resize(recognized_objects_->objects.size());
+        // TODO, switch to the following one with the new psoe with covariance message
+        pose_array_msg.poses.resize(recognized_objects_->objects.size());
 
         unsigned int marker_id = 0;
         BOOST_FOREACH(const object_recognition_core::RecognizedObject & recognized_object, recognized_objects_->objects)
@@ -172,7 +178,7 @@ namespace object_recognition_core
           }
 
           // Deal with the pose
-          pose_array_msg[marker_id] = recognized_object.pose;
+          pose_array_msg.poses[marker_id] = recognized_object.pose.pose.pose;
 
           // Deal with the marker
           visualization_msgs::Marker marker;
@@ -236,7 +242,7 @@ namespace object_recognition_core
         object_ids_msg.data = ssparams.str();
       }
 
-      outputs["pose_message"] << PoseArrayMsgPtr(new PoseArrayMsg(pose_array_msg));
+      outputs["pose_message"] << PoseArrayMsgConstPtr(new PoseArrayMsg(pose_array_msg));
       outputs["object_ids_message"] << ObjectIdsMsgPtr(new ObjectIdsMsg(object_ids_msg));
       outputs["marker_message"] << MarkerArrayMsgPtr(new MarkerArrayMsg(marker_array));
       return ecto::OK;
