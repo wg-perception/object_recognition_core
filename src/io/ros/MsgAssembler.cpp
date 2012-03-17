@@ -46,71 +46,17 @@
 #include <std_msgs/String.h>
 #include <geometry_msgs/PoseArray.h>
 #include <sensor_msgs/Image.h>
-#include <visualization_msgs/MarkerArray.h>
 
 #include <opencv2/core/core.hpp>
 
 #include <object_recognition_core/common/pose_result.h>
 #include <object_recognition_core/common/types.h>
 #include <object_recognition_core/db/db.h>
-#include <object_recognition_core/RecognizedObjectArray.h>
+#include <object_recognition_msgs/RecognizedObjectArray.h>
 
 namespace bp = boost::python;
 using object_recognition_core::db::ObjectId;
 using object_recognition_core::common::PoseResult;
-
-namespace
-{
-  // see
-  // http://en.wikipedia.org/wiki/HSL_and_HSV#Converting_to_RGB
-  // for points on a dark background you want somewhat lightened
-  // colors generally... back off the saturation (s)
-  static void
-  hsv2rgb(float h, float s, float v, float& r, float& g, float& b)
-  {
-    float c = v * s;
-    float hprime = h / 60.0;
-    float x = c * (1.0 - fabs(fmodf(hprime, 2.0f) - 1));
-
-    r = g = b = 0;
-
-    if (hprime < 1)
-    {
-      r = c;
-      g = x;
-    }
-    else if (hprime < 2)
-    {
-      r = x;
-      g = c;
-    }
-    else if (hprime < 3)
-    {
-      g = c;
-      b = x;
-    }
-    else if (hprime < 4)
-    {
-      g = x;
-      b = c;
-    }
-    else if (hprime < 5)
-    {
-      r = x;
-      b = c;
-    }
-    else if (hprime < 6)
-    {
-      r = c;
-      b = x;
-    }
-
-    float m = v - c;
-    r += m;
-    g += m;
-    b += m;
-  }
-}
 
 namespace object_recognition_core
 {
@@ -119,8 +65,6 @@ namespace object_recognition_core
   struct MsgAssembler
   {
     typedef geometry_msgs::PoseArrayConstPtr PoseArrayMsgPtr;
-    typedef visualization_msgs::MarkerArrayConstPtr MarkerArrayMsgPtr;
-    typedef visualization_msgs::MarkerArray MarkerArrayMsg;
     typedef geometry_msgs::PoseArray PoseArrayMsg;
     typedef std_msgs::StringConstPtr ObjectIdsMsgPtr;
     typedef std_msgs::String ObjectIdsMsg;
@@ -136,9 +80,7 @@ namespace object_recognition_core
       inputs.declare<sensor_msgs::ImageConstPtr>("image_message", "the image message to get the header");
       inputs.declare(&MsgAssembler::pose_results_, "pose_results", "The results of object recognition");
 
-      outputs.declare<PoseArrayMsgPtr>("pose_message", "The poses");
-      outputs.declare<ObjectIdsMsgPtr>("object_ids_message", "The poses");
-      outputs.declare<MarkerArrayMsgPtr>("marker_message", "Visualization markers for ROS.");
+      outputs.declare<object_recognition_msgs::RecognizedObjectArrayPtr>("msg", "The poses");
     }
 
     void
@@ -153,33 +95,29 @@ namespace object_recognition_core
     int
     process(const ecto::tendrils& inputs, const ecto::tendrils& outputs)
     {
-      PoseArrayMsg pose_array_msg;
-      ObjectIdsMsg object_ids_msg;
+      object_recognition_msgs::RecognizedObjectArray msg;
+
       // Publish the info
       ros::Time time = ros::Time::now();
-      if (*image_message_)
+      if (!(*image_message_))
+        return ecto::OK;
+
+      std::string frame_id = (*image_message_)->header.frame_id;
+
+      msg.objects.resize(pose_results_->size());
       {
-        std::string frame_id = (*image_message_)->header.frame_id;
-        pose_array_msg.header.frame_id = frame_id;
-      }
-      pose_array_msg.header.stamp = time;
-      MarkerArrayMsg marker_array;
-
-      BOOST_FOREACH(const common::PoseResult & pose_result, *pose_results_)
-        if (object_id_to_index_.find(pose_result.object_id()) == object_id_to_index_.end())
-          object_id_to_index_[pose_result.object_id()] = object_id_to_index_.size();
-
-      // Create poses and fill them in the message
-      {
-        std::vector<geometry_msgs::Pose> &poses = pose_array_msg.poses;
-        poses.resize(pose_results_->size());
-
-        unsigned int marker_id = 0;
-        BOOST_FOREACH(const common::PoseResult & pose_result, *pose_results_)
+        size_t object_id = 0;
+        BOOST_FOREACH (const object_recognition_core::common::PoseResult & pose_result, *pose_results_)
         {
+          object_recognition_msgs::RecognizedObject & object = msg.objects[object_id];
+
+          // Deal with the pose
+          object.pose.header.frame_id = frame_id;
+          object.pose.header.stamp = time;
+
           cv::Mat_<float> T = pose_result.T<cv::Mat_<float> >(), R = pose_result.R<cv::Mat_<float> >();
 
-          geometry_msgs::Pose & msg_pose = poses[marker_id];
+          geometry_msgs::Pose & msg_pose = object.pose.pose.pose;
 
           Eigen::Matrix3f rotation_matrix;
           for (unsigned int j = 0; j < 3; ++j)
@@ -198,69 +136,21 @@ namespace object_recognition_core
 
           visualization_msgs::Marker marker;
           marker.pose = msg_pose;
-          marker.type = visualization_msgs::Marker::MESH_RESOURCE;
-          marker.action = visualization_msgs::Marker::ADD;
-          marker.lifetime = ros::Duration(30);
-          marker.header = pose_array_msg.header;
-          marker.scale.x = 1;
-          marker.scale.y = 1;
-          marker.scale.z = 1;
 
-          float hue = (360.0 / object_id_to_index_.size()) * object_id_to_index_[pose_result.object_id()];
-
-          float r, g, b;
-          hsv2rgb(hue, 0.7, 1, r, g, b);
-
-          marker.color.a = 0.75;
-          marker.color.g = g;
-          marker.color.b = b;
-          marker.color.r = r;
-          marker.id = marker_id;
-          //marker.mesh_resource = pose_result.get_attribute<std::string>("mesh_uri");
-          marker_array.markers.push_back(marker);
-          marker.type = visualization_msgs::Marker::TEXT_VIEW_FACING;
-          //marker.text = pose_result.get_attribute<std::string>("name");
-          marker.color.a = 1;
-          marker.color.g = 1;
-          marker.color.b = 1;
-          marker.color.r = 1;
-          marker.scale.z = 0.03;
-          marker.lifetime = ros::Duration(10);
-
-          marker_array.markers.push_back(marker);
-          ++marker_id;
+          ++object_id;
         }
       }
 
-      // Add the object ids to the message
-      {
-        or_json::mObject object_ids_param_tree;
-
-        std::vector<or_json::mValue> object_ids_array;
-        BOOST_FOREACH(const PoseResult & pose_result, *pose_results_)
-          object_ids_array.push_back(or_json::mValue(pose_result.object_id()));
-        object_ids_param_tree["object_ids"] = or_json::mValue(object_ids_array);
-
-        std::stringstream ssparams;
-
-        or_json::mValue value(object_ids_param_tree);
-        or_json::write(value, ssparams);
-        object_ids_msg.data = ssparams.str();
-      }
-
-      outputs["pose_message"] << PoseArrayMsgPtr(new PoseArrayMsg(pose_array_msg));
-      outputs["object_ids_message"] << ObjectIdsMsgPtr(new ObjectIdsMsg(object_ids_msg));
-      outputs["marker_message"] << MarkerArrayMsgPtr(new MarkerArrayMsg(marker_array));
+      // Export the message as final
+      outputs["msg"]
+          << object_recognition_msgs::RecognizedObjectArrayPtr(new object_recognition_msgs::RecognizedObjectArray(msg));
       return 0;
     }
   private:
     ecto::spore<std::vector<common::PoseResult> > pose_results_;
     ecto::spore<sensor_msgs::ImageConstPtr> image_message_;
-
-    static std::map<ObjectId, unsigned int> object_id_to_index_;
   };
-  std::map<ObjectId, unsigned int> MsgAssembler::object_id_to_index_;
 }
 
 ECTO_CELL(io_ros, object_recognition_core::MsgAssembler, "MsgAssembler",
-    "Given object ids and poses, fill the object recognition message.");
+          "Given object ids and poses, fill the object recognition message.");

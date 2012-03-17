@@ -58,27 +58,6 @@ if(BUILD_TEST)
   add_subdirectory(test)
 endif()
 
-# generate the messages and the actionlib server for ROS
-find_package(genmsg REQUIRED)
-
-if (genmsg_FOUND)
-    if (ROS_ELECTRIC_FOUND)
-        find_ros_package(actionlib_msgs)
-        find_ros_package(geometry_msgs)
-        find_ros_package(sensor_msgs)
-        find_ros_package(std_msgs)
-        find_ros_package(visualization_msgs)
-        include_directories(SYSTEM
-                            ${ecto_ros_INCLUDE_DIRS}
-        )
-    else()
-        find_package(ROS REQUIRED actionlib_msgs geometry_msgs rosbag roscpp sensor_msgs visualization_msgs)
-    endif()
-
-    add_message_files(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/src/io/ros/msg FILES RecognizedObject.msg RecognizedObjectArray.msg Shape.msg)
-#    add_action_files(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/src/server/action FILES ObjectRecognition.action)
-
-    generate_messages(DEPENDENCIES actionlib_msgs geometry_msgs sensor_msgs std_msgs visualization_msgs)
-    # generate ecto cells to wrap the different messages
-    #pubsub_gen_wrap(object_recognition_core)
-endif()
+# generate ecto cells to wrap the different messages
+find_package(ecto_ros REQUIRED)
+#    pubsub_gen_wrap(object_recognition_msgs)

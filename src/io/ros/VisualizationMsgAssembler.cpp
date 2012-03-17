@@ -54,7 +54,8 @@
 #include <object_recognition_core/common/types.h>
 #include <object_recognition_core/db/db.h>
 #include <object_recognition_core/db/prototypes/object_info.h>
-#include <object_recognition_core/RecognizedObjectArray.h>
+#include <object_recognition_msgs/RecognizedObject.h>
+#include <object_recognition_msgs/RecognizedObjectArray.h>
 
 namespace bp = boost::python;
 using object_recognition_core::db::ObjectId;
@@ -166,7 +167,7 @@ namespace object_recognition_core
         pose_array_msg.poses.resize(recognized_objects_->objects.size());
 
         unsigned int marker_id = 0;
-        BOOST_FOREACH(const object_recognition_core::RecognizedObject & recognized_object, recognized_objects_->objects)
+        BOOST_FOREACH (const object_recognition_msgs::RecognizedObject & recognized_object, recognized_objects_->objects)
         {
           // Deal with the color index
           size_t object_index;
@@ -248,7 +249,7 @@ namespace object_recognition_core
       return ecto::OK;
     }
   private:
-    ecto::spore<object_recognition_core::RecognizedObjectArray> recognized_objects_;
+    ecto::spore<object_recognition_msgs::RecognizedObjectArray> recognized_objects_;
 
     /** This structure is used to keep an index for each found obejct, only so that the color of the mesh does not
      * keep changing
