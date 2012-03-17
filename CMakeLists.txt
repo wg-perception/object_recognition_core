@@ -66,6 +66,7 @@ if (genmsg_FOUND)
         find_ros_package(actionlib_msgs)
         find_ros_package(geometry_msgs)
         find_ros_package(sensor_msgs)
+        find_ros_package(std_msgs)
         find_ros_package(visualization_msgs)
         include_directories(SYSTEM
                             ${ecto_ros_INCLUDE_DIRS}
