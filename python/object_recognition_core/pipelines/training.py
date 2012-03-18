@@ -2,8 +2,8 @@
 Loaders for all object recognition pipelines
 '''
 from abc import ABCMeta, abstractmethod
-from object_recognition_core.db import ObservationReader
 from object_recognition_core.boost.interface import Document, DbDocuments
+from object_recognition_core.db import ObservationReader
 from object_recognition_core.utils.json_helper import dict_to_cpp_json_str, list_to_cpp_json_str
 import ecto
 
@@ -117,7 +117,7 @@ class TrainingPipeline:
         :param args: General command line args, for things like visualize or what have you.
         :returns: A plasm, only execute once please.
         '''
-        from ecto_object_recognition.object_recognition_db import ModelWriter
+        from object_recognition_core.ecto_cells.db import ModelWriter
         
         pipeline = cls()
         processor = pipeline.processor(*args, **kwargs)
@@ -132,7 +132,7 @@ class TrainingPipeline:
         kw_params = kwargs.keys()
         mw_params = dict([ (key, kwargs[key]) for key in set(mw_params).intersection(kw_params)])
 
-        writer = ModelWriter(session_ids=json_helper.list_to_cpp_json_str(kwargs['session_ids']),
+        writer = ModelWriter(session_ids=list_to_cpp_json_str(kwargs['session_ids']),
                              object_id=kwargs['object_id'], db_params=kwargs['db_params'],
                              method=cls.type_name(),
                              json_submethod=dict_to_cpp_json_str(kwargs['submethod']),
