@@ -42,7 +42,7 @@ class PublisherBlackBox(ecto.BlackBox):
 
     def configure(self, p, _i, _o):
         if self._do_visualize:
-            self._visualization_msg_assembler = PublisherBlackBox._visualization_msg_assembler()
+            self._visualization_msg_assembler = VisualizationMsgAssembler()
             self._pose_pub = PublisherBlackBox._pose_pub(topic_name=p.pose_topic, latched=p.latched)
             self._object_ids_pub = PublisherBlackBox._object_ids_pub(topic_name=p.object_ids_topic, latched=p.latched)
             self._marker_pub = PublisherBlackBox._marker_pub(topic_name=p.markers_topic, latched=p.latched)
@@ -66,7 +66,7 @@ class PublisherBlackBox(ecto.BlackBox):
 class Publisher(Sink):
     """
     The publisher publishes the default ROS message.
-    do_visualize: if that parameter is set to True, also send marker messages
+    visualize: if that parameter is set to True, also send marker messages
     """
 
     @classmethod
@@ -75,5 +75,5 @@ class Publisher(Sink):
 
     @classmethod
     def sink(self, *args, **kwargs):
-        do_visualize = kwargs.pop('do_visualize', False)
+        do_visualize = kwargs.pop('visualize', False)
         return PublisherBlackBox(do_visualize, **kwargs)

@@ -95,21 +95,20 @@ namespace object_recognition_core
     int
     process(const ecto::tendrils& inputs, const ecto::tendrils& outputs)
     {
-      object_recognition_msgs::RecognizedObjectArray msg;
-
       // Publish the info
       ros::Time time = ros::Time::now();
-      if (!(*image_message_))
-        return ecto::OK;
+      object_recognition_msgs::RecognizedObjectArrayPtr msg(new object_recognition_msgs::RecognizedObjectArray());
 
-      std::string frame_id = (*image_message_)->header.frame_id;
+      std::string frame_id;
+      if ((*image_message_))
+        frame_id = (*image_message_)->header.frame_id;
 
-      msg.objects.resize(pose_results_->size());
+      msg->objects.resize(pose_results_->size());
       {
         size_t object_id = 0;
         BOOST_FOREACH (const object_recognition_core::common::PoseResult & pose_result, *pose_results_)
         {
-          object_recognition_msgs::RecognizedObject & object = msg.objects[object_id];
+          object_recognition_msgs::RecognizedObject & object = msg->objects[object_id];
 
           // Deal with the pose
           object.pose.header.frame_id = frame_id;
@@ -142,9 +141,8 @@ namespace object_recognition_core
       }
 
       // Export the message as final
-      outputs["msg"]
-          << object_recognition_msgs::RecognizedObjectArrayPtr(new object_recognition_msgs::RecognizedObjectArray(msg));
-      return 0;
+      outputs["msg"] << msg;
+      return ecto::OK;
     }
   private:
     ecto::spore<std::vector<common::PoseResult> > pose_results_;
