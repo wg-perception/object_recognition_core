@@ -12,7 +12,7 @@ object_recognition_core_help_test(${CMAKE_CURRENT_SOURCE_DIR}/../apps/training)
 object_recognition_core_help_test(${CMAKE_CURRENT_SOURCE_DIR}/../apps/upload)
 
 # check the different sources
-object_recognition_core_source_test(bag_reader "a.bag" "object_recognition_core.io")
+object_recognition_core_source_test(bag_reader "{'bag':'a.bag'}" "object_recognition_core.io")
 object_recognition_core_source_test(ros_kinect "{}" "object_recognition_core.io")
 object_recognition_core_source_test(openni "{}" "object_recognition_core.io")
 
