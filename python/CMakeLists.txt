@@ -15,9 +15,9 @@ install(FILES ${python_LIBRARY_OUTPUT_DIRECTORY}/__init__.py
         DESTINATION ${PYTHON_PACKAGES_PATH}/object_recognition_core
 )
 install(FILES ${python_LIBRARY_OUTPUT_DIRECTORY}/boost/__init__.py
-        DESTINATION ${PYTHON_PACKAGES_PATH}/object_recognition_core/db
+        DESTINATION ${PYTHON_PACKAGES_PATH}/object_recognition_core/boost
 )
 install(FILES ${python_LIBRARY_OUTPUT_DIRECTORY}/ecto_cells/__init__.py
-        DESTINATION ${PYTHON_PACKAGES_PATH}/object_recognition_core/eco_cells
+        DESTINATION ${PYTHON_PACKAGES_PATH}/object_recognition_core/ecto_cells
 )
 
