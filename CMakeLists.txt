@@ -1,8 +1,14 @@
 cmake_minimum_required(VERSION 2.8)
 project(object_recognition_core)
-include(cmake/config.cmake)
+find_package(catkin)
+catkin_stack()
+catkin_project(object_recognition_core
+               DEPENDS Eigen Boost Opencv
+               INCLUDE include
+               LIBRARIES object_recognition_core_db object_recognition_core_common
+)
+
 include(cmake/test.cmake)
-include(cmake/version.cmake)
 
 
 if(NOT CMAKE_BUILD_TYPE)
@@ -49,8 +55,6 @@ install(DIRECTORY apps/
 #these setup the lib to be used by others
 include(cmake/install.cmake)
 
-catkin_add_env_hooks(10object_recognition_core SHELLS all )
-
 # add tests
 option(BUILD_TEST "Build tests" ON)
 if(BUILD_TEST)
@@ -81,3 +85,5 @@ if (genmsg_FOUND)
     # generate ecto cells to wrap the different messages
     #pubsub_gen_wrap(object_recognition_core)
 endif()
+
+catkin_add_env_hooks(10.object_recognition_core SHELLS all )

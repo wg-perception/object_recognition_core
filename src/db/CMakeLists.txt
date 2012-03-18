@@ -40,8 +40,6 @@ target_link_libraries(object_recognition_core_db
 )
 
 set_target_properties(object_recognition_core_db PROPERTIES
-                      VERSION ${object_recognition_core_VERSION}
-                      SOVERSION ${object_recognition_core_SOVERSION}
                       LIBRARY_OUTPUT_DIRECTORY lib
 )
 
