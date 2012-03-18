@@ -62,6 +62,7 @@ if(BUILD_TEST)
   add_subdirectory(test)
 endif()
 
+<<<<<<< HEAD
 # generate the messages and the actionlib server for ROS
 find_package(genmsg REQUIRED)
 
@@ -87,3 +88,8 @@ if (genmsg_FOUND)
 endif()
 
 catkin_add_env_hooks(10.object_recognition_core SHELLS all )
+=======
+# generate ecto cells to wrap the different messages
+find_package(ecto_ros REQUIRED)
+#    pubsub_gen_wrap(object_recognition_msgs)
+>>>>>>> c7847909c150afa77399948c5ea85848d2c35254

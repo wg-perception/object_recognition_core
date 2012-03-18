@@ -19,10 +19,14 @@ class PublisherBlackBox(ecto.BlackBox):
     """Class publishing the different results of object recognition as ROS topics
     http://ecto.willowgarage.com/releases/amoeba-beta3/ros/geometry_msgs.html#Publisher_PoseArray
     """
-    _pose_array_assembler = VisualizationMsgAssembler
     _pose_pub = PoseArrayPub
     _marker_pub = MarkerArrayPub
     _object_ids_pub = StringPub
+    passthrough = ecto.PassthroughN
+
+    def __init__(self, do_visualize, **kwargs):
+        self._do_visualize = do_visualize
+        ecto.BlackBox.__init__(self, **kwargs)
 
     def declare_params(self, p):
         p.declare('markers_topic', 'The ROS topic to use for the marker array.', 'markers')
@@ -32,22 +36,38 @@ class PublisherBlackBox(ecto.BlackBox):
         p.declare('db_params', 'The DB parameters', ObjectDbParameters({}))
 
     def declare_io(self, _p, i, _o):
-        i.forward_all('_pose_array_assembler')
+        self._msg_assembler = MsgAssembler()
+
+        i.forward_all('_msg_assembler')
 
     def configure(self, p, _i, _o):
-        self._pose_array_assembler = PublisherBlackBox._pose_array_assembler()
-        self._pose_pub = PublisherBlackBox._pose_pub(topic_name=p.pose_topic, latched=p.latched)
-        self._object_ids_pub = PublisherBlackBox._object_ids_pub(topic_name=p.object_ids_topic, latched=p.latched)
-        self._marker_pub = PublisherBlackBox._marker_pub(topic_name=p.markers_topic,latched=p.latched)
+        if self._do_visualize:
+            self._visualization_msg_assembler = VisualizationMsgAssembler()
+            self._pose_pub = PublisherBlackBox._pose_pub(topic_name=p.pose_topic, latched=p.latched)
+            self._object_ids_pub = PublisherBlackBox._object_ids_pub(topic_name=p.object_ids_topic, latched=p.latched)
+            self._marker_pub = PublisherBlackBox._marker_pub(topic_name=p.markers_topic, latched=p.latched)
+
     def connections(self):
-        return [self._pose_array_assembler['pose_message'] >> self._pose_pub[:],
-                self._pose_array_assembler['object_ids_message'] >> self._object_ids_pub[:],
-                self._pose_array_assembler['marker_message']>> self._marker_pub[:]
+        # TODO: connect to a publishing cell
+
+        connections = []
+        if self._do_visualize:
+            connections = [ self._msg_assembler['msg'] >> self._visualization_msg_assembler['msg'] ]
+
+            connections += [self._visualization_msg_assembler['pose_message'] >> self._pose_pub[:],
+                self._visualization_msg_assembler['object_ids_message'] >> self._object_ids_pub[:],
+                self._visualization_msg_assembler['marker_message'] >> self._marker_pub[:]
                ]
+
+        return connections
 
 ########################################################################################################################
 
 class Publisher(Sink):
+    """
+    The publisher publishes the default ROS message.
+    visualize: if that parameter is set to True, also send marker messages
+    """
 
     @classmethod
     def type_name(cls):
@@ -55,4 +75,5 @@ class Publisher(Sink):
 
     @classmethod
     def sink(self, *args, **kwargs):
-        return PublisherBlackBox(*args, **kwargs)
+        do_visualize = kwargs.pop('visualize', False)
+        return PublisherBlackBox(do_visualize, **kwargs)

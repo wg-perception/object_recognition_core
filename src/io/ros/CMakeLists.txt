@@ -2,6 +2,7 @@
 rosbuild_lite_init()
 
 find_package(ecto_ros REQUIRED)
+find_package(object_recognition_msgs REQUIRED)
 
 if (ROS_ELECTRIC_FOUND)
   find_ros_package(geometry_msgs)

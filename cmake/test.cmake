@@ -26,21 +26,21 @@ endmacro()
 
 # macro testing a detection pipeline
 macro(object_recognition_core_detection_test config_file)
-  add_test(${PROJECT_NAME}_detection
+  add_test(${PROJECT_NAME}_detection_${config_file}
     ${object_recognition_core_SHARE_DIRS}/test/run_test.sh ${CMAKE_BINARY_DIR}/setup.sh "${object_recognition_core_SHARE_DIRS}/test/test_detection_pipeline.py -c ${config_file} --node_name \"\""
     )
 endmacro()
 
 # macro testing a training pipeline
 macro(object_recognition_core_training_test config_file)
-  add_test(${PROJECT_NAME}_training
+  add_test(${PROJECT_NAME}_training_${config_file}
     ${object_recognition_core_SHARE_DIRS}/test/run_test.sh ${CMAKE_BINARY_DIR}/setup.sh "${object_recognition_core_SHARE_DIRS}/test/test_training_pipeline.py -c ${config_file} --node_name \"\""
     )
 endmacro()
 
 # macro testing a script with --help: "script" must contain the whole path
 macro(object_recognition_core_help_test script)
-  add_test(${PROJECT_NAME}_help_script
+  add_test(${PROJECT_NAME}_help_${script}
     ${object_recognition_core_SHARE_DIRS}/test/run_test.sh ${CMAKE_BINARY_DIR}/setup.sh "${object_recognition_core_SHARE_DIRS}/test/test_help.py ${script}"
     )
 endmacro()
@@ -48,17 +48,17 @@ endmacro()
 # macro testing a Source
 macro(object_recognition_core_source_test source_name)
   if (${ARGC} EQUAL 1)
-    add_test(${PROJECT_NAME}_source
+    add_test(${PROJECT_NAME}_source_${source_name}
       ${object_recognition_core_SHARE_DIRS}/test/run_test.sh ${CMAKE_BINARY_DIR}/setup.sh "${object_recognition_core_SHARE_DIRS}/test/test_source.py ${source_name}"
     )
   endif()
   if (${ARGC} EQUAL 2)
-    add_test(${PROJECT_NAME}_source
+    add_test(${PROJECT_NAME}_source_${source_name}
       ${object_recognition_core_SHARE_DIRS}/test/run_test.sh ${CMAKE_BINARY_DIR}/setup.sh "${object_recognition_core_SHARE_DIRS}/test/test_source.py ${source_name} ${ARGV1}"
     )
   endif()
   if (${ARGC} EQUAL 3)
-    add_test(${PROJECT_NAME}_source
+    add_test(${PROJECT_NAME}_source_${source_name}
       ${object_recognition_core_SHARE_DIRS}/test/run_test.sh ${CMAKE_BINARY_DIR}/setup.sh "${object_recognition_core_SHARE_DIRS}/test/test_source.py ${source_name} ${ARGV1} ${ARGV2}"
     )
   endif()
@@ -67,17 +67,17 @@ endmacro()
 # macro testing a Sink
 macro(object_recognition_core_sink_test sink_name)
   if (${ARGC} EQUAL 1)
-    add_test(${PROJECT_NAME}_sink
+    add_test(${PROJECT_NAME}_sink_${sink_name}
       ${object_recognition_core_SHARE_DIRS}/test/run_test.sh ${CMAKE_BINARY_DIR}/setup.sh "${object_recognition_core_SHARE_DIRS}/test/test_sink.py ${sink_name}"
     )
   endif()
   if (${ARGC} EQUAL 2)
-    add_test(${PROJECT_NAME}_sink
+    add_test(${PROJECT_NAME}_sink_${sink_name}
       ${object_recognition_core_SHARE_DIRS}/test/run_test.sh ${CMAKE_BINARY_DIR}/setup.sh "${object_recognition_core_SHARE_DIRS}/test/test_sink.py ${sink_name} ${ARGV1}"
     )
   endif()
   if (${ARGC} EQUAL 3)
-    add_test(${PROJECT_NAME}_sink
+    add_test(${PROJECT_NAME}_sink_${sink_name}
       ${object_recognition_core_SHARE_DIRS}/test/run_test.sh ${CMAKE_BINARY_DIR}/setup.sh "${object_recognition_core_SHARE_DIRS}/test/test_sink.py ${sink_name} ${ARGV1} ${ARGV2}"
     )
   endif()
