@@ -3,8 +3,8 @@ project(object_recognition_core)
 find_package(catkin)
 catkin_stack()
 catkin_project(object_recognition_core
-               DEPENDS Eigen Boost Opencv
-               INCLUDE include
+               DEPENDS Eigen Boost OpenCV
+               INCLUDE_DIRS include
                LIBRARIES object_recognition_core_db object_recognition_core_common
 )
 
