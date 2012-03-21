@@ -23,6 +23,10 @@ use
 
        % rosrun object_recognition_server client.py
 
+    You can also use roslaunch
+
+       % roslaunch object_recognition_server server.robot.launch
+
 The server requires a configuration file through the ``-c`` option. Some of the
 options in there can be overriden by the command line for convenience.
 For now, use the default config_detection.sample and change the following parameters to your needs:
