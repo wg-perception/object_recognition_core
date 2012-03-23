@@ -172,7 +172,7 @@ namespace object_recognition_core
           // Deal with the color index
           size_t object_index;
           {
-            std::string hash = recognized_object.db + recognized_object.id;
+            std::string hash = recognized_object.id.db + recognized_object.id.id;
             if (object_id_to_index_.find(hash) == object_id_to_index_.end())
               object_id_to_index_[hash] = object_id_to_index_.size();
             object_index = object_id_to_index_[hash];
@@ -204,10 +204,10 @@ namespace object_recognition_core
           marker.id = marker_id;
 
           or_json::mValue db_params;
-          or_json::read(recognized_object.db, db_params);
+          or_json::read(recognized_object.id.db, db_params);
           object_recognition_core::db::ObjectDb db = object_recognition_core::db::ObjectDb(
               object_recognition_core::db::ObjectDbParameters(db_params.get_obj()));
-          object_recognition_core::prototypes::ObjectInfo object_info(recognized_object.id, db);
+          object_recognition_core::prototypes::ObjectInfo object_info(recognized_object.id.id, db);
           const or_json::mObject & attributes = object_info.attributes();
 
           if (attributes.find("mesh_uri") != attributes.end())
@@ -227,7 +227,7 @@ namespace object_recognition_core
           ++marker_id;
 
           // Deal with the obejct_id
-          object_ids_array.push_back(or_json::mValue(recognized_object.id));
+          object_ids_array.push_back(or_json::mValue(recognized_object.id.id));
         }
       }
 
