@@ -5,6 +5,7 @@ It is not meant to be run as a test of object_recognition but as a test for and 
 pipeline independently.
 """
 
+import sys
 from object_recognition_core.db.object_db import ObjectDb
 from object_recognition_core.pipelines.training import TrainingPipeline
 from object_recognition_core.utils.find_classes import find_classes

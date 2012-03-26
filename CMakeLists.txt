@@ -6,6 +6,7 @@ catkin_project(object_recognition_core
                DEPENDS Eigen Boost OpenCV
                INCLUDE_DIRS include
                LIBRARIES object_recognition_core_db object_recognition_core_common
+               CFG_EXTRAS object_recognition_core-extras.cmake
 )
 
 include(cmake/test.cmake)
@@ -33,11 +34,6 @@ find_package(OpenCV REQUIRED)
 set_ecto_install_package_name(object_recognition_core/ecto_cells)
 
 #install targets for all things python
-install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/python/
-  DESTINATION ${PYTHON_PACKAGES_PATH}
-  COMPONENT main
-)
-
 add_subdirectory(python)
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)

@@ -1,0 +1,1 @@
+set(object_recognition_core_SHARE_DIRS ${CMAKE_BINARY_DIR}/share)
