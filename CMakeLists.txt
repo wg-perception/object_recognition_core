@@ -10,7 +10,7 @@ catkin_project(object_recognition_core
 )
 
 include(cmake/test.cmake)
-
+include(cmake/object_recognition_core-extras.cmake.in)
 
 if(NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE RelWithDebInfo CACHE STRING
