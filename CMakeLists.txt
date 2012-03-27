@@ -9,6 +9,7 @@ catkin_project(object_recognition_core
                CFG_EXTRAS object_recognition_core-extras.cmake
 )
 
+find_package(ecto REQUIRED)
 set_ecto_install_package_name(object_recognition_core/ecto_cells)
 
 #install targets for all things python
@@ -33,7 +34,6 @@ endif()
 
 
 find_package(Boost REQUIRED system filesystem serialization)
-find_package(ecto REQUIRED)
 find_package(OpenCV REQUIRED)
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
