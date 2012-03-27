@@ -60,7 +60,7 @@ target_link_libraries(db_interface
 )
 
 set_target_properties(db_interface PROPERTIES
-                      LIBRARY_OUTPUT_DIRECTORY ${python_LIBRARY_OUTPUT_DIRECTORY}/boost
+                      LIBRARY_OUTPUT_DIRECTORY ${ecto_module_PYTHON_OUTPUT}/../boost
                       OUTPUT_NAME interface
                       PREFIX ""
 )

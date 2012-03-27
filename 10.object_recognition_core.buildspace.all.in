@@ -1,0 +1,5 @@
+#
+# ecto!
+#
+
+PYTHONPATH=@CMAKE_LIBRARY_OUTPUT_DIRECTORY@:@CMAKE_BINARY_DIR@/@PYTHON_PACKAGES_PATH@:@ecto_SOURCE_DIR@/python:/opt/ros/fuerte/stacks/arm_navigation/arm_navigation_msgs/src/:$PYTHONPATH
