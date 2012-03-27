@@ -9,6 +9,14 @@ catkin_project(object_recognition_core
                CFG_EXTRAS object_recognition_core-extras.cmake
 )
 
+#install targets for all things python
+catkin_python_setup()
+
+set(PYTHON_PACKAGES_PATH gen/py/object_recognition_core)
+set(python_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/gen/py/object_recognition_core)
+
+add_subdirectory(python)
+
 include(cmake/test.cmake)
 include(cmake/object_recognition_core-extras.cmake.in)
 
@@ -25,16 +33,12 @@ if (NOT CMAKE_LIBRARY_OUTPUT_DIRECTORY)
   set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 endif()
 
-set(python_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/${PYTHON_PACKAGES_PATH}/object_recognition_core)
 
 find_package(Boost REQUIRED system filesystem serialization)
 find_package(ecto REQUIRED)
 find_package(OpenCV REQUIRED)
 
-set_ecto_install_package_name(object_recognition_core/ecto_cells)
-
-#install targets for all things python
-add_subdirectory(python)
+set_ecto_install_package_name(ecto_cells)
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
 
@@ -61,5 +65,3 @@ endif()
 # generate ecto cells to wrap the different messages
 find_package(ecto_ros REQUIRED)
 #    pubsub_gen_wrap(object_recognition_msgs)
-
-catkin_add_env_hooks(10.object_recognition_core SHELLS all )
