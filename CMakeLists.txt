@@ -9,21 +9,15 @@ catkin_project(object_recognition_core
                CFG_EXTRAS object_recognition_core-extras.cmake
 )
 
-find_package(ecto REQUIRED)
-set_ecto_install_package_name(object_recognition_core/ecto_cells)
-
 #install targets for all things python
 catkin_python_setup()
 add_subdirectory(python)
 
+find_package(ecto REQUIRED)
+set_ecto_install_package_name(object_recognition_core/ecto_cells)
+
 include(cmake/test.cmake)
 include(cmake/object_recognition_core-extras.cmake.in)
-
-if(NOT CMAKE_BUILD_TYPE)
-  set(CMAKE_BUILD_TYPE RelWithDebInfo CACHE STRING
-      "Choose the type of build, options are: None Debug Release RelWithDebInfo MinSizeRel."
-      FORCE)
-endif()
 
 add_definitions("-Wno-pragmas -fno-strict-aliasing -Wall -Wl,--no-undefined -Werror")
 
@@ -31,7 +25,6 @@ add_definitions("-Wno-pragmas -fno-strict-aliasing -Wall -Wl,--no-undefined -Wer
 if (NOT CMAKE_LIBRARY_OUTPUT_DIRECTORY)
   set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 endif()
-
 
 find_package(Boost REQUIRED system filesystem serialization)
 find_package(OpenCV REQUIRED)
