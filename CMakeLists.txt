@@ -11,10 +11,11 @@ catkin_project(object_recognition_core
 
 #install targets for all things python
 catkin_python_setup()
-add_subdirectory(python)
 
 find_package(ecto REQUIRED)
 set_ecto_install_package_name(object_recognition_core/ecto_cells)
+
+add_subdirectory(python)
 
 include(cmake/test.cmake)
 include(cmake/object_recognition_core-extras.cmake.in)
