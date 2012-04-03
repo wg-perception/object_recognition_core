@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 from distutils.core import setup
-db  filters  __init__.py  io  pipelines  utils
 
 setup(name='Object recognition core',
       version='1.0.0',
