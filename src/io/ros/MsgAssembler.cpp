@@ -48,6 +48,8 @@
 #include <sensor_msgs/Image.h>
 #include <sensor_msgs/PointCloud2.h>
 
+#include <pcl/point_cloud.h>
+#include <pcl/point_types.h>
 #include <pcl/ros/conversions.h>
 
 #include <opencv2/core/core.hpp>
@@ -147,10 +149,14 @@ namespace object_recognition_core
           object.header.frame_id = frame_id;
 
           // Deal with the partial point clouds
+#if 0
           const std::vector<pcl::PointCloud<pcl::PointXYZ> > & point_clouds = pose_result.point_clouds();
-          object.point_clouds.resize(point_clouds.size());
-          for (size_t i = 0; i < point_clouds.size(); ++i)
-            pcl::toROSMsg(point_clouds[i], object.point_clouds[i]);
+#endif
+          std::vector<pcl::PointCloud<pcl::PointXYZ> > * point_clouds = reinterpret_cast<std::vector<
+              pcl::PointCloud<pcl::PointXYZ> > *>(pose_result.point_clouds());
+          object.point_clouds.resize(point_clouds->size());
+          for (size_t i = 0; i < point_clouds->size(); ++i)
+            pcl::toROSMsg((*point_clouds)[i], object.point_clouds[i]);
 
           ++object_id;
         }
