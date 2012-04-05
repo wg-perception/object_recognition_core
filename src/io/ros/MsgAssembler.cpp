@@ -110,6 +110,10 @@ namespace object_recognition_core
         {
           object_recognition_msgs::RecognizedObject & object = msg->objects[object_id];
 
+          // Deal with the id
+          object.id.id = pose_result.object_id();
+          object.id.db = or_json::write(or_json::mValue(pose_result.db().parameters().raw_));
+
           // Deal with the pose
           object.pose.header.frame_id = frame_id;
           object.pose.header.stamp = time;
@@ -135,6 +139,8 @@ namespace object_recognition_core
 
           visualization_msgs::Marker marker;
           marker.pose = msg_pose;
+
+          // Deal with the header
 
           ++object_id;
         }
