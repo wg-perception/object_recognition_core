@@ -40,7 +40,7 @@ target_link_libraries(object_recognition_core_db
 )
 
 set_target_properties(object_recognition_core_db PROPERTIES
-                      LIBRARY_OUTPUT_DIRECTORY lib
+                      LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib
 )
 
 install(TARGETS object_recognition_core_db

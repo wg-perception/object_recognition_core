@@ -12,5 +12,5 @@ target_link_libraries(object_recognition_core_common
 )
 
 install(TARGETS object_recognition_core_common
-        DESTINATION lib
+        DESTINATION ${CMAKE_BINARY_DIR}/lib
 )
