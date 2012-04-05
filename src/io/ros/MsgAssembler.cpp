@@ -46,6 +46,9 @@
 #include <std_msgs/String.h>
 #include <geometry_msgs/PoseArray.h>
 #include <sensor_msgs/Image.h>
+#include <sensor_msgs/PointCloud2.h>
+
+#include <pcl/ros/conversions.h>
 
 #include <opencv2/core/core.hpp>
 
@@ -114,6 +117,9 @@ namespace object_recognition_core
           object.id.id = pose_result.object_id();
           object.id.db = or_json::write(or_json::mValue(pose_result.db().parameters().raw_));
 
+          // Deal with the confidence
+          object.confidence = pose_result.confidence();
+
           // Deal with the pose
           object.pose.header.frame_id = frame_id;
           object.pose.header.stamp = time;
@@ -137,10 +143,14 @@ namespace object_recognition_core
           msg_pose.orientation.z = quaternion.z();
           msg_pose.orientation.w = quaternion.w();
 
-          visualization_msgs::Marker marker;
-          marker.pose = msg_pose;
-
           // Deal with the header
+          object.header.frame_id = frame_id;
+
+          // Deal with the partial point clouds
+          const std::vector<pcl::PointCloud<pcl::PointXYZ> > & point_clouds = pose_result.point_clouds();
+          object.point_clouds.resize(point_clouds.size());
+          for (size_t i = 0; i < point_clouds.size(); ++i)
+            pcl::toROSMsg(point_clouds[i], object.point_clouds[i]);
 
           ++object_id;
         }

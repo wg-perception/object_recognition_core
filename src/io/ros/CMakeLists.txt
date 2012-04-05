@@ -16,11 +16,13 @@ find_package(ROS REQUIRED geometry_msgs rosbag roscpp sensor_msgs visualization_
 endif()
 
 find_package(Eigen REQUIRED)
+find_pcl_package()
 
 include_directories(SYSTEM
                     ${EIGEN_INCLUDE_DIRS}
                     ${ecto_ros_INCLUDE_DIRS}
                     ${geometry_msgs_INCLUDE_DIRS}
+                    ${PCL_INCLUDE_DIRS}
 )
 
 ectomodule(io_ros
@@ -31,13 +33,14 @@ ectomodule(io_ros
 )
 
 link_ecto(io_ros
-    ${geometry_msgs_LIBRARIES}
-    ${sensor_msgs_LIBRARIES}
-    ${OpenCV_LIBS}
-    ${rosbag_LIBRARIES}
-    ${roscpp_LIBRARIES}
-    object_recognition_core_db
-    object_recognition_core_common
+          ${geometry_msgs_LIBRARIES}
+          ${sensor_msgs_LIBRARIES}
+          ${OpenCV_LIBRARIES}
+          ${PCL_LIBRARIES}
+          ${rosbag_LIBRARIES}
+          ${roscpp_LIBRARIES}
+          object_recognition_core_db
+          object_recognition_core_common
 )
 
 install_ecto_module(io_ros)

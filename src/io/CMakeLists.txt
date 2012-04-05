@@ -1,17 +1,22 @@
 add_subdirectory(ros)
 
+find_pcl_package()
+
+include_directories(SYSTEM ${PCL_INCLUDE_DIRS})
+
 # deal with the basci io cells
 ectomodule(io
-  module.cpp
-  csv.cpp
-  GuessCsvWriter.cpp
-  GuessTerminalWriter.cpp
-  )
+           module.cpp
+           csv.cpp
+           GuessCsvWriter.cpp
+           GuessTerminalWriter.cpp
+)
 
 link_ecto(io
-    object_recognition_core_common
-    ${OpenCV_LIBS}
-    ${Boost_LIBRARIES}
+          ${Boost_LIBRARIES}
+          ${OpenCV_LIBRARIES}
+          ${PCL_LIBRARIES}
+          object_recognition_core_common
 )
 
 install_ecto_module(io)
@@ -23,10 +28,10 @@ ectomodule(voter
 )
 
 link_ecto(voter
-          ${OpenCV_LIBS}
-          object_recognition_core_db
-          ${pcl_LIBRARIES}
           ${Boost_LIBRARIES}
+          ${OpenCV_LIBS}
+          ${PCL_LIBRARIES}
+          object_recognition_core_db
 )
 
 install_ecto_module(voter)

@@ -36,9 +36,10 @@
 #ifndef IO_H_
 #define IO_H_
 
-#include "types.h"
-#include <object_recognition_core/db/db.h>
-#include <object_recognition_core/db/view.h>
+#include <vector>
+
+#include <pcl/point_cloud.h>
+#include <pcl/point_types.h>
 
 #ifdef CV_MAJOR_VERSION
 #include <opencv2/core/core.hpp>
@@ -48,6 +49,10 @@
 #ifdef EIGEN_CORE_H
 #include <Eigen/Eigen>
 #endif
+
+#include <object_recognition_core/db/db.h>
+#include <object_recognition_core/db/view.h>
+#include "types.h"
 
 namespace object_recognition_core
 {
@@ -99,6 +104,12 @@ namespace object_recognition_core
         object_id_ = object_id;
       }
 
+      void
+      set_point_clouds(const std::vector<pcl::PointCloud<pcl::PointXYZ> >& point_clouds)
+      {
+        point_clouds_ = point_clouds;
+      }
+
       template<typename Type>
       void
       set_R(const Type & R);
@@ -120,6 +131,18 @@ namespace object_recognition_core
         return object_id_;
       }
 
+      inline const db::ObjectDb &
+      db() const
+      {
+        return db_;
+      }
+
+      const std::vector<pcl::PointCloud<pcl::PointXYZ> > &
+      point_clouds() const
+      {
+        return point_clouds_;
+      }
+
       template<typename Type>
       Type
       R() const;
@@ -138,6 +161,8 @@ namespace object_recognition_core
       db::ObjectId object_id_;
       /** The db in which the object_id is */
       db::ObjectDb db_;
+      /** The partial point clouds of the object from each input sensor */
+      std::vector<pcl::PointCloud<pcl::PointXYZ> > point_clouds_;
     };
 
 #ifdef CV_MAJOR_VERSION
