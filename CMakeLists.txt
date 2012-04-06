@@ -52,9 +52,5 @@ if(BUILD_TEST)
   add_subdirectory(test)
 endif()
 
-# generate ecto cells to wrap the different messages
-find_package(ecto_ros REQUIRED)
-pubsub_gen_wrap(object_recognition_msgs)
-
 catkin_add_env_hooks(10.object_recognition_core SHELLS all)
 
