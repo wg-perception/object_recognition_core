@@ -82,10 +82,10 @@ namespace object_recognition_core
     static void
     declare_io(const ecto::tendrils& params, ecto::tendrils& inputs, ecto::tendrils& outputs)
     {
-      inputs.declare<sensor_msgs::ImageConstPtr>("image_message", "the image message to get the header");
+      inputs.declare < sensor_msgs::ImageConstPtr > ("image_message", "the image message to get the header");
       inputs.declare(&MsgAssembler::pose_results_, "pose_results", "The results of object recognition");
 
-      outputs.declare<object_recognition_msgs::RecognizedObjectArrayPtr>("msg", "The poses");
+      outputs.declare < object_recognition_msgs::RecognizedObjectArrayConstPtr > ("msg", "The poses");
     }
 
     void
@@ -163,7 +163,7 @@ namespace object_recognition_core
       }
 
       // Export the message as final
-      outputs["msg"] << msg;
+      outputs["msg"] << object_recognition_msgs::RecognizedObjectArrayConstPtr(msg);
       return ecto::OK;
     }
   private:
@@ -173,4 +173,4 @@ namespace object_recognition_core
 }
 
 ECTO_CELL(io_ros, object_recognition_core::MsgAssembler, "MsgAssembler",
-          "Given object ids and poses, fill the object recognition message.");
+    "Given object ids and poses, fill the object recognition message.");

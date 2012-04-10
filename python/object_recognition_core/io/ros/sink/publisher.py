@@ -8,6 +8,7 @@ from object_recognition_core.io.sink import Sink
 import ecto
 import ecto_ros.ecto_geometry_msgs as ecto_geometry_msgs
 import ecto_ros.ecto_std_msgs as ecto_std_msgs
+from object_recognition_msgs.ecto_cells.ecto_object_recognition_msgs import Publisher_RecognizedObjectArray
 
 PoseArrayPub = ecto_geometry_msgs.Publisher_PoseArray
 MarkerArrayPub = Publisher_MarkerArray
@@ -23,6 +24,7 @@ class PublisherBlackBox(ecto.BlackBox):
     _marker_pub = MarkerArrayPub
     _object_ids_pub = StringPub
     passthrough = ecto.PassthroughN
+    _recognized_object_array = Publisher_RecognizedObjectArray
 
     def __init__(self, do_visualize, **kwargs):
         self._do_visualize = do_visualize
@@ -32,6 +34,7 @@ class PublisherBlackBox(ecto.BlackBox):
         p.declare('markers_topic', 'The ROS topic to use for the marker array.', 'markers')
         p.declare('pose_topic', 'The ROS topic to use for the pose array.', 'poses')
         p.declare('object_ids_topic', 'The ROS topic to use for the object meta info string', 'object_ids')
+        p.declare('recognized_object_array_topic', 'The ROS topic to use for the recognized object', 'recognized_object_array')
         p.declare('latched', 'Determines if the topics will be latched.', True)
         p.declare('db_params', 'The DB parameters', ObjectDbParameters({}))
 
@@ -41,6 +44,7 @@ class PublisherBlackBox(ecto.BlackBox):
         i.forward_all('_msg_assembler')
 
     def configure(self, p, _i, _o):
+        self._recognized_object_array = Publisher_RecognizedObjectArray(topic_name=p.recognized_object_array_topic)
         if self._do_visualize:
             self._visualization_msg_assembler = VisualizationMsgAssembler()
             self._pose_pub = PublisherBlackBox._pose_pub(topic_name=p.pose_topic, latched=p.latched)
@@ -48,9 +52,9 @@ class PublisherBlackBox(ecto.BlackBox):
             self._marker_pub = PublisherBlackBox._marker_pub(topic_name=p.markers_topic, latched=p.latched)
 
     def connections(self):
-        # TODO: connect to a publishing cell
+        # connect to a publishing cell
+        connections = [ self._msg_assembler['msg'] >> self._recognized_object_array['input']]
 
-        connections = []
         if self._do_visualize:
             connections = [ self._msg_assembler['msg'] >> self._visualization_msg_assembler['msg'] ]
 
