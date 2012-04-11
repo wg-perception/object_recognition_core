@@ -8,4 +8,5 @@ install(DIRECTORY ${PROJECT_SOURCE_DIR}/include/
 install(DIRECTORY ${CMAKE_BINARY_DIR}/share/
         DESTINATION share/${PROJECT_NAME}
         COMPONENT main
+        USE_SOURCE_PERMISSIONS
 )
