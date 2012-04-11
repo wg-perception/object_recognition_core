@@ -1,3 +1,7 @@
+After electric:
+- ecto: remove ROS_ELECTRIC_FOUND (everywhere in the code) and rosbuild_lite
+- OpenCV: replace OpenCV_LIBS by OpenCV_LIBRARIES
+
 Build:
 - no default build of tutorials
 - no default build of tests
@@ -54,7 +58,3 @@ Test:
 - be able to train and test on the same bag
 - ground truth format?  Look at NIST CSV.  Possibly come up with bag format too, where each frame has a listing of object id and pose relative to the sensor
 - ground truth capture... Use the NIST Ponoko rig to capture scenes with GT poses. Needs a simple app or something.
-
-Organization:
-- Use image pipeline for the sources of images. Mono, stero, ros, bag, standalone, etc...
-- Breakout TOD.
