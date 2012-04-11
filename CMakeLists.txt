@@ -6,7 +6,7 @@ catkin_project(object_recognition_core
                DEPENDS Eigen Boost OpenCV
                INCLUDE_DIRS include
                LIBRARIES object_recognition_core_db object_recognition_core_common
-               CFG_EXTRAS object_recognition_core-extras.cmake
+               CFG_EXTRAS test.cmake
 )
 
 #install targets for all things python
@@ -16,9 +16,6 @@ find_package(ecto REQUIRED)
 set_ecto_install_package_name(object_recognition_core/ecto_cells)
 
 add_subdirectory(python)
-
-include(cmake/test.cmake)
-include(cmake/object_recognition_core-extras.cmake.in)
 
 add_definitions("-Wno-pragmas -fno-strict-aliasing -Wall -Wl,--no-undefined -Werror")
 
@@ -53,4 +50,3 @@ if(BUILD_TEST)
 endif()
 
 catkin_add_env_hooks(10.object_recognition_core SHELLS all)
-

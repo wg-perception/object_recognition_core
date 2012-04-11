@@ -1,3 +1,5 @@
+include(${CMAKE_BINARY_DIR}/cmake/object_recognition_core/test.cmake)
+
 # deal with the subdirectories as they contain macros
 add_subdirectory(db)
 add_subdirectory(share)
