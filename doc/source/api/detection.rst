@@ -6,9 +6,9 @@ To implement a detection pipeline runnable with the object recognition infrastru
 Python Plasm
 ------------
 
-Your pipeline has to provide an implementation of the :py:class:`object_recognition.pipelines.DetectionPipeline` class to be fully integrated with object recognition infrastructure:
+Your pipeline has to provide an implementation of the :py:class:`object_recognition_core.pipelines.detection.DetectionPipeline` class to be fully integrated with object recognition infrastructure:
 
-.. autoclass:: object_recognition.pipelines.DetectionPipeline
+.. autoclass:: object_recognition_core.pipelines.detection.DetectionPipeline
    :members:
 
 Database Cell

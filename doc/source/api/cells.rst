@@ -1,12 +1,12 @@
 Cells API
 =========
 
-.. ectomodule:: ecto_object_recognition.io
+.. ectomodule:: object_recognition_core.ecto_cells.db
 
-.. ectomodule:: ecto_object_recognition.io_ros
+.. ectomodule:: object_recognition_core.ecto_cells.io
 
-.. ectomodule:: ecto_object_recognition.filters
+.. ectomodule:: object_recognition_core.ecto_cells.io_ros
 
-.. ectomodule:: ecto_object_recognition.reconstruction
+.. ectomodule:: object_recognition_core.ecto_cells.filters
 
-.. ectomodule:: ecto_object_recognition.object_recognition_db
+.. ectomodule:: object_recognition_core.ecto_cells.voter

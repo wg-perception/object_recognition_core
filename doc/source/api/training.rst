@@ -90,8 +90,8 @@ Very important, you need to actually define a type for your cell based on ModelW
 Python Plasm
 ------------
 
-Your pipeline also has to provide an implementation of the :py:class:`object_recognition.pipelines.TrainingPipeline` class to be fully integrated with object recognition infrastructure:
+Your pipeline also has to provide an implementation of the :py:class:`object_recognition_core.pipelines.training.TrainingPipeline` class to be fully integrated with object recognition infrastructure:
 
-.. autoclass:: object_recognition.pipelines.TrainingPipeline
+.. autoclass:: object_recognition_core.pipelines.training.TrainingPipeline
    :members:
 
