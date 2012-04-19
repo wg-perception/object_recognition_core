@@ -9,11 +9,15 @@ Using the different trained objects, we can now detect them.
 use
 ^^^
 
-.. toggle1:: click here for ROS instructions
+.. toggle_table::
+    :arg1: Non-ROS
+    :arg2: ROS
+
+.. toggle:: Non-ROS
 
     Just run the detection.py script in /apps. This will run continuously on the input image/point cloud.
 
-.. toggle2:: click here for non-ROS instructions
+.. toggle:: ROS
 
     Just rosrun::
 
@@ -30,10 +34,10 @@ use
 The server requires a configuration file through the ``-c`` option. Some of the
 options in there can be overriden by the command line for convenience.
 For now, use the default config_detection.sample and change the following parameters to your needs:
-  - the db section can point to a different root, another machine for example
-  - the object_ids should be the list of object ids you want to train on. If you want, you can also use object_names,
+* the db section can point to a different root, another machine for example
+* the object_ids should be the list of object ids you want to train on. If you want, you can also use object_names,
 that are more human readable
-  - the source type can be ``ros_kinect`` or ``ros_bag``, in which case you must supply the bag field
+* the source type can be ``ros_kinect`` or ``ros_bag``, in which case you must supply the bag field
 
 A typical command line session might look like::
 

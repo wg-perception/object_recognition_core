@@ -75,11 +75,17 @@ Very important, you need to actually define a type for your cell based on ModelR
 Sink
 ----
 
-.. toggle1:: click here for ROS instructions
+You can output results to the console or to a CSV file.
 
-    If you are not using ROS, you can output results to the console or to a CSV file.
+.. toggle_table::
+    :arg1: Non-ROS
+    :arg2: ROS
 
-.. toggle2:: click here for non-ROS instructions
+.. toggle:: Non-ROS
+
+    That is all you can output to if you don't use ROS.
+
+.. toggle:: ROS
 
     If you want to use the ROS publisher that outputs object recognition messages, you need to have your recognition pipeline have the following output tendrils:
 
