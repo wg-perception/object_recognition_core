@@ -17,27 +17,35 @@ use
 
     Just run the detection.py script in /apps. This will run continuously on the input image/point cloud.
 
+
+    The server requires a configuration file through the ``-c`` option. Some of the
+    options in there can be overriden by the command line for convenience.
+    Use a config file from one of the pipelines or create your own and change the following parameters to your needs:
+
+    * the object_ids should be the list of object ids you want to train on. If you want, you can also use object_names,
+      that are more human readable
+
 .. toggle:: ROS
 
-    Just rosrun::
+    Just rosrun:
 
-       % rosrun object_recognition_server server.py -c config_detection.sample
+    .. code-block:: sh
 
-    This will start an actionlib server that you can then query. If you want to test the server, just execute the client once::
+        rosrun object_recognition_server server.py -c config_detection.sample
 
-       % rosrun object_recognition_server client.py
+    This will start a server with a given configuration file.
+    If you want to test the server, just execute the client once:
 
-    You can also use roslaunch
+    .. code-block:: sh
 
-       % roslaunch object_recognition_server server.robot.launch
+        rosrun object_recognition_server client.py
 
-The server requires a configuration file through the ``-c`` option. Some of the
-options in there can be overriden by the command line for convenience.
-For now, use the default config_detection.sample and change the following parameters to your needs:
-* the db section can point to a different root, another machine for example
-* the object_ids should be the list of object ids you want to train on. If you want, you can also use object_names,
-that are more human readable
-* the source type can be ``ros_kinect`` or ``ros_bag``, in which case you must supply the bag field
+    You can also use roslaunch if you want traditional actionlib support. There is a ``config_file`` argument
+    that can help you choose different pipelines:
+
+    .. code-block:: sh
+
+        roslaunch object_recognition_server server.robot.launch
 
 A typical command line session might look like::
 
