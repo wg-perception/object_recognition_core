@@ -48,6 +48,7 @@
 #include <object_recognition_core/common/types.h>
 #include <object_recognition_core/common/json_spirit/json_spirit.h>
 #include <object_recognition_core/db/view.h>
+#include <object_recognition_core/db/db_parameters.h>
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -61,10 +62,11 @@ namespace object_recognition_core
     class ObjectDbBase
     {
     public:
-      ObjectDbBase(const std::string &root, const std::string &collection)
-          :
-            root_(root),
-            collection_(collection)
+      /** Default constructor: we need one to get default values */
+      ObjectDbBase()
+      {
+      }
+      ObjectDbBase(const ObjectDbParameters & parameters)
       {
       }
 
@@ -102,10 +104,10 @@ namespace object_recognition_core
                             const MimeType& mime_type, std::ostream& stream, RevisionId & revision_id)=0;
 
       virtual std::string
-      Status() = 0;
+      Status() const = 0;
 
       virtual std::string
-      Status(const CollectionName& collection) = 0;
+      Status(const CollectionName& collection) const = 0;
 
       virtual void
       CreateCollection(const CollectionName &collection) = 0;
@@ -114,24 +116,7 @@ namespace object_recognition_core
       DeleteCollection(const CollectionName &collection) = 0;
 
       virtual DbType
-      type() = 0;
-
-      const std::string &
-      root()
-      {
-        return root_;
-      }
-
-      const std::string &
-      collection()
-      {
-        return collection_;
-      }
-    protected:
-      /** The path of the DB, not including the collection */
-      std::string root_;
-      /** The collection to operate upon */
-      std::string collection_;
+      type() const = 0;
     };
   }
 }

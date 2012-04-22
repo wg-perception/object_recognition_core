@@ -79,7 +79,7 @@ class ObjectDbFilesystem: public object_recognition_core::db::ObjectDbBase
 public:
   ObjectDbFilesystem();
 
-  ObjectDbFilesystem(const std::string &url, const std::string & collection);
+  ObjectDbFilesystem(const object_recognition_core::db::ObjectDbParameters & parameters);
 
   virtual void
   insert_object(const or_json::mObject &fields, DocumentId & document_id, RevisionId & revision_id);
@@ -112,10 +112,10 @@ public:
         std::vector<ViewElement> & view_elements);
 
   virtual std::string
-  Status();
+  Status() const;
 
   virtual std::string
-  Status(const CollectionName& collection);
+  Status(const CollectionName& collection) const;
 
   virtual void
   CreateCollection(const CollectionName &collection);
@@ -124,9 +124,21 @@ public:
   DeleteCollection(const CollectionName &collection);
 
   virtual DbType
-  type()
+  type() const
   {
     return "Filesystem";
+  }
+
+  const std::string
+  path() const
+  {
+    return path_.string();
+  }
+
+  const std::string &
+  collection() const
+  {
+    return collection_;
   }
 private:
   static const RevisionId DEFAULT_REVISION_ID_;
@@ -173,7 +185,10 @@ private:
     return url_id(id) / "attachments";
   }
 
+  /** The path of the DB, not including the collection */
   boost::filesystem::path path_;
+  /** The collection to operate upon */
+  std::string collection_;
 };
 
 #endif /* DB_FILESYSTEM_H_ */

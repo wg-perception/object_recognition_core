@@ -45,7 +45,7 @@ namespace bp = boost::python;
 namespace
 {
   or_json::mObject
-  BpDictToMap(const bp::dict &bp_dict)
+  BpDictToJson(const bp::dict &bp_dict)
   {
     or_json::mObject params;
     bp::list l = bp_dict.items();
@@ -76,7 +76,7 @@ namespace
   }
 
   bp::dict
-  MapToBpDict(const or_json::mObject & map)
+  JsonToBpDict(const or_json::mObject & map)
   {
     bp::dict bp_dict;
     for (or_json::mObject::const_iterator iter = map.begin(), end = map.end(); iter != end; ++iter)
@@ -110,7 +110,7 @@ namespace object_recognition_core
     boost::shared_ptr<ObjectDbParameters>
     ObjectDbParametersConstructor(const bp::dict &obj)
     {
-      or_json::mObject params = BpDictToMap(obj);
+      or_json::mObject params = BpDictToJson(obj);
       if (params.empty())
         params.insert(std::make_pair("type", ObjectDbParameters::TypeToString(ObjectDbParameters::EMPTY)));
       ObjectDbParametersPtr p(new ObjectDbParameters(params));
@@ -130,8 +130,7 @@ namespace object_recognition_core
       static boost::python::tuple
       getstate(const ObjectDbParameters& db_params)
       {
-        return boost::python::make_tuple(ObjectDbParameters::TypeToString(db_params.type_), db_params.root_,
-                                         db_params.collection_, MapToBpDict(db_params.raw_));
+        return boost::python::make_tuple(JsonToBpDict(db_params.raw()));
       }
 
       static
@@ -139,42 +138,26 @@ namespace object_recognition_core
       setstate(ObjectDbParameters& db_params, boost::python::tuple state)
       {
         using namespace boost::python;
-        if (len(state) != 4)
+        if (len(state) != 1)
         {
-          PyErr_SetObject(PyExc_ValueError, ("expected 4-item tuple in call to __setstate__; got %s" % state).ptr());
+          PyErr_SetObject(PyExc_ValueError, ("expected 1-item tuple in call to __setstate__; got %s" % state).ptr());
           throw_error_already_set();
         }
 
-        db_params.type_ = ObjectDbParameters::StringToType(extract<std::string>(state[0]));
-        db_params.root_ = extract<std::string>(state[1]);
-        db_params.collection_ = extract<std::string>(state[2]);
-        db_params.raw_ = BpDictToMap(extract<bp::dict>(state[3]));
+        db_params = ObjectDbParameters(BpDictToJson(extract<bp::dict>(state[3])));
       }
     };
-
-    // Define some functions to access the members
-    std::string
-    collection(const ObjectDbParametersPtr &params)
-    {
-      return params->collection_;
-    }
-
-    std::string
-    root(const ObjectDbParametersPtr &params)
-    {
-      return params->root_;
-    }
 
     std::string
     type(const ObjectDbParametersPtr &params)
     {
-      return ObjectDbParameters::TypeToString(params->type_);
+      return ObjectDbParameters::TypeToString(params->type());
     }
 
-    or_json::mObject
+    bp::dict
     raw(const ObjectDbParametersPtr &params)
     {
-      return params->raw_;
+      return JsonToBpDict(params->raw());
     }
 
     void
@@ -182,8 +165,6 @@ namespace object_recognition_core
     {
       bp::class_<ObjectDbParameters, ObjectDbParametersPtr> ObjectDbParametersClass("ObjectDbParameters"); //"The parameters of any database");
       ObjectDbParametersClass.def("__init__", bp::make_constructor(ObjectDbParametersConstructor));
-      ObjectDbParametersClass.add_property("collection", collection, "The collection of the database.");
-      ObjectDbParametersClass.add_property("root", root, "The root of the database.");
       ObjectDbParametersClass.add_property("type", type, "The type of the database.");
       ObjectDbParametersClass.add_property("raw", raw, "The raw parameters of the database.");
       ObjectDbParametersClass.def_pickle(db_parameters_pickle_suite());

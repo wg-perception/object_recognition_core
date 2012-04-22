@@ -45,14 +45,14 @@ params_test(const std::string &db_type)
   if (db_type == "CouchDB")
   {
     params = ObjectDbParameters("CouchDB");
-    params.root_ = "http://foo:12323";
-    params.collection_ = "test_it";
+    params.set_parameter("root", "http://foo:12323");
+    params.set_parameter("collection", "test_it");
   }
   else if (db_type == "filesystem")
   {
     params = ObjectDbParameters("filesystem");
-    params.root_ = "/bogus/path/for/testing";
-    params.collection_ = "test_it";
+    params.set_parameter("path", "/bogus/path/for/testing");
+    params.set_parameter("collection", "test_it");
   }
   return params;
 }
@@ -64,14 +64,14 @@ params_valid(const std::string &db_type)
   if (db_type == "CouchDB")
   {
     params = ObjectDbParameters("CouchDB");
-    params.root_ = "http://localhost:5984";
-    params.collection_ = "test_it";
+    params.set_parameter("root", "http://localhost:5984");
+    params.set_parameter("collection", "test_it");
   }
   else if (db_type == "filesystem")
   {
     params = ObjectDbParameters("filesystem");
-    params.root_ = "/tmp";
-    params.collection_ = "test_it";
+    params.set_parameter("path", "/tmp");
+    params.set_parameter("collection", "test_it");
   }
   return params;
 }
@@ -330,7 +330,7 @@ TEST(OR_db, DocumentUrl)
   BOOST_FOREACH(const std::string &db_type, db_types())
       {
         ObjectDbParameters db_params = params_test(db_type);
-        db_params.collection_ = "test_it";
+        db_params.set_parameter("collection", "test_it");
         ObjectDb db(db_params);
         std::string bogus_id = "bogus_id";
         try
@@ -339,7 +339,7 @@ TEST(OR_db, DocumentUrl)
           ASSERT_FALSE(true);
         } catch (std::runtime_error& e)
         {
-          handling_invalid_server(db_type, e, db_params.collection_, bogus_id);
+          handling_invalid_server(db_type, e, db_params.at("collection").get_str(), bogus_id);
         }
       }
 }

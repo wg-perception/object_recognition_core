@@ -64,7 +64,7 @@ namespace object_recognition_core
       view.set_key(object_id_);
 
       // Make sure the db_ is valid
-      if (db_.parameters().type_ == db::ObjectDbParameters::EMPTY)
+      if (db_.parameters().type() == db::ObjectDbParameters::EMPTY)
         throw std::runtime_error("Db not set in the ObjectInfo");
 
       // Get the mesh id
@@ -99,13 +99,14 @@ namespace object_recognition_core
       // Get the mesh_URI if not set
       if (attributes_.fields_.find("mesh_uri") == attributes_.fields_.end())
       {
-        switch (db_.parameters().type_)
+        switch (db_.parameters().type())
         {
           case db::ObjectDbParameters::COUCHDB:
             // E.g. http://localhost:5984/object_recognition/_design/models/_view/by_object_id_and_mesh?key=%2212a1e6eb663a41f8a4fb9baa060f191c%22
             if (!mesh_id.empty())
-              attributes_.fields_["mesh_uri"] = db_.parameters().root_ + std::string("/") + db_.parameters().collection_
-                                                + "/" + mesh_id + "/mesh.stl";
+              attributes_.fields_["mesh_uri"] = db_.parameters().at("root").get_str() + std::string("/")
+                                                + db_.parameters().at("collection").get_str() + "/" + mesh_id
+                                                + "/mesh.stl";
             break;
           default:
             attributes_.fields_["mesh_uri"] = "";

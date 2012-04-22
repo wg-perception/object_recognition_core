@@ -100,8 +100,8 @@ namespace object_recognition_core
       inline std::string
       cache_key() const
       {
-        return db_.parameters().TypeToString(db_.parameters().type_) + db_.parameters().root_
-               + db_.parameters().collection_ + object_id_;
+        std::string parameter_hash = or_json::write(or_json::mValue(db_.parameters().raw()));
+        return parameter_hash + object_id_;
       }
 
       /** Read the name_ and mesh_id_ from the DB and store it */

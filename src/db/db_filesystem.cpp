@@ -47,15 +47,15 @@ const RevisionId ObjectDbFilesystem::DEFAULT_REVISION_ID_ = "0";
 
 ObjectDbFilesystem::ObjectDbFilesystem()
     :
-      ObjectDbBase("/tmp", "object_recognition"),
-      path_(root_)
+      path_("/tmp"),
+      collection_("object_recognition")
 {
 }
 
-ObjectDbFilesystem::ObjectDbFilesystem(const std::string &root, const std::string &collection)
+ObjectDbFilesystem::ObjectDbFilesystem(const object_recognition_core::db::ObjectDbParameters & parameters)
     :
-      ObjectDbBase(root, collection),
-      path_(root)
+      path_(parameters.at("path").get_str()),
+      collection_(parameters.at("collection").get_str())
 {
 }
 
@@ -212,7 +212,7 @@ ObjectDbFilesystem::CreateCollection(const CollectionName &collection)
 }
 
 std::string
-ObjectDbFilesystem::Status()
+ObjectDbFilesystem::Status() const
 {
   // To comply the CouchDB status function
   if (boost::filesystem::exists(path_))
@@ -224,7 +224,7 @@ ObjectDbFilesystem::Status()
 }
 
 std::string
-ObjectDbFilesystem::Status(const CollectionName& collection)
+ObjectDbFilesystem::Status(const CollectionName& collection) const
 {
   Status();
   if (!boost::filesystem::exists(path_ / collection))

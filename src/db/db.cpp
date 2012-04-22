@@ -59,13 +59,18 @@ namespace object_recognition_core
     ObjectDbParameters::ObjectDbParameters(const std::string& type_str)
     {
       type_ = StringToType(type_str);
+      *this = ObjectDbParameters(type_);
+    }
+
+    ObjectDbParameters::ObjectDbParameters(ObjectDbType type)
+    {
       switch (type_)
       {
         case ObjectDbParameters::COUCHDB:
         {
           ObjectDbCouch tmp;
-          root_ = tmp.root();
-          collection_ = tmp.collection();
+          set_parameter("root", tmp.root());
+          set_parameter("collection", tmp.collection());
           break;
         }
         case ObjectDbParameters::EMPTY:
@@ -75,8 +80,8 @@ namespace object_recognition_core
         case ObjectDbParameters::FILESYSTEM:
         {
           ObjectDbFilesystem tmp;
-          root_ = tmp.root();
-          collection_ = tmp.collection();
+          set_parameter("root", tmp.path());
+          set_parameter("collection", tmp.collection());
           break;
         }
         default:
@@ -86,6 +91,7 @@ namespace object_recognition_core
         }
       }
     }
+
     ObjectDbParameters::ObjectDbParameters(const or_json::mObject& parameters)
     {
       FillParameters(parameters);
@@ -132,11 +138,6 @@ namespace object_recognition_core
       type_ = StringToType(raw_.at("type").get_str());
       if (type_ == ObjectDbParameters::EMPTY)
         return;
-
-      if (raw_.find("collection") != raw_.end())
-        collection_ = raw_.at("collection").get_str();
-      if (raw_.find("root") != raw_.end())
-        root_ = raw_.at("root").get_str();
     }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -150,15 +151,15 @@ namespace object_recognition_core
     ObjectDb::set_parameters(const ObjectDbParameters &in_params)
     {
       parameters_ = in_params;
-      switch (parameters_.type_)
+      switch (parameters_.type())
       {
         case ObjectDbParameters::COUCHDB:
-          db_ = boost::shared_ptr<ObjectDbBase>(new ObjectDbCouch(parameters_.root_, parameters_.collection_));
+          db_ = boost::shared_ptr<ObjectDbBase>(new ObjectDbCouch(parameters_));
           return;
         case ObjectDbParameters::EMPTY:
           return;
         case ObjectDbParameters::FILESYSTEM:
-          db_ = boost::shared_ptr<ObjectDbBase>(new ObjectDbFilesystem(parameters_.root_, parameters_.collection_));
+          db_ = boost::shared_ptr<ObjectDbBase>(new ObjectDbFilesystem(parameters_));
           return;
         default:
           return;

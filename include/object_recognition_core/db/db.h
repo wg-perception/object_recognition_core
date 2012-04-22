@@ -45,6 +45,7 @@
 #include <object_recognition_core/common/types.h>
 #include <object_recognition_core/common/json_spirit/json_spirit.h>
 #include <object_recognition_core/db/view.h>
+#include <object_recognition_core/db/db_parameters.h>
 
 namespace object_recognition_core
 {
@@ -52,53 +53,9 @@ namespace object_recognition_core
   {
     //Forward declare some classes
     class ObjectDbBase;
+    class ObjectDbParameters;
     class View;
     class ViewElement;
-
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-    /** A class that stores the common parameters for the object DB
-     * If it is not from a type provided by object_recognition_core, it is of type NONCORE
-     */
-    class ObjectDbParameters
-    {
-    public:
-      enum ObjectDbType
-      {
-        EMPTY, COUCHDB, FILESYSTEM, NONCORE
-      };
-      ObjectDbParameters();
-
-      /** Default constructor for certain types
-       * @param type Default type
-       */
-      explicit
-      ObjectDbParameters(const std::string& type);
-
-      /**
-       * @param params A map between some db parameters and their value
-       */
-      explicit
-      ObjectDbParameters(const or_json::mObject& params);
-
-      static ObjectDbType
-      StringToType(const std::string & type);
-
-      static std::string
-      TypeToString(const ObjectDbParameters::ObjectDbType & type);
-
-      /** The collection where the data is stored (or schema in certain naming conventions) */
-      std::string collection_;
-      /** The base url/path of where the DB is located */
-      std::string root_;
-      /** The type of the collection 'CouchDB' ... */
-      ObjectDbType type_;
-      /** All the raw parameters: they are of integral types */
-      or_json::mObject raw_;
-    protected:
-      void
-      FillParameters(const or_json::mObject& json_params);
-    };
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 

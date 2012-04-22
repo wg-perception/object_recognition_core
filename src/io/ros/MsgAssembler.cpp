@@ -117,7 +117,7 @@ namespace object_recognition_core
 
           // Deal with the id
           object.id.id = pose_result.object_id();
-          object.id.db = or_json::write(or_json::mValue(pose_result.db().parameters().raw_));
+          object.id.db = or_json::write(or_json::mValue(pose_result.db().parameters().raw()));
 
           // Deal with the confidence
           object.confidence = pose_result.confidence();

@@ -42,17 +42,19 @@ object_recognition_core::curl::cURL_GS curl_init_cleanup;
 
 ObjectDbCouch::ObjectDbCouch()
     :
-      ObjectDbBase("http://localhost:5984", "object_recognition"),
       json_writer_(json_writer_stream_),
-      json_reader_(json_reader_stream_)
+      json_reader_(json_reader_stream_),
+      root_("http://localhost:5984"),
+      collection_("object_recognition")
 {
 }
 
-ObjectDbCouch::ObjectDbCouch(const std::string &root, const std::string &collection)
+ObjectDbCouch::ObjectDbCouch(const object_recognition_core::db::ObjectDbParameters & parameters)
     :
-      ObjectDbBase(root, collection),
       json_writer_(json_writer_stream_),
-      json_reader_(json_reader_stream_)
+      json_reader_(json_reader_stream_),
+      root_(parameters.at("root").get_str()),
+      collection_(parameters.at("collection").get_str())
 {
 }
 
@@ -341,7 +343,7 @@ ObjectDbCouch::CreateCollection(const CollectionName &collection)
 }
 
 std::string
-ObjectDbCouch::Status()
+ObjectDbCouch::Status() const
 {
   json_writer_stream_.str("");
   json_reader_stream_.str("");
@@ -359,7 +361,7 @@ ObjectDbCouch::Status()
 }
 
 std::string
-ObjectDbCouch::Status(const CollectionName& collection)
+ObjectDbCouch::Status(const CollectionName& collection) const
 {
   json_writer_stream_.str("");
   json_reader_stream_.str("");

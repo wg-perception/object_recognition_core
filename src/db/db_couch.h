@@ -39,6 +39,7 @@
 #include "curl_interface.h"
 #include <object_recognition_core/common/types.h>
 #include <object_recognition_core/db/db_base.h>
+#include <object_recognition_core/db/db_parameters.h>
 
 using object_recognition_core::db::AttachmentName;
 using object_recognition_core::db::CollectionName;
@@ -57,7 +58,7 @@ class ObjectDbCouch: public object_recognition_core::db::ObjectDbBase
 public:
   ObjectDbCouch();
 
-  ObjectDbCouch(const std::string &url, const std::string & collection);
+  ObjectDbCouch(const object_recognition_core::db::ObjectDbParameters & parameters);
 
   virtual void
   insert_object(const or_json::mObject &fields, DocumentId & document_id, RevisionId & revision_id);
@@ -90,10 +91,10 @@ public:
         std::vector<ViewElement> & view_elements);
 
   virtual std::string
-  Status();
+  Status() const;
 
   virtual std::string
-  Status(const CollectionName& collection);
+  Status(const CollectionName& collection) const;
 
   virtual void
   CreateCollection(const CollectionName &collection);
@@ -102,9 +103,21 @@ public:
   DeleteCollection(const CollectionName &collection);
 
   virtual DbType
-  type()
+  type() const
   {
     return "CouchDB";
+  }
+
+  const std::string &
+  root() const
+  {
+    return root_;
+  }
+
+  const std::string &
+  collection() const
+  {
+    return collection_;
   }
 private:
 
@@ -170,9 +183,13 @@ private:
   // These mutable are they are internals/temporary variables
   mutable object_recognition_core::curl::cURL curl_;
   mutable std::stringstream json_writer_stream_, json_reader_stream_;
+  mutable object_recognition_core::curl::writer json_writer_;
+  mutable object_recognition_core::curl::reader json_reader_;
 
-  object_recognition_core::curl::writer json_writer_;
-  object_recognition_core::curl::reader json_reader_;
+  /** The path of the DB, not including the collection */
+  std::string root_;
+  /** The collection to operate upon */
+  std::string collection_;
 };
 
 #endif /* DB_COUCH_H_ */
