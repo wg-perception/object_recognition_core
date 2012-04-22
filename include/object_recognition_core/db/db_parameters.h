@@ -97,7 +97,7 @@ namespace object_recognition_core
         return raw_.at(key);
       }
 
-      or_json::mObject
+      const or_json::mObject &
       raw() const
       {
         return raw_;
