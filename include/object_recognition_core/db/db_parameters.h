@@ -86,10 +86,29 @@ namespace object_recognition_core
       void
       set_parameter(const std::string & key, const T & value)
       {
-        raw_[key] = or_json::mValue(value);
         if (key == "type")
-          type_ = StringToType(value);
+          set_type(value);
+        else
+          raw_[key] = or_json::mValue(value);
       }
+
+      void
+      set_parameter(const std::string & key, const or_json::mValue & value)
+      {
+        if (key == "type")
+          set_type(value.get_str());
+        else
+          raw_[key] = value;
+      }
+
+      void
+      set_type(const std::string & type)
+      {
+        set_type(StringToType(type));
+      }
+
+      void
+      set_type(const ObjectDbType & type);
 
       or_json::mValue
       at(const std::string & key) const
@@ -107,8 +126,6 @@ namespace object_recognition_core
       ObjectDbType type_;
       /** All the raw parameters: they are of integral types */
       or_json::mObject raw_;
-      void
-      FillParameters(const or_json::mObject& json_params);
     };
   }
 }

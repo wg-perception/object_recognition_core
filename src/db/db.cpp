@@ -35,6 +35,7 @@
 
 #include <string>
 #include <boost/bind.hpp>
+#include <boost/foreach.hpp>
 
 #include "db_couch.h"
 #include "db_filesystem.h"
@@ -64,6 +65,18 @@ namespace object_recognition_core
 
     ObjectDbParameters::ObjectDbParameters(ObjectDbType type)
     {
+      set_type(type);
+    }
+
+    void
+    ObjectDbParameters::set_type(const ObjectDbType &type)
+    {
+      if (type_ == type)
+        return;
+
+      type_ = type;
+      raw_.clear();
+      raw_["type"] = TypeToString(type);
       switch (type_)
       {
         case ObjectDbParameters::COUCHDB:
@@ -94,13 +107,28 @@ namespace object_recognition_core
 
     ObjectDbParameters::ObjectDbParameters(const or_json::mObject& parameters)
     {
-      FillParameters(parameters);
+      if (parameters.find("type") == parameters.end())
+      {
+        throw std::runtime_error("You must supply a database type. e.g. CouchDB");
+      }
+      // Set some default parameters
+      set_parameter("type", parameters.at("type").get_str());
+      std::cout << "toto" << parameters.size() << std::endl;
+      std::cout << "toto" << raw_.size() << std::endl;
+      // Fill the other parameters
+      for (or_json::mObject::const_iterator iter = parameters.begin(), end = parameters.end(); iter != end; ++iter)
+      {
+        if (iter->first == "type")
+          continue;
+        std::cout << iter->first << std::endl;
+        set_parameter(iter->first, iter->second);
+      }
     }
 
     ObjectDbParameters::ObjectDbType
     ObjectDbParameters::StringToType(const std::string & type_str)
     {
-      if (type_str == "CouchDB")
+      if (type_str == "CouchDb")
         return COUCHDB;
       else if (type_str == "empty")
         return EMPTY;
@@ -116,7 +144,7 @@ namespace object_recognition_core
       switch (type)
       {
         case COUCHDB:
-          return "CouchDB";
+          return "CouchDb";
         case EMPTY:
           return "empty";
         case FILESYSTEM:
@@ -125,19 +153,6 @@ namespace object_recognition_core
           return "noncore";
       }
       return "";
-    }
-
-    void
-    ObjectDbParameters::FillParameters(const or_json::mObject& parameters)
-    {
-      raw_ = parameters;
-      if (raw_.find("type") == raw_.end())
-      {
-        throw std::runtime_error("You must supply a database type. e.g. CouchDB");
-      }
-      type_ = StringToType(raw_.at("type").get_str());
-      if (type_ == ObjectDbParameters::EMPTY)
-        return;
     }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
