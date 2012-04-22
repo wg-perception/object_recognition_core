@@ -93,7 +93,7 @@ namespace object_recognition_core
         case ObjectDbParameters::FILESYSTEM:
         {
           ObjectDbFilesystem tmp;
-          set_parameter("root", tmp.path());
+          set_parameter("path", tmp.path());
           set_parameter("collection", tmp.collection());
           break;
         }
@@ -112,15 +112,12 @@ namespace object_recognition_core
         throw std::runtime_error("You must supply a database type. e.g. CouchDB");
       }
       // Set some default parameters
-      set_parameter("type", parameters.at("type").get_str());
-      std::cout << "toto" << parameters.size() << std::endl;
-      std::cout << "toto" << raw_.size() << std::endl;
+      set_type(parameters.at("type").get_str());
       // Fill the other parameters
       for (or_json::mObject::const_iterator iter = parameters.begin(), end = parameters.end(); iter != end; ++iter)
       {
         if (iter->first == "type")
           continue;
-        std::cout << iter->first << std::endl;
         set_parameter(iter->first, iter->second);
       }
     }
@@ -128,7 +125,7 @@ namespace object_recognition_core
     ObjectDbParameters::ObjectDbType
     ObjectDbParameters::StringToType(const std::string & type_str)
     {
-      if (type_str == "CouchDb")
+      if (type_str == "CouchDB")
         return COUCHDB;
       else if (type_str == "empty")
         return EMPTY;
@@ -144,7 +141,7 @@ namespace object_recognition_core
       switch (type)
       {
         case COUCHDB:
-          return "CouchDb";
+          return "CouchDB";
         case EMPTY:
           return "empty";
         case FILESYSTEM:
