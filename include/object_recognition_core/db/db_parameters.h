@@ -102,15 +102,20 @@ namespace object_recognition_core
       }
 
       void
-      set_type(const std::string & type)
-      {
-        set_type(StringToType(type));
-        if (type_ == NONCORE)
-          raw_["subtype"] = type;
-      }
+      set_type(const std::string & type);
 
       void
-      set_type(const ObjectDbType & type);
+      set_type(const ObjectDbType & type)
+      {
+        if (type == NONCORE)
+        {
+          if (type != type_)
+            raw_.clear();
+          type_ = type;
+        }
+        else
+          set_type(TypeToString(type));
+      }
 
       or_json::mValue
       at(const std::string & key) const

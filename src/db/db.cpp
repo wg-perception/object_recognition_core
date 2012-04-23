@@ -69,13 +69,13 @@ namespace object_recognition_core
     }
 
     void
-    ObjectDbParameters::set_type(const ObjectDbType &type)
+    ObjectDbParameters::set_type(const std::string &type)
     {
-      if (type_ == type)
+      if (raw_["type"] == type)
         return;
 
-      type_ = type;
-      switch (type)
+      type_ = StringToType(type);
+      switch (type_)
       {
         case ObjectDbParameters::COUCHDB:
         {
@@ -96,11 +96,10 @@ namespace object_recognition_core
         }
         default:
         {
-          throw std::runtime_error("No implementation for that db type.");
+          // No implementation for that db type
           break;
         }
       }
-      raw_["type"] = TypeToString(type);
     }
 
     ObjectDbParameters::ObjectDbParameters(const or_json::mObject& parameters)
