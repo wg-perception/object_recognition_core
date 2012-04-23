@@ -6,7 +6,7 @@ Detection
 
 Using the different trained objects, we can now detect them.
 
-use
+Use
 ^^^
 
 .. toggle_table::
@@ -73,7 +73,7 @@ A typical command line session might look like::
    [ INFO] [1317692117.188155476]: publishing to topic:/poses
 
 
-command line interface
+Command Line Interface
 ^^^^^^^^^^^^^^^^^^^^^^
 .. program-output:: apps/detection --help
    :in_srcdir:
