@@ -46,10 +46,10 @@
 const RevisionId ObjectDbFilesystem::DEFAULT_REVISION_ID_ = "0";
 
 ObjectDbFilesystem::ObjectDbFilesystem()
-    :
-      path_("/tmp"),
-      collection_("object_recognition")
 {
+  or_json::mObject parameters = default_raw_parameters();
+  path_ = parameters.at("path").get_str();
+  collection_ = parameters.at("collection").get_str();
 }
 
 ObjectDbFilesystem::ObjectDbFilesystem(const object_recognition_core::db::ObjectDbParameters & parameters)
@@ -57,6 +57,17 @@ ObjectDbFilesystem::ObjectDbFilesystem(const object_recognition_core::db::Object
       path_(parameters.at("path").get_str()),
       collection_(parameters.at("collection").get_str())
 {
+}
+
+or_json::mObject
+ObjectDbFilesystem::default_raw_parameters() const
+{
+  or_json::mObject res;
+  res["path"] = "/tmp";
+  res["collection"] = "object_recognition";
+  res["type"] = type();
+
+  return res;
 }
 
 void

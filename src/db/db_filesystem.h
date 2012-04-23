@@ -81,6 +81,9 @@ public:
 
   ObjectDbFilesystem(const object_recognition_core::db::ObjectDbParameters & parameters);
 
+  or_json::mObject
+  default_raw_parameters() const;
+
   virtual void
   insert_object(const or_json::mObject &fields, DocumentId & document_id, RevisionId & revision_id);
 
@@ -127,18 +130,6 @@ public:
   type() const
   {
     return "Filesystem";
-  }
-
-  const std::string
-  path() const
-  {
-    return path_.string();
-  }
-
-  const std::string &
-  collection() const
-  {
-    return collection_;
   }
 private:
   static const RevisionId DEFAULT_REVISION_ID_;

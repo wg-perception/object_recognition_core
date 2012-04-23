@@ -60,6 +60,9 @@ public:
 
   ObjectDbCouch(const object_recognition_core::db::ObjectDbParameters & parameters);
 
+  or_json::mObject
+  default_raw_parameters() const;
+
   virtual void
   insert_object(const or_json::mObject &fields, DocumentId & document_id, RevisionId & revision_id);
 
@@ -106,18 +109,6 @@ public:
   type() const
   {
     return "CouchDB";
-  }
-
-  const std::string &
-  root() const
-  {
-    return root_;
-  }
-
-  const std::string &
-  collection() const
-  {
-    return collection_;
   }
 private:
 

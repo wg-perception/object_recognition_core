@@ -43,10 +43,11 @@ object_recognition_core::curl::cURL_GS curl_init_cleanup;
 ObjectDbCouch::ObjectDbCouch()
     :
       json_writer_(json_writer_stream_),
-      json_reader_(json_reader_stream_),
-      root_("http://localhost:5984"),
-      collection_("object_recognition")
+      json_reader_(json_reader_stream_)
 {
+  or_json::mObject parameters = default_raw_parameters();
+  root_ = parameters.at("root").get_str();
+  collection_ = parameters.at("collection").get_str();
 }
 
 ObjectDbCouch::ObjectDbCouch(const object_recognition_core::db::ObjectDbParameters & parameters)
@@ -56,6 +57,17 @@ ObjectDbCouch::ObjectDbCouch(const object_recognition_core::db::ObjectDbParamete
       root_(parameters.at("root").get_str()),
       collection_(parameters.at("collection").get_str())
 {
+}
+
+or_json::mObject
+ObjectDbCouch::default_raw_parameters() const
+{
+  or_json::mObject res;
+  res["root"] = "http://localhost:5984";
+  res["collection"] = "object_recognition";
+  res["type"] = type();
+
+  return res;
 }
 
 void

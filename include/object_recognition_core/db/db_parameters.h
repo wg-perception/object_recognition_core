@@ -105,6 +105,8 @@ namespace object_recognition_core
       set_type(const std::string & type)
       {
         set_type(StringToType(type));
+        if (type_ == NONCORE)
+          raw_["subtype"] = type;
       }
 
       void

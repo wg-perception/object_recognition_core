@@ -75,26 +75,23 @@ namespace object_recognition_core
         return;
 
       type_ = type;
-      raw_.clear();
-      raw_["type"] = TypeToString(type);
-      switch (type_)
+      switch (type)
       {
         case ObjectDbParameters::COUCHDB:
         {
           ObjectDbCouch tmp;
-          set_parameter("root", tmp.root());
-          set_parameter("collection", tmp.collection());
+          raw_ = tmp.default_raw_parameters();
           break;
         }
         case ObjectDbParameters::EMPTY:
         {
+          raw_.clear();
           break;
         }
         case ObjectDbParameters::FILESYSTEM:
         {
           ObjectDbFilesystem tmp;
-          set_parameter("path", tmp.path());
-          set_parameter("collection", tmp.collection());
+          raw_ = tmp.default_raw_parameters();
           break;
         }
         default:
@@ -103,6 +100,7 @@ namespace object_recognition_core
           break;
         }
       }
+      raw_["type"] = TypeToString(type);
     }
 
     ObjectDbParameters::ObjectDbParameters(const or_json::mObject& parameters)

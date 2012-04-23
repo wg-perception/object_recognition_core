@@ -58,14 +58,20 @@ namespace object_recognition_core
   {
     /** The main class that interact with the db
      * A collection is similar to the term used in CouchDB. It could be a schema/table in SQL
+     * Each inheriting class must have an extra static class with the following signature:
+     *   static object_recognition_core::db::ObjectDbParameters default_parameters()
+     *
      */
     class ObjectDbBase
     {
     public:
-      /** Default constructor: we need one to get default values */
+      /** Default constructor
+       * Make your children classes have the default parameter: ObjectDbParameters(default_parameters())
+       */
       ObjectDbBase()
       {
       }
+
       ObjectDbBase(const ObjectDbParameters & parameters)
       {
       }
@@ -74,6 +80,10 @@ namespace object_recognition_core
       ~ObjectDbBase()
       {
       }
+
+      virtual or_json::mObject
+      default_raw_parameters() const = 0;
+
       virtual void
       insert_object(const or_json::mObject &fields, DocumentId & document_id, RevisionId & revision_id) = 0;
 
@@ -115,6 +125,7 @@ namespace object_recognition_core
       virtual void
       DeleteCollection(const CollectionName &collection) = 0;
 
+      /** The type of the DB : e.g. 'CouchDB' ... */
       virtual DbType
       type() const = 0;
     };
