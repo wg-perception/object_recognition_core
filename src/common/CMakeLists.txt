@@ -3,7 +3,10 @@ find_package(OpenCV REQUIRED)
 
 include_directories(${PCL_INCLUDE_DIRS})
 
-add_library(object_recognition_core_common SHARED object_info.cpp)
+add_library(object_recognition_core_common SHARED
+            dict_json_conversion.cpp
+            object_info.cpp
+)
 
 target_link_libraries(object_recognition_core_common
                       ${OpenCV_LIBRARIES}

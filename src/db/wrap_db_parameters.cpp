@@ -38,64 +38,10 @@
 #include <boost/python.hpp>
 #include <boost/shared_ptr.hpp>
 
+#include <object_recognition_core/common/dict_json_conversion.h>
 #include <object_recognition_core/db/db.h>
 
 namespace bp = boost::python;
-
-namespace
-{
-  or_json::mObject
-  BpDictToJson(const bp::dict &bp_dict)
-  {
-    or_json::mObject params;
-    bp::list l = bp_dict.items();
-    for (int j = 0, end = bp::len(l); j < end; ++j)
-    {
-      std::string key = bp::extract<std::string>(l[j][0]);
-      // Try to extract a string
-      {
-        bp::extract<std::string> extract(l[j][1]);
-        if (extract.check())
-        {
-          params[key] = or_json::mValue(std::string(extract));
-          continue;
-        }
-      }
-      // Try to extract an int
-      {
-        bp::extract<int> extract(l[j][1]);
-        if (extract.check())
-        {
-          params[key] = or_json::mValue(int(extract));
-          continue;
-        }
-      }
-      throw std::runtime_error("BpDictToMap unimplemented type");
-    }
-    return params;
-  }
-
-  bp::dict
-  JsonToBpDict(const or_json::mObject & map)
-  {
-    bp::dict bp_dict;
-    for (or_json::mObject::const_iterator iter = map.begin(), end = map.end(); iter != end; ++iter)
-    {
-      switch (iter->second.type())
-      {
-        case or_json::int_type:
-          bp_dict[iter->first] = iter->second.get_int();
-          break;
-        case or_json::str_type:
-          bp_dict[iter->first] = iter->second.get_str();
-          break;
-        default:
-          throw std::runtime_error("MapToBpDict unimplemented type");
-      }
-    }
-    return bp_dict;
-  }
-}
 
 namespace object_recognition_core
 {
@@ -110,7 +56,7 @@ namespace object_recognition_core
     boost::shared_ptr<ObjectDbParameters>
     ObjectDbParametersConstructor(const bp::dict &obj)
     {
-      or_json::mObject params = BpDictToJson(obj);
+      or_json::mObject params = common::BpDictToJson(obj);
       if (params.empty())
         params.insert(std::make_pair("type", ObjectDbParameters::TypeToString(ObjectDbParameters::EMPTY)));
       ObjectDbParametersPtr p(new ObjectDbParameters(params));
@@ -130,7 +76,7 @@ namespace object_recognition_core
       static boost::python::tuple
       getstate(const ObjectDbParameters& db_params)
       {
-        return boost::python::make_tuple(JsonToBpDict(db_params.raw()));
+        return boost::python::make_tuple(common::JsonToBpDict(db_params.raw()));
       }
 
       static
@@ -144,7 +90,7 @@ namespace object_recognition_core
           throw_error_already_set();
         }
 
-        db_params = ObjectDbParameters(BpDictToJson(extract<bp::dict>(state[3])));
+        db_params = ObjectDbParameters(common::BpDictToJson(extract<bp::dict>(state[3])));
       }
     };
 
@@ -157,7 +103,7 @@ namespace object_recognition_core
     bp::dict
     raw(const ObjectDbParametersPtr &params)
     {
-      return JsonToBpDict(params->raw());
+      return common::JsonToBpDict(params->raw());
     }
 
     void

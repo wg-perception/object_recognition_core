@@ -48,7 +48,6 @@
 #include <object_recognition_core/common/types.h>
 #include <object_recognition_core/common/json_spirit/json_spirit.h>
 #include <object_recognition_core/db/view.h>
-#include <object_recognition_core/db/db_parameters.h>
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -72,7 +71,8 @@ namespace object_recognition_core
       {
       }
 
-      ObjectDbBase(const ObjectDbParameters & parameters)
+      /** The parameter is not a const as it can modified to be cleaned of the useless parameters */
+      ObjectDbBase(ObjectDbParametersRaw & parameters)
       {
       }
 
@@ -81,7 +81,7 @@ namespace object_recognition_core
       {
       }
 
-      virtual or_json::mObject
+      virtual ObjectDbParametersRaw
       default_raw_parameters() const = 0;
 
       virtual void

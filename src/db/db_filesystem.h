@@ -48,6 +48,7 @@ using object_recognition_core::db::DbType;
 using object_recognition_core::db::DocumentId;
 using object_recognition_core::db::ObjectId;
 using object_recognition_core::db::MimeType;
+using object_recognition_core::db::ObjectDbParametersRaw;
 using object_recognition_core::db::RevisionId;
 using object_recognition_core::db::View;
 using object_recognition_core::db::ViewElement;
@@ -79,9 +80,9 @@ class ObjectDbFilesystem: public object_recognition_core::db::ObjectDbBase
 public:
   ObjectDbFilesystem();
 
-  ObjectDbFilesystem(const object_recognition_core::db::ObjectDbParameters & parameters);
+  ObjectDbFilesystem(ObjectDbParametersRaw & parameters);
 
-  or_json::mObject
+  ObjectDbParametersRaw
   default_raw_parameters() const;
 
   virtual void

@@ -56,6 +56,7 @@ add_library(db_interface SHARED
 )
 
 target_link_libraries(db_interface
+                      object_recognition_core_common
                       object_recognition_core_db
 )
 

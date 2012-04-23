@@ -159,20 +159,21 @@ namespace object_recognition_core
     void
     ObjectDb::set_parameters(const ObjectDbParameters &in_params)
     {
-      parameters_ = in_params;
+      ObjectDbParametersRaw params_raw = parameters_.raw();
       switch (parameters_.type())
       {
         case ObjectDbParameters::COUCHDB:
-          db_ = boost::shared_ptr<ObjectDbBase>(new ObjectDbCouch(parameters_));
+          db_ = boost::shared_ptr<ObjectDbBase>(new ObjectDbCouch(params_raw));
           return;
         case ObjectDbParameters::EMPTY:
           return;
         case ObjectDbParameters::FILESYSTEM:
-          db_ = boost::shared_ptr<ObjectDbBase>(new ObjectDbFilesystem(parameters_));
+          db_ = boost::shared_ptr<ObjectDbBase>(new ObjectDbFilesystem(params_raw));
           return;
         default:
           return;
       }
+      parameters_ = in_params;
     }
 
     void

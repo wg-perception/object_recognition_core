@@ -52,17 +52,17 @@ ObjectDbFilesystem::ObjectDbFilesystem()
   collection_ = parameters.at("collection").get_str();
 }
 
-ObjectDbFilesystem::ObjectDbFilesystem(const object_recognition_core::db::ObjectDbParameters & parameters)
+ObjectDbFilesystem::ObjectDbFilesystem(ObjectDbParametersRaw & parameters)
     :
       path_(parameters.at("path").get_str()),
       collection_(parameters.at("collection").get_str())
 {
 }
 
-or_json::mObject
+ObjectDbParametersRaw
 ObjectDbFilesystem::default_raw_parameters() const
 {
-  or_json::mObject res;
+  ObjectDbParametersRaw res;
   res["path"] = "/tmp";
   res["collection"] = "object_recognition";
   res["type"] = type();

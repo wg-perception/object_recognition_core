@@ -1,7 +1,7 @@
 /*
  * Software License Agreement (BSD License)
  *
- *  Copyright (c) 2011, Willow Garage, Inc.
+ *  Copyright (c) 2012, Willow Garage, Inc.
  *  All rights reserved.
  *
  *  Redistribution and use in source and binary forms, with or without
@@ -30,39 +30,27 @@
  *  LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
  *  ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  *  POSSIBILITY OF SUCH DAMAGE.
+ *
  */
 
-#ifndef TYPES_H_
-#define TYPES_H_
+#ifndef DICT_JSON_CONVERSION_H_
+#define DICT_JSON_CONVERSION_H_
 
-#include <string>
+#include <boost/python.hpp>
 
 #include "json_spirit/json_spirit.h"
+#include "types.h"
 
 namespace object_recognition_core
 {
-  namespace db
+  namespace common
   {
-    /** The unique identifier of an object in the DB */
-    typedef std::string ObjectId;
+    or_json::mObject
+    BpDictToJson(const boost::python::dict &bp_dict);
 
-    /** The unique identifier of a model in the DB */
-    typedef std::string ModelId;
-
-    typedef std::string AttachmentName;
-    typedef std::string CollectionName;
-    typedef std::string DocumentId;
-    typedef std::string DbType;
-    typedef std::string Field;
-    typedef std::string MimeType;
-    typedef std::string RevisionId;
-    typedef or_json::mObject ObjectDbParametersRaw;
-
-    const std::string MIME_TYPE_DEFAULT = "application/octet-stream";
-
-    /** The type of a model in the DB */
-    typedef std::string ModelType;
+    boost::python::dict
+    JsonToBpDict(const or_json::mObject & map);
   }
 }
 
-#endif /* TYPES_H_ */
+#endif /* DICT_JSON_CONVERSION_H_ */

@@ -39,7 +39,6 @@
 #include "curl_interface.h"
 #include <object_recognition_core/common/types.h>
 #include <object_recognition_core/db/db_base.h>
-#include <object_recognition_core/db/db_parameters.h>
 
 using object_recognition_core::db::AttachmentName;
 using object_recognition_core::db::CollectionName;
@@ -47,6 +46,7 @@ using object_recognition_core::db::DbType;
 using object_recognition_core::db::DocumentId;
 using object_recognition_core::db::ObjectId;
 using object_recognition_core::db::MimeType;
+using object_recognition_core::db::ObjectDbParametersRaw;
 using object_recognition_core::db::RevisionId;
 using object_recognition_core::db::View;
 using object_recognition_core::db::ViewElement;
@@ -58,9 +58,9 @@ class ObjectDbCouch: public object_recognition_core::db::ObjectDbBase
 public:
   ObjectDbCouch();
 
-  ObjectDbCouch(const object_recognition_core::db::ObjectDbParameters & parameters);
+  ObjectDbCouch(ObjectDbParametersRaw & parameters);
 
-  or_json::mObject
+  ObjectDbParametersRaw
   default_raw_parameters() const;
 
   virtual void
