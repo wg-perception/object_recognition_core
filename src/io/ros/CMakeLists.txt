@@ -1,7 +1,10 @@
 # create the cells to output messages
 rosbuild_lite_init()
 
-find_package(ecto_ros REQUIRED)
+find_package(ecto_ros QUIET)
+if (NOT ecto_ros_FOUND)
+  return()
+endif()
 find_package(object_recognition_msgs REQUIRED)
 
 if (ROS_ELECTRIC_FOUND)
