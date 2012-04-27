@@ -1,7 +1,10 @@
-find_pcl_package()
-find_package(OpenCV REQUIRED)
+find_package(Boost REQUIRED)
+find_package(PythonLibs REQUIRED)
 
-include_directories(${PCL_INCLUDE_DIRS})
+include_directories(SYSTEM
+                    ${Boost_INCLUDE_DIRS}
+                    ${PYTHON_INCLUDE_PATH}
+)
 
 add_library(object_recognition_core_common SHARED
             dict_json_conversion.cpp
@@ -9,9 +12,8 @@ add_library(object_recognition_core_common SHARED
 )
 
 target_link_libraries(object_recognition_core_common
-                      ${OpenCV_LIBRARIES}
-                      ${PCL_LIBRARIES}
                       object_recognition_core_db
+                      ${Boost_LIBRARIES}
 )
 
 
