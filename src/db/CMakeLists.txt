@@ -34,8 +34,8 @@ target_link_libraries(object_recognition_core_db
                       boost_serialization
                       boost_thread
                       ${CURL_LIBRARIES}
-                      opencv_core
-                      opencv_highgui
+                      ${OpenCV_LIBS}
+                      ${OpenCV_LIBRARIES}
                       ${ecto_LIBRARIES}
 )
 
