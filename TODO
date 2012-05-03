@@ -27,6 +27,7 @@ Performance:
 - Mike's stuff
 
 DB:
+- move to a system dependency with python-couchdb after Electric (dropping Lucid support)
 - delete things from the DB, find orphans, find missing components (models ...), find duplicates
 - better object representation (model, inline images, 3d models ...)
   - HTML - see the model_viewer under apps. Its a couch app, we can make it do whatever.
