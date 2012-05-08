@@ -6,7 +6,7 @@ ectomodule(filters
 
 link_ecto(filters
     ${OpenCV_LIBS}
-    ${pcl_LIBRARIES}
+    ${PCL_LIBRARIES}
     ${Boost_LIBRARIES}
 )
 
