@@ -1,5 +1,5 @@
 Catkin-ProjectName: object_recognition_core
-Version: 0.3.1
+Version: 0.3.2
 Description: Object_recognition_core contains tools to launch several recognition pipelines, train objects, store models ...
 Author: Ethan Rublee <erublee@willowgarage.com>, Vincent Rabaud <vrabaud@willowgarage.com>
 Maintainer:  Vincent Rabaud <vrabaud@willowgarage.com>
