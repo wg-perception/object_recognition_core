@@ -102,7 +102,7 @@ namespace object_recognition_core
       }
     }
 
-    ObjectDbParameters::ObjectDbParameters(const or_json::mObject& parameters)
+    ObjectDbParameters::ObjectDbParameters(const ObjectDbParametersRaw& parameters)
     {
       if (parameters.find("type") == parameters.end())
       {
@@ -157,23 +157,25 @@ namespace object_recognition_core
     }
 
     void
-    ObjectDb::set_parameters(const ObjectDbParameters &in_params)
+    ObjectDb::set_parameters(const ObjectDbParameters& in_params)
     {
-      ObjectDbParametersRaw params_raw = parameters_.raw();
-      switch (parameters_.type())
+      ObjectDbParametersRaw params_raw = in_params.raw();
+
+      switch (in_params.type())
       {
         case ObjectDbParameters::COUCHDB:
           db_ = boost::shared_ptr<ObjectDbBase>(new ObjectDbCouch(params_raw));
-          return;
+          break;
         case ObjectDbParameters::EMPTY:
-          return;
+          break;
         case ObjectDbParameters::FILESYSTEM:
           db_ = boost::shared_ptr<ObjectDbBase>(new ObjectDbFilesystem(params_raw));
-          return;
+          break;
         default:
-          return;
+          break;
       }
-      parameters_ = in_params;
+
+      parameters_ = ObjectDbParameters(params_raw);
     }
 
     void

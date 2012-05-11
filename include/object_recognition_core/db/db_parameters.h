@@ -36,6 +36,8 @@
 #ifndef DB_PARAMETERS_H_
 #define DB_PARAMETERS_H_
 
+#include <object_recognition_core/common/json.hpp>
+
 namespace object_recognition_core
 {
   namespace db
@@ -68,7 +70,7 @@ namespace object_recognition_core
        * @param params A map between some db parameters and their value
        */
       explicit
-      ObjectDbParameters(const or_json::mObject& params);
+      ObjectDbParameters(const ObjectDbParametersRaw& params);
 
       static ObjectDbType
       StringToType(const std::string & type);
@@ -76,7 +78,7 @@ namespace object_recognition_core
       static std::string
       TypeToString(const ObjectDbParameters::ObjectDbType & type);
 
-      ObjectDbType
+      inline ObjectDbType
       type() const
       {
         return type_;
@@ -84,21 +86,31 @@ namespace object_recognition_core
 
       template<typename T>
       void
-      set_parameter(const std::string & key, const T & value)
+      set_parameter(const std::string& key, const T& value)
       {
         if (key == "type")
           set_type(value);
         else
+        {
+          if ((type() != NONCORE) && (raw_.find(key) == raw_.end()))
+            throw std::runtime_error("Key \"" + key + "\" not a default key in db of type " + TypeToString(type()));
+
           raw_[key] = or_json::mValue(value);
+        }
       }
 
       void
-      set_parameter(const std::string & key, const or_json::mValue & value)
+      set_parameter(const std::string& key, const or_json::mValue& value)
       {
         if (key == "type")
           set_type(value.get_str());
         else
+        {
+          if ((type() != NONCORE) && (raw_.find(key) == raw_.end()))
+            throw std::runtime_error("Key \"" + key + "\" not a default key in db of type " + TypeToString(type()));
+
           raw_[key] = value;
+        }
       }
 
       void
@@ -131,10 +143,11 @@ namespace object_recognition_core
     protected:
       /** The type of the collection 'CouchDB' ... */
       ObjectDbType type_;
-      /** All the raw parameters: they are of integral types */
+      /** All the raw parameters: they are of integral types. 'type' is there */
       or_json::mObject raw_;
     };
   }
 }
 
 #endif /* DB_PARAMETERS_H_ */
+
