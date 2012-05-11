@@ -1,3 +1,9 @@
+# test some Python interfaces
+include(${CMAKE_BINARY_DIR}/cmake/object_recognition_core/test.cmake)
+
+object_recognition_core_pytest(db_test)
+
+# Testing core functionalities
 find_package(GTest)
 
 if(NOT GTEST_FOUND)

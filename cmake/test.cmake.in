@@ -8,7 +8,7 @@ endif()
 #testing macros
 macro(object_recognition_core_pytest pyfile)
   string(REPLACE ";" " " args "${ARGN}")
-  add_test(${PROJECT_NAME}_${pyfile}
+  add_test(${PROJECT_NAME}_${pyfile}.py
     ${object_recognition_core_TEST_DIR}/run_test.sh ${CMAKE_BINARY_DIR}/setup.sh ${CMAKE_CURRENT_SOURCE_DIR}/${pyfile}.py ${args}
     )
 endmacro()
@@ -16,7 +16,7 @@ endmacro()
 macro(object_recognition_core_desktop_test pyfile)
   if(DESKTOP_TEST)
     string(REPLACE ";" " " args "${ARGN}")
-    add_test(desktop_${PROJECT_NAME}_${pyfile}
+    add_test(desktop_${PROJECT_NAME}_${pyfile}.py
       ${object_recognition_core_TEST_DIR}/run_test.sh ${CMAKE_BINARY_DIR}/setup.sh ${CMAKE_CURRENT_SOURCE_DIR}/${pyfile}.py ${args}
       )
   endif(DESKTOP_TEST)
