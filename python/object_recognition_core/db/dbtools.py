@@ -71,4 +71,4 @@ def db_params_to_db(db_params):
     """
     if db_params.type.lower() == 'couchdb':
         import couchdb
-        return init_object_databases(couchdb.Server(db_params.root))
+        return init_object_databases(couchdb.Server(db_params.raw['root']))
