@@ -2,6 +2,8 @@ Database
 ========
 .. _couchdb: http://couchdb.apache.org
 
+.. _object_recognition_core_db:
+
 Implementations
 +++++++++++++++
 

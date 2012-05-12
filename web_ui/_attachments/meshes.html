@@ -1,0 +1,65 @@
+<!doctype html>
+<head>
+<script src="js/Three.js"></script>
+<script src="js/plane.js"></script>
+<script src="js/thingiview.js"></script>
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.6.4/jquery.min.js"></script>
+
+<script>
+	function image_for_object(object_id, mesh_id) {
+		var observation_id = 0;
+		$.getJSON(
+				"/object_recognition/_design/observations/_view/by_object_id?key=\""
+						+ object_id + "\"&limit=1", function(data) {
+					observation_id = data.rows[0].id
+					var a = $("<a>").attr("href", "?mesh=" + mesh_id).appendTo(
+							"#links");
+					$("<img/>").attr("src",
+							"/object_recognition/" + observation_id + "/image")
+							.attr("width", 200).appendTo(a);
+				});
+		return observation_id;
+	}
+	function get_list_of_urls() {
+		$
+				.getJSON(
+						"/object_recognition/_design/models/_view/by_object_id_and_mesh",
+						function(data) {
+							$.each(data.rows, function(key, val) {
+								image_for_object(val.value.object_id, val.id);
+							});
+						});
+	}
+
+	function getUrlVars() {
+		var vars = {}, hash;
+		var hashes = window.location.href.slice(
+				window.location.href.indexOf('?') + 1).split('&');
+		for ( var i = 0; i < hashes.length; i++) {
+			hash = hashes[i].split('=');
+			vars[hash[0]] = hash[1];
+		}
+		return vars;
+	}
+	window.onload = function() {
+		get_list_of_urls();
+		var vars = getUrlVars();
+		thingiurlbase = "js";
+		thingiview = new Thingiview("viewer");
+		thingiview.setObjectColor('#C0D8F0');
+		thingiview.initScene();
+		thingiview.loadSTL("/object_recognition/" + vars.mesh + "/mesh.stl");
+		thingiview.setCameraView('diagonal');
+		thingiview.setRotation(true);
+		thingiview.setObjectMaterial('solid');
+	}
+</script>
+</head>
+<body>
+  <h1>Object Meshes</h1>
+  <p>Best viewed in Google Chrome with webgl support.</p>
+  <div id="viewer" style="width: 50%; height: 400px"></div>
+  <div id="links" style="width: 50%; height: 400px"></div>
+</body>
+</html>
+

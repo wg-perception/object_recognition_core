@@ -1,0 +1,51 @@
+<!doctype html>
+<html>
+<head>
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.6.4/jquery.min.js"
+  type="text/javascript"></script>
+
+<script type="text/javascript">
+	function image_for_object(object_id, elem) {
+		var call_str = "/object_recognition/_design/observations/_view/by_object_id?key=\""
+				+ object_id + "\"&limit=1";
+		$.getJSON(call_str, function(data) {
+			var doc = data.rows[0];
+			img_src = "/object_recognition/" + doc.id + "/image";
+			elem.append($('<img>').attr('src', img_src).attr('width', 200));
+		});
+	}
+	function get_list_of_urls() {
+		$.getJSON("/object_recognition/_design/objects/_view/by_object_name",
+				function(data) {
+					var table = $('<table/>').attr('border', '1');
+					table.append($('<tr>').append(
+							$('<th>').text("Object Name"),
+							$('<th>').text("Description"),
+							$('<th>').text("Added"), $('<th>').text("ID"),
+							$('<th>').text("Image")));
+					$.each(data.rows, function(key, data) {
+						var obj = data.value
+						console.log(obj)
+						img_elem = $('<td>');
+						table.append($('<tr>').append(
+								$('<td>').text(obj.object_name),
+								$('<td>').text(obj.description),
+								$('<td>').text(obj.added),
+								$('<td>').text(data.id), img_elem));
+						image_for_object(data.id, img_elem);
+					});
+					table.appendTo("#objects");
+				});
+	}
+	window.onload = function() {
+		get_list_of_urls();
+	}
+</script>
+
+</head>
+<body>
+  <h1>Object Listing</h1>
+  <div id="objects" style="width: 50%; height: 400px"></div>
+</body>
+</html>
+
