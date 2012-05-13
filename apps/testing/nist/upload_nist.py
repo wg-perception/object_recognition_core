@@ -5,7 +5,7 @@ module that loads all the NIST bags and puts them in the DB
 
 from argparse import ArgumentParser
 import os
-from object_recognition.dbtools import add_db_arguments
+from object_recognition_core.db.tools import add_db_arguments
 import subprocess
 from object_recognition.ingest.bag_upload import upload_bag
 from object_recognition import models

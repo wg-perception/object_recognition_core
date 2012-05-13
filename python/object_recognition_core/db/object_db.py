@@ -4,8 +4,7 @@ Module defining a common Python interface to an ObjectDb
 
 from abc import ABCMeta
 from ecto_image_pipeline.io.source import create_source
-from object_recognition_core.boost.interface import ObjectDb as ObjectDbCpp, ObjectDbParameters
-from object_recognition_core.boost.interface import Document, DbDocuments, DbModels
+from object_recognition_core.boost.interface import ObjectDbParameters
 from object_recognition_core.utils.find_classes import find_classes
 
 ########################################################################################################################
@@ -47,8 +46,8 @@ def core_db_types():
     Return the current DB types implemented in object_recognition_core
     """
     types = []
-    from object_recognition_core.boost.interface import db_types as db_types
-    for type in db_types.values.itervalues():
+    from object_recognition_core.db import DbTypes
+    for type in DbTypes.values.itervalues():
         types.append(str(type).split('.')[-1].lower())
     types.remove('noncore')
     return types
@@ -68,6 +67,7 @@ def ObjectDb(db_params):
     # check if it is a conventional DB from object_recognition_core
     type = db_params_raw.get('type', None)
     if type.lower() in core_db_types():
+        from object_recognition_core.boost.interface import ObjectDb as ObjectDbCpp
         return ObjectDbCpp(object_db_params)
 
     # otherwise, look for the possible modules for that DB type

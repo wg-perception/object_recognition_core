@@ -130,7 +130,7 @@ public:
   virtual DbType
   type() const
   {
-    return "Filesystem";
+    return "filesystem";
   }
 private:
   static const RevisionId DEFAULT_REVISION_ID_;

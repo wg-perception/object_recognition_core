@@ -13,7 +13,8 @@ import couchdb
 import ecto
 from ecto_opencv import highgui
 import object_recognition
-from object_recognition import dbtools, models, capture
+from object_recognition_core.db import tools as dbtools, models
+from object_recognition_core.dbcells import ObservationReader
 
 db_url = dbtools.DEFAULT_SERVER_URL
 

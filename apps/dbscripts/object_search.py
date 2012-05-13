@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 import roscompat
 import object_recognition
-from object_recognition import dbtools, models
+from object_recognition import tools as dbtools, models
 import couchdb
 import argparse
 

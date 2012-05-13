@@ -2,8 +2,8 @@
 Loaders for all object recognition pipelines
 '''
 from abc import ABCMeta, abstractmethod
-from object_recognition_core.boost.interface import Document, DbDocuments
-from object_recognition_core.db import ObservationReader
+from object_recognition_core.db import Document, DbDocuments
+from object_recognition_core.db.cells import ObservationReader
 from object_recognition_core.utils.json_helper import dict_to_cpp_json_str, list_to_cpp_json_str
 import ecto
 

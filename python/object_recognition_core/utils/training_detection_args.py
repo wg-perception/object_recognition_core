@@ -4,7 +4,7 @@ Module that creates a function to define/read common arguments for the training/
 
 from object_recognition_core.boost.interface import ObjectDbParameters
 from object_recognition_core.db.object_db import ObjectDb, core_db_types
-from object_recognition_core.db import models, dbtools
+from object_recognition_core.db import models, tools as dbtools
 from object_recognition_core.utils.parser import ObjectRecognitionParser
 import os
 import sys

@@ -12,7 +12,7 @@ import couchdb
 import ecto
 from ecto_opencv import calib, highgui, imgproc
 import object_recognition
-from object_recognition import dbtools, models, capture
+from object_recognition import tools as dbtools, models, capture
 from ecto_object_recognition import reconstruction, conversion
 import ecto_pcl
 from tempfile import NamedTemporaryFile

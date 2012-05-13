@@ -33,6 +33,7 @@
  *
  */
 
+#include <algorithm>
 #include <string>
 #include <boost/bind.hpp>
 #include <boost/foreach.hpp>
@@ -86,6 +87,7 @@ namespace object_recognition_core
         case ObjectDbParameters::EMPTY:
         {
           raw_.clear();
+          raw_["type"] = "empty";
           break;
         }
         case ObjectDbParameters::FILESYSTEM:
@@ -122,11 +124,14 @@ namespace object_recognition_core
     ObjectDbParameters::ObjectDbType
     ObjectDbParameters::StringToType(const std::string & type_str)
     {
-      if (type_str == "CouchDB")
+      std::string type_str_lower = type_str;
+      std::transform(type_str.begin(), type_str.end(), type_str_lower.begin(), ::tolower);
+
+      if (type_str_lower == "couchdb")
         return COUCHDB;
-      else if (type_str == "empty")
+      else if (type_str_lower == "empty")
         return EMPTY;
-      else if (type_str == "filesystem")
+      else if (type_str_lower == "filesystem")
         return FILESYSTEM;
       else
         return NONCORE;

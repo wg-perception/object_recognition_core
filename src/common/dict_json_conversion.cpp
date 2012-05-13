@@ -72,7 +72,7 @@ namespace object_recognition_core
             continue;
           }
         }
-        throw std::runtime_error("BpDictToMap unimplemented type");
+        throw std::runtime_error("BpDictToJson: unimplemented type");
       }
       return params;
     }

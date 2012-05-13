@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 import roscompat
-from object_recognition_core.db.object_db import ObjectDb, ObjectDbParameters
+from object_recognition_core.db import ObjectDb, ObjectDbParameters
 from object_recognition_core.db import models
 from object_recognition_core.utils.training_detection_args import read_arguments_training
 from object_recognition_core.utils.find_classes import find_classes

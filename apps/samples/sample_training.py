@@ -4,7 +4,7 @@ import sys
 import couchdb
 from ecto_opencv.highgui import imshow, ImageSaver
 from ecto_object_recognition import capture
-from object_recognition import models, dbtools
+from object_recognition import models, tools as dbtools
 import ecto_opencv
 import os
 
