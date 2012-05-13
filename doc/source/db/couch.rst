@@ -76,7 +76,7 @@ First make sure you have ``couchapp``:
 
 .. code-block:: sh
 
-    sudo easy_install couchapp
+    sudo pip install -U couchapp
 
 There is a make target for installing the web ui for your convenience.:
 
@@ -105,4 +105,3 @@ Library
 ^^^^^^^
 Object Recognition tools manipulate the database either using libCURL or python-couchdb.
 You may find it helpful to browse the default db HTML interface at http://localhost:5984/_utils
-
