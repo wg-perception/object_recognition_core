@@ -59,3 +59,4 @@ Test:
 - be able to train and test on the same bag
 - ground truth format?  Look at NIST CSV.  Possibly come up with bag format too, where each frame has a listing of object id and pose relative to the sensor
 - ground truth capture... Use the NIST Ponoko rig to capture scenes with GT poses. Needs a simple app or something.
+- fix tests in /test that are unused
