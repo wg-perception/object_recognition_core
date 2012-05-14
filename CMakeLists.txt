@@ -49,4 +49,4 @@ if(BUILD_TEST)
   add_subdirectory(test)
 endif()
 
-#catkin_add_env_hooks(10.object_recognition_core SHELLS all)
+catkin_doxygen(object_recognition_core-doxygen ${CMAKE_CURRENT_SOURCE_DIR}/include)

@@ -80,7 +80,8 @@ namespace object_recognition_core
 
     /** If you have your own Db to deal with, just call that function to make it visible from Python
      * You can override some Python definition after calling it
-     * @param object_db_name
+     * @param object_db_name the name of your DB
+     * @param constructor the constructor of your DB
      */
     template<typename Constructor>
     void

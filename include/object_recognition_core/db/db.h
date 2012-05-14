@@ -202,42 +202,34 @@ namespace object_recognition_core
       }
 
       /** Extract a specific attachment from a document in the DB
-       * @param db the db to read from
        * @param attachment_name
        * @param value
-       * @param do_use_cache if true, try to load and store data in the object itself
        */
       template<typename T>
       void
       get_attachment(const AttachmentName &attachment_name, T & value) const;
 
       /** Extract the stream of a specific attachment for a Document from the DB
-       * @param db the db to read from
        * @param attachment_name the name of the attachment
        * @param stream the string of data to write to
        * @param mime_type the MIME type as stored in the DB
-       * @param do_use_cache if true, try to load and store data in the object itself
        */
       virtual void
       get_attachment_stream(const AttachmentName &attachment_name, std::ostream& stream, MimeType mime_type =
           MIME_TYPE_DEFAULT) const;
 
       /** Extract a specific attachment from a document in the DB
-       * @param db the db to read from
        * @param attachment_name
        * @param value
-       * @param do_use_cache if true, try to load and store data in the object itself
        */
       template<typename T>
       void
       get_attachment_and_cache(const AttachmentName &attachment_name, T & value);
 
       /** Extract the stream of a specific attachment for a Document from the DB
-       * @param db the db to read from
        * @param attachment_name the name of the attachment
        * @param stream the string of data to write to
        * @param mime_type the MIME type as stored in the DB
-       * @param do_use_cache if true, try to load and store data in the object itself
        */
       void
       get_attachment_stream_and_cache(const AttachmentName &attachment_name, std::ostream& stream, MimeType mime_type =
@@ -286,14 +278,12 @@ namespace object_recognition_core
       ViewIterator(const View &view, const ObjectDb& db);
 
       /** Perform the query itself
-       * @param db The db on which the query is performed
        * @return an Iterator that will iterate over each result
        */
       ViewIterator &
       begin();
 
       /** Perform the query itself
-       * @param db The db on which the query is performed
        * @return an Iterator that will iterate over each result
        */
       static ViewIterator

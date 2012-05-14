@@ -1,4 +1,14 @@
-Object Recognition Api
+DB API
+======
+
+DB interactions are done with a specific API. You can either use the default types, or create your own.
+
+.. toctree::
+   :maxdepth: 2
+
+   db.rst
+
+Object Recognition API
 ======================
 
 In Object Recognition each algorithm is defined in terms of a pipeline. We have a few interfaces you should follow if
@@ -11,7 +21,6 @@ the section.
 .. toctree::
    :maxdepth: 2
    
-   common.rst
    training.rst
    detection.rst
    cells.rst

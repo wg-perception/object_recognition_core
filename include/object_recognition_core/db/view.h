@@ -68,21 +68,17 @@ namespace object_recognition_core
       }
 
       /** Extract a specific attachment from a document in the DB
-       * @param db the db to read from
        * @param attachment_name
        * @param value
-       * @param do_use_cache if true, try to load and store data in the object itself
        */
       template<typename T>
       void
       get_attachment(const AttachmentName &attachment_name, T & value) const;
 
       /** Extract the stream of a specific attachment for a Document from the DB
-       * @param db the db to read from
        * @param attachment_name the name of the attachment
        * @param stream the string of data to write to
        * @param mime_type the MIME type as stored in the DB
-       * @param do_use_cache if true, try to load and store data in the object itself
        */
       virtual void
       get_attachment_stream(const AttachmentName &attachment_name, std::ostream& stream, MimeType mime_type =
@@ -99,7 +95,7 @@ namespace object_recognition_core
       /** Add a stream attachment to a a Document
        * @param attachment_name the name of the stream
        * @param stream the stream itself
-       * @param content_type the MIME type of the stream
+       * @param mime_type the MIME type of the stream
        */
       void
       set_attachment_stream(const AttachmentName &attachment_name, const std::istream& stream,
