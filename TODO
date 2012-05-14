@@ -7,12 +7,6 @@ Build:
 - no default build of tests
 - split the tests (db tests should at least be separated)
 
-Ecto:
-- remove redundant interfaces: p.declare<>, p.declare(&), p["val"], p.get<T>("val")
-  - Ethan: I feel like these are not redundant and have their place for different purposes...
-- sched.execute, run_plasm
-  - Ethan: Not sure if this is valid either... run_plasm is a helper function that takes into a account common command line options for ecto demos...
-
 Interface:
 - --all should also have a --missing. Fix missing, object_names
 - meshing should support --all, --missing, --object_ids
@@ -45,7 +39,6 @@ Capture:
 - upload through the capture GUI. Also have the triggering of all the other models (RabbitMQ ...)
 - should be a parameter file for the type of fiducials
 - unify the different Kinect calls to use the Kinect source (grep for /camera/depth)
-- move capture into its own project
 
 Doc:
 - API docs
