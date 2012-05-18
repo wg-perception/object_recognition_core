@@ -1,6 +1,7 @@
 After electric:
 - ecto: remove ROS_ELECTRIC_FOUND (everywhere in the code) and rosbuild_lite
 - OpenCV: replace OpenCV_LIBS by OpenCV_LIBRARIES
+- remove roscompat
 
 Build:
 - no default build of tutorials
