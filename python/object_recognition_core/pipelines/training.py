@@ -2,7 +2,7 @@
 Loaders for all object recognition pipelines
 '''
 from abc import ABCMeta, abstractmethod
-from object_recognition_core.db import Document, DbDocuments
+from object_recognition_core.db import Document, Documents
 from object_recognition_core.db.cells import ObservationReader
 from object_recognition_core.utils.json_helper import dict_to_cpp_json_str, list_to_cpp_json_str
 import ecto
@@ -20,7 +20,7 @@ class ObservationDealer(ecto.BlackBox):
     def declare_io(self, p, i, o):
         self.db_reader = ObservationReader()
         self.observation_dealer = ecto.Dealer(tendril=ecto.Tendril(Document()),
-                                              iterable=DbDocuments(p.object_db, p.observation_ids))
+                                              iterable=Documents(p.object_db, p.observation_ids))
         o.forward_all('db_reader')
 
     def connections(self):

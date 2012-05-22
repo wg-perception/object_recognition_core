@@ -106,7 +106,7 @@ namespace object_recognition_core
     {
       bp::class_<Document>("Document").def(bp::init<>()).def(bp::init<Document>());
 
-      bp::class_<Documents, DocumentsPtr> DocumentsClass("DbDocuments");
+      bp::class_<Documents, DocumentsPtr> DocumentsClass("Documents");
       DocumentsClass.def("__init__", bp::make_constructor(DocumentsConstructor));
       DocumentsClass.def(boost::python::vector_indexing_suite<Documents>());
       DocumentsClass.def("size", &Documents::size);
@@ -133,11 +133,11 @@ namespace object_recognition_core
       return p;
     }
 
-    // DbModels are DbDocuments that are models
+    // Models are Documents that are models
     void
     wrap_db_models()
     {
-      boost::python::def("DbModels", ModelDocumentsFromPython);
+      boost::python::def("Models", ModelDocumentsFromPython);
     }
   }
 }

@@ -108,7 +108,7 @@ namespace object_recognition_core
         static void
         declare_params(ecto::tendrils& params)
         {
-          params.declare(&C::model_documents_, "model_documents", "A set of DbDocuments, one for each model to load.").required(
+          params.declare(&C::model_documents_, "model_documents", "A set of Documents, one for each model to load.").required(
               true);
           T::declare_params(params);
         }

@@ -46,8 +46,8 @@ def core_db_types():
     Return the current DB types implemented in object_recognition_core
     """
     types = []
-    from object_recognition_core.db import DbTypes
-    for type in DbTypes.values.itervalues():
+    from object_recognition_core.db import ObjectDbTypes
+    for type in ObjectDbTypes.values.itervalues():
         types.append(str(type).split('.')[-1].lower())
     types.remove('noncore')
     return types

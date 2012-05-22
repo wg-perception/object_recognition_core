@@ -1,4 +1,4 @@
-from object_recognition_core.boost.interface import ObjectDbParameters
+from object_recognition_core.boost.interface import ObjectDbParameters, ObjectDbTypes
 
 DEFAULT_DB_COLLECTION = 'object_recognition'
 DEFAULT_DB_ROOT = 'http://localhost:5984'
@@ -69,6 +69,6 @@ def db_params_to_db(db_params):
     """
     Given a ObjectDbParameters, return  db object
     """
-    if db_params.type.lower() == 'couchdb':
+    if db_params.type == ObjectDbTypes.COUCHDB:
         import couchdb
         return init_object_databases(couchdb.Server(db_params.raw['root']))
