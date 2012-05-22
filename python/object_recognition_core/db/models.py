@@ -1,7 +1,7 @@
 from couchdb.design import ViewDefinition
 from couchdb.mapping import TextField, ListField, DateTimeField, Document, ViewField, IntegerField
 from datetime import datetime
-import tools as dbtools
+import object_recognition_core.db.tools as dbtools
 from object_recognition_core.db.tools import DEFAULT_DB_ROOT, init_object_databases
 import couchdb
 
