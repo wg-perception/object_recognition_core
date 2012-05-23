@@ -43,9 +43,10 @@ def common_interpret_object_ids(pipeline_param_full, args=None):
             continue
         db = dbtools.db_params_to_db(ObjectDbParameters(db_params))
 
-        for val in [ ids, names ]:
-            if val is not 'all' and val is not 'missing' and isinstance(val, str):
-                val = eval(val)
+        if isinstance(ids, str) and ids != 'all' and ids != 'missing':
+            ids = eval(ids)
+        if isinstance(names, str) and names != 'all' and names != 'missing':
+            names = eval(names)
 
         if object_ids is None:
             object_ids = set()
@@ -57,12 +58,14 @@ def common_interpret_object_ids(pipeline_param_full, args=None):
             tmp_object_ids = set([ str(x.id) for x in models.Object.all(db) ])
             tmp_object_ids_from_names = set([ str(x.object_id) for x in models.Model.all(db) ])
             object_ids.update(tmp_object_ids.difference(tmp_object_ids_from_names))
+
         if ids and ids != 'missing':
             object_ids.update(ids)
         if names and names != 'missing':
             for object_name in names:
                 object_ids.update([str(x.id) for x in models.objects_by_name(db, object_name)])
         # if we got some ids through the command line, just stop here
+
         if object_ids:
             break
     if object_ids is not None:
