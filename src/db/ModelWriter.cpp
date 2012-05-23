@@ -110,6 +110,7 @@ namespace object_recognition_core
 
           // If it does not have a submethod, it is the old model type, so delete it
           const or_json::mObject & fields = (*iter).fields();
+
           if (fields.find("submethod") == fields.end())
             is_incomplete_model_type = true;
           else
@@ -118,7 +119,7 @@ namespace object_recognition_core
           // If they are the same, delete the current model in the database
           if ((CompareJsonIntersection(in_submethod, db_submethod)) || is_incomplete_model_type)
           {
-            DocumentId model_id = fields.find("_id")->second.get_str();
+            DocumentId model_id = (*iter).id_;
             std::cout << "Deleting the previous model " << model_id << " of object " << *object_id_ << std::endl;
             db_.Delete(model_id);
           }
