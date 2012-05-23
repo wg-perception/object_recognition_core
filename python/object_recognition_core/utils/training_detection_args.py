@@ -158,4 +158,9 @@ def read_arguments_detector():
         common_interpret_object_ids(pipeline_param, args)
 
     args = vars(args)
+
+    if args.visualize:
+        for pipeline_id, pipeline_param in pipeline_params.iteritems():
+            pipeline_param['visualize'] = True
+
     return source_params, pipeline_params, sink_params, voter_params, args
