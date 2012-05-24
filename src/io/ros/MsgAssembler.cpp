@@ -152,10 +152,14 @@ namespace object_recognition_core
 #if 0
           const std::vector<pcl::PointCloud<pcl::PointXYZ> > & point_clouds = pose_result.point_clouds();
 #endif
-          std::vector<pcl::PointCloud<pcl::PointXYZ> > * point_clouds = reinterpret_cast<std::vector<
-              pcl::PointCloud<pcl::PointXYZ> > *>(pose_result.point_clouds());
-          object.point_clouds.resize(point_clouds->size());
-          for (size_t i = 0; i < point_clouds->size(); ++i)
+          std::vector<pcl::PointCloud<pcl::PointXYZ> > * point_clouds;
+          size_t cloud_size = 0;
+          if (pose_result.point_clouds()) {
+            point_clouds = reinterpret_cast<std::vector<pcl::PointCloud<pcl::PointXYZ> > *>(pose_result.point_clouds());
+            cloud_size = point_clouds->size();
+          }
+          object.point_clouds.resize(cloud_size);
+          for (size_t i = 0; i < cloud_size; ++i)
             pcl::toROSMsg((*point_clouds)[i], object.point_clouds[i]);
 
           ++object_id;
