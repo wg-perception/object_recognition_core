@@ -152,7 +152,7 @@ namespace object_recognition_core
 #if 0
           const std::vector<pcl::PointCloud<pcl::PointXYZ> > & point_clouds = pose_result.point_clouds();
 #endif
-          std::vector<pcl::PointCloud<pcl::PointXYZ> > * point_clouds;
+          std::vector<pcl::PointCloud<pcl::PointXYZ> > * point_clouds = NULL;
           size_t cloud_size = 0;
           if (pose_result.point_clouds()) {
             point_clouds = reinterpret_cast<std::vector<pcl::PointCloud<pcl::PointXYZ> > *>(pose_result.point_clouds());
