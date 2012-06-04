@@ -162,7 +162,7 @@ def read_arguments_detector():
 
     args = vars(args)
 
-    if args.visualize:
+    if args['visualize']:
         for pipeline_id, pipeline_param in pipeline_params.iteritems():
             pipeline_param['visualize'] = True
 

@@ -77,4 +77,14 @@ class OpenNI(Source):
 
     @classmethod
     def source(self, *args, **kwargs):
+        from ecto_openni import FpsMode, ResolutionMode, StreamMode
+        for key, val_type_name, val_type in [ ('image_fps', 'FpsMode', FpsMode), ('depth_fps', 'FpsMode', FpsMode),
+                                             ('image_mode', 'ResolutionMode', ResolutionMode),
+                                             ('depth_mode', 'ResolutionMode', ResolutionMode),
+                                             ('stream_mode', 'StreamMode', StreamMode) ]:
+            val = kwargs.get(key, None)
+            if isinstance(val, str):
+                for enum in val_type.values.values():
+                    if val == str(enum):
+                        kwargs[key] = enum
         return create_source(*('image_pipeline', 'OpenNISource'), **kwargs)
