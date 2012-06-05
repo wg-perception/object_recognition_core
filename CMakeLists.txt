@@ -32,13 +32,6 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
 add_subdirectory(src)
 add_subdirectory(web_ui)
 
-install(DIRECTORY apps/
-        DESTINATION bin
-        USE_SOURCE_PERMISSIONS
-        PATTERN "*.bag" EXCLUDE
-        PATTERN "*.pyc" EXCLUDE
-        )
-
 #these setup the lib to be used by others
 include(cmake/install.cmake)
 
