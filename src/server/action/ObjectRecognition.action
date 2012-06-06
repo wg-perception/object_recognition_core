@@ -1,9 +1,7 @@
 # Empty goal its just a thunk
 ---
 # Define the result
-Header header
-geometry_msgs/Pose[] poses
-string[] object_ids
-float32[] confidence
+# Send the found objects, see the msg files for docs
+object_recognition_msgs/RecognizedObjectArray recognized_objects
 ---
 #no feedback
