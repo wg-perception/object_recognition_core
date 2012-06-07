@@ -11,12 +11,20 @@ install(DIRECTORY ${CMAKE_BINARY_DIR}/share/test
         USE_SOURCE_PERMISSIONS
 )
 
+if (ROS_ELECTRIC_FOUND)
 # install the applications
 install(PROGRAMS ${PROJECT_SOURCE_DIR}/apps/detection
-                 ${PROJECT_SOURCE_DIR}/apps/training
-        DESTINATION ${object_recognition_core_DIR}/bin
+                 ${PROJECT_SOURCE_DIR}/apps/training 
+        DESTINATION bin
 )
 
 install(FILES ${PROJECT_SOURCE_DIR}/apps/roscompat.py
-        DESTINATION ${object_recognition_core_DIR}/bin
+        DESTINATION bin
 )
+else()
+# install the applications
+install(PROGRAMS ${PROJECT_SOURCE_DIR}/apps/detection
+                 ${PROJECT_SOURCE_DIR}/apps/training
+        DESTINATION share/${PROJECT_NAME}/bin
+)
+endif()
