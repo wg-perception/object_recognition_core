@@ -1,11 +1,10 @@
 #!/usr/bin/env python
-import roslib; roslib.load_manifest('object_recognition_server')
 import rospy
 from geometry_msgs.msg import PoseArray
 from std_msgs.msg import String
 import actionlib
-from object_recognition_server.msg import *
-from object_recognition.pipelines import create_detection_plasm
+from object_recognition_msgs.msg import *
+from object_recognition_core.pipelines.plasm import create_detection_plasm
 import ecto
 import sys
 import yaml
@@ -77,8 +76,8 @@ class RecognitionServer:
         self.object_ids = None
 
 if __name__ == '__main__':
-    rospy.init_node('recognize_objects')
     args = rospy.myargv(argv=sys.argv)[1:]
     print 'rospy args stripped',args
     server = RecognitionServer(args)
+    rospy.init_node('recognize_objects')
     rospy.spin()
