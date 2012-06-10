@@ -25,7 +25,7 @@ class RecognitionServer:
         rospy.Subscriber("object_ids", String, self.callback_object_ids)
         
         #actionlib stuff
-        self.server = actionlib.SimpleActionServer('recognize_objects', RecognizeObjectsAction, self.execute, False)
+        self.server = actionlib.SimpleActionServer('recognize_objects', ObjectRecognitionAction, self.execute, False)
         self.server.start()
     
     def callback_poses(self, data):
@@ -78,6 +78,6 @@ class RecognitionServer:
 if __name__ == '__main__':
     args = rospy.myargv(argv=sys.argv)[1:]
     print 'rospy args stripped',args
-    server = RecognitionServer(args)
     rospy.init_node('recognize_objects')
+    server = RecognitionServer(args)
     rospy.spin()
