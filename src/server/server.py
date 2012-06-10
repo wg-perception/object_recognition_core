@@ -78,6 +78,6 @@ class RecognitionServer:
 if __name__ == '__main__':
     args = rospy.myargv(argv=sys.argv)[1:]
     print 'rospy args stripped',args
-    rospy.init_node('recognize_objects')
+    rospy.init_node('recognize_objects_server')
     server = RecognitionServer(args)
     rospy.spin()
