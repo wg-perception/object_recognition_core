@@ -27,4 +27,7 @@ install(PROGRAMS ${PROJECT_SOURCE_DIR}/apps/detection
                  ${PROJECT_SOURCE_DIR}/apps/training
         DESTINATION share/${PROJECT_NAME}/bin
 )
+install(FILES ${PROJECT_SOURCE_DIR}/manifest.xml
+        DESTINATION share/${PROJECT_NAME}
+)
 endif()
