@@ -163,7 +163,6 @@ namespace object_recognition_core
 
       // Create poses and fill them in the message
       {
-        // TODO, switch to the following one with the new psoe with covariance message
         pose_array_msg.poses.resize((*recognized_objects_)->objects.size());
 
         unsigned int marker_id = 0;
@@ -180,6 +179,8 @@ namespace object_recognition_core
 
           // Deal with the pose
           pose_array_msg.poses[marker_id] = recognized_object.pose.pose.pose;
+          // For now, we assume that all the poses are in the same frame
+          pose_array_msg.header = recognized_object.pose.header;
 
           // Deal with the marker
           visualization_msgs::Marker marker;
