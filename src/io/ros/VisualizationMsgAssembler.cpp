@@ -249,7 +249,7 @@ namespace object_recognition_core
       return ecto::OK;
     }
   private:
-    ecto::spore<object_recognition_msgs::RecognizedObjectArrayPtr> recognized_objects_;
+    ecto::spore<object_recognition_msgs::RecognizedObjectArrayConstPtr> recognized_objects_;
 
     /** This structure is used to keep an index for each found obejct, only so that the color of the mesh does not
      * keep changing
