@@ -230,7 +230,7 @@ ObjectDbCouch::Query(const object_recognition_core::db::View & view, int limit_r
     }
     case object_recognition_core::db::View::VIEW_OBJECT_INFO_WHERE_OBJECT_ID:
     {
-      url = root_ + "/" + collection_ + "/_design/models/_view/by_object_id_and_" + parameters["model_type"].get_str();
+      url = root_ + "/" + collection_ + "/_design/models/_view/by_object_id";
       do_throw = false;
 
       object_recognition_core::db::View::Key key;
