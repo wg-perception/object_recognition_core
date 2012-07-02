@@ -44,7 +44,7 @@ class PublisherBlackBox(ecto.BlackBox):
         i.forward_all('_msg_assembler')
 
     def configure(self, p, _i, _o):
-        self._recognized_object_array = Publisher_RecognizedObjectArray(topic_name=p.recognized_object_array_topic)
+        self._recognized_object_array = Publisher_RecognizedObjectArray(topic_name=p.recognized_object_array_topic, latched=p.latched)
         if self._do_visualize:
             self._visualization_msg_assembler = VisualizationMsgAssembler()
             self._pose_pub = PublisherBlackBox._pose_pub(topic_name=p.pose_topic, latched=p.latched)
@@ -56,7 +56,7 @@ class PublisherBlackBox(ecto.BlackBox):
         connections = [ self._msg_assembler['msg'] >> self._recognized_object_array['input']]
 
         if self._do_visualize:
-            connections = [ self._msg_assembler['msg'] >> self._visualization_msg_assembler['msg'] ]
+            connections += [ self._msg_assembler['msg'] >> self._visualization_msg_assembler['msg'] ]
 
             connections += [self._visualization_msg_assembler['pose_message'] >> self._pose_pub[:],
                 self._visualization_msg_assembler['object_ids_message'] >> self._object_ids_pub[:],
