@@ -140,9 +140,9 @@ namespace object_recognition_core
     {
       inputs.declare(&VisualizationMsgAssembler::recognized_objects_, "msg", "The object recognition array msg");
 
-      outputs.declare<PoseArrayMsgConstPtr>("pose_message", "The poses");
-      outputs.declare<ObjectIdsMsgPtr>("object_ids_message", "The poses");
-      outputs.declare<MarkerArrayMsgPtr>("marker_message", "Visualization markers for ROS.");
+      outputs.declare < PoseArrayMsgConstPtr > ("pose_message", "The poses");
+      outputs.declare < ObjectIdsMsgPtr > ("object_ids_message", "The poses");
+      outputs.declare < MarkerArrayMsgPtr > ("marker_message", "Visualization markers for ROS.");
     }
 
     void
@@ -166,29 +166,37 @@ namespace object_recognition_core
         pose_array_msg.poses.resize((*recognized_objects_)->objects.size());
 
         unsigned int marker_id = 0;
-        BOOST_FOREACH (const object_recognition_msgs::RecognizedObject & recognized_object, (*recognized_objects_)->objects)
+        BOOST_FOREACH (const object_recognition_msgs::RecognizedObject & recognized_object, (*recognized_objects_)->objects){
+        // Deal with the color index
+        size_t object_index;
         {
-          // Deal with the color index
-          size_t object_index;
-          {
-            std::string hash = recognized_object.id.db + recognized_object.id.id;
-            if (object_id_to_index_.find(hash) == object_id_to_index_.end())
-              object_id_to_index_[hash] = object_id_to_index_.size();
-            object_index = object_id_to_index_[hash];
-          }
+          std::string hash = recognized_object.id.db + recognized_object.id.id;
+          if (object_id_to_index_.find(hash) == object_id_to_index_.end())
+          object_id_to_index_[hash] = object_id_to_index_.size();
+          object_index = object_id_to_index_[hash];
+        }
 
-          // Deal with the pose
-          pose_array_msg.poses[marker_id] = recognized_object.pose.pose.pose;
-          // For now, we assume that all the poses are in the same frame
-          pose_array_msg.header = recognized_object.pose.header;
+        // Deal with the pose
+        pose_array_msg.poses[marker_id] = recognized_object.pose.pose.pose;
+        // For now, we assume that all the poses are in the same frame
+        pose_array_msg.header = recognized_object.pose.header;
 
-          // Deal with the marker
+        or_json::mValue db_params;
+        or_json::read(recognized_object.id.db, db_params);
+        object_recognition_core::db::ObjectDb db = object_recognition_core::db::ObjectDb(
+            object_recognition_core::db::ObjectDbParameters(db_params.get_obj()));
+        object_recognition_core::prototypes::ObjectInfo object_info(recognized_object.id.id, db);
+        const or_json::mObject & attributes = object_info.attributes();
+
+        // Deal with the marker
+        {
           visualization_msgs::Marker marker;
           marker.pose = recognized_object.pose.pose.pose;
           marker.type = visualization_msgs::Marker::MESH_RESOURCE;
           marker.action = visualization_msgs::Marker::ADD;
-          marker.lifetime = ros::Duration(30);
+          marker.lifetime = ros::Duration(10);
           marker.header = recognized_object.pose.header;
+
           marker.scale.x = 1;
           marker.scale.y = 1;
           marker.scale.z = 1;
@@ -202,37 +210,40 @@ namespace object_recognition_core
           marker.color.g = g;
           marker.color.b = b;
           marker.color.r = r;
-          marker.id = marker_id;
-
-          or_json::mValue db_params;
-          or_json::read(recognized_object.id.db, db_params);
-          object_recognition_core::db::ObjectDb db = object_recognition_core::db::ObjectDb(
-              object_recognition_core::db::ObjectDbParameters(db_params.get_obj()));
-          object_recognition_core::prototypes::ObjectInfo object_info(recognized_object.id.id, db);
-          const or_json::mObject & attributes = object_info.attributes();
+          marker.id = 2*marker_id;
 
           if (attributes.find("mesh_uri") != attributes.end())
-            marker.mesh_resource = attributes.find("mesh_uri")->second.get_str();
+          marker.mesh_resource = attributes.find("mesh_uri")->second.get_str();
+
           marker_array.markers.push_back(marker);
+        }
+        {
+          visualization_msgs::Marker marker;
+          marker.pose = recognized_object.pose.pose.pose;
           marker.type = visualization_msgs::Marker::TEXT_VIEW_FACING;
+          marker.action = visualization_msgs::Marker::ADD;
+          marker.lifetime = ros::Duration(10);
+          marker.header = recognized_object.pose.header;
+
           if (attributes.find("name") != attributes.end())
-            marker.text = attributes.find("name")->second.get_str();
+          marker.text = attributes.find("name")->second.get_str();
           marker.color.a = 1;
           marker.color.g = 1;
           marker.color.b = 1;
           marker.color.r = 1;
           marker.scale.z = 0.03;
-          marker.lifetime = ros::Duration(10);
+          marker.id = 2*marker_id+1;
 
           marker_array.markers.push_back(marker);
-          ++marker_id;
-
-          // Deal with the obejct_id
-          object_ids_array.push_back(or_json::mValue(recognized_object.id.id));
         }
-      }
+        ++marker_id;
 
-      // Add the object ids to the message
+        // Deal with the object_id
+        object_ids_array.push_back(or_json::mValue(recognized_object.id.id));
+      }
+    }
+
+    // Add the object ids to the message
       {
         or_json::mObject object_ids_param_tree;
         object_ids_param_tree["object_ids"] = or_json::mValue(object_ids_array);
@@ -261,4 +272,4 @@ namespace object_recognition_core
 }
 
 ECTO_CELL(io_ros, object_recognition_core::VisualizationMsgAssembler, "VisualizationMsgAssembler",
-          "Given an existing message, create visualization messages from it.");
+    "Given an existing message, create visualization messages from it.");
