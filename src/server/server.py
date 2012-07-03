@@ -57,7 +57,7 @@ class RecognitionServer:
 
     def execute(self, goal):
         # Do lots of awesome groundbreaking robot stuff here
-        result = RecognizeObjectsResult()
+        result = ObjectRecognitionResult()
         self.sched.execute(niter=1)
         #the pipeline should have published, wait for the results.
         while self.poses is None or self.object_ids is None:
