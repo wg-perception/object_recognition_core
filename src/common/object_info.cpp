@@ -67,17 +67,16 @@ namespace object_recognition_core
       if (db_.parameters().type() == db::ObjectDbParameters::EMPTY)
         throw std::runtime_error("Db not set in the ObjectInfo");
 
-      // Get the mesh id
+      // Get information about the object
       db::ViewIterator view_iterator(view, db_);
 
       db::ViewIterator iter = view_iterator.begin(), end = view_iterator.end();
-      std::string mesh_id;
       for (; iter != end; ++iter)
       {
         const or_json::mObject &fields = (*iter).fields();
 
         // Get the object name
-        if (fields.find("name") == fields.end())
+        if (fields.find("object_name") == fields.end())
           attributes_.fields_["name"] = "";
         else
           attributes_.fields_["name"] = fields.find("name")->second.get_str();
@@ -87,12 +86,25 @@ namespace object_recognition_core
           attributes_.fields_["name"] = object_id_;
 
         // Get the mesh_id
-        if (fields.find("mesh_uri") == fields.end())
-          attributes_.fields_["mesh_uri"] = "";
-        else
+        if (fields.find("mesh_uri") != fields.end())
           attributes_.fields_["mesh_uri"] = fields.find("mesh_uri")->second.get_str();
 
         // The view should return only one element
+        break;
+      }
+
+      // Get the mesh id
+      std::string mesh_id;
+      view = db::View(db::View::VIEW_MODEL_WHERE_OBJECT_ID_AND_MODEL_TYPE);
+      view.Initialize("mesh");
+      view.set_key(object_id_);
+      view_iterator = db::ViewIterator(view, db_);
+      iter = view_iterator.begin();
+      end = view_iterator.end();
+      for (; iter != end; ++iter)
+      {
+        const or_json::mObject &fields = (*iter).fields();
+        mesh_id = fields.find("_id")->second.get_str();
         break;
       }
 
