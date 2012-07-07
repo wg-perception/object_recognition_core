@@ -28,11 +28,7 @@ add_library(object_recognition_core_db
 )
 
 target_link_libraries(object_recognition_core_db
-                      boost_filesystem
-                      boost_regex
-                      boost_system
-                      boost_serialization
-                      boost_thread
+                      ${Boost_LIBRARIES}
                       ${CURL_LIBRARIES}
                       ${OpenCV_LIBS}
                       ${OpenCV_LIBRARIES}
