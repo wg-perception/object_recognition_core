@@ -16,11 +16,6 @@ target_link_libraries(object_recognition_core_common
                       ${Boost_LIBRARIES}
 )
 
-
-set_target_properties(object_recognition_core_common PROPERTIES
-                      LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib
-)
-
 install(TARGETS object_recognition_core_common
         DESTINATION lib
 )
