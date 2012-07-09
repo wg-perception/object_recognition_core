@@ -27,12 +27,11 @@ add_library(object_recognition_core_db
             view.cpp
 )
 
-target_link_libraries(object_recognition_core_db
-                      ${Boost_LIBRARIES}
-                      ${CURL_LIBRARIES}
-                      ${OpenCV_LIBS}
-                      ${OpenCV_LIBRARIES}
-                      ${ecto_LIBRARIES}
+target_link_libraries(object_recognition_core_db ${Boost_LIBRARIES}
+                                                 ${CURL_LIBRARIES}
+                                                 ${OpenCV_LIBS}
+                                                 ${OpenCV_LIBRARIES}
+                                                 ${ecto_LIBRARIES}
 )
 
 set_target_properties(object_recognition_core_db PROPERTIES
