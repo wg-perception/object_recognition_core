@@ -40,6 +40,7 @@
 #include <ecto/ecto.hpp>
 
 #include <Eigen/Geometry>
+#include <Eigen/StdVector>
 
 // ROS includes
 #include <ros/publisher.h>
@@ -83,6 +84,7 @@ namespace object_recognition_core
     declare_io(const ecto::tendrils& params, ecto::tendrils& inputs, ecto::tendrils& outputs)
     {
       inputs.declare < sensor_msgs::ImageConstPtr > ("image_message", "the image message to get the header");
+      inputs.declare(&MsgAssembler::point3d_clusters_, "point3d_clusters", "The sets of 3d points for each object");
       inputs.declare(&MsgAssembler::pose_results_, "pose_results", "The results of object recognition");
 
       outputs.declare < object_recognition_msgs::RecognizedObjectArrayConstPtr > ("msg", "The poses");
@@ -149,18 +151,9 @@ namespace object_recognition_core
           object.header.frame_id = frame_id;
 
           // Deal with the partial point clouds
-#if 0
-          const std::vector<pcl::PointCloud<pcl::PointXYZ> > & point_clouds = pose_result.point_clouds();
-#endif
-          std::vector<pcl::PointCloud<pcl::PointXYZ> > * point_clouds = NULL;
-          size_t cloud_size = 0;
-          if (pose_result.point_clouds()) {
-            point_clouds = reinterpret_cast<std::vector<pcl::PointCloud<pcl::PointXYZ> > *>(pose_result.point_clouds());
-            cloud_size = point_clouds->size();
-          }
-          object.point_clouds.resize(cloud_size);
-          for (size_t i = 0; i < cloud_size; ++i)
-            pcl::toROSMsg((*point_clouds)[i], object.point_clouds[i]);
+          object.point_clouds.resize(point3d_clusters_->size());
+          for (size_t i = 0; i < point3d_clusters_->size(); ++i)
+            pcl::toROSMsg((*point3d_clusters_)[i], object.point_clouds[i]);
 
           ++object_id;
         }
@@ -171,6 +164,7 @@ namespace object_recognition_core
       return ecto::OK;
     }
   private:
+    ecto::spore<std::vector<pcl::PointCloud<pcl::PointXYZ>, Eigen::aligned_allocator<pcl::PointCloud<pcl::PointXYZ> > > > point3d_clusters_;
     ecto::spore<std::vector<common::PoseResult> > pose_results_;
     ecto::spore<sensor_msgs::ImageConstPtr> image_message_;
   };

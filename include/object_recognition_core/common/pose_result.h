@@ -73,8 +73,6 @@ namespace object_recognition_core
     {
     public:
       PoseResult()
-          :
-            point_clouds_(0)
       {
         R_.resize(9);
         T_.resize(3);
@@ -85,15 +83,12 @@ namespace object_recognition_core
             R_(pose_result.R_),
             T_(pose_result.T_),
             object_id_(pose_result.object_id_),
-            db_(pose_result.db_),
-            point_clouds_(0)
+            db_(pose_result.db_)
       {
       }
 
       ~PoseResult()
       {
-        if (point_clouds_)
-          free(point_clouds_);
       }
 
       // Setter functions
@@ -113,15 +108,6 @@ namespace object_recognition_core
       {
         db_ = db;
         object_id_ = object_id;
-      }
-
-      void
-#if 0
-      set_point_clouds(const std::vector<pcl::PointCloud<pcl::PointXYZ> >& point_clouds)
-#endif
-      set_point_clouds(char * point_clouds)
-      {
-        point_clouds_ = point_clouds;
       }
 
       template<typename Type>
@@ -151,15 +137,6 @@ namespace object_recognition_core
         return db_;
       }
 
-#if 0
-      const std::vector<pcl::PointCloud<pcl::PointXYZ> > &
-#endif
-      char *
-      point_clouds() const
-      {
-        return point_clouds_;
-      }
-
       template<typename Type>
       Type
       R() const;
@@ -178,14 +155,6 @@ namespace object_recognition_core
       db::ObjectId object_id_;
       /** The db in which the object_id is */
       db::ObjectDb db_;
-      /** The partial point clouds of the object from each input sensor */
-      /** HUMONGOUS HACK FOR NOW SO THAT WE DON'T DEPEND ON PCL WHICH BRINGS IN PCL DEPENDENCIES */
-      /** MAKE SURE YOU HAVE A MALLOC/FREE AND THAT IT IS A
-       * std::vector<pcl::PointCloud<pcl::PointXYZ> >*/
-#if 0
-      std::vector<pcl::PointCloud<pcl::PointXYZ> > point_clouds_;
-#endif
-      char *point_clouds_;
     };
 
 #ifdef CV_MAJOR_VERSION
