@@ -33,8 +33,8 @@
  *
  */
 
-#ifndef IO_H_
-#define IO_H_
+#ifndef POSE_RESULT_H_
+#define POSE_RESULT_H_
 
 #include <vector>
 
@@ -68,6 +68,8 @@ namespace object_recognition_core
     {
     public:
       PoseResult()
+          :
+            confidence_(0)
       {
         R_.resize(9);
         T_.resize(3);
@@ -77,6 +79,7 @@ namespace object_recognition_core
           :
             R_(pose_result.R_),
             T_(pose_result.T_),
+            confidence_(0),
             object_id_(pose_result.object_id_),
             db_(pose_result.db_)
       {
@@ -132,11 +135,17 @@ namespace object_recognition_core
         return db_;
       }
 
-      std::vector<float>
-      R() const;
+      inline std::vector<float>
+      R() const
+      {
+        return R_;
+      }
 
-      std::vector<float>
-      T() const;
+      inline std::vector<float>
+      T() const
+      {
+        return T_;
+      }
 
       template<typename Type>
       Type

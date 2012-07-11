@@ -146,7 +146,7 @@ namespace object_recognition_core
     }
 
     void
-    wrap_db_documents()
+    wrap_db_pose_result()
     {
       bp::class_<PoseResultSimple> PoseResultClass("PoseResult");
       PoseResultClass.def(bp::init<>()).def(bp::init<PoseResultSimple>());

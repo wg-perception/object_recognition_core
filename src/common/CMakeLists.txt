@@ -25,7 +25,9 @@ add_library(common_interface SHARED module_python.cpp
                                     wrap_db_pose_result.cpp
 )
 
-target_link_libraries(common_interface)
+target_link_libraries(common_interface ${Boost_LIBRARIES}
+                                       object_recognition_core_db
+)
 
 set_target_properties(common_interface PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${ecto_module_PYTHON_OUTPUT}/../boost
                                                   OUTPUT_NAME common
