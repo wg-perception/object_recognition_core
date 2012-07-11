@@ -95,9 +95,15 @@ namespace object_recognition_core
     };
 
     std::string
-    object_id(boost::shared_ptr<const PoseResultType> &p)
+    object_id(const boost::shared_ptr<PoseResultType> &p)
     {
       return p->object_id();
+    }
+
+    db::ObjectDbParameters
+    db_parameters(const boost::shared_ptr<PoseResultType> &p)
+    {
+      return p->db().parameters();
     }
 
     void
@@ -106,6 +112,7 @@ namespace object_recognition_core
       bp::class_<PoseResultType> PoseResultClass("PoseResult");
       PoseResultClass.def(bp::init<>()).def(bp::init<PoseResultType>());
       PoseResultClass.def("object_id", object_id);
+      PoseResultClass.def("db_parameters", db_parameters);
 
       bp::class_<PoseResults, PoseResultsPtr> PoseResultsClass("PoseResults");
       PoseResultsClass.def("__init__", bp::make_constructor(PoseResultsConstructor));
