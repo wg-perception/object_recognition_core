@@ -89,8 +89,14 @@ namespace object_recognition_core
       {
       }
 
-      // Setter functions
+      bool
+      operator==(const PoseResult &pose)
+      {
+        // TODO Check that the databases are the same
+        return object_id_ == pose.object_id_;
+      }
 
+      // Setter functions
       void
       set_confidence(float confidence)
       {

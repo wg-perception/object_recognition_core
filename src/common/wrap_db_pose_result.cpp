@@ -44,57 +44,12 @@
 
 namespace bp = boost::python;
 
-namespace
-{
-  class PoseResultSimple
-  {
-  public:
-    PoseResultSimple()
-        :
-          confidence_(0)
-    {
-      R_.resize(9);
-      T_.resize(3);
-    }
-
-    PoseResultSimple(const object_recognition_core::common::PoseResult &pose_result)
-        :
-          R_(pose_result.R()),
-          T_(pose_result.T()),
-          confidence_(pose_result.confidence()),
-          object_id_(pose_result.object_id()),
-          db_(pose_result.db())
-    {
-    }
-
-    bool
-    operator==(const PoseResultSimple &pose)
-    {
-      return object_id_ == pose.object_id_;
-    }
-
-    ~PoseResultSimple()
-    {
-    }
-
-    /** The rotation matrix of the estimated pose, stored row by row */
-    std::vector<float> R_;
-    /** The translation vector of the estimated pose */
-    std::vector<float> T_;
-    /** The absolute confidence, between 0 and 1 */
-    float confidence_;
-    /** The object id of the found object */
-    object_recognition_core::db::ObjectId object_id_;
-    /** The db in which the object_id is */
-    object_recognition_core::db::ObjectDb db_;
-  };
-}
-
 namespace object_recognition_core
 {
   namespace common
   {
-    typedef std::vector<PoseResultSimple> PoseResults;
+    typedef PoseResult PoseResultType;
+    typedef std::vector<PoseResultType> PoseResults;
     typedef boost::shared_ptr<PoseResults> PoseResultsPtr;
 
     /** Function used to create a vector of db PoseResult's from Python
@@ -140,16 +95,16 @@ namespace object_recognition_core
     };
 
     std::string
-    object_id(boost::shared_ptr<const PoseResultSimple> &p)
+    object_id(boost::shared_ptr<const PoseResultType> &p)
     {
-      return p->object_id_;
+      return p->object_id();
     }
 
     void
     wrap_db_pose_result()
     {
-      bp::class_<PoseResultSimple> PoseResultClass("PoseResult");
-      PoseResultClass.def(bp::init<>()).def(bp::init<PoseResultSimple>());
+      bp::class_<PoseResultType> PoseResultClass("PoseResult");
+      PoseResultClass.def(bp::init<>()).def(bp::init<PoseResultType>());
       PoseResultClass.def("object_id", object_id);
 
       bp::class_<PoseResults, PoseResultsPtr> PoseResultsClass("PoseResults");
