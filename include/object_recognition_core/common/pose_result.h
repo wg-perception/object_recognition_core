@@ -132,6 +132,12 @@ namespace object_recognition_core
         return db_;
       }
 
+      std::vector<float>
+      R() const;
+
+      std::vector<float>
+      T() const;
+
       template<typename Type>
       Type
       R() const;

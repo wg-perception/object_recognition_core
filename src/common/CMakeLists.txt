@@ -19,3 +19,19 @@ target_link_libraries(object_recognition_core_common
 install(TARGETS object_recognition_core_common
         DESTINATION lib
 )
+
+# create a Python module to wrap the PoseResult
+add_library(common_interface SHARED module_python.cpp
+                                    wrap_db_pose_result.cpp
+)
+
+target_link_libraries(common_interface)
+
+set_target_properties(common_interface PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${ecto_module_PYTHON_OUTPUT}/../boost
+                                                  OUTPUT_NAME common
+                                                  PREFIX ""
+)
+
+install(TARGETS common_interface
+        DESTINATION ${PYTHON_PACKAGES_PATH}/object_recognition_core/boost
+)
