@@ -106,6 +106,24 @@ namespace object_recognition_core
       return p->db().parameters();
     }
 
+    boost::python::list
+    R(const boost::shared_ptr<PoseResultType> &p)
+    {
+      boost::python::list res;
+      for (unsigned int i = 0; i < 9; ++i)
+        res.append(p->R()[i]);
+      return res;
+    }
+
+    boost::python::list
+    T(const boost::shared_ptr<PoseResultType> &p)
+    {
+      boost::python::list res;
+      for (unsigned int i = 0; i < 3; ++i)
+        res.append(p->R()[i]);
+      return res;
+    }
+
     void
     wrap_db_pose_result()
     {
@@ -113,6 +131,8 @@ namespace object_recognition_core
       PoseResultClass.def(bp::init<>()).def(bp::init<PoseResultType>());
       PoseResultClass.def("object_id", object_id);
       PoseResultClass.def("db_parameters", db_parameters);
+      PoseResultClass.def("R", R);
+      PoseResultClass.def("T", T);
 
       bp::class_<PoseResults, PoseResultsPtr> PoseResultsClass("PoseResults");
       PoseResultsClass.def("__init__", bp::make_constructor(PoseResultsConstructor));
