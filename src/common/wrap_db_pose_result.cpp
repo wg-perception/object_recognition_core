@@ -120,7 +120,7 @@ namespace object_recognition_core
     {
       boost::python::list res;
       for (unsigned int i = 0; i < 3; ++i)
-        res.append(p->R()[i]);
+        res.append(p->T()[i]);
       return res;
     }
 
