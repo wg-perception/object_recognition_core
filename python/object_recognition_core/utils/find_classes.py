@@ -10,7 +10,7 @@ def find_classes(modules, base_type):
     Given a list of python packages, or modules, find all implementations.
     :param modules: The names of the modules to look into
     :param base_type: any class type (TrainingPipeline, Sink ...)
-    :returns: A list of TrainingPipeline implementation classes.
+    :returns: A dictionary of found classes: the key is the class name and the value the object class itself
     '''
     pipelines = {}
     ms = []
