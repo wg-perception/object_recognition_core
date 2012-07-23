@@ -81,9 +81,6 @@ def common_create_parser():
     parser.add_argument('--visualize', help='If set, it will display some windows with temporary results',
                        default=False, action='store_true')
 
-    ros_group = parser.add_argument_group('ROS Parameters')
-    ros_group.add_argument('--node_name', help='The name for the node. If "", it is not run in a ROS node',
-                           default='object_recognition', type=filter_node_name)
     return parser
 
 def ros_common_parse_args(parser):
@@ -147,6 +144,10 @@ def read_arguments_training():
 
 def read_arguments_detector():
     parser = common_create_parser()
+    ros_group = parser.add_argument_group('ROS Parameters')
+    ros_group.add_argument('--node_name', help='The name for the node. If "", it is not run in a ROS node',
+                           default='object_recognition', type=filter_node_name)
+
     args = ros_common_parse_args(parser)
 
     source_params, pipeline_params, sink_params, voter_params = common_parse_config_file(args.config_file, [ 'sources' ])
