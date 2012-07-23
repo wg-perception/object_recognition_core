@@ -26,3 +26,4 @@ if __name__ == '__main__':
                            'Make sure that the sink type is defined by a Sink class, in the name class function.\n'
                            'Found sinks: ' + str(sinks))
     sink = sinks[sink_name].sink(**args)
+    print 'Found sink ' + sink_name
