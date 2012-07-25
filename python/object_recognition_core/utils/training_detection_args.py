@@ -72,8 +72,6 @@ def common_interpret_object_ids(pipeline_param_full, args=None):
         pipeline_param_full['parameters']['object_ids'] = list(object_ids)
 
 def common_create_parser():
-    def filter_node_name(node_name):
-        return node_name
     parser = ObjectRecognitionParser()
     parser.add_argument('-c', '--config_file', help='Config file')
     parser.add_argument('--object_ids', help='If set, it overrides the list of object_ids in the config file. E.g.: \'["1ef112f21f12"]\'')
@@ -143,6 +141,8 @@ def read_arguments_training():
     return source_params, pipeline_params, sink_params, args
 
 def read_arguments_detector():
+    def filter_node_name(node_name):
+        return node_name
     parser = common_create_parser()
     ros_group = parser.add_argument_group('ROS Parameters')
     ros_group.add_argument('--node_name', help='The name for the node. If "", it is not run in a ROS node',
