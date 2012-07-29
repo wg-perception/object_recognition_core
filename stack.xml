@@ -1,7 +1,7 @@
 <stack>
   <name>object_recognition_core</name>
-  <version>0.4.0</version>
-  <description>Object_recognition_core contains tools to launch several recognition pipelines, train objects, store models ...</description>
+  <version>0.4.1</version>
+  <description>object_recognition_core contains tools to launch several recognition pipelines, train objects, store models ...</description>
   <author email="erublee@willowgarage.com">Ethan Rublee</author>
   <author email="vrabaud@willowgarage.com">Vincent Rabaud</author>
   <maintainer email="vrabaud@willowgarage.com">Vincent Rabaud</maintainer>
