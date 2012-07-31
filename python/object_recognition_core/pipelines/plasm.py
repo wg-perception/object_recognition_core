@@ -91,6 +91,12 @@ def create_detection_plasm():
             plasm.connect(detector['pose_results'] >> voter['pose_results%d' % voter_n_input[voter_id] ])
             voter_n_input[voter_id] -= 1
 
+    # link the different sources to the sinks
+    for sink_id, sink_param in sink_params.iteritems():
+        sink = sink_cells[voter_id]
+        for source_id in sink_param.get('sources', []):
+            plasm = connect_cells(source_cells[source_id], sink, plasm)
+
     # link the different voters to the sinks
     for voter_id, voter_param in voter_params.iteritems():
         voter = voter_cells[voter_id]
