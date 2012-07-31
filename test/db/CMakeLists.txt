@@ -4,14 +4,7 @@ include(${CMAKE_BINARY_DIR}/cmake/object_recognition_core/test.cmake)
 object_recognition_core_pytest(db_test)
 
 # Testing core functionalities
-find_package(GTest)
-
-if(NOT GTEST_FOUND)
-  message(STATUS "Disabling testing since gtest was not found.")
-  return()
-endif()
-
-include_directories(${GTEST_INCLUDE_DIRS})
+include_directories(SYSTEM ${GTEST_INCLUDE_DIRS})
 
 add_executable(or-db-test
   main.cpp

@@ -1,3 +1,6 @@
+find_package(GTest)
+include_directories(${GTEST_INCLUDE_DIRS})
+set(GTEST_LIBRARIES gtest)
 if (object_recognition_core_SOURCE_DIR)
   set(object_recognition_core_TEST_DIR ${CMAKE_BINARY_DIR}/share/test)
 else()
