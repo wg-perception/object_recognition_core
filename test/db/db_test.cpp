@@ -92,7 +92,7 @@ expect_not_found(ObjectDb& db, const std::string& collection)
 {
   std::string status = db.Status(collection);
   or_json::mObject ps = parse_status(status);
-  EXPECT_EQ(ps["error"].get_str(), "not_found");
+  EXPECT_EQ(ps["error"].get_str(), std::string("not_found"));
 }
 
 void
@@ -119,11 +119,11 @@ handling_invalid_server(const std::string & db_type, const std::runtime_error& e
         url.append("/" + collection);
         if (!id.empty())
           url.append("/" + id);
-      };EXPECT_EQ(std::string(e.what()), "No response from server. : " + url);
+      };EXPECT_EQ(std::string(e.what()), std::string("No response from server. : ") + url);
       break;
     }
     case ObjectDbParameters::FILESYSTEM:
-      EXPECT_EQ(std::string(e.what()), "Path /bogus/path/for/testing does not exist. Please create.");
+      EXPECT_EQ(std::string(e.what()), std::string("Path /bogus/path/for/testing does not exist. Please create."));
       break;
     default:
       throw std::runtime_error("Status test not implemented for " + db_type);
@@ -170,7 +170,7 @@ TEST(OR_db, CreateDelete)
           db.CreateCollection("test_it");
           std::string status = db.Status("test_it");
           or_json::mObject ps = parse_status(status);
-          EXPECT_EQ(ps["db_name"].get_str(), "test_it");
+          EXPECT_EQ(ps["db_name"].get_str(), std::string("test_it"));
         }
         {
           ObjectDb db(db_params);
@@ -206,7 +206,7 @@ TEST(OR_db, DocumentPersistLoad)
         {
           Document doc(db, id);
           EXPECT_EQ(doc.get_value<double>("x"), 1.0);
-          EXPECT_EQ(doc.get_value<std::string>("foo"), "UuU");
+          EXPECT_EQ(doc.get_value<std::string>("foo"), std::string("UuU"));
         }
         delete_c(db, "test_it");
       }
@@ -277,8 +277,8 @@ TEST(OR_db, StatusCollectionNonExistant)
 
         std::string status = db.Status("test_it");
         or_json::mObject ps = parse_status(status);
-        EXPECT_EQ(ps["error"].get_str(), "not_found");
-        EXPECT_EQ(ps["reason"].get_str(), "no_db_file");
+        EXPECT_EQ(ps["error"].get_str(), std::string("not_found"));
+        EXPECT_EQ(ps["reason"].get_str(), std::string("no_db_file"));
       }
 }
 
@@ -292,7 +292,7 @@ TEST(OR_db, StatusCollectionExistant)
         db.CreateCollection("test_it");
         std::string status = db.Status("test_it");
         or_json::mObject ps = parse_status(status);
-        EXPECT_EQ(ps["db_name"].get_str(), "test_it");
+        EXPECT_EQ(ps["db_name"].get_str(), std::string("test_it"));
         db.DeleteCollection("test_it");
       }
 }
@@ -312,11 +312,11 @@ TEST(OR_db, DocumentBadId)
           {
             case ObjectDbParameters::COUCHDB:
             {
-              EXPECT_EQ(std::string(e.what()), "Object Not Found : http://localhost:5984/test_it/bogus_id");
+              EXPECT_EQ(std::string(e.what()), std::string("Object Not Found : http://localhost:5984/test_it/bogus_id"));
               break;
             }
             case ObjectDbParameters::FILESYSTEM:
-              EXPECT_EQ(std::string(e.what()), "Object Not Found : /tmp/test_it/all_docs/bogus_id/value");
+              EXPECT_EQ(std::string(e.what()), std::string("Object Not Found : /tmp/test_it/all_docs/bogus_id/value"));
               break;
             default:
               throw std::runtime_error("Status test not implemented for " + db_type);
@@ -376,7 +376,7 @@ TEST(OR_db, ParamsBogus)
     ASSERT_FALSE(true);
   } catch (std::runtime_error& e)
   {
-    EXPECT_EQ(std::string("You must supply a database type. e.g. CouchDB"), e.what());
+    EXPECT_EQ(std::string("You must supply a database type. e.g. CouchDB"), std::string(e.what()));
   }
 }
 
@@ -403,7 +403,7 @@ TEST(OR_db, NonArgsDbCreate)
   } catch (std::runtime_error& e)
   {
     std::string expect = "This ObjectDb instance is uninitialized.";
-    EXPECT_EQ(e.what(), expect);
+    EXPECT_EQ(std::string(e.what()), expect);
   }
 }
 TEST(OR_db, NonArgsDbInsert)
@@ -422,7 +422,7 @@ TEST(OR_db, NonArgsDbInsert)
     } catch (std::runtime_error& e)
     {
       std::string expect = "This ObjectDb instance is uninitialized.";
-      EXPECT_EQ(e.what(), expect);
+      EXPECT_EQ(std::string(e.what()), expect);
     }
   }
 }
