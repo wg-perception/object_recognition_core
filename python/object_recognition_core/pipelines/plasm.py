@@ -4,7 +4,7 @@ Loaders for all object recognition pipelines
 from object_recognition_core.io.sink import Sink
 from object_recognition_core.io.source import Source
 from object_recognition_core.io.voter import Voter
-from object_recognition_core.pipelines.detection import DetectionPipeline, validate_detection_pipeline
+from object_recognition_core.pipelines.detection import DetectionBlackbox, validate_detection_pipeline
 from object_recognition_core.pipelines.training import TrainingPipeline
 from object_recognition_core.utils.training_detection_args import read_arguments_detector
 from object_recognition_core.utils.find_classes import find_classes
@@ -51,7 +51,7 @@ def create_detection_plasm():
         if not pipeline:
             sys.stderr.write('Invalid pipeline name: %s\nMake sure that the pipeline type is defined by a TrainingPipeline class, in the name class function.' % pipeline_param['method'])
             sys.exit(-1)
-        pipeline_cells[pipeline_id] = pipeline.detector(**pipeline_param)
+        pipeline_cells[pipeline_id] = DetectionBlackbox(pipeline, **pipeline_param)
 
         # for each voter id, figure out the number of pipelines connected to it as an input
         for cell_id in pipeline_param.get('voters', []):

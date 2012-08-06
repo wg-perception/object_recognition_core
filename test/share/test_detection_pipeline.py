@@ -8,7 +8,8 @@ pipeline independently.
 import sys
 from object_recognition_core.utils.training_detection_args import read_arguments_detector
 from object_recognition_core.utils.find_classes import find_classes
-from object_recognition_core.pipelines.detection import DetectionPipeline, validate_detection_pipeline
+from object_recognition_core.pipelines.detection import DetectionPipeline, DetectionBlackbox, \
+                        validate_detection_pipeline
 
 if __name__ == '__main__':
     # read the config file
@@ -25,6 +26,7 @@ if __name__ == '__main__':
         if not pipeline:
             sys.stderr.write('Invalid pipeline name: %s\nMake sure that the pipeline type is defined by a DetectionPipeline class, in the name class function.' % pipeline_param['method'])
             sys.exit(-1)
-        detector = pipeline().detector(**pipeline_param)
+        # get a pipeline and validate its inputs/outputs
+        detector = DetectionBlackbox(pipeline,**pipeline_param)
         if 'sinks' in pipeline_param or 'voters' in pipeline_param:
             validate_detection_pipeline(detector)
