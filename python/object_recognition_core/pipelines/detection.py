@@ -4,6 +4,7 @@ ABC for Detection pipelines
 from abc import ABCMeta
 import ecto
 from object_recognition_core.utils.json_helper import dict_to_cpp_json_str
+from object_recognition_core.ecto_cells.io import PipelineInfo
 import warnings
 
 class DetectionBlackbox(ecto.BlackBox):
@@ -13,13 +14,13 @@ class DetectionBlackbox(ecto.BlackBox):
     def __init__(self, detection_pipeline, *args, **kwargs):
         self._detector = detection_pipeline.detector(*args, **kwargs)
         self._parameters = kwargs
-        self._info = ecto.Constant(value=dict_to_cpp_json_str(kwargs))
+        self._info = PipelineInfo(parameters=dict_to_cpp_json_str(kwargs))
         ecto.BlackBox.__init__(self)
 
     def declare_io(self, _p, i, o):
         i.forward_all('_detector')
         o.forward_all('_detector')
-        o.forward('parameters', cell_name = '_info', cell_key = 'out')
+        o.forward_all('_info')
 
     #def configure(self, p, _i, _o):
     #    self._detector_cell = self._detector
