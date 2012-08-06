@@ -41,7 +41,7 @@ endmacro()
 # macro testing a training pipeline
 macro(object_recognition_core_training_test config_file)
   add_test(${PROJECT_NAME}_training_${config_file}
-    ${object_recognition_core_TEST_DIR}/run_test.sh ${CMAKE_BINARY_DIR}/setup.sh "${object_recognition_core_TEST_DIR}/test_training_pipeline.py -c ${config_file} --node_name \"\""
+    ${object_recognition_core_TEST_DIR}/run_test.sh ${CMAKE_BINARY_DIR}/setup.sh "${object_recognition_core_TEST_DIR}/test_training_pipeline.py -c ${config_file}"
     )
 endmacro()
 
