@@ -21,3 +21,8 @@ object_recognition_core_source_test(openni "{}" "object_recognition_core.io")
 
 # check the different sinks
 object_recognition_core_sink_test(publisher "{}" "object_recognition_core.io")
+
+find_package(object_recognition_tod QUIET)
+if (object_recognition_tod_FOUND)
+  object_recognition_core_detection_test(${CMAKE_CURRENT_SOURCE_DIR}/../src/server/conf/config_detection.sample)
+endif()
