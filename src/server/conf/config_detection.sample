@@ -14,7 +14,7 @@ voter1:
 
 pipeline1:
   method: 'TOD'
-  package: 'tod'
+  package: 'object_recognition_tod'
   submethod:
     descriptor:
       type: 'ORB'
