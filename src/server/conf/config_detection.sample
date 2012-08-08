@@ -10,7 +10,7 @@ sink1:
 
 voter1:
   type: 'aggregator'
-  sinks: [1]
+  sinks: [sink1]
 
 pipeline1:
   method: 'TOD'
@@ -18,8 +18,8 @@ pipeline1:
   submethod:
     descriptor:
       type: 'ORB'
-  sources: [1]
-  voters: [1]
+  sources: [source1]
+  voters: [voter1]
   parameters:
     object_ids: "all"
     feature:
