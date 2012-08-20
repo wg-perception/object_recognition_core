@@ -4,7 +4,7 @@ Loaders for all object recognition pipelines
 from object_recognition_core.io.sink import Sink
 from object_recognition_core.io.source import Source
 from object_recognition_core.io.voter import Voter
-from object_recognition_core.pipelines.detection import DetectionBlackbox, validate_detection_pipeline
+from object_recognition_core.pipelines.detection import DetectionPipeline, DetectionBlackbox, validate_detection_pipeline
 from object_recognition_core.pipelines.training import TrainingPipeline
 from object_recognition_core.utils.training_detection_args import read_arguments_detector
 from object_recognition_core.utils.find_classes import find_classes
@@ -93,7 +93,7 @@ def create_detection_plasm():
 
     # link the different sources to the sinks
     for sink_id, sink_param in sink_params.iteritems():
-        sink = sink_cells[voter_id]
+        sink = sink_cells[sink_id]
         for source_id in sink_param.get('sources', []):
             plasm = connect_cells(source_cells[source_id], sink, plasm)
 
