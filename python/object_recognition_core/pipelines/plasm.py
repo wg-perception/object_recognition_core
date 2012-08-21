@@ -18,9 +18,13 @@ def connect_cells(cell1, cell2, plasm):
         plasm.connect(cell1[key] >> cell2[key])
     return plasm
 
-def create_detection_plasm():
+def create_detection_plasm(source_params, pipeline_params, sink_params, voter_params):
     """
     Function that returns the detection plasm corresponding to the input arguments
+    source_params: a dictionary of the parameters of the sources (key: source id, val: dic of parameters)
+    pipeline_params: same but for pipelines
+    sink_params: same but for sinks
+    voter_params: same but for voters
     """
     source_params, pipeline_params, sink_params, voter_params, args = read_arguments_detector()
     #map of string name to pipeline class

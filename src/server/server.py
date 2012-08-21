@@ -5,13 +5,15 @@ from std_msgs.msg import String
 import actionlib
 from object_recognition_msgs.msg import *
 from object_recognition_core.pipelines.plasm import create_detection_plasm
+from object_recognition_core.utils.training_detection_args import read_arguments_detector
 import ecto
 import sys
 import yaml
 
 class RecognitionServer:
     def __init__(self,args):
-        self.plasm = create_detection_plasm()
+        source_params, pipeline_params, sink_params, voter_params, args = read_arguments_detector()
+        self.plasm = create_detection_plasm(source_params, pipeline_params, sink_params, voter_params)
         self.plasm.configure_all()
         print 'configured'
         self.sched = ecto.schedulers.Singlethreaded(self.plasm)
