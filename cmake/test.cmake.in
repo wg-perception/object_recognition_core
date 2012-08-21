@@ -34,7 +34,7 @@ endmacro()
 # macro testing a detection pipeline
 macro(object_recognition_core_detection_test config_file)
   add_test(${PROJECT_NAME}_detection_${config_file}
-    ${object_recognition_core_TEST_DIR}/run_test.sh ${CMAKE_BINARY_DIR}/setup.sh "${object_recognition_core_TEST_DIR}/test_detection_pipeline.py -c ${config_file} --node_name \"\""
+    ${object_recognition_core_TEST_DIR}/run_test.sh ${CMAKE_BINARY_DIR}/setup.sh "${object_recognition_core_TEST_DIR}/test_detection_pipeline.py -c ${config_file} --node_name \"\" --object_ids []"
     )
 endmacro()
 

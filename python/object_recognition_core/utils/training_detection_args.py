@@ -33,7 +33,7 @@ def common_interpret_object_ids(pipeline_param_full, args=None):
         ids = obj.get('object_ids', None)
         names = obj.get('object_names', None)
 
-        if not ids and not names:
+        if ids is None and names is None:
             continue
 
         # initialize the DB
@@ -41,16 +41,19 @@ def common_interpret_object_ids(pipeline_param_full, args=None):
         type = db_params.get('type', None)
         if type.lower() not in core_db_types():
             continue
-        db = dbtools.db_params_to_db(ObjectDbParameters(db_params))
 
         if isinstance(ids, str) and ids != 'all' and ids != 'missing':
             ids = eval(ids)
         if isinstance(names, str) and names != 'all' and names != 'missing':
             names = eval(names)
 
+        if not ids and not names:
+            break
+
         if object_ids is None:
             object_ids = set()
 
+        db = dbtools.db_params_to_db(ObjectDbParameters(db_params))
         if 'all' in (ids, names):
             object_ids = set([ str(x.id) for x in models.Object.all(db) ]) #unicode without the str()
             break
@@ -68,8 +71,10 @@ def common_interpret_object_ids(pipeline_param_full, args=None):
 
         if object_ids:
             break
-    if object_ids is not None:
+    if isinstance(object_ids, set):
         pipeline_param_full['parameters']['object_ids'] = list(object_ids)
+    else:
+        pipeline_param_full['parameters']['object_ids'] = []
 
 def common_create_parser():
     parser = ObjectRecognitionParser()

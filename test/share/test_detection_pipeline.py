@@ -6,6 +6,7 @@ pipeline independently.
 """
 
 import sys
+from object_recognition_core.pipelines.plasm import create_detection_plasm
 from object_recognition_core.utils.training_detection_args import read_arguments_detector
 from object_recognition_core.utils.find_classes import find_classes
 from object_recognition_core.pipelines.detection import DetectionPipeline, DetectionBlackbox, \
@@ -30,3 +31,5 @@ if __name__ == '__main__':
         detector = DetectionBlackbox(pipeline,**pipeline_param)
         if 'sinks' in pipeline_param or 'voters' in pipeline_param:
             validate_detection_pipeline(detector)
+    # create the big plasm
+    plasm = create_detection_plasm(source_params, pipeline_params, sink_params, voter_params)
