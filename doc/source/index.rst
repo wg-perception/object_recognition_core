@@ -1,5 +1,5 @@
-object recognition
-==================
+object_recognition_core: Database Interface, Training & Detection
+=================================================================
 
 object recognition is a collection of ecto cells and tools that are useful for object recognition tasks.
 This software collection provides capture apps, database storage, training of various classifiers, and detection apps
