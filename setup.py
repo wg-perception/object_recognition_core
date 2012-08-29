@@ -7,6 +7,6 @@ setup(name='Object recognition core',
       packages=['object_recognition_core', 'object_recognition_core.db', 'object_recognition_core.filters',
                 'object_recognition_core.io', 'object_recognition_core.io.ros', 'object_recognition_core.io.ros.source',
                 'object_recognition_core.io.ros.sink', 'object_recognition_core.pipelines',
-                'object_recognition_core.utils'],
+                'object_recognition_core.utils', 'couchdb'],
       package_dir={'':'python'}
 )

@@ -26,5 +26,4 @@
   <depends>ecto_image_pipeline</depends>
   <depends>object_recognition_msgs</depends>
   <depends>pcl</depends>
-  <depends>python-couchdb</depends>
 </stack>
