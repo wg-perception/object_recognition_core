@@ -1,17 +1,21 @@
 #!/usr/bin/env python
 import roscompat
 from object_recognition_core.pipelines.plasm import create_detection_plasm
-from object_recognition_core.utils.training_detection_args import read_arguments_detector
-import ecto
-
-DEBUG = False
+from object_recognition_core.utils.training_detection_args import common_create_parser, read_arguments_detector
+from ecto.opts import scheduler_options, run_plasm
+import argparse
 
 if __name__ == '__main__':
-    source_params, pipeline_params, sink_params, voter_params, args = read_arguments_detector()
-    plasm = create_detection_plasm(source_params, pipeline_params, sink_params, voter_params)
-    if DEBUG:
-        #render the DAG with dot
-        ecto.view_plasm(plasm)
+    # create an ORK parser (it is special as it can read from option files)
+    parser = common_create_parser()
 
-    sched = ecto.schedulers.Singlethreaded(plasm)
-    sched.execute()
+    # add ecto options
+    scheduler_options(parser)
+
+    # create the plasm that will run the detection
+    source_params, pipeline_params, sink_params, voter_params, args = read_arguments_detector(parser)
+    plasm = create_detection_plasm(source_params, pipeline_params, sink_params, voter_params)
+
+    # run the detection plasm
+    options = parser.parse_args()
+    run_plasm(options, plasm)

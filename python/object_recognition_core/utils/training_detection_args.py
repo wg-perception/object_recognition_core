@@ -3,12 +3,14 @@ Module that creates a function to define/read common arguments for the training/
 """
 
 from object_recognition_core.boost.interface import ObjectDbParameters
-from object_recognition_core.db.object_db import ObjectDb, core_db_types
+from object_recognition_core.db.object_db import core_db_types
 from object_recognition_core.db import models, tools as dbtools
 from object_recognition_core.utils.parser import ObjectRecognitionParser
 import os
 import sys
 import yaml
+
+# set a global variable defining whether ROS is used
 try:
     import ecto_ros
     ECTO_ROS_FOUND = True
@@ -38,8 +40,8 @@ def common_interpret_object_ids(pipeline_param_full, args=None):
 
         # initialize the DB
         db_params = pipeline_param_full['parameters']['db']
-        type = db_params.get('type', None)
-        if type.lower() not in core_db_types():
+        db_type = db_params.get('type', '')
+        if db_type.lower() not in core_db_types():
             continue
 
         if isinstance(ids, str) and ids != 'all' and ids != 'missing':
@@ -83,6 +85,14 @@ def common_create_parser():
     parser.add_argument('--object_names', help='If set, it overrides the list of object names in the config file')
     parser.add_argument('--visualize', help='If set, it will display some windows with temporary results',
                        default=False, action='store_true')
+
+    if ECTO_ROS_FOUND:
+        # add ROS parameters if ROS was found
+        def filter_node_name(node_name):
+            return node_name
+        ros_group = parser.add_argument_group('ROS parameters')
+        ros_group.add_argument('--node_name', help='The name for the node. If "", it is not run in a ROS node',
+                           default='object_recognition', type=filter_node_name)
 
     return parser
 
@@ -145,14 +155,7 @@ def read_arguments_training():
     args = vars(args)
     return source_params, pipeline_params, sink_params, args
 
-def read_arguments_detector():
-    def filter_node_name(node_name):
-        return node_name
-    parser = common_create_parser()
-    ros_group = parser.add_argument_group('ROS Parameters')
-    ros_group.add_argument('--node_name', help='The name for the node. If "", it is not run in a ROS node',
-                           default='object_recognition', type=filter_node_name)
-
+def read_arguments_detector(parser):
     args = ros_common_parse_args(parser)
 
     source_params, pipeline_params, sink_params, voter_params = common_parse_config_file(args.config_file, [ 'sources' ])
@@ -169,7 +172,7 @@ def read_arguments_detector():
     args = vars(args)
 
     if args['visualize']:
-        for pipeline_id, pipeline_param in pipeline_params.iteritems():
+        for _pipeline_id, pipeline_param in pipeline_params.iteritems():
             pipeline_param['visualize'] = True
 
     return source_params, pipeline_params, sink_params, voter_params, args

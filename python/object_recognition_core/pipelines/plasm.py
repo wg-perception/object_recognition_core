@@ -26,7 +26,6 @@ def create_detection_plasm(source_params, pipeline_params, sink_params, voter_pa
     sink_params: same but for sinks
     voter_params: same but for voters
     """
-    source_params, pipeline_params, sink_params, voter_params, args = read_arguments_detector()
     #map of string name to pipeline class
     pipelines = find_classes([ pipeline_param['package'] for pipeline_param in pipeline_params.itervalues()],
                                DetectionPipeline)

@@ -5,16 +5,23 @@ It is not meant to be run as a test of object_recognition but as a test for and 
 pipeline independently.
 """
 
-import sys
-from object_recognition_core.pipelines.plasm import create_detection_plasm
-from object_recognition_core.utils.training_detection_args import read_arguments_detector
-from object_recognition_core.utils.find_classes import find_classes
+from ecto.opts import scheduler_options
 from object_recognition_core.pipelines.detection import DetectionPipeline, DetectionBlackbox, \
-                        validate_detection_pipeline
+    validate_detection_pipeline
+from object_recognition_core.pipelines.plasm import create_detection_plasm
+from object_recognition_core.utils.find_classes import find_classes
+from object_recognition_core.utils.training_detection_args import common_create_parser, read_arguments_detector
+import sys
 
 if __name__ == '__main__':
+    # create an ORK parser
+    parser = common_create_parser()
+
+    # add ecto options
+    scheduler_options(parser)
+
     # read the config file
-    source_params, pipeline_params, sink_params, voter_params, args = read_arguments_detector()
+    source_params, pipeline_params, sink_params, voter_params, args = read_arguments_detector(parser)
 
     pipelines = find_classes([ pipeline_param['package'] for pipeline_param in pipeline_params.itervalues()],
                                DetectionPipeline) #map of string name to pipeline class
