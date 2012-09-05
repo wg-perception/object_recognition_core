@@ -28,7 +28,8 @@ include_directories(SYSTEM
                     ${PCL_INCLUDE_DIRS}
 )
 
-ectomodule(io_ros
+ectomodule(io_ros DESTINATION object_recognition_core/ecto_cells
+                  INSTALL
            module.cpp
            MsgAssembler.cpp
            visualization_msgs_MarkerArray.cpp
@@ -45,5 +46,3 @@ link_ecto(io_ros
           object_recognition_core_db
           object_recognition_core_common
 )
-
-install_ecto_module(io_ros)

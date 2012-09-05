@@ -52,17 +52,18 @@ target_link_libraries(db_interface
 )
 
 set_target_properties(db_interface PROPERTIES
-                      LIBRARY_OUTPUT_DIRECTORY ${ecto_module_PYTHON_OUTPUT}/../boost
+                      LIBRARY_OUTPUT_DIRECTORY ${ECTO_PYTHON_BUILD_PATH}/object_recognition_core/boost
                       OUTPUT_NAME interface
                       PREFIX ""
 )
 
 install(TARGETS db_interface
-        DESTINATION ${PYTHON_PACKAGES_PATH}/object_recognition_core/boost
+        DESTINATION ${ECTO_PYTHON_INSTALL_PATH}/object_recognition_core/boost
 )
 
 # Create the ecto module with a few cells
-ectomodule(db
+ectomodule(db DESTINATION object_recognition_core/ecto_cells
+              INSTALL
            module.cpp
            ModelWriter.cpp
            ObservationReader.cpp
@@ -72,5 +73,3 @@ ectomodule(db
 link_ecto(db
           object_recognition_core_db
 )
-
-install_ecto_module(db)

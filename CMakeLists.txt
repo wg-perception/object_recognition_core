@@ -13,7 +13,6 @@ catkin_project(object_recognition_core
 catkin_python_setup()
 
 find_package(ecto REQUIRED)
-set_ecto_install_package_name(object_recognition_core/ecto_cells)
 
 add_subdirectory(python)
 
