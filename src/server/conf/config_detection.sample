@@ -24,9 +24,13 @@ pipeline1:
     object_ids: "all"
     feature:
       type: 'ORB'
+      package: 'ecto_opencv.features2d'
       n_features: 5000
       n_levels: 3
       scale_factor: 1.2
+    descriptor:
+      type: 'ORB'
+      package: 'ecto_opencv.features2d'
     search:
       key_size: 16
       multi_probe_level: 1
