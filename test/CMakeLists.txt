@@ -1,4 +1,8 @@
+if (ROS_GROOVY_FOUND)
+include(${CATKIN_BUILD_PREFIX}/share/object_recognition_core/cmake/test.cmake)
+else()
 include(${CMAKE_BINARY_DIR}/cmake/object_recognition_core/test.cmake)
+endif()
 
 # deal with the subdirectories as they contain macros
 add_subdirectory(db)
