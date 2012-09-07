@@ -87,3 +87,6 @@ mention that ORK does not need ROS
 ecto needs documentation about what it’s good for (GUI, graph, %, auto runtime docs)
 (ROS) logging everything happening between the Python launch and when the plasm starts
 more unittests on config file/command line arguments
+explain Python for ecto (__init__.py)
+shuffle techniques in the ecto docs
+ David:  Another suggestion I'd have for the tutorials & reference: the names of the links don't really tell you what you get there, a one-sentence explanatory text for each one would b e great (like on http://www.ros.org/wiki/ROS/Tutorials)
