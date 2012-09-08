@@ -3,11 +3,10 @@ Function that finds classes of a certain base type on the path in certain module
 '''
 import inspect
 import pkgutil
-import sys
 
 def find_classes(modules, base_type):
     '''
-    Given a list of python packages, or modules, find all implementations.
+    Given a list of python packages, or modules, find all implementations of a class.
     :param modules: The names of the modules to look into
     :param base_type: any class type (TrainingPipeline, Sink ...)
     :returns: A dictionary of found classes: the key is the class name and the value the object class itself
@@ -26,8 +25,7 @@ def find_classes(modules, base_type):
                 ms.append(module)
 
     for pymodule in ms:
-
-        for name, potential_pipeline in inspect.getmembers(pymodule):
+        for _name, potential_pipeline in inspect.getmembers(pymodule):
             if inspect.isclass(potential_pipeline) and potential_pipeline != base_type and \
                                                                 issubclass(potential_pipeline, base_type):
                 pipelines[potential_pipeline.type_name()] = potential_pipeline
