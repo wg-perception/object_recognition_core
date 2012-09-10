@@ -8,7 +8,7 @@ set(TEST_FILES run_test.sh
                test_training_pipeline.py
 )
 
-if (ROS_GROOVY_FOUND)
+if (ROS_GROOVY_OR_ABOVE_FOUND)
 file(COPY ${TEST_FILES}
      DESTINATION ${CATKIN_BUILD_PREFIX}/${CATKIN_PROJECT_SHARE_DESTINATION}/test)
 

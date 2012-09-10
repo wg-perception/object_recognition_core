@@ -1,5 +1,5 @@
-if (ROS_GROOVY_FOUND)
-include(${CATKIN_BUILD_PREFIX}/share/object_recognition_core/cmake/test.cmake)
+if (ROS_GROOVY_OR_ABOVEFOUND)
+include(${CATKIN_BUILD_PREFIX}/${CATKIN_PROJECT_SHARE_DESTINATION}/cmake/test.cmake)
 else()
 include(${CMAKE_BINARY_DIR}/cmake/object_recognition_core/test.cmake)
 endif()
