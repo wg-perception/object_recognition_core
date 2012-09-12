@@ -74,6 +74,23 @@ class Publisher(Sink):
     """
 
     @classmethod
+    def config_doc(cls):
+        return  """
+                    # The ROS topic to use for the marker array
+                    markers_topic: 'markers'
+                    # The ROS topic to use for the pose array
+                    pose_topic: 'poses'
+                    # The ROS topic to use for the object meta info string
+                    object_ids_topic: 'object_ids'
+                    # The ROS topic to use for the recognized object
+                    recognized_object_array_topic: 'recognized_object_array'
+                    # Determines if the topics will be latched
+                    latched: True
+                    # The DB parameters
+                    db_params: ''
+                """
+
+    @classmethod
     def type_name(cls):
         return 'publisher'
 

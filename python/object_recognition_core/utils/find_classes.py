@@ -21,8 +21,11 @@ def find_classes(modules, base_type):
         ms += [m]
         for loader, module_name, is_pkg in  pkgutil.walk_packages(m.__path__):
             if is_pkg:
-                module = loader.find_module(module_name).load_module(module_name)
-                ms.append(module)
+                try:
+                    module = loader.find_module(module_name).load_module(module_name)
+                    ms.append(module)
+                except ImportError:
+                    continue
 
     for pymodule in ms:
         for _name, potential_pipeline in inspect.getmembers(pymodule):

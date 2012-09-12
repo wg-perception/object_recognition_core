@@ -53,11 +53,21 @@ class TrainingPipeline:
     __metaclass__ = ABCMeta
 
     @classmethod
+    def config_doc_default(cls):
+        '''
+        Return the default documentation for the config file of that training pipeline
+        '''
+        return """
+               type: '%s'
+               module: '%s'
+               """ % (cls.type_name(), cls.__module__)
+
+    @classmethod
     def type_name(cls):
         '''
         Return the code name for your pipeline. eg. 'TOD', 'LINEMOD', 'mesh', etc...
         '''
-        raise NotImplementedError("The training pipeline class must return a string name.")
+        raise NotImplementedError("The training pipeline %s must return a string name." % str(cls))
 
     @classmethod
     def incremental_model_builder(cls, *args, **kwargs):

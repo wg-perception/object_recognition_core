@@ -33,11 +33,31 @@ class Source(object):
         return NotImplemented
 
     @classmethod
+    def config_doc_default(cls):
+        '''
+        Return the default documentation for the config file of that Source
+        '''
+        return """
+               type: '%s'
+               module: '%s'
+               """ % (cls.type_name(), cls.__module__)
+
+    @classmethod
+    def config_doc(cls):
+        '''
+        Return the documentation for the config file of that Source
+        It should return a string that is interpretable as YAML. It should not contain anything that is standard
+        (like the 'module', the name and so on). Anyway, if you use the standard CMake test, it will fail if you do.
+        The string should contain the necessary keys. For the values, put anything you want.
+        '''
+        raise NotImplementedError("The Source class must return a YAML string for the configuration docs.")
+
+    @classmethod
     def type_name(cls):
         '''
         Return the code name for your source
         '''
-        raise NotImplementedError("The Source class must return a string name.")
+        raise NotImplementedError("The Source %s must return a string name." % str(cls))
 
     @classmethod
     def source(cls, *args, **kwargs):
@@ -76,9 +96,27 @@ class OpenNI(Source):
         return 'openni'
 
     @classmethod
+    def config_doc(cls):
+        from ecto_openni import FpsMode, ResolutionMode, StreamMode
+        return  """
+                    # The number of frames per second for the RGB image: %s
+                    image_fps: ''
+                    # The number of frames per second for the depth image: %s
+                    depth_fps: ''
+                    # The resolution for the RGB image: %s
+                    image_mode: ''
+                    # The resolution for the depth image: %s
+                    depth_mode: ''
+                    # The stream mode: %s
+                    stream_mode: ''
+                """ % (str(FpsMode.values.values()), str(FpsMode.values.values()),
+                       str(ResolutionMode.values.values()), str(ResolutionMode.values.values()),
+                       str(StreamMode.values.values()))
+
+    @classmethod
     def source(self, *args, **kwargs):
         from ecto_openni import FpsMode, ResolutionMode, StreamMode
-        for key, val_type_name, val_type in [ ('image_fps', 'FpsMode', FpsMode), ('depth_fps', 'FpsMode', FpsMode),
+        for key, _val_type_name, val_type in [ ('image_fps', 'FpsMode', FpsMode), ('depth_fps', 'FpsMode', FpsMode),
                                              ('image_mode', 'ResolutionMode', ResolutionMode),
                                              ('depth_mode', 'ResolutionMode', ResolutionMode),
                                              ('stream_mode', 'StreamMode', StreamMode) ]:

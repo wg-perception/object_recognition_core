@@ -13,9 +13,9 @@ voter1:
   sinks: [sink1]
 
 pipeline1:
-  method: 'TOD'
-  package: 'object_recognition_tod'
-  submethod:
+  type: 'TOD'
+  module: 'object_recognition_tod'
+  subtype:
     descriptor:
       type: 'ORB'
   sources: [source1]

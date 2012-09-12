@@ -4,11 +4,10 @@ Loaders for all object recognition pipelines
 from object_recognition_core.io.sink import Sink
 from object_recognition_core.io.source import Source
 from object_recognition_core.io.voter import Voter
-from object_recognition_core.pipelines.detection import DetectionPipeline, DetectionBlackbox, validate_detection_pipeline
-from object_recognition_core.pipelines.training import TrainingPipeline
-from object_recognition_core.utils.training_detection_args import read_arguments_detector
+from object_recognition_core.pipelines.detection import DetectionPipeline, DetectionBlackbox, validate_detector
 from object_recognition_core.utils.find_classes import find_classes
 import ecto
+import sys
 
 def connect_cells(cell1, cell2, plasm):
     """
@@ -27,13 +26,13 @@ def create_detection_plasm(source_params, pipeline_params, sink_params, voter_pa
     voter_params: same but for voters
     """
     #map of string name to pipeline class
-    pipelines = find_classes([ pipeline_param['package'] for pipeline_param in pipeline_params.itervalues()],
+    pipelines = find_classes([ pipeline_param['module'] for pipeline_param in pipeline_params.itervalues()],
                                DetectionPipeline)
     #map of string name to sink class
-    sinks = find_classes([ sink_param.get('package', 'object_recognition_core.io')
+    sinks = find_classes([ sink_param.get('module', 'object_recognition_core.io')
                         for sink_param in sink_params.itervalues()], Sink)
     #map of string name to source class
-    sources = find_classes([ source_param.get('package', 'object_recognition_core.io')
+    sources = find_classes([ source_param.get('module', 'object_recognition_core.io')
                           for source_param in source_params.itervalues()], Source)
 
     # create the different source cells
@@ -50,7 +49,7 @@ def create_detection_plasm(source_params, pipeline_params, sink_params, voter_pa
     pipeline_cells = {}
     voter_n_input = {}
     for pipeline_id, pipeline_param in pipeline_params.iteritems():
-        pipeline = pipelines.get(pipeline_param['method'], False)
+        pipeline = pipelines.get(pipeline_param['type'], False)
         if not pipeline:
             sys.stderr.write('Invalid pipeline name: %s\nMake sure that the pipeline type is defined by a TrainingPipeline class, in the name class function.' % pipeline_param['method'])
             sys.exit(-1)
@@ -71,7 +70,7 @@ def create_detection_plasm(source_params, pipeline_params, sink_params, voter_pa
     for pipeline_id, detector in pipeline_cells.iteritems():
         pipeline_param = pipeline_params[pipeline_id]
         if 'sinks' in pipeline_param or 'voters' in pipeline_param:
-            validate_detection_pipeline(detector)
+            validate_detector(detector)
 
         # link to the different sources
         for source_id in pipeline_param['sources']:

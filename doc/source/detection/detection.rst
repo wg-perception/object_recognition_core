@@ -77,3 +77,23 @@ Command Line Interface
 ^^^^^^^^^^^^^^^^^^^^^^
 .. program-output:: apps/detection --help
    :in_srcdir:
+
+Configuration File
+^^^^^^^^^^^^^^^^^^
+
+The configuration file is where you define your graph and with the current ORK, you can choose any of the following sources:
+
+.. program-output:: ../config_doc.py source
+   :in_srcdir:
+
+any of the following sinks:
+
+.. program-output:: ../config_doc.py sink
+   :in_srcdir:
+
+or the following pipelines:
+
+.. program-output:: ../config_doc.py detection_pipeline
+   :in_srcdir:
+
+More of any of those can be added by the user obviously

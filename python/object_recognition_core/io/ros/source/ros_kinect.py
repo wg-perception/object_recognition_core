@@ -10,6 +10,11 @@ from ecto_image_pipeline.io.source import create_source
 class RosKinect(Source):
 
     @classmethod
+    def config_doc(cls):
+        return  """
+                """
+
+    @classmethod
     def type_name(cls):
         return 'ros_kinect'
 

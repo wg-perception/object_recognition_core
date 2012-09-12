@@ -7,7 +7,7 @@ pipeline independently.
 
 from ecto.opts import scheduler_options
 from object_recognition_core.pipelines.detection import DetectionPipeline, DetectionBlackbox, \
-    validate_detection_pipeline
+    validate_detection_pipeline, validate_detector
 from object_recognition_core.pipelines.plasm import create_detection_plasm
 from object_recognition_core.utils.find_classes import find_classes
 from object_recognition_core.utils.training_detection_args import common_create_parser, read_arguments_detector
@@ -23,20 +23,22 @@ if __name__ == '__main__':
     # read the config file
     source_params, pipeline_params, sink_params, voter_params, args = read_arguments_detector(parser)
 
-    pipelines = find_classes([ pipeline_param['package'] for pipeline_param in pipeline_params.itervalues()],
+    pipelines = find_classes([ pipeline_param['module'] for pipeline_param in pipeline_params.itervalues()],
                                DetectionPipeline) #map of string name to pipeline class
 
     for _pipeline_id, pipeline_param in pipeline_params.iteritems():
         # make sure object_ids is empty (so that we don't have to deal with the DB
         if 'object_ids' in pipeline_param['parameters']:
             pipeline_param['parameters']['object_ids'] = []
-        pipeline = pipelines.get(pipeline_param['method'], False)
+        pipeline = pipelines.get(pipeline_param['type'], False)
         if not pipeline:
             sys.stderr.write('Invalid pipeline name: %s\nMake sure that the pipeline type is defined by a DetectionPipeline class, in the name class function.' % pipeline_param['method'])
             sys.exit(-1)
-        # get a pipeline and validate its inputs/outputs
+        # get a detector and validate its inputs/outputs
         detector = DetectionBlackbox(pipeline,**pipeline_param)
         if 'sinks' in pipeline_param or 'voters' in pipeline_param:
-            validate_detection_pipeline(detector)
+            validate_detector(detector)
+        # validate the pipeline itself
+        validate_detection_pipeline(pipeline)
     # create the big plasm
     plasm = create_detection_plasm(source_params, pipeline_params, sink_params, voter_params)

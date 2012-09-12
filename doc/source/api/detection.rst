@@ -3,6 +3,11 @@ Detection
 
 To implement a detection pipeline runnable with the object recognition infrastructure you will need a Python script that implements a plasm for your pipeline. To ease the implementation, we describe a simple way way to retrieve models from the database, as well as the output format of the pipeline.
 
+Config file
+-----------
+
+Each detection pipeline can be defined and parameterized through a config file. ORK is able to parse those automatically.
+
 Python Plasm
 ------------
 
@@ -10,6 +15,8 @@ Your pipeline has to provide an implementation of the :py:class:`object_recognit
 
 .. autoclass:: object_recognition_core.pipelines.detection.DetectionPipeline
    :members:
+
+By providing so, after parsing the config file, the detection script will be able to find/load you cell when present on the PYTHONPATH.
 
 Database Cell
 -------------
@@ -92,3 +99,14 @@ You can output results to the console or to a CSV file.
     object_ids: a vector of Object ids
     Rs: a vector of cv::Mat, each representing the pose rotation of a matching object
     ts: a vector of cv::Mat, each representing the pose translation of a matching object
+
+Unit test
+---------
+ORK provides unit test for your pipeline to make sure it is coherent with the rest of the infrastructure TODO
+You just need to add the following in a CMakeLists.txt:
+
+.. code-block:: CMake
+
+    find_package(object_recognition_core)
+    object_recognition_core_detection_test(${PATH_TO_YOUR_DETECTION_CONFIG_FILE})
+

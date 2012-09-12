@@ -128,7 +128,7 @@ def common_parse_config_file(config_file_path, extra_pipeline_fields):
             source_params[key] = value
         elif key.startswith('pipeline'):
             # check the different fields
-            for field in [ 'method', 'submethod', 'package', 'parameters'] + extra_pipeline_fields:
+            for field in [ 'type', 'subtype', 'module', 'parameters'] + extra_pipeline_fields:
                 if field not in value:
                     raise RuntimeError('The pipeline parameters need to have the subfield "%s", current parameters: %s' %
                                        (field, str(value)))

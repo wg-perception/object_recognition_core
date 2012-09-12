@@ -23,11 +23,31 @@ class Sink(object):
         return NotImplemented
 
     @classmethod
+    def config_doc_default(cls):
+        '''
+        Return the default documentation for the config file of that Sink
+        '''
+        return """
+               type: '%s'
+               module: '%s'
+               """ % (cls.type_name(), cls.__module__)
+
+    @classmethod
+    def config_doc(cls):
+        '''
+        Return the documentation for the config file of that Source
+        It should return a string that is interpretable as YAML. It should not contain anything that is standard
+        (like the 'module', the name and so on). Anyway, if you use the standard CMake test, it will fail if you do.
+        The string should contain the necessary keys. For the values, put anything you want.
+        '''
+        raise NotImplementedError("The Sink class must return a YAML string for the configuration docs.")
+
+    @classmethod
     def type_name(cls):
         '''
         Return the code name for your sink
         '''
-        raise NotImplementedError("The Sink class must return a string name.")
+        raise NotImplementedError("The Sink %s must return a string name." % str(cls))
 
     @classmethod
     def sink(cls, *args, **kwargs):
@@ -37,7 +57,7 @@ class Sink(object):
         raise NotImplementedError("The sink has to be implemented.")
 
     @classmethod
-    def validate(cls, detector):
+    def validate(cls, cell):
         """
         This ensures that the given cell exhibits the minimal interface to be
         considered a sink for object recognition
@@ -60,6 +80,15 @@ class Sink(object):
 ########################################################################################################################
 
 class GuessCsvWriterPython(Sink):
+
+    @classmethod
+    def config_doc(cls):
+        return  """
+                    # The name of the team to consider
+                    team_name: ''
+                    # The run number
+                    run_number: ''
+                """
 
     @classmethod
     def type_name(cls):

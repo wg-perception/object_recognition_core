@@ -15,21 +15,21 @@ if __name__ == '__main__':
     # read the config file
     source_params, pipeline_params, sink_params, args = read_arguments_training()
 
-    pipelines = find_classes([ pipeline_param['package'] for pipeline_param in pipeline_params.itervalues()],
+    pipelines = find_classes([ pipeline_param['module'] for pipeline_param in pipeline_params.itervalues()],
                                TrainingPipeline) #map of string name to pipeline class
 
     for _pipeline_id, pipeline_param in pipeline_params.iteritems():
         # make sure object_ids is empty (so that we don't have to deal with the DB
         if 'object_ids' in pipeline_param['parameters']:
             pipeline_param['parameters']['object_ids'] = []
-        pipeline = pipelines.get(pipeline_param['method'], False)
+        pipeline = pipelines.get(pipeline_param['type'], False)
         if not pipeline:
             sys.stderr.write('Invalid pipeline name: %s\nMake sure that the pipeline type is defined by a TrainingPipeline class, in the name class function.' % pipeline_param['method'])
             sys.exit(-1)
         object_db = ObjectDb(pipeline_param['parameters'].get('db', {}))
         kwargs = {'object_db':object_db, 'observation_ids':[],
                                          'pipeline_params':pipeline_param.get('parameters', {}),
-                                         'submethod':pipeline_param['submethod'],
+                                         'subtype':pipeline_param['subtype'],
                                          'args':''}
         processor = pipeline.processor(**kwargs)
         post_processor = pipeline.post_processor(**kwargs)
