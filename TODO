@@ -90,3 +90,62 @@ more unittests on config file/command line arguments
 explain Python for ecto (__init__.py)
 shuffle techniques in the ecto docs
  David:  Another suggestion I'd have for the tutorials & reference: the names of the links don't really tell you what you get there, a one-sentence explanatory text for each one would b e great (like on http://www.ros.org/wiki/ROS/Tutorials)
+David: 
+I want you to know that I'm really on your side here. I'm just a
+little hesitant because I think I don't have enough insight into the
+workings of ecto yet to make qualified comments on some things. I can
+only talk about what I perceive as a novice user with little
+experience in Python and no experience at all in writing a Python
+library in C++.
+
+One thing you were bringing up several times was that stuff that is
+"standard python" or standard whatever shouldn't be in the
+documentation. I agree with that - however, you have to at least
+mention it, so I know as a novice user what I should look at. If the
+stance is "read a book on Python development and become a CMake expert
+before you can even start to use ecto", I think that's not a good way
+to sell this.
+
+Regarding documentation, I think the basic tutorial should get a more
+prominent position in the documentation. If I want to try out a new
+library, that is the first thing I will do before reading any lengthy
+prose about what are the motivations and what are all the interfaces
+and all that technical chitchat. I just want to know how it feels like
+to develop with that framework, so I can decide whether to use it,
+before I invest lots of time on studying all it's intricacies. Also,
+the basic tutorial should explain every single bit of what you need to
+do to get this running - from setting up your CMakeLists.txt, your
+evironment variables, compiling the code (yes, "mkdir build && cd
+build && cmake .. && make"), and running it in Python. It should also
+explain what files are created in the build folder on how they are
+related to the code line "import ecto.tutorial as tutorial".
+
+Some more general comments:
+
+- It is sometimes unclear who the documentation is targeted at. As a
+novice user of ecto, I don't want to read justifications why ecto has
+a right to exist besides ROS. That stuff should go into its own
+section under "further reading", or even better - remove it. I think
+that discussion is over anyway.
+
+- Scattered throughout the documentation are small sentences that
+suddenly make the whole thing appear unprofessional (e.g., by using
+the words "outputish", "ecto beast" or "slime molds", or introducing
+acronyms like "DAG" or "MoC" and never using them). If I get the
+feeling that something has been hacked together by college kids, I
+will not use it for anything related to my professional work.
+
+Yesterday I stumbled upon OMPL, and I think they actually have a nice
+landing page (http://ompl.kavrakilab.org/). I know, ecto is not in the
+same league regarding how much manpower can be allocated for it, but
+you can at least try.
+
+Apart from that, I'm sorry to say that but I really hate both logos
+used for ecto (why do you have two different ones?). They really take
+everything what makes a great logo and do the exact opposite. I've
+attached my own interpretation of this - I haven't spent terribly much
+time working on it, but it would make an acceptable logo at least, I
+think.
+
+document what a submethod is in ORK
+add default DB parameters to the config_doc
