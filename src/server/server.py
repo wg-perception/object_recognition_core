@@ -1,18 +1,20 @@
 #!/usr/bin/env python
-import rospy
+from ecto.opts import scheduler_options
 from geometry_msgs.msg import PoseArray
+from object_recognition_core.pipelines.plasm import create_detection_plasm
+from object_recognition_core.utils.training_detection_args import common_create_parser, read_arguments_detector
+from object_recognition_msgs.msg import *
 from std_msgs.msg import String
 import actionlib
-from object_recognition_msgs.msg import *
-from object_recognition_core.pipelines.plasm import create_detection_plasm
-from object_recognition_core.utils.training_detection_args import read_arguments_detector
 import ecto
+import rospy
 import sys
 import yaml
 
 class RecognitionServer:
-    def __init__(self,args):
-        source_params, pipeline_params, sink_params, voter_params, args = read_arguments_detector()
+    def __init__(self, parse):
+        # create the plasm that will run the detection
+        source_params, pipeline_params, sink_params, voter_params, args = read_arguments_detector(parser)
         self.plasm = create_detection_plasm(source_params, pipeline_params, sink_params, voter_params)
         self.plasm.configure_all()
         print 'configured'
@@ -78,6 +80,12 @@ class RecognitionServer:
         self.object_ids = None
 
 if __name__ == '__main__':
+    # create an ORK parser (it is special as it can read from option files)
+    parser = common_create_parser()
+
+    # add ecto options
+    scheduler_options(parser)
+
     args = rospy.myargv(argv=sys.argv)[1:]
     print 'rospy args stripped',args
     rospy.init_node('recognize_objects_server')
