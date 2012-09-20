@@ -149,3 +149,10 @@ think.
 
 document what a submethod is in ORK
 add default DB parameters to the config_doc
+
+make sure you can parametrize topics in soruce (for PR2 and:
+/head_mount_kinect/rgb/image_color
+/head_mount_kinect/rgb/camera_info
+/head_mount_kinect/depth/camera_info
+/head_mount_kinect/depth/image
+)
