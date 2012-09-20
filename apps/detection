@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-import roscompat
 from object_recognition_core.pipelines.plasm import create_detection_plasm
 from object_recognition_core.utils.training_detection_args import common_create_parser, read_arguments_detector
 from ecto.opts import scheduler_options, run_plasm
