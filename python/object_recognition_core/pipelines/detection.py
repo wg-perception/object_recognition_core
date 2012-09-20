@@ -5,7 +5,6 @@ from abc import ABCMeta
 from object_recognition_core.ecto_cells.io import PipelineInfo
 from object_recognition_core.utils.json_helper import dict_to_cpp_json_str
 import ecto
-import json
 import warnings
 import yaml
 
