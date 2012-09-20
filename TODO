@@ -11,8 +11,6 @@ Interface:
 - meshing should support --all, --missing, --object_ids
 - autogeneration of parameter files:autogenerate if it does not exist
 - normalize source parameters.  training and detection use a config file, everything else uses args...
-- All apps should support the sources? ros kinect, ros bag, openni
-- add an 'any' cell type in the config file
 
 Performance:
 - Mike's stuff
@@ -46,7 +44,6 @@ New cells:
 
 Test:
 - have something for performance. Use NIST.
-- be able to train and test on the same bag
 - ground truth format?  Look at NIST CSV.  Possibly come up with bag format too, where each frame has a listing of object id and pose relative to the sensor
 - ground truth capture... Use the NIST Ponoko rig to capture scenes with GT poses. Needs a simple app or something.
 - fix tests in /test that are unused
@@ -66,13 +63,8 @@ Test:
 
 
 
-more docs as always:
-Bhaskara:
-The installation instructions don’t actually say what the deb for ecto is called, just that it exists
-Would be nice to have doxygen-like links in the documentation
 I find http://ecto.willowgarage.com/links/ecto/reference/index.html confusing.  It would be nice  to have a single page laying out “here is the list of things required to set up an ecto pipeline”.  Right now, I have to infer what that list is from the tutorials, which are all toy examples.
 As I understand it, the “plasm” is the main computation graph, and so an important concept that should be well documented.  Instead, the reference page for plasm says: “from the Greek plasma, meaning “something formed or molded” Think ectoplasm or protoplasm. Leading naturally to slime molds.”  This does not fit the bill :)
-mention the builtin tests people can add to their cells/config files to check their validity
 ecto needs documentation about what it’s good for (GUI, graph, %, auto runtime docs)
 (ROS) logging everything happening between the Python launch and when the plasm starts
 more unittests on config file/command line arguments
@@ -129,12 +121,6 @@ landing page (http://ompl.kavrakilab.org/). I know, ecto is not in the
 same league regarding how much manpower can be allocated for it, but
 you can at least try.
 
-Apart from that, I'm sorry to say that but I really hate both logos
-used for ecto (why do you have two different ones?). They really take
-everything what makes a great logo and do the exact opposite. I've
-attached my own interpretation of this - I haven't spent terribly much
-time working on it, but it would make an acceptable logo at least, I
-think.
 
 document what a submethod is in ORK
 add default DB parameters to the config_doc
