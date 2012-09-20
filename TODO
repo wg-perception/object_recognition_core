@@ -69,8 +69,6 @@ Test:
 more docs as always:
 nothing explaining how to write a custom sink/source (Mac needed that at some point)
 Bhaskara:
-http://www.ros.org/wiki/ecto should point to something reasonable
-Likewise, searching for ‘ecto’ on the ros wiki has a planning page as the top hit.  It’s completely unclear from the search results where to look for canonical ecto documentation.
 The installation instructions don’t actually say what the deb for ecto is called, just that it exists
 Would be nice to have doxygen-like links in the documentation
 I find http://ecto.willowgarage.com/links/ecto/reference/index.html confusing.  It would be nice  to have a single page laying out “here is the list of things required to set up an ecto pipeline”.  Right now, I have to infer what that list is from the tutorials, which are all toy examples.
