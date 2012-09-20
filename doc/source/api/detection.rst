@@ -99,14 +99,3 @@ You can output results to the console or to a CSV file.
     object_ids: a vector of Object ids
     Rs: a vector of cv::Mat, each representing the pose rotation of a matching object
     ts: a vector of cv::Mat, each representing the pose translation of a matching object
-
-Unit test
----------
-ORK provides unit test for your pipeline to make sure it is coherent with the rest of the infrastructure TODO
-You just need to add the following in a CMakeLists.txt:
-
-.. code-block:: CMake
-
-    find_package(object_recognition_core)
-    object_recognition_core_detection_test(${PATH_TO_YOUR_DETECTION_CONFIG_FILE})
-
