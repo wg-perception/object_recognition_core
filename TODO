@@ -1,7 +1,5 @@
 After electric:
 - ecto: remove ROS_ELECTRIC_FOUND (everywhere in the code) and rosbuild_lite
-- OpenCV: replace OpenCV_LIBS by OpenCV_LIBRARIES
-- remove roscompat
 
 Build:
 - no default build of tutorials
@@ -17,8 +15,6 @@ Interface:
 - add an 'any' cell type in the config file
 
 Performance:
-- SBA
-- RANSAC
 - Mike's stuff
 
 DB:
@@ -71,10 +67,7 @@ Test:
 
 
 more docs as always:
-there is stuff explaining how to build a detection/training cell but nothing explaining why
 nothing explaining how to write a custom sink/source (Mac needed that at some point)
-more usage examples for the config file
-explain better how to build/run stuff for somebody who does not know/want to read the catkin help (like ‘git catkin foreach git git pull’)
 Bhaskara:
 http://www.ros.org/wiki/ecto should point to something reasonable
 Likewise, searching for ‘ecto’ on the ros wiki has a planning page as the top hit.  It’s completely unclear from the search results where to look for canonical ecto documentation.
