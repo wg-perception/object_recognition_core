@@ -35,7 +35,7 @@ class Source(object):
     @classmethod
     def config_doc_default(cls):
         '''
-        Return the default documentation for the config file of that Source
+        Return the default documentation for the config file of that Source. You should not overload this member
         '''
         return """
                type: '%s'
@@ -66,26 +66,25 @@ class Source(object):
         '''
         raise NotImplementedError("The source has to be implemented.")
 
-    @classmethod
-    def validate(cls, detector):
-        """
-        This ensures that the given cell exhibits the minimal interface to be
-        considered a source for object recognition
-        """
-        outputs = dir(cell.outputs)
-        #all sources must produce the following
-        for x in ('K', 'image', 'depth', 'points3d'):
-            if x not in outputs:
-                raise NotImplementedError('This cell does not correctly implement the source interface. Must have an output named %s' % x)
-        #type checks
-        for x in ('K', 'image', 'depth', 'points3d'):
-            type_name = cell.outputs.at(x).type_name
-            #TODO add more explicit types.
-            if type_name != 'cv::Mat':
-                raise NotImplementedError('This cell does not correctly implement the source interface.\n'
-                                          'Must have an output named %s, with type %s\n'
-                                          'This cells output at %s has type %s' % (x, 'cv::Mat', x, type_name))
-        return cell
+def validate_source(cell):
+    """
+    This ensures that the given cell exhibits the minimal interface to be
+    considered a source for object recognition
+    """
+    outputs = dir(cell.outputs)
+    #all sources must produce the following
+    for x in ('K', 'image', 'depth'):
+        if x not in outputs:
+            raise NotImplementedError('This cell with doc\n%s\ndoes not correctly implement the source interface. Must have an output named %s' % (cell.__doc__, x))
+    #type checks
+    for x in ('K', 'image', 'depth'):
+        type_name = cell.outputs.at(x).type_name
+        #TODO add more explicit types.
+        if type_name != 'cv::Mat':
+             raise NotImplementedError('The cell with doc\n%s\n does not correctly implement the source interface.\n'
+                                       'Must have an output named %s, with type %s\n'
+                                       'This cells output at %s has type %s' % (cell.__doc__, x, 'cv::Mat', x, type_name))
+    return cell
 
 ########################################################################################################################
 

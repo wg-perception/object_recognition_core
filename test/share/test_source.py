@@ -6,7 +6,7 @@ pipeline independently.
 """
 
 from object_recognition_core.utils.find_classes import find_classes
-from object_recognition_core.io.source import Source
+from object_recognition_core.io.source import Source, validate_source
 import sys
 
 if __name__ == '__main__':
@@ -26,3 +26,5 @@ if __name__ == '__main__':
                            'Make sure that the source type is defined by a Source class, in the name class function.\n'
                            'Found sources: ' + str(sources))
     source = sources[source_name].source(**args)
+    validate_source(source)
+    print 'Found source ' + source_name

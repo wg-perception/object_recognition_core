@@ -25,7 +25,7 @@ class Sink(object):
     @classmethod
     def config_doc_default(cls):
         '''
-        Return the default documentation for the config file of that Sink
+        Return the default documentation for the config file of that Sink. You should not overloadd this member
         '''
         return """
                type: '%s'
@@ -56,26 +56,27 @@ class Sink(object):
         '''
         raise NotImplementedError("The sink has to be implemented.")
 
-    @classmethod
-    def validate(cls, cell):
-        """
-        This ensures that the given cell exhibits the minimal interface to be
-        considered a sink for object recognition
-        """
-        inputs = dir(cell.inputs)
-        #all sources must produce the following
-        for x in ['pose_results']:
-            if x not in inputs:
-                raise NotImplementedError('This cell does not correctly implement the sink interface. Must have an input named %s' % x)
-        #type checks
-        for x in ['pose_results']:
-            type_name = cell.inputs.at(x).type_name
-            #TODO add more explicit types.
-            if type_name not in ['std::vector<object_recognition::common::PoseResult, std::allocator<object_recognition::common::PoseResult> >']:
-                raise NotImplementedError('This cell does not correctly implement the sink interface.\n'
-                                          'Must have an output named %s, with type %s\n'
-                                          'This cells input at %s has type %s' % (x, 'std::vector<PoseResult>', x, type_name))
-        return cell
+def validate_sink(cell):
+    """
+    This ensures that the given cell exhibits the minimal interface to be
+    considered a sink for object recognition
+    """
+    inputs = dir(cell.inputs)
+    #all sources must produce the following
+    for x in ['pose_results']:
+        if x not in inputs:
+            raise NotImplementedError('This cell does not correctly implement the sink interface. Must have an input named %s' % x)
+    #type checks
+    possible_types_dict = {'pose_results': ['std::vector<object_recognition::common::PoseResult, std::allocator<object_recognition::common::PoseResult> >',
+                      'ecto::tendril::none']}
+    for input_name, possible_types in possible_types_dict.items():
+        type_name = cell.inputs.at(input_name).type_name
+        # test the type: the ecto::tendril::none is here for a passthrough
+        if type_name not in type_name:
+            raise NotImplementedError('The cell with doc\n%s\n does not correctly implement the sink interface.\n'
+                                      'Must have an input named %s, with type one of %s\n'
+                                      'This cells input at %s has type %s' % (cell.__doc__, x, ','.join(possible_types.split()), x, type_name))
+    return cell
 
 ########################################################################################################################
 

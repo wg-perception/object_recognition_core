@@ -30,4 +30,5 @@ by getting automatic docs from it ...).
    generic.rst
    training.rst
    detection.rst
+   source_sink.rst
    cells.rst

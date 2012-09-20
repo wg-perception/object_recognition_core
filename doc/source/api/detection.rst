@@ -3,11 +3,6 @@ Detection
 
 To implement a detection pipeline runnable with the object recognition infrastructure you will need a Python script that implements a plasm for your pipeline. To ease the implementation, we describe a simple way way to retrieve models from the database, as well as the output format of the pipeline.
 
-Config file
------------
-
-Each detection pipeline can be defined and parameterized through a config file. ORK is able to parse those automatically.
-
 Python Plasm
 ------------
 

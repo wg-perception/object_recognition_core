@@ -6,7 +6,7 @@ pipeline independently.
 """
 
 from object_recognition_core.utils.find_classes import find_classes
-from object_recognition_core.io.sink import Sink
+from object_recognition_core.io.sink import Sink, validate_sink
 import sys
 
 if __name__ == '__main__':
@@ -26,4 +26,5 @@ if __name__ == '__main__':
                            'Make sure that the sink type is defined by a Sink class, in the name class function.\n'
                            'Found sinks: ' + str(sinks))
     sink = sinks[sink_name].sink(**args)
+    validate_sink(sink)
     print 'Found sink ' + sink_name
