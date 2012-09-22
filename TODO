@@ -64,7 +64,6 @@ Test:
 
 
 I find http://ecto.willowgarage.com/links/ecto/reference/index.html confusing.  It would be nice  to have a single page laying out “here is the list of things required to set up an ecto pipeline”.  Right now, I have to infer what that list is from the tutorials, which are all toy examples.
-As I understand it, the “plasm” is the main computation graph, and so an important concept that should be well documented.  Instead, the reference page for plasm says: “from the Greek plasma, meaning “something formed or molded” Think ectoplasm or protoplasm. Leading naturally to slime molds.”  This does not fit the bill :)
 ecto needs documentation about what it’s good for (GUI, graph, %, auto runtime docs)
 (ROS) logging everything happening between the Python launch and when the plasm starts
 more unittests on config file/command line arguments
@@ -103,11 +102,6 @@ related to the code line "import ecto.tutorial as tutorial".
 
 Some more general comments:
 
-- It is sometimes unclear who the documentation is targeted at. As a
-novice user of ecto, I don't want to read justifications why ecto has
-a right to exist besides ROS. That stuff should go into its own
-section under "further reading", or even better - remove it. I think
-that discussion is over anyway.
 
 - Scattered throughout the documentation are small sentences that
 suddenly make the whole thing appear unprofessional (e.g., by using
