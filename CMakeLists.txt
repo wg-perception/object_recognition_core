@@ -1,13 +1,20 @@
 cmake_minimum_required(VERSION 2.8)
 project(object_recognition_core)
 find_package(catkin)
+if (${catkin_VERSION} VERSION_GREATER "0.5.26")
+catkin_package()
+catkin_package_export(INCLUDE_DIRS include
+                      LIBRARIES object_recognition_core_db object_recognition_core_common
+                      CFG_EXTRAS test.cmake
+)
+else()
 catkin_stack()
 catkin_project(object_recognition_core
-               DEPENDS Eigen Boost OpenCV
                INCLUDE_DIRS include
                LIBRARIES object_recognition_core_db object_recognition_core_common
                CFG_EXTRAS test.cmake
 )
+endif()
 
 #install targets for all things python
 catkin_python_setup()
