@@ -1,5 +1,7 @@
-object_recognition_core: Database Interface, Training & Detection
-=================================================================
+.. _object_recognition_core_user::
+
+object_recognition_core for users
+=================================
 
 object_recognition_core provides an infrastructure for easy development and usage of object recognition pipelines.
 When using/developing a new method you created or found, you usually always have to recreate the following:
@@ -15,9 +17,7 @@ When using/developing a new method you created or found, you usually always have
 ``object_recognition_core takes care`` of all that (and more !) by providing base classes and a flexible infrastructure because let's face it, you want
 to work on the juicy stuff: the pipeline itself.
 
-If you are a user, the docs are right below. If you are a developer, wrapping a pipeline is usually only around 200/300 lines of Python/C++ so stick with us
-and jump to the API section for instructions.
-
+If you are a user, the docs are right below.
 
 User Docs
 ^^^^^^^^^
@@ -27,10 +27,3 @@ User Docs
    db/couch.rst
    training/training.rst
    detection/detection.rst
-
-API
-^^^
-.. toctree::
-   :maxdepth: 2
-
-   api/index.rst
