@@ -9,7 +9,6 @@ from object_recognition_core.db.tools import add_db_arguments
 import subprocess
 from object_recognition.ingest.bag_upload import upload_bag
 from object_recognition import models
-import roslib; roslib.load_manifest('rosbag')
 import random
 import ecto
 import ecto_ros
