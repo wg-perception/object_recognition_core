@@ -1,11 +1,10 @@
 cmake_minimum_required(VERSION 2.8)
 project(object_recognition_core)
 find_package(catkin)
-if (${catkin_VERSION} VERSION_GREATER "0.5.26")
-catkin_package()
-catkin_package_export(INCLUDE_DIRS include
-                      LIBRARIES object_recognition_core_db object_recognition_core_common
-                      CFG_EXTRAS test.cmake
+if (${catkin_VERSION} VERSION_GREATER "0.5.28")
+catkin_package(INCLUDE_DIRS include
+               LIBRARIES object_recognition_core_db object_recognition_core_common
+               CFG_EXTRAS test.cmake
 )
 else()
 catkin_stack()
