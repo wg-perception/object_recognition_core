@@ -17,7 +17,7 @@ Unit Tests
 
 To make sure your ``Source``/``Pipeline``/``Sink`` is compatible with ``ORK``, we provide CMake macros to test your code. Use them as follows:
 
-.. code-block:: CMake
+.. code-block:: cmake
 
     find_package(object_recognition_core)
     # for a detection pipeline

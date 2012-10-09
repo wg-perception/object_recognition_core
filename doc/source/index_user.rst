@@ -1,4 +1,4 @@
-.. _object_recognition_core_user::
+.. _object_recognition_core_user:
 
 object_recognition_core for users
 =================================
