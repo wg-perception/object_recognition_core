@@ -17,6 +17,12 @@ try:
 except ImportError:
     ECTO_ROS_FOUND = False
 
+class OrkConfigurationError(Exception):
+    """
+    Exception proper to parsing a configuration file
+    """
+    pass
+
 def common_interpret_object_ids(pipeline_param_full, args=None):
     """
     Given command line arguments and the parameters of the pipeline, clean the 'object_ids' field to be a list of
@@ -110,13 +116,17 @@ def ros_common_parse_args(parser):
 
     return args
 
-def common_parse_config_file(config_file_path, extra_pipeline_fields):
+def common_parse_config_file(config_file_path, extra_pipeline_fields = []):
     # define the input
     if config_file_path is None or not os.path.exists(config_file_path):
-        print >> sys.stderr, "The option file does not exist. --help for usage."
-        sys.exit(-1)
+        raise OrkConfigurationError('The option file does not exist. --help for usage.')
+    common_parse_config_string(open(config_file_path), extra_pipeline_fields)
 
-    params = yaml.load(open(config_file_path))
+def common_parse_config_string(config_string, extra_pipeline_fields = []):
+    params = yaml.load(config_string)
+
+    if not params:
+        raise OrkConfigurationError('The configuration parameters cannot be empty')
 
     # read the different parameters from the config file, for each pipeline
     source_params = {}
@@ -130,13 +140,15 @@ def common_parse_config_file(config_file_path, extra_pipeline_fields):
             # check the different fields
             for field in [ 'type', 'subtype', 'module', 'parameters'] + extra_pipeline_fields:
                 if field not in value:
-                    raise RuntimeError('The pipeline parameters need to have the subfield "%s", current parameters: %s' %
+                    raise OrkConfigurationError('The pipeline parameters need to have the subfield "%s", current parameters: %s' %
                                        (field, str(value)))
             pipeline_params[key] = value
         elif key.startswith('sink'):
             sink_params[key] = value
         elif key.startswith('voter'):
             voter_params[key] = value
+        else:
+            raise OrkConfigurationError('Do not recognize the key %s' % key)
 
     return source_params, pipeline_params, sink_params, voter_params
 

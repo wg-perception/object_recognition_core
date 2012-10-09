@@ -11,6 +11,8 @@ import yaml
 class DetectionBlackbox(ecto.BlackBox):
     """
     This blackbox contains a detection pipeline and a cell that simply forwards its parameters
+    Each executed pipeline is actually wrapped in such an object so that outputs can be linked
+    to where they are coming from (through the info)
     """
     def __init__(self, detection_pipeline, *args, **kwargs):
         self._detector = detection_pipeline.detector(*args, **kwargs)
@@ -42,6 +44,7 @@ class DetectionPipeline:
     def config_doc_default(cls):
         '''
         Return the default documentation for the config file of that detection pipeline
+        Do not overload that function
         '''
         return """
                type: '%s'
