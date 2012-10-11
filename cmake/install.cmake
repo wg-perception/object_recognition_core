@@ -13,18 +13,6 @@ install(DIRECTORY ${CMAKE_BINARY_DIR}/share/test
 )
 endif()
 
-if (ROS_ELECTRIC_FOUND)
-# install the applications
-install(PROGRAMS ${PROJECT_SOURCE_DIR}/apps/detection
-                 ${PROJECT_SOURCE_DIR}/apps/training 
-        DESTINATION bin
-)
-
-install(FILES ${PROJECT_SOURCE_DIR}/apps/roscompat.py
-        DESTINATION bin
-)
-endif()
-
 if (ROS_FUERTE_FOUND)
 # install the applications
 install(PROGRAMS ${PROJECT_SOURCE_DIR}/apps/detection
@@ -32,9 +20,6 @@ install(PROGRAMS ${PROJECT_SOURCE_DIR}/apps/detection
         DESTINATION share/${PROJECT_NAME}/bin
 )
 
-install(FILES ${PROJECT_SOURCE_DIR}/apps/roscompat.py
-        DESTINATION share/${PROJECT_NAME}/bin
-)
 install(FILES ${PROJECT_SOURCE_DIR}/manifest.xml
         DESTINATION share/${PROJECT_NAME}
 )
@@ -57,10 +42,6 @@ install(DIRECTORY ${CATKIN_BUILD_PREFIX}/${CATKIN_PACKAGE_SHARE_DESTINATION}/tes
 # install the applications
 install(PROGRAMS ${PROJECT_SOURCE_DIR}/apps/detection
                  ${PROJECT_SOURCE_DIR}/apps/training
-        DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
-)
-
-install(FILES ${PROJECT_SOURCE_DIR}/apps/roscompat.py
         DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 endif()
