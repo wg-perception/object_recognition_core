@@ -16,8 +16,7 @@ Use
 
 .. toggle_table::
   :arg1: Non-ROS
-  :arg2: Electric
-  :arg3: Fuerte
+  :arg2: Fuerte/Groovy
 
 .. toggle:: Non-ROS
 
@@ -29,20 +28,7 @@ Use
     options: if it is "all", then all models are recomputed; if it is "missing", only the missing models are computed.
 
 
-.. toggle:: Electric
-
-  The training script can be run as follow:
-
-  .. code-block:: sh
-
-    rosrun object_recognition_core training \
-    -c `rospack find object_recognition_server`/conf/config_training.tod \
-    --visualize
-
-  You can choose whatever configuration file; a few are provided in ``object_recognition_server/server``.
-
-
-.. toggle:: Fuerte
+.. toggle:: Fuerte/Groovy
 
   The training script can be run as follow:
 

@@ -1,6 +1,3 @@
-After electric:
-- ecto: remove ROS_ELECTRIC_FOUND (everywhere in the code) and rosbuild_lite
-
 Build:
 - no default build of tutorials
 - no default build of tests

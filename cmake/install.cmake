@@ -1,4 +1,4 @@
-if (ROS_ELECTRIC_FOUND OR ROS_FUERTE_FOUND)
+if (ROS_FUERTE_FOUND)
 # install the include folder
 install(DIRECTORY ${PROJECT_SOURCE_DIR}/include/
         DESTINATION include

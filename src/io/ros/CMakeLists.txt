@@ -1,5 +1,4 @@
 # create the cells to output messages
-rosbuild_lite_init()
 
 find_package(ecto_ros QUIET)
 if (NOT ecto_ros_FOUND)
@@ -7,27 +6,14 @@ if (NOT ecto_ros_FOUND)
 endif()
 find_package(object_recognition_msgs REQUIRED)
 
-if (ROS_ELECTRIC_FOUND)
-  find_ros_package(geometry_msgs)
-  find_ros_package(sensor_msgs)
-  find_ros_package(visualization_msgs) #find the ros version of pcl for now.
-  include_directories(SYSTEM
-                      ${ecto_ros_INCLUDE_DIRS}
-  )
-else()
-if (GROOVY_FOUND)
-find_package(catkin REQUIRED geometry_msgs rosbag roscpp sensor_msgs visualization_msgs)
-else()
 if (ROS_GROOVY_FOUND)
 find_package(catkin REQUIRED geometry_msgs rosbag roscpp sensor_msgs visualization_msgs)
 else()
 find_package(ROS REQUIRED geometry_msgs rosbag roscpp sensor_msgs visualization_msgs)
 endif()
-endif()
-endif()
 
 find_package(Eigen REQUIRED)
-find_pcl_package()
+find_package(PCL REQUIRED)
 
 include_directories(SYSTEM
                     ${EIGEN_INCLUDE_DIRS}

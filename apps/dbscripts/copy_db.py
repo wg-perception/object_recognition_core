@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-import roscompat
 import object_recognition
 from object_recognition import tools as dbtools
 import couchdb
