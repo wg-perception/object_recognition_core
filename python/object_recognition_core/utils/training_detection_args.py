@@ -120,7 +120,7 @@ def common_parse_config_file(config_file_path, extra_pipeline_fields = []):
     # define the input
     if config_file_path is None or not os.path.exists(config_file_path):
         raise OrkConfigurationError('The option file does not exist. --help for usage.')
-    common_parse_config_string(open(config_file_path), extra_pipeline_fields)
+    return common_parse_config_string(open(config_file_path), extra_pipeline_fields)
 
 def common_parse_config_string(config_string, extra_pipeline_fields = []):
     params = yaml.load(config_string)
