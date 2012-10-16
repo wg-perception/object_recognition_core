@@ -14,16 +14,13 @@
   <build_depends>catkin</build_depends>
   <build_depends>curl</build_depends>
   <build_depends>ecto</build_depends>
-  <build_depends>ecto_ros</build_depends>
   <build_depends>ecto_image_pipeline</build_depends>
   <build_depends>object_recognition_msgs</build_depends>
-  <build_depends>pcl</build_depends>
+
   <depends>actionlib</depends>
   <depends>boost</depends>
   <depends>curl</depends>
   <depends>ecto</depends>
-  <depends>ecto_ros</depends>
   <depends>ecto_image_pipeline</depends>
   <depends>object_recognition_msgs</depends>
-  <depends>pcl</depends>
 </stack>

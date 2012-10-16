@@ -1,7 +1,0 @@
-# Empty goal its just a thunk
----
-# Define the result
-# Send the found objects, see the msg files for docs
-object_recognition_msgs/RecognizedObjectArray recognized_objects
----
-#no feedback

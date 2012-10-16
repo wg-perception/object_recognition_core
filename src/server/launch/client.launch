@@ -1,4 +1,0 @@
-<launch>
-  <node pkg="object_recognition_core" ns="/object_recognition" name="object_recognition_client" output="screen" type="client.py">
-  </node>
-</launch>

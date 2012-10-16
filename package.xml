@@ -14,19 +14,13 @@
   <build_depend>catkin</build_depend>
   <build_depend>curl</build_depend>
   <build_depend>ecto</build_depend>
-  <build_depend>ecto_ros</build_depend>
   <build_depend>ecto_image_pipeline</build_depend>
-  <build_depend>object_recognition_msgs</build_depend>
-  <build_depend>pcl</build_depend>
 
   <build_depend>actionlib</build_depend>
   <build_depend>boost</build_depend>
   <build_depend>curl</build_depend>
   <build_depend>ecto</build_depend>
-  <build_depend>ecto_ros</build_depend>
   <build_depend>ecto_image_pipeline</build_depend>
-  <build_depend>object_recognition_msgs</build_depend>
-  <build_depend>pcl</build_depend>
 
   <test_depend>visualization_msgs</test_depend>
 </package>

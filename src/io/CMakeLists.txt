@@ -1,5 +1,3 @@
-add_subdirectory(ros)
-
 # deal with the basci io cells
 ectomodule(io DESTINATION object_recognition_core/ecto_cells
               INSTALL

@@ -1,1 +1,0 @@
-from object_recognition_core.io.ros.sink.publisher import Publisher
