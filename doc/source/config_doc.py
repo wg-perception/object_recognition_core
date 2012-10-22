@@ -76,6 +76,8 @@ if __name__=='__main__':
     classes = find_classes(modules, supported_classes[args.class_type])
 
     # create a string with the config documentation
+    print ''
+    """
     res = ''
     class_number = 0
     for _class_name, class_object in classes.items():
@@ -85,6 +87,7 @@ if __name__=='__main__':
             res += indent_yaml(class_object.config_doc())
         class_number += 1
         res += '\n'
-
+    
     print res[:-1]
+    """
     #json.dumps(doc,final_doc,indent=0)
