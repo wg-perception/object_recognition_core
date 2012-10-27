@@ -19,7 +19,7 @@ from ecto_image_pipeline.io.source import create_source
 
 class Source(object):
     '''
-    A Sink abstract base class
+    A Source abstract base class
     '''
 
     __metaclass__ = ABCMeta
