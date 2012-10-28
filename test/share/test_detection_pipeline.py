@@ -9,7 +9,7 @@ from ecto.opts import scheduler_options
 from object_recognition_core.pipelines.detection import DetectionPipeline, DetectionBlackbox, \
     validate_detection_pipeline, validate_detector
 from object_recognition_core.pipelines.plasm import create_detection_plasm
-from object_recognition_core.utils.find_classes import find_classes
+from object_recognition_core.utils.find_classes import find_factories
 from object_recognition_core.utils.training_detection_args import common_create_parser, read_arguments_detector
 import sys
 
@@ -23,7 +23,7 @@ if __name__ == '__main__':
     # read the config file
     source_params, pipeline_params, sink_params, voter_params, args = read_arguments_detector(parser)
 
-    pipelines = find_classes([ pipeline_param['module'] for pipeline_param in pipeline_params.itervalues()],
+    pipelines = find_factories([ pipeline_param['module'] for pipeline_param in pipeline_params.itervalues()],
                                DetectionPipeline) #map of string name to pipeline class
 
     for _pipeline_id, pipeline_param in pipeline_params.iteritems():

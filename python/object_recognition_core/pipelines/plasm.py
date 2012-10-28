@@ -5,7 +5,7 @@ from object_recognition_core.io.sink import Sink
 from object_recognition_core.io.source import Source
 from object_recognition_core.io.voter import Voter
 from object_recognition_core.pipelines.detection import DetectionPipeline, DetectionBlackbox, validate_detector
-from object_recognition_core.utils.find_classes import find_classes
+from object_recognition_core.utils.find_classes import find_factories
 import ecto
 import sys
 
@@ -26,14 +26,14 @@ def create_detection_plasm(source_params, pipeline_params, sink_params, voter_pa
     voter_params: same but for voters
     """
     #map of string name to pipeline class
-    pipelines = find_classes([ pipeline_param['module'] for pipeline_param in pipeline_params.itervalues()],
+    pipelines = find_factories([ pipeline_param['module'] for pipeline_param in pipeline_params.itervalues()],
                                DetectionPipeline)
     #map of string name to sink class
-    sinks = find_classes([ sink_param.get('module', 'object_recognition_core.io')
-                        for sink_param in sink_params.itervalues()], Sink)
+    sinks = find_factories([ sink_param.get('module', 'object_recognition_core.io')
+                           for sink_param in sink_params.itervalues()], Sink)
     #map of string name to source class
-    sources = find_classes([ source_param.get('module', 'object_recognition_core.io')
-                          for source_param in source_params.itervalues()], Source)
+    sources = find_factories([ source_param.get('module', 'object_recognition_core.io')
+                             for source_param in source_params.itervalues()], Source)
 
     # create the different source cells
     source_cells = {}

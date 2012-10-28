@@ -5,7 +5,7 @@ Module defining a common Python interface to an ObjectDb
 from abc import ABCMeta
 from ecto_image_pipeline.io.source import create_source
 from object_recognition_core.boost.interface import ObjectDbParameters
-from object_recognition_core.utils.find_classes import find_classes
+from object_recognition_core.utils.find_classes import find_factories
 
 ########################################################################################################################
 
@@ -74,7 +74,5 @@ def ObjectDb(db_params):
     module = db_params_raw.get('module', None)
     if not module:
         raise RuntimeError("The 'module' property is not set. It is required to find the DB object")
-    object_db_bases = find_classes([module], ObjectDbBase)
-    if type not in object_db_bases:
-        raise RuntimeError('The db type %s was not found in module %s' % (type, module))
-    return object_db_bases[type].object_db(db_params_raw)
+    object_db_factory = find_factory([module], ObjectDbBase, type)
+    return object_db_factory.object_db(db_params_raw)
