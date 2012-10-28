@@ -64,39 +64,21 @@ macro(object_recognition_core_help_test script)
 endmacro()
 
 # macro testing a Source
-macro(object_recognition_core_source_test source_name)
-  if (${ARGC} EQUAL 1)
-    add_test(${PROJECT_NAME}_source_${source_name}
-      ${object_recognition_core_TEST_DIR}/run_test.sh ${SETUP_DOT_SH} "${object_recognition_core_TEST_DIR}/test_source.py ${source_name}"
-    )
-  endif()
-  if (${ARGC} EQUAL 2)
-    add_test(${PROJECT_NAME}_source_${source_name}
-      ${object_recognition_core_TEST_DIR}/run_test.sh ${SETUP_DOT_SH} "${object_recognition_core_TEST_DIR}/test_source.py ${source_name} ${ARGV1}"
-    )
-  endif()
-  if (${ARGC} EQUAL 3)
-    add_test(${PROJECT_NAME}_source_${source_name}
-      ${object_recognition_core_TEST_DIR}/run_test.sh ${SETUP_DOT_SH} "${object_recognition_core_TEST_DIR}/test_source.py ${source_name} ${ARGV1} ${ARGV2}"
-    )
-  endif()
+# the first argument is the value returned by type_name
+# the second argument is the Python module in which to find that source
+# the third argument is a string of the dict used for parameters: has to be set to "{}" if none
+macro(object_recognition_core_source_test source_name package_name parameters)
+  add_test(${PROJECT_NAME}_source_${source_name}
+      ${object_recognition_core_TEST_DIR}/run_test.sh ${SETUP_DOT_SH} "${object_recognition_core_TEST_DIR}/test_source.py ${source_name} ${package_name} ${parameters}"
+  )
 endmacro()
 
 # macro testing a Sink
-macro(object_recognition_core_sink_test sink_name)
-  if (${ARGC} EQUAL 1)
-    add_test(${PROJECT_NAME}_sink_${sink_name}
-      ${object_recognition_core_TEST_DIR}/run_test.sh ${SETUP_DOT_SH} "${object_recognition_core_TEST_DIR}/test_sink.py ${sink_name}"
-    )
-  endif()
-  if (${ARGC} EQUAL 2)
-    add_test(${PROJECT_NAME}_sink_${sink_name}
-      ${object_recognition_core_TEST_DIR}/run_test.sh ${SETUP_DOT_SH} "${object_recognition_core_TEST_DIR}/test_sink.py ${sink_name} ${ARGV1}"
-    )
-  endif()
-  if (${ARGC} EQUAL 3)
-    add_test(${PROJECT_NAME}_sink_${sink_name}
-      ${object_recognition_core_TEST_DIR}/run_test.sh ${SETUP_DOT_SH} "${object_recognition_core_TEST_DIR}/test_sink.py ${sink_name} ${ARGV1} ${ARGV2}"
-    )
-  endif()
+# the first argument is the value returned by type_name
+# the second argument is the Python module in which to find that sink
+# the third argument is a string of the dict used for parameters: has to be set to "{}" if none
+macro(object_recognition_core_sink_test sink_name package_name parameters)
+  add_test(${PROJECT_NAME}_sink_${sink_name}
+    ${object_recognition_core_TEST_DIR}/run_test.sh ${SETUP_DOT_SH} "${object_recognition_core_TEST_DIR}/test_sink.py ${sink_name} ${package_name} ${parameters}"
+  )
 endmacro()
