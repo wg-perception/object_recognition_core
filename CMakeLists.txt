@@ -1,8 +1,10 @@
 cmake_minimum_required(VERSION 2.8)
 project(object_recognition_core)
-find_package(catkin)
+find_package(catkin REQUIRED ecto)
+
 if (${catkin_VERSION} VERSION_GREATER "0.5.28")
-catkin_package(INCLUDE_DIRS include
+catkin_package(DEPENDS ecto
+               INCLUDE_DIRS include
                LIBRARIES object_recognition_core_db object_recognition_core_common
                CFG_EXTRAS test.cmake
 )
@@ -17,8 +19,6 @@ endif()
 
 #install targets for all things python
 catkin_python_setup()
-
-find_package(ecto REQUIRED)
 
 add_subdirectory(python)
 
