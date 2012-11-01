@@ -1,5 +1,6 @@
 """
-This file implements functions to autogenerate documentation for config files
+This file implements functions to help documentation:
+- autogeneration of config files
 """
 
 def config_yaml_for_generator_class(cls):

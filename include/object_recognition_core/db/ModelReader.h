@@ -63,7 +63,7 @@ namespace object_recognition_core
         {
         }
 
-        /** The only function that matters. It basically does something when the list of obejcts to study changes.
+        /** The only function that matters. It basically does something when the list of objects to study changes.
          * A typical example is to re-compute a search structure (kd-tree, LSH ...) because the
          * descriptors/templates/whatever have changed
          * @param db_documents
