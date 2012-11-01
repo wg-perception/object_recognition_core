@@ -9,6 +9,7 @@ find_package(Boost COMPONENTS
 
 find_package(CURL REQUIRED)
 find_package(OpenCV REQUIRED)
+find_package(ecto REQUIRED)
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
@@ -28,10 +29,12 @@ add_library(object_recognition_core_db
 )
 
 target_link_libraries(object_recognition_core_db ${Boost_LIBRARIES}
+                                                 ${catkin_LIBRARIES}
                                                  ${CURL_LIBRARIES}
                                                  ${OpenCV_LIBS}
                                                  ${OpenCV_LIBRARIES}
                                                  ${ecto_LIBRARIES}
+                                                 ${ROS_LIBRARIES}
 )
 
 install(TARGETS object_recognition_core_db
