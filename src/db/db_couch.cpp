@@ -223,7 +223,7 @@ ObjectDbCouch::Query(const object_recognition_core::db::View & view, int limit_r
       object_recognition_core::db::View::Key key;
       std::string options;
       if (view.key(key))
-        options = "&startkey=\"" + key.get_str() + "\"&endkey=\"" + key.get_str() + "\"";
+        options = "?key=\"" + key.get_str() + "\"";
       QueryView(url, limit_rows, start_offset, options, total_rows, offset, view_elements, do_throw);
 
       break;
@@ -236,7 +236,7 @@ ObjectDbCouch::Query(const object_recognition_core::db::View & view, int limit_r
       object_recognition_core::db::View::Key key;
       std::string options;
       if (view.key(key))
-        options = "&startkey=\"" + key.get_str() + "\"&endkey=\"" + key.get_str() + "\"";
+        options = "?key=\"" + key.get_str() + "\"";
       QueryView(url, limit_rows, start_offset, options, total_rows, offset, view_elements, do_throw);
 
       break;
