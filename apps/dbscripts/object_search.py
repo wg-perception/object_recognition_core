@@ -1,6 +1,6 @@
 #!/usr/bin/env python
-import object_recognition
-from object_recognition import tools as dbtools, models
+import object_recognition_core
+from object_recognition_core.db import tools as dbtools, models
 import couchdb
 import argparse
 
@@ -8,7 +8,7 @@ def parse_args():
     parser = argparse.ArgumentParser(description='Search for an objects in the DB based on tags..')
     parser.add_argument('-t', '--tag', metavar='TAG', dest='tag', type=str, default='',
                        help='Tag to search for.')
-    object_recognition.dbtools.add_db_arguments(parser)
+    dbtools.add_db_arguments(parser)
     args = parser.parse_args()
     return args
 
