@@ -223,7 +223,7 @@ ObjectDbCouch::Query(const object_recognition_core::db::View & view, int limit_r
       object_recognition_core::db::View::Key key;
       std::string options;
       if (view.key(key))
-        options = "?key=\"" + key.get_str() + "\"";
+        options = "&key=\"" + key.get_str() + "\"";
       QueryView(url, limit_rows, start_offset, options, total_rows, offset, view_elements, do_throw);
 
       break;
@@ -236,7 +236,7 @@ ObjectDbCouch::Query(const object_recognition_core::db::View & view, int limit_r
       object_recognition_core::db::View::Key key;
       std::string options;
       if (view.key(key))
-        options = "?key=\"" + key.get_str() + "\"";
+        options = "&key=\"" + key.get_str() + "\"";
       QueryView(url, limit_rows, start_offset, options, total_rows, offset, view_elements, do_throw);
 
       break;
@@ -277,6 +277,7 @@ ObjectDbCouch::QueryView(const std::string & in_url, int limit_rows, int start_o
   curl_.setWriter(&json_writer_);
   std::string url = in_url + "?limit=" + boost::lexical_cast<std::string>(limit_rows) + "&skip="
                     + boost::lexical_cast<std::string>(start_offset) + options;
+
   curl_.setURL(url);
   curl_.setHeader("Content-Type: application/json");
   curl_.setCustomRequest("GET");
