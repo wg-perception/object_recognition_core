@@ -51,6 +51,14 @@ target_link_libraries(db_interface
                       object_recognition_core_db
 )
 
+
+if (ROS_GROOVY_OR_ABOVE_FOUND)
+  set(ECTO_PYTHON_BUILD_PATH ${CATKIN_BUILD_PREFIX}/${CATKIN_GLOBAL_PYTHON_DESTINATION}/)                  
+else()
+  set(ECTO_PYTHON_BUILD_PATH ${CMAKE_BINARY_DIR}/gen/py/)                  
+endif()
+
+
 set_target_properties(db_interface PROPERTIES
                       LIBRARY_OUTPUT_DIRECTORY ${ECTO_PYTHON_BUILD_PATH}/object_recognition_core/boost
                       OUTPUT_NAME interface
