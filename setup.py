@@ -1,11 +1,13 @@
 #!/usr/bin/env python
-from distutils.core import setup
 
-setup(name='Object recognition core',
-      version='1.0.0',
-      description='The core of object recognition',
-      packages=['object_recognition_core', 'object_recognition_core.db', 'object_recognition_core.filters',
+from distutils.core import setup
+from ecto.package import parse_package_for_distutils
+
+d = parse_package_for_distutils()
+d['packages'] = ['object_recognition_core', 'object_recognition_core.db', 'object_recognition_core.filters',
                 'object_recognition_core.io', 'object_recognition_core.pipelines',
-                'object_recognition_core.utils', 'couchdb'],
-      package_dir={'':'python'}
-)
+                'object_recognition_core.utils', 'couchdb']
+d['package_dir'] = {'': 'python'}
+d['install_requires'] = []
+
+setup(**d)
