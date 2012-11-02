@@ -145,7 +145,7 @@ class TrainingPipeline:
         writer = ModelWriter(session_ids=list_to_cpp_json_str(kwargs['session_ids']),
                              object_id=kwargs['object_id'], db_params=kwargs['db_params'],
                              method=cls.type_name(),
-                             json_submethod=dict_to_cpp_json_str(kwargs['submethod']),
+                             json_submethod=dict_to_cpp_json_str(kwargs['subtype']),
                              json_params=dict_to_cpp_json_str(kwargs['pipeline_params']))
 
         plasm.connect(post_process["db_document"] >> writer["db_document"])

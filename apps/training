@@ -10,13 +10,13 @@ DEBUG = False
 
 if __name__ == '__main__':
     source_params, pipeline_params, sink_params, args = read_arguments_training()
-    pipelines = find_factories([ pipeline_param['package'] for pipeline_param in pipeline_params.itervalues()],
+    pipelines = find_factories([ pipeline_param['module'] for pipeline_param in pipeline_params.itervalues()],
                                TrainingPipeline) #map of string name to pipeline class
 
     for _pipeline_id, pipeline_param in pipeline_params.iteritems():
-        pipeline = pipelines.get(pipeline_param['method'], False)
+        pipeline = pipelines.get(pipeline_param['type'], False)
         if not pipeline:
-            sys.stderr.write('Invalid pipeline name: %s\nMake sure that the pipeline type is defined by a TrainingPipeline class, in the name class function.\n' % pipeline_param['method'])
+            sys.stderr.write('Invalid pipeline name: %s\nMake sure that the pipeline type is defined by a TrainingPipeline class, in the name class function.\n' % pipeline_param['type'])
             sys.exit(-1)
         for object_id in pipeline_param['parameters']['object_ids']:
             print 'computing object_id: %s' % object_id
@@ -36,7 +36,7 @@ if __name__ == '__main__':
 
                 #create a plasm using the TrainingPipeline interface.
                 plasm = pipeline.train(object_id=object_id, session_ids=session_ids, observation_ids=observation_ids,
-                                       submethod=pipeline_param.get('submethod', ''),
+                                       subtype=pipeline_param.get('subtype', ''),
                                        pipeline_params=pipeline_param.get('parameters', {}), object_db=object_db,
                                        db_params=db_params, args=args)
 
