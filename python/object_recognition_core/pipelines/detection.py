@@ -29,7 +29,7 @@ class DetectionBlackbox(ecto.BlackBox):
     #    self._detector_cell = self._detector
         
     def connections(self):
-        return self._detector.connections()
+        return [ self._detector ] #self._detector.connections()
 
 ########################################################################################################################
 
