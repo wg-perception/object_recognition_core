@@ -43,6 +43,11 @@ def common_interpret_object_ids(pipeline_param_full, args=None):
 
         if ids is None and names is None:
             continue
+        
+        db_params = pipeline_param_full['parameters']['db']
+        db_type = db_params.get('type', '')
+        if db_type.lower() not in core_db_types():
+            continue
 
         # initialize the DB
         if isinstance(ids, str) and ids != 'all' and ids != 'missing':
@@ -55,11 +60,6 @@ def common_interpret_object_ids(pipeline_param_full, args=None):
 
         if object_ids is None:
             object_ids = set()
-
-        db_params = pipeline_param_full['parameters']['db']
-        db_type = db_params.get('type', '')
-        if db_type.lower() not in core_db_types():
-            continue
 
         db = dbtools.db_params_to_db(ObjectDbParameters(db_params))
         if 'all' in (ids, names):
