@@ -96,9 +96,11 @@ namespace object_recognition_core
           raw_ = tmp.default_raw_parameters();
           break;
         }
+        case ObjectDbParameters::NONCORE:
         default:
         {
           // No implementation for that db type
+          raw_["type"] = type;
           break;
         }
       }
