@@ -79,7 +79,7 @@ namespace object_recognition_core
           :
             R_(pose_result.R_),
             T_(pose_result.T_),
-            confidence_(0),
+            confidence_(pose_result.confidence_),
             object_id_(pose_result.object_id_),
             db_(pose_result.db_)
       {
