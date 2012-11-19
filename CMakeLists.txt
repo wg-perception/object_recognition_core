@@ -9,6 +9,7 @@ catkin_package(DEPENDS ecto
                CFG_EXTRAS test.cmake
 )
 else()
+find_package(ROS REQUIRED ecto)
 catkin_stack()
 catkin_project(object_recognition_core
                INCLUDE_DIRS include
