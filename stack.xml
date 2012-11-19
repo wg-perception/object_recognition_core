@@ -15,6 +15,7 @@
   <build_depends>curl</build_depends>
   <build_depends>ecto</build_depends>
   <build_depends>ecto_image_pipeline</build_depends>
+  <build_depends>python-catkin-pkg</build_depends>
 
   <depends>actionlib</depends>
   <depends>boost</depends>
