@@ -50,6 +50,7 @@
 #include <object_recognition_core/db/db.h>
 #include <object_recognition_core/db/view.h>
 #include "types.h"
+#include <sensor_msgs/PointCloud2.h>
 
 namespace object_recognition_core
 {
@@ -81,7 +82,8 @@ namespace object_recognition_core
             T_(pose_result.T_),
             confidence_(pose_result.confidence_),
             object_id_(pose_result.object_id_),
-            db_(pose_result.db_)
+            db_(pose_result.db_),
+            clouds_ (pose_result.clouds_)
       {
       }
 
@@ -160,6 +162,19 @@ namespace object_recognition_core
       template<typename Type>
       Type
       T() const;
+
+      inline const std::vector<sensor_msgs::PointCloud2ConstPtr>&
+      clouds() const
+      {
+    	  return clouds_;
+      }
+
+      inline void
+      set_clouds(const std::vector<sensor_msgs::PointCloud2ConstPtr>& clouds)
+      {
+    	clouds_ = clouds;
+      }
+
     private:
       /** The rotation matrix of the estimated pose, stored row by row */
       std::vector<float> R_;
@@ -171,6 +186,9 @@ namespace object_recognition_core
       db::ObjectId object_id_;
       /** The db in which the object_id is */
       db::ObjectDb db_;
+      /** The recognized object's cloud. A vector since it can contain views from different sensors. */
+      std::vector<sensor_msgs::PointCloud2ConstPtr> clouds_;
+
     };
 
 #ifdef CV_MAJOR_VERSION
