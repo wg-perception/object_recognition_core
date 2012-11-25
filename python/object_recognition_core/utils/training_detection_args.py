@@ -44,7 +44,7 @@ def common_interpret_object_ids(pipeline_param_full, args=None):
         if ids is None and names is None:
             continue
         
-        db_params = pipeline_param_full['parameters']['db']
+        db_params = pipeline_param_full['parameters'].get('db', {})
         db_type = db_params.get('type', '')
         if db_type.lower() not in core_db_types():
             continue
