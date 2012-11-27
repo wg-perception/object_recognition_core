@@ -49,6 +49,7 @@ namespace object_recognition_core
 {
   namespace db
   {
+    typedef boost::shared_ptr<Document> DocumentPtr;
     typedef boost::shared_ptr<Documents> DocumentsPtr;
 
     /** Function used to create a vector of db Document's from Python
@@ -104,7 +105,9 @@ namespace object_recognition_core
     void
     wrap_db_documents()
     {
-      bp::class_<Document>("Document").def(bp::init<>()).def(bp::init<Document>());
+      bp::class_<Document, DocumentPtr> DocumentClass("Document");
+      DocumentClass.def(bp::init<>()).def(bp::init<Document>());
+      DocumentClass.def("id", &Document::id, bp::return_value_policy<bp::return_by_value>());
 
       bp::class_<Documents, DocumentsPtr> DocumentsClass("Documents");
       DocumentsClass.def("__init__", bp::make_constructor(DocumentsConstructor));
