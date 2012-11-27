@@ -19,6 +19,9 @@ class DetectionBlackbox(ecto.BlackBox):
         self._parameters = kwargs
         self._info = PipelineInfo(parameters=dict_to_cpp_json_str(kwargs))
         ecto.BlackBox.__init__(self, *args, **kwargs)
+        
+    def declare_params(self, p):
+        p.forward_all('_detector')
 
     def declare_io(self, _p, i, o):
         i.forward_all('_detector')
