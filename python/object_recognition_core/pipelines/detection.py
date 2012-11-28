@@ -28,11 +28,11 @@ class DetectionBlackbox(ecto.BlackBox):
         o.forward_all('_detector')
         o.forward_all('_info')
 
-    #def configure(self, p, _i, _o):
-    #    self._detector_cell = self._detector
+#    def configure(self, p, _i, _o):
+#        pass
         
     def connections(self):
-        return [ self._detector ] #self._detector.connections()
+        return [ self._detector ]
 
 ########################################################################################################################
 
