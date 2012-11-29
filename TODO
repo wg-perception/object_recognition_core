@@ -7,12 +7,15 @@ Build:
 - no default build of tutorials
 - no default build of tests
 - split the tests (db tests should at least be separated)
+- make Factories depend on an ABC
 
 Interface:
 - --all should also have a --missing. Fix missing, object_names
 - meshing should support --all, --missing, --object_ids
 - autogeneration of parameter files:autogenerate if it does not exist
 - normalize source parameters.  training and detection use a config file, everything else uses args...
+- create a simple graph plasm viewer for ORK
+- get the ecto_gooey to work with ORK
 
 Performance:
 - Mike's stuff
@@ -38,6 +41,8 @@ Capture:
 
 Doc:
 - API docs
+- autogeneration of config files
+- write docs for ecto_gooey
 
 New cells:
 - masks, filters
