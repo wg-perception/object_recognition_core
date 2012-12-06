@@ -20,7 +20,7 @@ class ObservationDealer(ecto.BlackBox):
     def declare_io(self, p, i, o):
         self.db_reader = ObservationReader()
         self.observation_dealer = ecto.Dealer(tendril=ecto.Tendril(Document()),
-                                              iterable=Documents(p.object_db, p.observation_ids))
+                                              iterable=[ x for x in Documents(p.object_db, p.observation_ids)])
         o.forward_all('db_reader')
 
     def connections(self):
