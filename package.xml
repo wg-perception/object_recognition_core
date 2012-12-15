@@ -8,9 +8,9 @@
   <license>BSD</license>
 
   <url>http://ecto.willowgarage.com/recognition</url>
+
   <build_depend>actionlib</build_depend>
   <build_depend>boost</build_depend>
-  <build_depend>catkin</build_depend>
   <build_depend>curl</build_depend>
   <build_depend>ecto</build_depend>
   <build_depend>ecto_image_pipeline</build_depend>
@@ -22,4 +22,6 @@
   <run_depend>ecto_image_pipeline</run_depend>
 
   <test_depend>visualization_msgs</test_depend>
+
+  <buildtool_depend>catkin</buildtool_depend>
 </package>
