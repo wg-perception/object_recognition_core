@@ -1,10 +1,6 @@
 # test some Python interfaces
 object_recognition_core_pytest(db_test)
 
-if (NOT GTEST_FOUND)
-  return()
-endif()
-
 # Testing core functionalities
 if (ROS_GROOVY_FOUND)
 catkin_add_gtest(or-db-test main.cpp

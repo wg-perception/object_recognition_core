@@ -19,6 +19,7 @@
 
   <depends>actionlib</depends>
   <depends>boost</depends>
+  <depends>couchdb</depends>
   <depends>curl</depends>
   <depends>ecto</depends>
   <depends>ecto_image_pipeline</depends>

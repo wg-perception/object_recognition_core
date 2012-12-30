@@ -17,6 +17,7 @@
 
   <run_depend>actionlib</run_depend>
   <run_depend>boost</run_depend>
+  <run_depend>couchdb</run_depend>
   <run_depend>curl</run_depend>
   <run_depend>ecto</run_depend>
   <run_depend>ecto_image_pipeline</run_depend>
