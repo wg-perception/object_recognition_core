@@ -5,6 +5,7 @@ from abc import ABCMeta
 from object_recognition_core.ecto_cells.io import PipelineInfo
 from object_recognition_core.utils.json_helper import dict_to_cpp_json_str
 import ecto
+from ecto import BlackBoxCellInfo as CellInfo
 import warnings
 import yaml
 
@@ -18,21 +19,19 @@ class DetectionBlackbox(ecto.BlackBox):
         self._detector = detection_pipeline.detector(*args, **kwargs)
         self._parameters = kwargs
         self._info = PipelineInfo(parameters=dict_to_cpp_json_str(kwargs))
-        ecto.BlackBox.__init__(self, *args, **kwargs)
-        
-    def declare_params(self, p):
-        p.forward_all('_detector')
+        ecto.BlackBox.__init__(self)
 
-    def declare_io(self, _p, i, o):
-        i.forward_all('_detector')
-        o.forward_all('_detector')
-        o.forward_all('_info')
+    def declare_cells(self, _p):
+        return {'detector': self._detector,
+                'info': self._info
+               }
 
-#    def configure(self, p, _i, _o):
-#        pass
-        
-    def connections(self):
-        return [ self._detector ]
+    @staticmethod
+    def declare_forwards(_p):
+        return ({'detector': 'all'}, {'detector': 'all'}, {'detector': 'all', 'info': 'all'})
+
+    def connections(self, _p):
+        return [ self.detector, self.info ]
 
 ########################################################################################################################
 

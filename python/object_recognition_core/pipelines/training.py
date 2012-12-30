@@ -1,45 +1,51 @@
 '''
 Loaders for all object recognition pipelines
 '''
-from abc import ABCMeta, abstractmethod
+from abc import ABCMeta
 from object_recognition_core.db import Document, Documents
 from object_recognition_core.db.cells import ObservationReader
 from object_recognition_core.utils.json_helper import dict_to_cpp_json_str, list_to_cpp_json_str
 import ecto
+from ecto import BlackBoxCellInfo as CellInfo, BlackBoxForward as Forward
 
 class ObservationDealer(ecto.BlackBox):
     '''
     At each iteration, will return one fully typed observation, K,R,T,image,depth,mask, etc...
     Initialized with a predetermined set of observation ids.
     '''
-    db_reader = ObservationReader
-    def declare_params(self, p):
+    @staticmethod
+    def declare_cells(p):
+        return {'db_reader': CellInfo(ObservationReader),
+                'observation_dealer': CellInfo(ecto.Dealer, {'tendril': ecto.Tendril(Document()),
+                                               'iterable': [ x for x in Documents(p.object_db, p.observation_ids)]})
+               }
+
+    @staticmethod
+    def declare_direct_params(p):
         p.declare('observation_ids', 'An iterable of observation ids.', [])
         p.declare('object_db', 'The db to query the parameters from.', '')
 
-    def declare_io(self, p, i, o):
-        self.db_reader = ObservationReader()
-        self.observation_dealer = ecto.Dealer(tendril=ecto.Tendril(Document()),
-                                              iterable=[ x for x in Documents(p.object_db, p.observation_ids)])
-        o.forward_all('db_reader')
+    @staticmethod
+    def declare_forwards(_p):
+        return ({}, {}, {'db_reader': 'all'})
 
-    def connections(self):
+    def connections(self, _p):
         graph = [self.observation_dealer[:] >> self.db_reader['document']]
         return graph
 
 class ModelBuilder(ecto.BlackBox):
     def __init__(self, source, incremental_model_builder, **kwargs):
         self.source = source
-        self.incremental_model_builder = incremental_model_builder
+        self._incremental_model_builder = incremental_model_builder
         ecto.BlackBox.__init__(self, **kwargs)
 
-    def declare_params(self, p):
-        pass
+    def declare_cells(self, _p):
+        return {'incremental_model_builder': self._incremental_model_builder}
 
-    def declare_io(self, p, i, o):
-        o.forward_all('incremental_model_builder')
+    def declare_forwards(self, _p):
+        return ({},{},{'incremental_model_builder': 'all'})
 
-    def connections(self):
+    def connections(self, _p):
         graph = []
         # Connect the model builder to the source
         for key in self.source.outputs.iterkeys():
