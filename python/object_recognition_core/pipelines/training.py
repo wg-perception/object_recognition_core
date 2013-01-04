@@ -2,11 +2,11 @@
 Loaders for all object recognition pipelines
 '''
 from abc import ABCMeta
+from ecto import BlackBoxCellInfo as CellInfo
 from object_recognition_core.db import Document, Documents
 from object_recognition_core.db.cells import ObservationReader
 from object_recognition_core.utils.json_helper import dict_to_cpp_json_str, list_to_cpp_json_str
 import ecto
-from ecto import BlackBoxCellInfo as CellInfo, BlackBoxForward as Forward
 
 class ObservationDealer(ecto.BlackBox):
     '''
@@ -43,7 +43,7 @@ class ModelBuilder(ecto.BlackBox):
         return {'incremental_model_builder': self._incremental_model_builder}
 
     def declare_forwards(self, _p):
-        return ({},{},{'incremental_model_builder': 'all'})
+        return ({}, {}, {'incremental_model_builder': 'all'})
 
     def connections(self, _p):
         graph = []
@@ -91,7 +91,7 @@ class TrainingPipeline:
         '''
         object_db = kwargs.get('object_db')
         observation_ids = kwargs.get('observation_ids')
-        #todo make this depend on the pipeline specification or something...
+        # todo make this depend on the pipeline specification or something...
         dealer = ObservationDealer(object_db=object_db, observation_ids=observation_ids)
         incremental_model_builder = cls.incremental_model_builder(*args, **kwargs)
         model_builder = ModelBuilder(source=dealer,
@@ -99,7 +99,7 @@ class TrainingPipeline:
                                      niter=0,
                                      )
         return model_builder
-        
+
     @classmethod
     def post_processor(cls, *args, **kwargs):
         '''
@@ -110,10 +110,10 @@ class TrainingPipeline:
         raise NotImplementedError("This should return a cell .")
 
 
-    @classmethod #see http://docs.python.org/library/abc.html#abc.ABCMeta.__subclasshook__
+    @classmethod  # see http://docs.python.org/library/abc.html#abc.ABCMeta.__subclasshook__
     def __subclasshook__(cls, C):
         if C is TrainingPipeline:
-            #all pipelines must have atleast this function.
+            # all pipelines must have atleast this function.
             if any("incremental_model_builder" in B.__dict__ for B in C.__mro__):
                 return True
         return NotImplemented
