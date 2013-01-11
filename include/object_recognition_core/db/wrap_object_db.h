@@ -50,8 +50,6 @@ namespace object_recognition_core
 {
   namespace db
   {
-    typedef boost::shared_ptr<ObjectDb> ObjectDbPtr;
-
     /** Provide a default empty pickling infrastructure
      */
     struct object_db_pickle_suite: boost::python::pickle_suite
@@ -87,21 +85,7 @@ namespace object_recognition_core
     void
     wrap_object_db(const std::string &object_db_name, Constructor constructor)
     {
-      bp::class_<ObjectDb, ObjectDbPtr> ObjectDbClass(object_db_name);
-      ObjectDbClass.def("__init__", bp::make_constructor(constructor));
-      ObjectDbClass.def("parameters", &ObjectDb::parameters,
-                        boost::python::return_value_policy<boost::python::copy_const_reference>());
-      ObjectDbClass.def_pickle(object_db_pickle_suite());
-    }
-
-    /** If you have your own Db to deal with, just call that function to make it visible from Python
-     * You can override some Python definition after calling it
-     */
-    template<typename Constructor>
-    void
-    wrap_object_db(Constructor constructor)
-    {
-      bp::class_<ObjectDb, ObjectDbPtr> ObjectDbClass("ObjectDb");
+      bp::class_<ObjectDb, boost::noncopyable> ObjectDbClass(object_db_name.c_str(), bp::no_init);
       ObjectDbClass.def("__init__", bp::make_constructor(constructor));
       ObjectDbClass.def("parameters", &ObjectDb::parameters,
                         boost::python::return_value_policy<boost::python::copy_const_reference>());

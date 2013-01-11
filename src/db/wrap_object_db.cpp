@@ -49,15 +49,13 @@ namespace object_recognition_core
     ObjectDbPtr
     ObjectDbConstructor(const ObjectDbParameters & db_params)
     {
-      // Create the ObjectDb from the ids
-      ObjectDbPtr p(new ObjectDb(db_params));
-      return p;
+      return db_params.generateDb();
     }
 
     void
     wrap_object_db_local()
     {
-      wrap_object_db(ObjectDbConstructor);
+      wrap_object_db("ObjectDb", ObjectDbConstructor);
     }
   }
 }

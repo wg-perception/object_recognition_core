@@ -58,7 +58,7 @@ namespace object_recognition_core
      * @return
      */
     DocumentsPtr
-    DocumentsConstructor(object_recognition_core::db::ObjectDb & db, const bp::object & python_document_ids)
+    DocumentsConstructor(object_recognition_core::db::ObjectDbPtr & db, const bp::object & python_document_ids)
     {
       // Read the document ids from the input
       std::vector<DocumentId> document_ids;
@@ -118,7 +118,7 @@ namespace object_recognition_core
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     DocumentsPtr
-    ModelDocumentsFromPython(object_recognition_core::db::ObjectDb & db, const bp::object & bp_object_ids,
+    ModelDocumentsFromPython(object_recognition_core::db::ObjectDbPtr & db, const bp::object & bp_object_ids,
                              const std::string & method, const std::string & json_submethod)
     {
       DocumentsPtr p(new Documents());

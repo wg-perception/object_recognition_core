@@ -37,7 +37,7 @@
 #define OBJECT_INFO_H_
 
 #include <object_recognition_core/common/types.h>
-#include <object_recognition_core/db/db.h>
+#include <object_recognition_core/db/db_base.h>
 #include <object_recognition_core/db/view.h>
 
 namespace object_recognition_core
@@ -56,7 +56,7 @@ namespace object_recognition_core
       {
       }
 
-      ObjectInfo(const db::ObjectId &object_id, const db::ObjectDb &db)
+      ObjectInfo(const db::ObjectId &object_id, const db::ObjectDbPtr &db)
           :
             object_id_(object_id),
             db_(db)
@@ -69,7 +69,7 @@ namespace object_recognition_core
        * @param object_id the id of the found object
        */
       void
-      set_object_id(const db::ObjectDb & db, const db::ObjectId &object_id)
+      set_object_id(const db::ObjectDbPtr & db, const db::ObjectId &object_id)
       {
         db_ = db;
         object_id_ = object_id;
@@ -100,7 +100,7 @@ namespace object_recognition_core
       inline std::string
       cache_key() const
       {
-        std::string parameter_hash = or_json::write(or_json::mValue(db_.parameters().raw()));
+        std::string parameter_hash = or_json::write(or_json::mValue(db_->parameters().raw()));
         return parameter_hash + object_id_;
       }
 
@@ -111,7 +111,7 @@ namespace object_recognition_core
       /** The object id of the found object */
       db::ObjectId object_id_;
       /** The db in which the object_id is */
-      db::ObjectDb db_;
+      db::ObjectDbPtr db_;
 
       /** DB info */
       mutable Attributes attributes_;

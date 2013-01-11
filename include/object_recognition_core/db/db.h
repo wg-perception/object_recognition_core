@@ -33,126 +33,28 @@
  *
  */
 
-#ifndef DB_H_
-#define DB_H_
+#ifndef ORK_CORE_DB_DB_H_
+#define ORK_CORE_DB_DB_H_
 
 #include <sstream>
 #include <map>
 
+#include <boost/bind.hpp>
 #include <boost/foreach.hpp>
 #include <boost/function.hpp>
 
 #include <object_recognition_core/common/types.h>
 #include <object_recognition_core/common/json_spirit/json_spirit.h>
+#include <object_recognition_core/db/db_base.h>
 #include <object_recognition_core/db/view.h>
-#include <object_recognition_core/db/db_parameters.h>
 
 namespace object_recognition_core
 {
   namespace db
   {
     //Forward declare some classes
-    class ObjectDbBase;
-    class ObjectDbParameters;
     class View;
     class ViewElement;
-
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-    class ObjectDb
-    {
-    public:
-      typedef boost::function<void
-      (int limit_rows, int start_offset, int& total_rows, int& offset, std::vector<ViewElement> &)> QueryFunction;
-
-      ObjectDb()
-      {
-      }
-
-      ObjectDb(const ObjectDb &db)
-          :
-            db_(db.db_),
-            parameters_(db.parameters_)
-      {
-      }
-
-      /** Constructor
-       * @param in_params any class that inherits from ObjectDbBaseParameters
-       */
-      explicit
-      ObjectDb(const ObjectDbParameters &in_params);
-
-      ObjectDb&
-      operator=(const ObjectDb &db)
-      {
-        db_ = db.db_;
-        parameters_ = db.parameters_;
-        return *this;
-      }
-
-      void
-      set_parameters(const ObjectDbParameters &in_params);
-      void
-      set_db_and_parameters(const boost::shared_ptr<object_recognition_core::db::ObjectDbBase>&,
-                            const object_recognition_core::db::ObjectDbParameters&);
-
-      /*** Get the parameters */
-      const ObjectDbParameters &
-      parameters() const
-      {
-        return parameters_;
-      }
-
-      void
-      get_attachment_stream(const DocumentId & document_id, const AttachmentName& attachment_name,
-                            MimeType& content_type, std::ostream& stream, RevisionId & revision_id) const;
-
-      void
-      set_attachment_stream(const DocumentId & document_id, const AttachmentName& attachment_name,
-                            const MimeType& content_type, const std::istream& stream, RevisionId & revision_id) const;
-
-      void
-      insert_object(const or_json::mObject &fields, DocumentId & document_id, RevisionId & revision_id) const;
-
-      void
-      load_fields(const DocumentId & document_id, or_json::mObject &fields) const;
-
-      void
-      persist_fields(const DocumentId & document_id, const or_json::mObject &fields, RevisionId & revision_id) const;
-
-      void
-      Delete(const ObjectId & id) const;
-
-      QueryFunction
-      Query(const View &view) const;
-
-      std::string
-      Status();
-
-      std::string
-      Status(const CollectionName& collection);
-
-      void
-      CreateCollection(const CollectionName &collection);
-
-      void
-      DeleteCollection(const CollectionName &collection);
-
-      /** The type of the DB
-       * @return The type of the DB as a string
-       */
-      DbType
-      type();
-    private:
-      void
-      Query_(const View &view, int limit_rows, int start_offset, int& total_rows, int& offset,
-             std::vector<ViewElement> & view_elements);
-
-      /** The DB from which we'll get all the info */
-      boost::shared_ptr<ObjectDbBase> db_;
-      /** The parameters of the current DB */
-      ObjectDbParameters parameters_;
-    };
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -164,8 +66,8 @@ namespace object_recognition_core
     public:
       Document();
       ~Document();
-      Document(const ObjectDb & db);
-      Document(const ObjectDb & db, const DocumentId &document_id);
+      Document(const ObjectDbPtr & db);
+      Document(const ObjectDbPtr & db, const DocumentId &document_id);
 
       bool
       operator==(const Document & document) const
@@ -178,7 +80,7 @@ namespace object_recognition_core
        * @param db
        */
       void
-      update_db(const ObjectDb& db);
+      update_db(const ObjectDbPtr& db);
 
       /** Persist your object to a given DB
        */
@@ -243,7 +145,7 @@ namespace object_recognition_core
       void
       set_attachment(const AttachmentName &attachment_name, const T & value);
     private:
-      ObjectDb db_;
+      ObjectDbPtr db_;
       DocumentId document_id_;
       RevisionId revision_id_;
     };
@@ -275,7 +177,7 @@ namespace object_recognition_core
       static const unsigned int BATCH_SIZE;
       ViewIterator();
 
-      ViewIterator(const View &view, const ObjectDb& db);
+      ViewIterator(const View &view, const ObjectDbPtr& db);
 
       /** Perform the query itself
        * @return an Iterator that will iterate over each result
@@ -296,7 +198,7 @@ namespace object_recognition_core
        * @param db The db on which the query is performed
        */
       void
-      set_db(const ObjectDb & db);
+      set_db(const ObjectDbPtr & db);
 
       bool
       operator!=(const ViewIterator & document_view) const;
@@ -308,10 +210,11 @@ namespace object_recognition_core
       int start_offset_;
       int total_rows_;
       /** The strings to send to the db_ to perform the query */
-      ObjectDb::QueryFunction query_;
-      ObjectDb db_;
+      boost::function<void
+      (int limit_rows, int start_offset, int& total_rows, int& offset, std::vector<ViewElement> &)> query_;
+      ObjectDbPtr db_;
     };
   }
 }
 
-#endif /* DB_H_ */
+#endif /* ORK_CORE_DB_DB_H_ */

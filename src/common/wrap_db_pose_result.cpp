@@ -103,7 +103,7 @@ namespace object_recognition_core
     db::ObjectDbParameters
     db_parameters(const boost::shared_ptr<PoseResultType> &p)
     {
-      return p->db().parameters();
+      return p->db()->parameters();
     }
 
     boost::python::list

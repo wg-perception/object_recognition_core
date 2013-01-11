@@ -82,7 +82,7 @@ namespace object_recognition_core
       void
       configure(const ecto::tendrils& params, const ecto::tendrils& inputs, const ecto::tendrils& outputs)
       {
-        db_.set_parameters(*db_params_);
+        db_ = db_params_->generateDb();
       }
 
       int
@@ -121,14 +121,14 @@ namespace object_recognition_core
           {
             DocumentId model_id = (*iter).id_;
             std::cout << "Deleting the previous model " << model_id << " of object " << *object_id_ << std::endl;
-            db_.Delete(model_id);
+            db_->Delete(model_id);
           }
         }
         doc_new.Persist();
         return ecto::OK;
       }
     private:
-      ObjectDb db_;
+      ObjectDbPtr db_;
       ecto::spore<ObjectDbParameters> db_params_;
       ecto::spore<DocumentId> object_id_;
       ecto::spore<std::string> session_ids_, model_parameters_, model_method_, model_submethod_;

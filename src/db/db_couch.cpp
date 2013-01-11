@@ -206,7 +206,7 @@ ObjectDbCouch::Delete(const ObjectId & id)
 }
 
 void
-ObjectDbCouch::Query(const object_recognition_core::db::View & view, int limit_rows, int start_offset, int& total_rows,
+ObjectDbCouch::QueryView(const object_recognition_core::db::View & view, int limit_rows, int start_offset, int& total_rows,
                      int& offset, std::vector<ViewElement> & view_elements)
 {
   json_reader_stream_.str("");
@@ -245,7 +245,7 @@ ObjectDbCouch::Query(const object_recognition_core::db::View & view, int limit_r
 }
 
 void
-ObjectDbCouch::Query(const std::vector<std::string> & queries, int limit_rows, int start_offset, int& total_rows,
+ObjectDbCouch::QueryGeneric(const std::vector<std::string> & queries, int limit_rows, int start_offset, int& total_rows,
                      int& offset, std::vector<ViewElement> & view_elements)
 {
   {

@@ -15,7 +15,7 @@ namespace object_recognition_core
   namespace prototypes
   {
     using db::Document;
-    using db::ObjectDb;
+
     struct ObservationInserter
     {
       static void
@@ -51,7 +51,7 @@ namespace object_recognition_core
       void
       configure(const tendrils& params, const tendrils& inputs, const tendrils& outputs)
       {
-        db = object_recognition_core::db::ObjectDb(*db_params_);
+        db = db_params_->generateDb();
         ecto::spore < std::string > object_id = params["object_id"];
         object_id.set_callback(boost::bind(&ObservationInserter::on_object_id_change, this, _1));
         ecto::spore < std::string > session_id = params["session_id"];
@@ -79,7 +79,7 @@ namespace object_recognition_core
       int frame_number;
       std::string object_id, session_id;
       ecto::spore<db::ObjectDbParameters> db_params_;
-      db::ObjectDb db;
+      db::ObjectDbPtr db;
     };
   }
 }

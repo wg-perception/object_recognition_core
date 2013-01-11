@@ -33,21 +33,22 @@
  *
  */
 
-#ifndef DB_BASE_H_
-#define DB_BASE_H_
+#ifndef ORK_CORE_DB_DB_BASE_H_
+#define ORK_CORE_DB_DB_BASE_H_
 
 #include <algorithm>
 #include <iterator>
 #include <map>
 #include <vector>
 
-#include <boost/any.hpp>
 #include <boost/foreach.hpp>
 #include <boost/shared_ptr.hpp>
 
 #include <object_recognition_core/common/types.h>
 #include <object_recognition_core/common/json_spirit/json_spirit.h>
+
 #include <object_recognition_core/db/view.h>
+#include <object_recognition_core/db/db_parameters.h>
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -61,24 +62,26 @@ namespace object_recognition_core
      *   static object_recognition_core::db::ObjectDbParameters default_parameters()
      *
      */
-    class ObjectDbBase
+    class ObjectDb
     {
     public:
       /** Default constructor
        * Make your children classes have the default parameter: ObjectDbParameters(default_parameters())
        */
-      ObjectDbBase()
-      {
-      }
-
-      /** The parameter is not a const as it can modified to be cleaned of the useless parameters */
-      ObjectDbBase(ObjectDbParametersRaw & parameters)
+      ObjectDb()
       {
       }
 
       virtual
-      ~ObjectDbBase()
+      ~ObjectDb()
       {
+      }
+
+      /*** Get the parameters */
+      const ObjectDbParameters &
+      parameters() const
+      {
+        return parameters_;
       }
 
       virtual ObjectDbParametersRaw
@@ -98,12 +101,12 @@ namespace object_recognition_core
 
       virtual
       void
-      Query(const View & view, int limit_rows, int start_offset, int& total_rows, int& offset,
-            std::vector<ViewElement> & view_elements) = 0;
+      QueryView(const View & view, int limit_rows, int start_offset, int& total_rows, int& offset,
+                std::vector<ViewElement> & view_elements) = 0;
 
       virtual void
-      Query(const std::vector<std::string> & queries, int limit_rows, int start_offset, int& total_rows, int& offset,
-            std::vector<ViewElement> & view_elements) = 0;
+      QueryGeneric(const std::vector<std::string> & queries, int limit_rows, int start_offset, int& total_rows,
+                   int& offset, std::vector<ViewElement> & view_elements) = 0;
 
       virtual void
       set_attachment_stream(const DocumentId & document_id, const AttachmentName& attachment_name,
@@ -128,8 +131,24 @@ namespace object_recognition_core
       /** The type of the DB : e.g. 'CouchDB' ... */
       virtual DbType
       type() const = 0;
+
+      friend ObjectDbParameters;
+    protected:
+      void
+      set_parameters(const ObjectDbParameters & parameters)
+      {
+        parameters_ = parameters;
+      }
+
+      /** The parameters of the current DB */
+      ObjectDbParameters parameters_;
     };
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    typedef boost::shared_ptr<ObjectDb> ObjectDbPtr;
+    typedef boost::shared_ptr<const ObjectDb> ObjectDbConstPtr;
   }
 }
 
-#endif // DB_BASE_H_
+#endif // ORK_CORE_DB_DB_BASE_H_

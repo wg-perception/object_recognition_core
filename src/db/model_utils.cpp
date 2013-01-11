@@ -74,7 +74,7 @@ namespace object_recognition_core
     }
 
     Document
-    PopulateDoc(const ObjectDb& db, const ObjectId& object_id, const std::string& session_ids,
+    PopulateDoc(const ObjectDbPtr& db, const ObjectId& object_id, const std::string& session_ids,
                 const std::string& method, const std::string& submethod_str, const std::string& parameters_str)
     {
       //create a document, and initialize all the common bits.
@@ -104,7 +104,7 @@ namespace object_recognition_core
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     Documents
-    ModelDocuments(ObjectDb &db, const std::vector<ObjectId> & object_ids, const std::string & method,
+    ModelDocuments(ObjectDbPtr &db, const std::vector<ObjectId> & object_ids, const std::string & method,
                    const std::string & json_submethod)
     {
       Documents model_documents;

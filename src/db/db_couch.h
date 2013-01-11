@@ -53,7 +53,7 @@ using object_recognition_core::db::ViewElement;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-class ObjectDbCouch: public object_recognition_core::db::ObjectDbBase
+class ObjectDbCouch: public object_recognition_core::db::ObjectDb
 {
 public:
   ObjectDbCouch();
@@ -86,12 +86,12 @@ public:
 
   virtual
   void
-  Query(const View & view, int limit_rows, int start_offset, int& total_rows, int& offset,
-        std::vector<ViewElement> & view_elements);
+  QueryView(const View & view, int limit_rows, int start_offset, int& total_rows, int& offset,
+            std::vector<ViewElement> & view_elements);
 
   virtual void
-  Query(const std::vector<std::string> & queries, int limit_rows, int start_offset, int& total_rows, int& offset,
-        std::vector<ViewElement> & view_elements);
+  QueryGeneric(const std::vector<std::string> & queries, int limit_rows, int start_offset, int& total_rows, int& offset,
+               std::vector<ViewElement> & view_elements);
 
   virtual std::string
   Status() const;

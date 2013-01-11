@@ -20,7 +20,6 @@ namespace object_recognition_core
   {
 
     using db::Document;
-    using db::ObjectDb;
 
     struct ObservationReader
     {

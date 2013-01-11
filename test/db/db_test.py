@@ -31,3 +31,5 @@ for db_params_raw in [{'type': 'CouchDB', 'root': 'http://localhost:5984', 'coll
 
     # test that we can convert a JSON string to an ObjectDbParameters type
     db_params_to_db(db_params)
+
+print 'all good'

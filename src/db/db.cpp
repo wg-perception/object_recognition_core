@@ -39,13 +39,13 @@
 #include <boost/foreach.hpp>
 
 #include "db_couch.h"
+#include "db_empty.h"
 #include "db_filesystem.h"
 #include <object_recognition_core/db/db.h>
 #include <object_recognition_core/db/db_base.h>
 #include <object_recognition_core/db/opencv.h>
 #include <object_recognition_core/db/view.h>
 
-#define PRECONDITION_DB() if(!db_) throw std::runtime_error(std::string("This ObjectDb instance is uninitialized."));
 namespace object_recognition_core
 {
   namespace db
@@ -156,135 +156,31 @@ namespace object_recognition_core
       return "";
     }
 
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-    ObjectDb::ObjectDb(const ObjectDbParameters &in_params)
+    ObjectDbPtr
+    ObjectDbParameters::generateDb() const
     {
-      set_parameters(in_params);
-    }
+      ObjectDbPtr res;
 
-    void
-    ObjectDb::set_parameters(const ObjectDbParameters& in_params)
-    {
-      ObjectDbParametersRaw params_raw = in_params.raw();
+      ObjectDbParametersRaw params_raw = raw();
 
-      switch (in_params.type())
+      switch (type())
       {
         case ObjectDbParameters::COUCHDB:
-          db_ = boost::shared_ptr<ObjectDbBase>(new ObjectDbCouch(params_raw));
+          res.reset(new ObjectDbCouch(params_raw));
           break;
         case ObjectDbParameters::EMPTY:
+          res.reset(new ObjectDbEmpty());
           break;
         case ObjectDbParameters::FILESYSTEM:
-          db_ = boost::shared_ptr<ObjectDbBase>(new ObjectDbFilesystem(params_raw));
+          res.reset(new ObjectDbFilesystem(params_raw));
           break;
         default:
           break;
       }
 
-      parameters_ = ObjectDbParameters(params_raw);
-    }
+      res->set_parameters(*this);
 
-    void
-    ObjectDb::set_db_and_parameters(const boost::shared_ptr<ObjectDbBase> & db_base,
-                                    const ObjectDbParameters &in_params)
-    {
-      db_ = db_base;
-      parameters_ = in_params;
-    }
-
-    void
-    ObjectDb::insert_object(const or_json::mObject &fields, DocumentId & document_id, RevisionId & revision_id) const
-    {
-      PRECONDITION_DB()
-      db_->insert_object(fields, document_id, revision_id);
-    }
-
-    void
-    ObjectDb::set_attachment_stream(const DocumentId & document_id, const AttachmentName& attachment_name,
-                                    const MimeType& content_type, const std::istream& stream,
-                                    RevisionId & revision_id) const
-    {
-      PRECONDITION_DB()
-      db_->set_attachment_stream(document_id, attachment_name, content_type, stream, revision_id);
-    }
-
-    void
-    ObjectDb::get_attachment_stream(const DocumentId & document_id, const AttachmentName& attachment_name,
-                                    MimeType& content_type, std::ostream& stream, RevisionId & revision_id) const
-    {
-      PRECONDITION_DB()
-      db_->get_attachment_stream(document_id, attachment_name, content_type, stream, revision_id);
-    }
-
-    void
-    ObjectDb::load_fields(const DocumentId & document_id, or_json::mObject &fields) const
-    {
-      PRECONDITION_DB()
-      db_->load_fields(document_id, fields);
-    }
-
-    void
-    ObjectDb::persist_fields(const DocumentId & document_id, const or_json::mObject &fields,
-                             RevisionId & revision_id) const
-    {
-      PRECONDITION_DB()
-      db_->persist_fields(document_id, fields, revision_id);
-    }
-
-    void
-    ObjectDb::Delete(const ObjectId & id) const
-    {
-      PRECONDITION_DB()
-      db_->Delete(id);
-    }
-
-    ObjectDb::QueryFunction
-    ObjectDb::Query(const View &view) const
-    {
-      return boost::bind(&ObjectDb::Query_, *this, view, _1, _2, _3, _4, _5);
-    }
-
-    void
-    ObjectDb::Query_(const View &view, int limit_rows, int start_offset, int& total_rows, int& offset,
-                     std::vector<ViewElement> & view_elements)
-    {
-      PRECONDITION_DB()
-      db_->Query(view, limit_rows, start_offset, total_rows, offset, view_elements);
-    }
-
-    std::string
-    ObjectDb::Status()
-    {
-      PRECONDITION_DB()
-      return db_->Status();
-    }
-
-    std::string
-    ObjectDb::Status(const CollectionName& collection)
-    {
-      PRECONDITION_DB()
-      return db_->Status(collection);
-    }
-    void
-    ObjectDb::CreateCollection(const CollectionName &collection)
-    {
-      PRECONDITION_DB()
-      db_->CreateCollection(collection);
-    }
-
-    void
-    ObjectDb::DeleteCollection(const CollectionName &collection)
-    {
-      PRECONDITION_DB()
-      db_->DeleteCollection(collection);
-    }
-
-    DbType
-    ObjectDb::type()
-    {
-      PRECONDITION_DB()
-      return db_->type();
+      return res;
     }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -298,24 +194,24 @@ namespace object_recognition_core
 
     }
 
-    Document::Document(const ObjectDb& db)
+    Document::Document(const ObjectDbPtr& db)
         :
           db_(db)
     {
 
     }
 
-    Document::Document(const ObjectDb & db, const DocumentId &document_id)
+    Document::Document(const ObjectDbPtr & db, const DocumentId &document_id)
         :
           db_(db),
           document_id_(document_id)
     {
       // Load all fields from the DB (not the attachments)
-      db.load_fields(document_id_, fields_);
+      db->load_fields(document_id_, fields_);
     }
 
     void
-    Document::update_db(const ObjectDb& db)
+    Document::update_db(const ObjectDbPtr& db)
     {
       db_ = db;
     }
@@ -329,16 +225,16 @@ namespace object_recognition_core
     {
       // Persist the object if it does not exist in the DB
       if (document_id_.empty())
-        db_.insert_object(fields_, document_id_, revision_id_);
+        db_->insert_object(fields_, document_id_, revision_id_);
       else
-        db_.persist_fields(document_id_, fields_, revision_id_);
+        db_->persist_fields(document_id_, fields_, revision_id_);
 
       // Persist the attachments
       for (AttachmentMap::const_iterator attachment = attachments_.begin(), attachment_end = attachments_.end();
           attachment != attachment_end; ++attachment)
       {
         // Persist the attachment
-        db_.set_attachment_stream(document_id_, attachment->first, attachment->second->type_,
+        db_->set_attachment_stream(document_id_, attachment->first, attachment->second->type_,
                                   attachment->second->stream_, revision_id_);
       }
     }
@@ -366,7 +262,7 @@ namespace object_recognition_core
       StreamAttachment::ptr stream_attachment(new StreamAttachment(mime_type));
       // Otherwise, load it from the DB
       RevisionId revision_id;
-      db_.get_attachment_stream(document_id_, attachment_name, mime_type, stream_attachment->stream_, revision_id);
+      db_->get_attachment_stream(document_id_, attachment_name, mime_type, stream_attachment->stream_, revision_id);
       stream << stream_attachment->stream_.rdbuf();
     }
 
@@ -392,7 +288,7 @@ namespace object_recognition_core
 
       StreamAttachment::ptr stream_attachment(new StreamAttachment(mime_type));
       // Otherwise, load it from the DB
-      db_.get_attachment_stream(document_id_, attachment_name, mime_type, stream_attachment->stream_, revision_id_);
+      db_->get_attachment_stream(document_id_, attachment_name, mime_type, stream_attachment->stream_, revision_id_);
       stream << stream_attachment->stream_.rdbuf();
 
       attachments_[attachment_name] = stream_attachment;
@@ -475,10 +371,10 @@ namespace object_recognition_core
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    ViewIterator::ViewIterator(const View &view, const ObjectDb& db)
+    ViewIterator::ViewIterator(const View &view, const ObjectDbPtr& db)
         :
           start_offset_(0),
-          query_(db.Query(view)),
+          query_(boost::bind(&ObjectDb::QueryView, db, view, _1, _2, _3, _4, _5)),
           db_(db)
     {
     }
@@ -495,7 +391,7 @@ namespace object_recognition_core
      * @param db The db on which the query is performed
      */
     void
-    ViewIterator::set_db(const ObjectDb & db)
+    ViewIterator::set_db(const ObjectDbPtr & db)
     {
       db_ = db;
     }

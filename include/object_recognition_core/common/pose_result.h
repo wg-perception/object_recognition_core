@@ -110,7 +110,7 @@ namespace object_recognition_core
        * @param object_id the id of the found object
        */
       void
-      set_object_id(const db::ObjectDb & db, const db::ObjectId &object_id)
+      set_object_id(const db::ObjectDbPtr & db, const db::ObjectId &object_id)
       {
         db_ = db;
         object_id_ = object_id;
@@ -137,7 +137,7 @@ namespace object_recognition_core
         return object_id_;
       }
 
-      inline const db::ObjectDb &
+      inline const db::ObjectDbPtr &
       db() const
       {
         return db_;
@@ -185,7 +185,7 @@ namespace object_recognition_core
       /** The object id of the found object */
       db::ObjectId object_id_;
       /** The db in which the object_id is */
-      db::ObjectDb db_;
+      db::ObjectDbPtr db_;
       /** The recognized object's cloud. A vector since it can contain views from different sensors. */
       std::vector<sensor_msgs::PointCloud2ConstPtr> clouds_;
 

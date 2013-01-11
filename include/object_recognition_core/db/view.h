@@ -36,6 +36,8 @@
 #ifndef VIEW_TYPES_H_
 #define VIEW_TYPES_H_
 
+#include <boost/noncopyable.hpp>
+
 #ifdef CV_MAJOR_VERSION
 #include <opencv2/core/core.hpp>
 #endif
@@ -47,12 +49,6 @@ namespace object_recognition_core
 {
   namespace db
   {
-    // Forward declare the base class
-    class ObjectDb;
-    class Document;
-
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
     /** A dummy document just contains fields and attachments
      */
     class DummyDocument

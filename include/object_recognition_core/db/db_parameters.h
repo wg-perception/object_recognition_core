@@ -42,6 +42,8 @@ namespace object_recognition_core
 {
   namespace db
   {
+    class ObjectDb;
+
     /** A class that stores the common parameters for the object DB
      * If it is not from a type provided by object_recognition_core, it is of type NONCORE
      */
@@ -140,6 +142,9 @@ namespace object_recognition_core
       {
         return raw_;
       }
+
+      boost::shared_ptr<ObjectDb>
+      generateDb() const;
     protected:
       /** The type of the collection 'CouchDB' ... */
       ObjectDbType type_;

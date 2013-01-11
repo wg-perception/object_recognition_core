@@ -184,7 +184,7 @@ ObjectDbFilesystem::Delete(const DocumentId & id)
 }
 
 void
-ObjectDbFilesystem::Query(const object_recognition_core::db::View & view, int limit_rows, int start_offset,
+ObjectDbFilesystem::QueryView(const object_recognition_core::db::View & view, int limit_rows, int start_offset,
                           int& total_rows, int& offset, std::vector<ViewElement> & view_elements)
 {
   or_json::mObject parameters = view.parameters();
@@ -208,7 +208,7 @@ ObjectDbFilesystem::Query(const object_recognition_core::db::View & view, int li
 }
 
 void
-ObjectDbFilesystem::Query(const std::vector<std::string> & queries, int limit_rows, int start_offset, int& total_rows,
+ObjectDbFilesystem::QueryGeneric(const std::vector<std::string> & queries, int limit_rows, int start_offset, int& total_rows,
                           int& offset, std::vector<ViewElement> & view_elements)
 {
   throw std::runtime_error("Function not implemented in the Filesystem DB.");

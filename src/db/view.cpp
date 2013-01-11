@@ -33,7 +33,6 @@
  *
  */
 
-#include <object_recognition_core/db/db.h>
 #include <object_recognition_core/db/view.h>
 
 namespace object_recognition_core

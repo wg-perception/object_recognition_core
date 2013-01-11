@@ -33,8 +33,8 @@
  *
  */
 
-#ifndef UTILS_H_
-#define UTILS_H_
+#ifndef ORK_CORE_DB_UTILS_H_
+#define ORK_CORE_DB_UTILS_H_
 
 #include <object_recognition_core/db/db.h>
 
@@ -62,7 +62,7 @@ namespace object_recognition_core
      */
 
     Document
-    PopulateDoc(const ObjectDb& db, const ObjectId& object_id, const std::string& session_ids,
+    PopulateDoc(const ObjectDbPtr& db, const ObjectId& object_id, const std::string& session_ids,
                 const std::string& method, const std::string& submethod_str, const std::string& parameters_str);
 
     /**
@@ -83,9 +83,9 @@ namespace object_recognition_core
      * @return
      */
     Documents
-    ModelDocuments(ObjectDb &db, const std::vector<ObjectId> & object_ids, const std::string & method,
+    ModelDocuments(ObjectDbPtr &db, const std::vector<ObjectId> & object_ids, const std::string & method,
                    const std::string & json_submethod);
   }
 }
 
-#endif /* UTILS_H_ */
+#endif /* ORK_CORE_DB_UTILS_H_ */
