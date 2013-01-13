@@ -31,7 +31,7 @@ target_link_libraries(common_interface ${Boost_LIBRARIES}
 
 
 if (ROS_GROOVY_OR_ABOVE_FOUND)
-  set(ECTO_PYTHON_BUILD_PATH ${CATKIN_BUILD_PREFIX}/${CATKIN_GLOBAL_PYTHON_DESTINATION}/)                  
+  set(ECTO_PYTHON_BUILD_PATH ${CATKIN_DEVEL_PREFIX}/${CATKIN_GLOBAL_PYTHON_DESTINATION}/)
 else()
   set(ECTO_PYTHON_BUILD_PATH ${CMAKE_BINARY_DIR}/gen/py/)                  
 endif()

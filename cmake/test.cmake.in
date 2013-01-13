@@ -1,5 +1,5 @@
 if (ROS_GROOVY_OR_ABOVE_FOUND)
-  set(SETUP_DOT_SH ${CATKIN_BUILD_PREFIX}/setup.sh)
+  set(SETUP_DOT_SH ${CATKIN_DEVEL_PREFIX}/setup.sh)
 else()
   set(SETUP_DOT_SH ${CMAKE_BINARY_DIR}/setup.sh)
 endif()
