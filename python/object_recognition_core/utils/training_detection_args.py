@@ -123,7 +123,10 @@ def common_parse_config_file(config_file_path, extra_pipeline_fields = []):
     return common_parse_config_string(open(config_file_path), extra_pipeline_fields)
 
 def common_parse_config_string(config_string, extra_pipeline_fields = []):
-    params = yaml.load(config_string)
+    try:
+        params = yaml.load(config_string)
+    except yaml.parser.ParserError as err:
+        raise OrkConfigurationError('The configuration string is not yaml', err)
 
     if not params:
         raise OrkConfigurationError('The configuration parameters cannot be empty')
