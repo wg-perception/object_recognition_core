@@ -132,7 +132,7 @@ namespace object_recognition_core
       virtual DbType
       type() const = 0;
 
-      friend ObjectDbParameters;
+      friend class ObjectDbParameters;
     protected:
       void
       set_parameters(const ObjectDbParameters & parameters)
