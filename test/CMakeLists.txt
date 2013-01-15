@@ -18,4 +18,6 @@ object_recognition_core_help_test(${CMAKE_CURRENT_SOURCE_DIR}/../apps/detection)
 object_recognition_core_help_test(${CMAKE_CURRENT_SOURCE_DIR}/../apps/training)
 
 # check the different sources
-object_recognition_core_source_test(openni "object_recognition_core.io" "{}")
+object_recognition_core_source_test(OpenNI "object_recognition_core.io" "{}")
+
+object_recognition_core_sink_test(GuessCsvWriter "object_recognition_core.io" "{}")

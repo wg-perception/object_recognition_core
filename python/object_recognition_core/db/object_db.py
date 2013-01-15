@@ -4,9 +4,8 @@ It also provides a factory you can use to wrap your own DB
 """
 
 from abc import ABCMeta
-from ecto_image_pipeline.io.source import create_source
 from object_recognition_core.boost.interface import ObjectDbParameters
-from object_recognition_core.utils.find_classes import find_factories, find_factory
+from object_recognition_core.utils.find_classes import find_classes
 
 ########################################################################################################################
 
@@ -49,8 +48,8 @@ Return the current DB types implemented in object_recognition_core
 """
     types = []
     from object_recognition_core.db import ObjectDbTypes
-    for type in ObjectDbTypes.values.itervalues():
-        types.append(str(type).split('.')[-1].lower())
+    for db_type in ObjectDbTypes.values.values():
+        types.append(str(db_type).split('.')[-1].lower())
     types.remove('noncore')
     return types
 
@@ -70,8 +69,8 @@ in order to find the ObjectDb you are looking for
         object_db_params = ObjectDbParameters(db_params)
 
     # check if it is a conventional DB from object_recognition_core
-    type = db_params_raw.get('type', None)
-    if type.lower() in core_db_types():
+    db_type = db_params_raw.get('type', None)
+    if db_type.lower() in core_db_types():
         from object_recognition_core.boost.interface import ObjectDb as ObjectDbCpp
         return ObjectDbCpp(object_db_params)
 
@@ -79,5 +78,5 @@ in order to find the ObjectDb you are looking for
     module = db_params_raw.get('module', None)
     if not module:
         raise RuntimeError("The 'module' property is not set. It is required to find the DB object")
-    object_db_factory = find_factory(module, ObjectDbFactory, type)
+    object_db_factory = find_classes([module], [ObjectDbFactory])[db_type]
     return object_db_factory.object_db(db_params_raw)

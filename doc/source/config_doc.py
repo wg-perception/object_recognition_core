@@ -10,7 +10,7 @@ from object_recognition_core.io.source import Source
 from object_recognition_core.io.voter import Voter
 from object_recognition_core.pipelines.detection import DetectionPipeline
 from object_recognition_core.pipelines.training import TrainingPipeline
-from object_recognition_core.utils.find_classes import find_factories
+from object_recognition_core.utils.find_classes import find_classes
 import argparse
 import json
 import os
@@ -73,7 +73,7 @@ if __name__=='__main__':
             if os.path.isdir(name) and name.startswith('object_recognition'):
                 modules.add(name)
     # find all the objects of the right type
-    classes = find_factories(modules, supported_classes[args.class_type])
+    classes = find_classes(modules, [supported_classes[args.class_type]])
 
     # create a string with the config documentation
     print ''

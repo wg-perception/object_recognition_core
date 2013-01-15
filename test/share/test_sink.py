@@ -1,24 +1,23 @@
 #!/usr/bin/env python
 """
-This script tests whether a detection pipeline can be created given a config file.
+This script tests whether a sink can be created given some command line arguments.
 It is not meant to be run as a test of object_recognition but as a test for and by each 
-pipeline independently.
+module independently.
 """
 
-from object_recognition_core.utils.find_classes import find_factory
-from object_recognition_core.io.sink import Sink, validate_sink
+from object_recognition_core.io.sink import Sink
+from object_recognition_core.utils.find_classes import find_cell
 import sys
 
 if __name__ == '__main__':
     sink_name = sys.argv[1]
 
-    sink_factory = find_factory(sys.argv[2], Sink, sink_name)
+    SinkClass = find_cell([sys.argv[2]], sink_name, [Sink])
 
     if len(sys.argv)>=4:
         args = eval(sys.argv[3])
     else:
         args = {}
 
-    sink = sink_factory.sink(**args)
-    validate_sink(sink)
+    sink = SinkClass(**args)
     print 'Found sink ' + sink_name

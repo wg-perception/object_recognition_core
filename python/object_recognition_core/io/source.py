@@ -12,116 +12,74 @@ All source cells will have the following outputs:
     The 3d points, height by width (or 1 by n_points if mask) with 3 channels (x, y and z)
 """
 
-from abc import ABCMeta
+import ecto
 from ecto_image_pipeline.io.source import create_source
 
 ########################################################################################################################
 
 class Source(object):
-    '''
-    A Source abstract base class
-    '''
-
-    __metaclass__ = ABCMeta
-
-    @classmethod #see http://docs.python.org/library/abc.html#abc.ABCMeta.__subclasshook__
-    def __subclasshook__(cls, C):
-        if C is Source:
-            #all pipelines must have atleast this function.
-            if any("type_name" in B.__dict__ for B in C.__mro__):
-                return True
-        return NotImplemented
-
-    @classmethod
-    def config_doc_default(cls):
-        '''
-        Return the default documentation for the config file of that Source. You should not overload this member
-        '''
-        return """
-               type: '%s'
-               module: '%s'
-               """ % (cls.type_name(), cls.__module__)
-
-    @classmethod
-    def config_doc(cls):
-        '''
-        Return the documentation for the config file of that Source
-        It should return a string that is interpretable as YAML. It should not contain anything that is standard
-        (like the 'module', the name and so on). Anyway, if you use the standard CMake test, it will fail if you do.
-        The string should contain the necessary keys. For the values, put anything you want.
-        '''
-        raise NotImplementedError("The Source class must return a YAML string for the configuration docs.")
-
-    @classmethod
-    def type_name(cls):
-        '''
-        Return the code name for your source
-        '''
-        raise NotImplementedError("The Source %s must return a string name." % str(cls))
-
-    @classmethod
-    def source(cls, *args, **kwargs):
-        '''
-        Returns the source
-        '''
-        raise NotImplementedError("The source has to be implemented.")
-
-def validate_source(cell):
     """
-    This ensures that the given cell exhibits the minimal interface to be
-    considered a source for object recognition
+    This is a base class for a source: you don't need to have your source cell inherit from that class but if you do,
+    it will make sure that its inputs/outputs fit the ORK standard (which is good if you want to interact with
+    the official ORK pipelines).
+    You need to call the BlackBox constructor in your __init__ first and then this function. Typically, your __init__ is
+    class Foo(ecto.BlackBox, Source):
+        def __init__(self, *args, **kwargs):
+            ecto.BlackBox.__init__(self, *args, **kwargs)
+            Source.__init__(self)
     """
-    outputs = dir(cell.outputs)
-    #all sources must produce the following
-    for x in ('K', 'image', 'depth'):
-        if x not in outputs:
-            raise NotImplementedError('This cell with doc\n%s\ndoes not correctly implement the source interface. Must have an output named %s' % (cell.__doc__, x))
-    #type checks
-    for x in ('K', 'image', 'depth'):
-        type_name = cell.outputs.at(x).type_name
-        #TODO add more explicit types.
-        if type_name != 'cv::Mat':
-             raise NotImplementedError('The cell with doc\n%s\n does not correctly implement the source interface.\n'
-                                       'Must have an output named %s, with type %s\n'
-                                       'This cells output at %s has type %s' % (cell.__doc__, x, 'cv::Mat', x, type_name))
-    return cell
+
+    def __init__(self):
+        """
+        This ensures that the given cell exhibits the minimal interface to be
+        considered a source for object recognition
+        """
+        outputs = dir(self.outputs)
+        # all sources must produce the following
+        for x in ('K', 'image', 'depth'):
+            if x not in outputs:
+                raise NotImplementedError('This cell with doc\n%s\nodes not correctly implement the source interface. '
+                                          'Must have an output named %s' % (self.__doc__, x))
+        # type checks
+        for x in ('K', 'image', 'depth'):
+            type_name = self.outputs.at(x).type_name
+            # TODO add more explicit types.
+            if type_name != 'cv::Mat':
+                raise NotImplementedError('The cell with doc\n%s\n does not correctly implement the source interface.\n' % 
+                                           self.__doc__ + 'Must have an output named %s, with type %s\n' % (x, 'cv::Mat') + 
+                                           'This cells output at %s has type %s' % (x, type_name))
 
 ########################################################################################################################
 
-class OpenNI(Source):
-
-    @classmethod
-    def type_name(cls):
-        return 'openni'
-
-    @classmethod
-    def config_doc(cls):
+class OpenNI(ecto.BlackBox, Source):
+    """
+    A source for any ORK pipeline, interface with a Kinect/ASUS Xtion pro using the openni driver
+    """
+    def __init__(self, *args, **kwargs):
         from ecto_openni import FpsMode, ResolutionMode, StreamMode
-        return  """
-                    # The number of frames per second for the RGB image: %s
-                    image_fps: ''
-                    # The number of frames per second for the depth image: %s
-                    depth_fps: ''
-                    # The resolution for the RGB image: %s
-                    image_mode: ''
-                    # The resolution for the depth image: %s
-                    depth_mode: ''
-                    # The stream mode: %s
-                    stream_mode: ''
-                """ % (str(FpsMode.values.values()), str(FpsMode.values.values()),
-                       str(ResolutionMode.values.values()), str(ResolutionMode.values.values()),
-                       str(StreamMode.values.values()))
-
-    @classmethod
-    def source(self, *args, **kwargs):
-        from ecto_openni import FpsMode, ResolutionMode, StreamMode
-        for key, _val_type_name, val_type in [ ('image_fps', 'FpsMode', FpsMode), ('depth_fps', 'FpsMode', FpsMode),
-                                             ('image_mode', 'ResolutionMode', ResolutionMode),
-                                             ('depth_mode', 'ResolutionMode', ResolutionMode),
-                                             ('stream_mode', 'StreamMode', StreamMode) ]:
+        for key, val_type in [ ('image_fps', FpsMode), ('depth_fps', FpsMode), ('image_mode', ResolutionMode),
+                                             ('depth_mode', ResolutionMode), ('stream_mode', StreamMode) ]:
             val = kwargs.get(key, None)
             if isinstance(val, str):
                 for enum in val_type.values.values():
                     if val == str(enum):
                         kwargs[key] = enum
-        return create_source(*('image_pipeline', 'OpenNISource'), **kwargs)
+        ecto.BlackBox.__init__(self, *args, **kwargs)
+        Source.__init__(self)
+
+    def declare_cells(self, p):
+        return {'main': create_source(*('image_pipeline', 'OpenNISource'), **p)}
+
+    def declare_params(self, p):
+        from ecto_openni import FpsMode, ResolutionMode, StreamMode
+        p.declare('image_fps', "The number of frames per second for the RGB image: %s" % str(FpsMode.values.values()))
+        p.declare('depth_fps', "The number of frames per second for the depth image: %s" % str(FpsMode.values.values()))
+        p.declare('image_mode', "The resolution for the RGB image: %s" % str(ResolutionMode.values.values()))
+        p.declare('depth_mode', "The resolution for the depth image: %s" % str(ResolutionMode.values.values()))
+        p.declare('stream_mode', "The stream mode: %s" % str(StreamMode.values.values()))
+
+    def declare_forwards(self, _p):
+        return ({}, {'main': 'all'}, {'main': 'all'})
+
+    def connections(self, _p):
+        return [self.main]

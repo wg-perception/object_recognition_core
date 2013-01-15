@@ -2,14 +2,46 @@
 Module defining several voters for the object recognition pipeline
 """
 
-from object_recognition_core.ecto_cells.voter import Aggregator
+from object_recognition_core.ecto_cells.voter import Aggregator as AggregatorCpp
+import ecto
+from ecto.blackbox import BlackBoxCellInfo as CellInfo
+
+########################################################################################################################
 
 class Voter(object):
-    '''
-    An RGB, Depth Map source.
-    '''
-    @staticmethod
-    def create_voter(n_inputs, voter_params):
-        voter_type = voter_params['type']
-        if voter_type == 'aggregator':
-            return Aggregator(n_inputs=n_inputs)
+    """
+    This is a base class for a voter: you don't need to have your voter cell inherit from that class but if you do,
+    it will make sure that its inputs/outputs fit the ORK standard (which is good if you want to interact with
+    the official ORK pipelines).
+    You need to call the BlackBox constructor in your __init__ first and then this function. Typically, your __init__ is
+    class Foo(ecto.BlackBox, Voter):
+        def __init__(self, *args, **kwargs):
+            ecto.BlackBox.__init__(self, *args, **kwargs)
+            Voter.__init__(self)
+    """
+
+    def __init__(self):
+        """
+        This ensures that the given cell exhibits the minimal interface to be
+        considered a voter for object recognition
+        """
+        pass
+
+########################################################################################################################
+
+class Aggregator(ecto.BlackBox, Voter):
+    """
+    Cell meant to take several outputs from pipelines and aggregate the results
+    """
+    def __init__(self, *args, **kwargs):
+        ecto.BlackBox.__init__(self, *args, **kwargs)
+        Voter.__init__(self)
+
+    def declare_cells(self, _p):
+        return {'main': CellInfo(AggregatorCpp)}
+
+    def declare_forwards(self, _p):
+        return ({'main': 'all'}, {'main': 'all'}, {'main': 'all'})
+
+    def connections(self, _p):
+        return [self.main]
