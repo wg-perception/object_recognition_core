@@ -26,7 +26,6 @@ def find_classes(modules, base_types):
     :param base_type: any class type (TrainingPipeline, Sink ...)
     :returns: A set of found classes
     """
-    print modules
     classes = set()
     ms = []
     for module in modules:

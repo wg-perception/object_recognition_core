@@ -17,41 +17,48 @@ from ecto_image_pipeline.io.source import create_source
 
 ########################################################################################################################
 
-class Source(object):
+class SourceBase(object):
     """
     This is a base class for a source: you don't need to have your source cell inherit from that class but if you do,
     it will make sure that its inputs/outputs fit the ORK standard (which is good if you want to interact with
     the official ORK pipelines).
     You need to call the BlackBox constructor in your __init__ first and then this function. Typically, your __init__ is
-    class Foo(ecto.BlackBox, Source):
+    class Foo(ecto.BlackBox, SourceBase):
         def __init__(self, *args, **kwargs):
             ecto.BlackBox.__init__(self, *args, **kwargs)
-            Source.__init__(self)
+            SourceBase.__init__(self)
     """
-
     def __init__(self):
         """
         This ensures that the given cell exhibits the minimal interface to be
         considered a source for object recognition
         """
-        outputs = dir(self.outputs)
-        # all sources must produce the following
-        for x in ('K', 'image', 'depth'):
-            if x not in outputs:
-                raise NotImplementedError('This cell with doc\n%s\nodes not correctly implement the source interface. '
-                                          'Must have an output named %s' % (self.__doc__, x))
-        # type checks
-        for x in ('K', 'image', 'depth'):
-            type_name = self.outputs.at(x).type_name
-            # TODO add more explicit types.
-            if type_name != 'cv::Mat':
-                raise NotImplementedError('The cell with doc\n%s\n does not correctly implement the source interface.\n' % 
-                                           self.__doc__ + 'Must have an output named %s, with type %s\n' % (x, 'cv::Mat') + 
-                                           'This cells output at %s has type %s' % (x, type_name))
+        validate_source(self)
+
+def validate_source(cell):
+    """
+    This ensures that the given cell exhibits the minimal interface to be
+    considered a source for object recognition
+    """
+    assert(isinstance(cell, SourceBase))
+    outputs = dir(cell.outputs)
+    #all sources must produce the following
+    for x in ('K', 'image', 'depth'):
+        if x not in outputs:
+            raise NotImplementedError('This cell with doc\n%s\ndoes not correctly implement the source interface. Must have an output named %s' % (cell.__doc__, x))
+    #type checks
+    for x in ('K', 'image', 'depth'):
+        type_name = cell.outputs.at(x).type_name
+        #TODO add more explicit types.
+        if type_name != 'cv::Mat':
+            raise NotImplementedError('The cell with doc\n%s\n does not correctly implement the source interface.\n'
+                                       'Must have an output named %s, with type %s\n'
+                                       'This cells output at %s has type %s' % (cell.__doc__, x, 'cv::Mat', x, type_name))
+    return cell
 
 ########################################################################################################################
 
-class OpenNI(ecto.BlackBox, Source):
+class OpenNI(ecto.BlackBox, SourceBase):
     """
     A source for any ORK pipeline, interface with a Kinect/ASUS Xtion pro using the openni driver
     """
@@ -65,7 +72,7 @@ class OpenNI(ecto.BlackBox, Source):
                     if val == str(enum):
                         kwargs[key] = enum
         ecto.BlackBox.__init__(self, *args, **kwargs)
-        Source.__init__(self)
+        SourceBase.__init__(self)
 
     def declare_cells(self, p):
         return {'main': create_source(*('image_pipeline', 'OpenNISource'), **p)}

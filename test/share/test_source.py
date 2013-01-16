@@ -5,14 +5,14 @@ It is not meant to be run as a test of object_recognition but as a test for and 
 module independently.
 """
 
-from object_recognition_core.io.source import Source
+from object_recognition_core.io.source import SourceBase
 from object_recognition_core.utils.find_classes import find_cell
 import sys
 
 if __name__ == '__main__':
     source_name = sys.argv[1]
 
-    SourceClass = find_cell([sys.argv[2]], source_name, [Source])
+    SourceClass = find_cell([sys.argv[2]], source_name, [SourceBase])
 
     if len(sys.argv)>=4:
         args = eval(sys.argv[3])

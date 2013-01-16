@@ -1,3 +1,3 @@
-from .sink import Sink, GuessCsvWriter
-from .source import Source, OpenNI
-from .voter import Voter, Aggregator
+from .sink import validate_sink, SinkBase, GuessCsvWriter
+from .source import validate_source, SourceBase, OpenNI
+from .voter import VoterBase, VoterBase, Aggregator
