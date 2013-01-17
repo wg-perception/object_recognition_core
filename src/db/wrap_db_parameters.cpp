@@ -54,9 +54,25 @@ namespace object_recognition_core
      * @return
      */
     boost::shared_ptr<ObjectDbParameters>
-    ObjectDbParametersConstructor(const bp::dict &obj)
+    ObjectDbParametersConstructorDict(const bp::dict &obj)
     {
       or_json::mObject params = common::BpDictToJson(obj);
+      if (params.empty())
+        params.insert(std::make_pair("type", ObjectDbParameters::TypeToString(ObjectDbParameters::EMPTY)));
+      ObjectDbParametersPtr p(new ObjectDbParameters(params));
+      return p;
+    }
+
+    /** Another constructor for the ObjectDbParameters class from a JSON string
+     * @param str the JSON string to parse parameters from
+     * @return
+     */
+    boost::shared_ptr<ObjectDbParameters>
+    ObjectDbParametersConstructorStr(const std::string &str)
+    {
+      or_json::mValue value;
+      or_json::read(str, value);
+      or_json::mObject params = value.get_obj();
       if (params.empty())
         params.insert(std::make_pair("type", ObjectDbParameters::TypeToString(ObjectDbParameters::EMPTY)));
       ObjectDbParametersPtr p(new ObjectDbParameters(params));
@@ -110,7 +126,8 @@ namespace object_recognition_core
     wrap_db_parameters()
     {
       bp::class_<ObjectDbParameters, ObjectDbParametersPtr> ObjectDbParametersClass("ObjectDbParameters"); //"The parameters of any database");
-      ObjectDbParametersClass.def("__init__", bp::make_constructor(ObjectDbParametersConstructor));
+      ObjectDbParametersClass.def("__init__", bp::make_constructor(ObjectDbParametersConstructorDict));
+      ObjectDbParametersClass.def("__init__", bp::make_constructor(ObjectDbParametersConstructorStr));
       ObjectDbParametersClass.add_property("type", type, "The type of the database.");
       ObjectDbParametersClass.add_property("raw", raw, "The raw parameters of the database.");
       ObjectDbParametersClass.def_pickle(db_parameters_pickle_suite());
