@@ -6,39 +6,23 @@ pipeline independently.
 """
 
 from ecto.opts import scheduler_options
-from object_recognition_core.pipelines.detection import DetectionPipeline, DetectionBlackbox, \
-    validate_detection_pipeline, validate_detector
-from object_recognition_core.pipelines.plasm import create_detection_plasm
-from object_recognition_core.utils.find_classes import find_factories
-from object_recognition_core.utils.training_detection_args import common_create_parser, read_arguments_detector
-import sys
+from object_recognition_core.pipelines.plasm import create_plasm
+from object_recognition_core.utils.training_detection_args import create_parser, read_arguments
 
 if __name__ == '__main__':
     # create an ORK parser
-    parser = common_create_parser()
+    parser = create_parser()
 
     # add ecto options
     scheduler_options(parser)
 
     # read the config file
-    source_params, pipeline_params, sink_params, voter_params, args = read_arguments_detector(parser)
+    ork_params, args = read_arguments(parser)
 
-    pipelines = find_factories([ pipeline_param['module'] for pipeline_param in pipeline_params.itervalues()],
-                               DetectionPipeline) #map of string name to pipeline class
+    # override the database parameters
+    for cell_name, parameters in ork_params.items():
+        if 'parameters' in parameters and 'object_ids' in parameters['parameters']:
+            parameters['parameters']['object_ids'] = '[]'
 
-    for _pipeline_id, pipeline_param in pipeline_params.iteritems():
-        # make sure object_ids is empty (so that we don't have to deal with the DB
-        if 'object_ids' in pipeline_param['parameters']:
-            pipeline_param['parameters']['object_ids'] = []
-        pipeline = pipelines.get(pipeline_param['type'], False)
-        if not pipeline:
-            sys.stderr.write('Invalid pipeline name: %s\nMake sure that the pipeline type is defined by a DetectionPipeline class, in the name class function.' % pipeline_param['method'])
-            sys.exit(-1)
-        # get a detector and validate its inputs/outputs
-        detector = DetectionBlackbox(pipeline,**pipeline_param)
-        if 'sinks' in pipeline_param or 'voters' in pipeline_param:
-            validate_detector(detector)
-        # validate the pipeline itself
-        validate_detection_pipeline(pipeline)
     # create the big plasm
-    plasm = create_detection_plasm(source_params, pipeline_params, sink_params, voter_params)
+    plasm = create_plasm(ork_params)

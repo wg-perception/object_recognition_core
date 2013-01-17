@@ -13,14 +13,11 @@ def file_to_json(file_path):
     json_params = eval(str(json_params).replace("'", '"').replace('u"', '"').replace('{u', '{'))
     return json_params
 
-def dict_to_cpp_json_str(dict_obj):
+def obj_to_cpp_json_str(obj):
     """
-    Given a dictionary object, convert it to a string for C++
+    Given a dictionary or a list object, convert it to a JSON string for C++ to parse. All unicode
+    references are removed
+    
+    :param obj: a dict or a list
     """
-    return json.dumps(dict_obj)
-
-def list_to_cpp_json_str(list_obj):
-    """
-    Given an iterable, convert it to a string for C++
-    """
-    return str(json.dumps(list_obj))
+    return json.dumps(obj)

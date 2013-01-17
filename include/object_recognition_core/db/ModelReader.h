@@ -33,7 +33,13 @@
  *
  */
 
-#pragma once
+/** This file describes a base class you should inherit from when creating your own cell that reads models from the
+ * database. This base class simplifies the job of interpreting the parameters and triggering some model redownload
+ * if the parameters/object ids changes
+ */
+
+#ifndef ork_db_model_reader
+#define ork_db_model_reader
 
 #include <boost/bind.hpp>
 #include <boost/foreach.hpp>
@@ -53,91 +59,117 @@ namespace object_recognition_core
   {
     namespace bases
     {
-      /** When creating your own cell to read models from the DB, first have an implementation class that inherits from
-       * ModelReaderImpl that does its job
+      /** When creating your own cell to read models from the DB, inherit from that class and implement the virtual
+       * functions.
        */
-      struct ModelReaderImpl
+      struct ModelReaderBase
       {
         virtual
-        ~ModelReaderImpl()
+        ~ModelReaderBase()
         {
         }
 
-        /** The only function that matters. It basically does something when the list of objects to study changes.
-         * A typical example is to re-compute a search structure (kd-tree, LSH ...) because the
-         * descriptors/templates/whatever have changed
+        /** This is the most important function: it gets triggered whenever something changes DB-wise (parameters or
+         * object ids). Typically, what you do in that function is load the models from the database and train some
+         * classifier
          * @param db_documents
          */
         virtual void
-        ParameterCallback(const Documents & db_documents) = 0;
+        parameter_callback(const Documents & db_documents) = 0;
 
-        static void
-        declare_params(ecto::tendrils& params)
+        void
+        configure_impl()
         {
+          // Make sure that whenever parameters related to the models or objects changes, the list of models is regenerated
+          json_db_.set_callback(boost::bind(&ModelReaderBase::parameterCallbackJsonDb, this, _1));
+          json_object_ids_.set_callback(boost::bind(&ModelReaderBase::parameterCallbackJsonObjectIds, this, _1));
+          method_.set_callback(boost::bind(&ModelReaderBase::parameterCallbackMethod, this, _1));
+          json_submethod_.set_callback(boost::bind(&ModelReaderBase::parameterCallbackJsonSubMethod, this, _1));
+          json_object_ids_.dirty(true);
         }
 
-        static void
-        declare_io(const ecto::tendrils& params, ecto::tendrils& inputs, ecto::tendrils& outputs)
-        {
-        }
+        /** The db object used to make the queries */
+        ObjectDbPtr db_;
+        /** The list of object ids */
+        std::vector<ObjectId> object_ids_;
+        /** The DB documents relative to those object ids */
+        Documents documents_;
 
-        virtual void
-        configure(const ecto::tendrils& params, const ecto::tendrils& inputs, const ecto::tendrils& outputs)
+        friend void
+        declare_params_impl(ecto::tendrils& params);
+      private:
+        void
+        parameterCallbackCommon()
         {
-        }
+          if (!db_)
+            return;
 
-        virtual int
-        process(const ecto::tendrils& inputs, const ecto::tendrils& outputs)
-        {
-          return ecto::OK;
-        }
-      };
+          // define the documents from the database
+          documents_ = ModelDocuments(db_, object_ids_, *method_, *json_submethod_);
 
-      /** Class reading arbitrary Models from DB. If you want to create a cell that reads from the DB, first
-       * implement a ModelReaderImpl class and then declare your model reader cell as follows:
-       * struct MyAwesomeModelReader db::bases::ModelReaderBase<MyAwesomeModelReaderImpl> {};
-       * ECTO_CELL(watever_module_name, object_recognition::db::bases::ModelReaderBase<whatever_cell_impl>,
-       * "WhateverName", "Whatever description");
-       * You have to jump through those hoops because of the static member functions
-       */
-      template<typename T>
-      struct ModelReaderBase: T
-      {
-        typedef ModelReaderBase<T> C;
-
-        static void
-        declare_params(ecto::tendrils& params)
-        {
-          params.declare(&C::model_documents_, "model_documents", "A set of Documents, one for each model to load.").required(
-              true);
-          T::declare_params(params);
-        }
-
-        static void
-        declare_io(const ecto::tendrils& params, ecto::tendrils& inputs, ecto::tendrils& outputs)
-        {
-          T::declare_io(params, inputs, outputs);
+          parameter_callback(documents_);
         }
 
         void
-        configure(const ecto::tendrils& params, const ecto::tendrils& inputs, const ecto::tendrils& outputs)
+        parameterCallbackJsonDb(const std::string& json_db)
         {
-          // Make sure that whenever parameters related to the models or objects changes, the list of models is regenerated
-          model_documents_.set_callback(boost::bind(&T::ParameterCallback, this, _1));
-          model_documents_.dirty(true);
+          *json_db_ = json_db;
+          if (json_db_->empty())
+            return;
+          if (!db_)
+            db_ = ObjectDbParameters(*json_db_).generateDb();
 
-          T::configure(params, inputs, outputs);
+          parameterCallbackCommon();
         }
 
-        int
-        process(const ecto::tendrils& inputs, const ecto::tendrils& outputs)
+        void
+        parameterCallbackJsonObjectIds(const std::string& json_object_ids)
         {
-          return T::process(inputs, outputs);
+          // read the object ids from the JSON string
+          object_ids_.clear();
+          or_json::mArray array = or_json::mValue(json_object_ids).get_array();
+          for (or_json::mArray::const_iterator iter = array.begin(), end = array.end(); iter != end; ++iter)
+            object_ids_.push_back(iter->get_str());
+
+          parameterCallbackCommon();
         }
-      private:
-        /** The DB documents for the models */
-        ecto::spore<Documents> model_documents_;
+
+        void
+        parameterCallbackMethod(const std::string& method)
+        {
+          *method_ = method;
+          parameterCallbackCommon();
+        }
+
+        void
+        parameterCallbackJsonSubMethod(const std::string& json_submethod)
+        {
+          *json_submethod_ = json_submethod;
+          parameterCallbackCommon();
+        }
+
+        /** The method used to compute the models */
+        ecto::spore<std::string> method_;
+        /** The sub-method used to compute the models */
+        ecto::spore<std::string> json_submethod_;
+        /** The DB parameter stored as a JSON string */
+        ecto::spore<std::string> json_db_;
+        /** The DB documents for the models stored as a JSON string*/
+        ecto::spore<std::string> json_object_ids_;
       };
+
+      void
+      declare_params_impl(ecto::tendrils& params)
+      {
+        params.declare(&ModelReaderBase::json_db_, "json_db", "The DB configuration parameters as a JSON string").required();
+        params.declare(&ModelReaderBase::json_object_ids_, "json_object_ids",
+                       "A set of object ids as a JSON string: '[\"erwere\"]'", "all");
+        params.declare(&ModelReaderBase::method_, "method", "The method the models were computed with").required();
+        params.declare(&ModelReaderBase::json_submethod_, "json_submethod", "The submethod used to compute the models.",
+                       "");
+      }
     }
   }
 }
+
+#endif

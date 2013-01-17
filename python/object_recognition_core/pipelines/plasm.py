@@ -1,13 +1,12 @@
 '''
 Loaders for all object recognition pipelines
 '''
-from object_recognition_core.io.sink import Sink
-from object_recognition_core.io.source import Source
-from object_recognition_core.io.voter import Voter
-from object_recognition_core.pipelines.detection import DetectionPipeline, DetectionBlackbox, validate_detector
-from object_recognition_core.utils.find_classes import find_factories
+from object_recognition_core.io.voter import VoterBase
+from object_recognition_core.utils.find_classes import find_cell
 import ecto
-import sys
+
+class OrkPlasmError(RuntimeError):
+    pass
 
 def connect_cells(cell1, cell2, plasm):
     """
@@ -15,101 +14,78 @@ def connect_cells(cell1, cell2, plasm):
     """
     for key in set(cell1.outputs.keys()).intersection(cell2.inputs.keys()):
         plasm.connect(cell1[key] >> cell2[key])
-    return plasm
 
-def create_detection_plasm(source_params, pipeline_params, sink_params, voter_params):
+def create_plasm(ork_params):
     """
-    Function that returns the detection plasm corresponding to the input arguments
-    source_params: a dictionary of the parameters of the sources (key: source id, val: dic of parameters)
-    pipeline_params: same but for pipelines
-    sink_params: same but for sinks
-    voter_params: same but for voters
+    Function that returns a plasm corresponding to the input arguments
+    
+    :param ork_params: a dictionary of the parameters of the different cells as explained in the documentation.
+        Each key is a unique identifier of a cell (a cell being a SourceBase, SinkBase, PipelineBase, VoterBase,
+        anything) and each key is a dictionary with the following keys: 'module' (a string to define the Python
+        module where to find the cell), 'type' (the class name of the cell), 'inputs' and/or 'outputs' (a list
+        of identifiers to know what to link the cell to) and 'parameters' (a dictionary of parameters to call
+        the constructor of the cell with)
     """
-    #map of string name to pipeline class
-    pipelines = find_factories([ pipeline_param['module'] for pipeline_param in pipeline_params.itervalues()],
-                               DetectionPipeline)
-    #map of string name to sink class
-    sinks = find_factories([ sink_param.get('module', 'object_recognition_core.io')
-                           for sink_param in sink_params.itervalues()], Sink)
-    #map of string name to source class
-    sources = find_factories([ source_param.get('module', 'object_recognition_core.io')
-                             for source_param in source_params.itervalues()], Source)
+    cells = {}
+    voter_n_inputs = {}
+    # first, find the classes of the cells and figure out the voters
+    for cell_name, parameters in ork_params.items():
+        if 'module' not in parameters:
+            raise OrkPlasmError('You need a "module" parameter to define where your cell "%s" is.' % cell_name)
+        if 'type' not in parameters:
+            raise OrkPlasmError('You need a "type" parameter to define what your cell "%s" is.' % cell_name)
+        cell_class = find_cell([parameters['module']], parameters['type'])
 
-    # create the different source cells
-    source_cells = {}
-    for source_id, source_param in source_params.iteritems():
-        source_cells[source_id] = sources[source_param['type']].source(**source_param)
+        if issubclass(cell_class, VoterBase):
+            voter_n_inputs[cell_name] = 0
+            # do not instantiate the voters yet 
+            cells[cell_name] = cell_class
+        else:
+            # instantiate the cell
+            try:
+                if 'parameters' in parameters:
+                    cells[cell_name] = cell_class(cell_name, **parameters['parameters'])
+                else:
+                   cells[cell_name] = cell_class(cell_name)
+            except TypeError as err:
+                raise OrkPlasmError('Could not initialize cell "%s" because of: %s' % (cell_name, err))
 
-    # create the different sink cells
-    sink_cells = {}
-    for sink_id, sink_param in sink_params.iteritems():
-        sink_cells[sink_id] = sinks[sink_param['type']].sink(**sink_param)
+    # Figure out the number of inputs to each voter
+    for cell_name, parameters in ork_params.items():
+        if cell_name not in voter_n_inputs:
+            for potential_voter_name in parameters.get('outputs', []):
+                if potential_voter_name in voter_n_inputs:
+                    voter_n_inputs[potential_voter_name] += 1
 
-    # create the different pipeline cells
-    pipeline_cells = {}
-    voter_n_input = {}
-    for pipeline_id, pipeline_param in pipeline_params.iteritems():
-        pipeline = pipelines.get(pipeline_param['type'], False)
-        if not pipeline:
-            sys.stderr.write('Invalid pipeline name: %s\nMake sure that the pipeline type is defined by a TrainingPipeline class, in the name class function.' % pipeline_param['method'])
-            sys.exit(-1)
-        pipeline_cells[pipeline_id] = DetectionBlackbox(pipeline, **pipeline_param)
+    # instantiate the voters
+    for cell_name, n_inputs in voter_n_inputs.items():
+        cells[cell_name] = cells[cell_name](cell_name=cell_name, n_inputs=n_inputs, **ork_params[cell_name])
 
-        # for each voter id, figure out the number of pipelines connected to it as an input
-        for cell_id in pipeline_param.get('voters', []):
-            voter_n_input.setdefault(cell_id, 0)
-            voter_n_input[cell_id] += 1
-
-    # create the different voter cells
-    voter_cells = {}
-    for voter_id, voter_param in voter_params.iteritems():
-        voter_cells[voter_id] = Voter.create_voter(voter_n_input[voter_id], voter_param)
-
-    # build the plasm with all the pipelines
+    # build the plasm with all the connections
     plasm = ecto.Plasm()
-    for pipeline_id, detector in pipeline_cells.iteritems():
-        pipeline_param = pipeline_params[pipeline_id]
-        if 'sinks' in pipeline_param or 'voters' in pipeline_param:
-            validate_detector(detector)
-
-        # link to the different sources
-        for source_id in pipeline_param['sources']:
-            if source_id in source_cells:
-                source = source_cells[source_id]
-            else:
-                source = pipeline_cells[source_id]
-            plasm = connect_cells(source, detector, plasm)
-        # link to the different sink
-        for sink_id in pipeline_param.get('sinks', []):
-            sink = sink_cells[sink_id]
-            plasm = connect_cells(detector, sink, plasm)
-
-        # link to the different voters
-        for voter_id in pipeline_param.get('voters', []):
-            voter = voter_cells[voter_id]
-            # connect the common tendrils
-            plasm = connect_cells(detector, voter, plasm)
-            # connect the pose_results tendrils
-            plasm.connect(detector['pose_results'] >> voter['pose_results%d' % voter_n_input[voter_id] ])
-            voter_n_input[voter_id] -= 1
-
-    # link the different sources to the sinks
-    for sink_id, sink_param in sink_params.iteritems():
-        sink = sink_cells[sink_id]
-        for source_id in sink_param.get('sources', []):
-            plasm = connect_cells(source_cells[source_id], sink, plasm)
-
-    # link the different voters to the sinks
-    for voter_id, voter_param in voter_params.iteritems():
-        voter = voter_cells[voter_id]
-        for sink_id in voter_param.get('sinks', []):
-            plasm = connect_cells(voter, sink_cells[sink_id], plasm)
-
-    # ROS specific
-    # make sure that we also give the image_message, in case we want to publish a topic
-    for source in source_cells.itervalues():
-        for sink in sink_cells.itervalues():
-            if 'image_message' in sink.inputs and 'image_message' in source.outputs:
-                plasm.connect(source['image_message'] >> sink['image_message'])
+    already_processed_connections = set()
+    for cell_name, cell in cells.items():
+        # link to inputs ...
+        for input_name in ork_params[cell_name].get('inputs', []):
+            connection = (input_name, cell_name)
+            # ... but only once
+            if connection in already_processed_connections:
+                continue
+            if input_name not in cells:
+                raise OrkPlasmError('You need a cell of name "%s" as it is an input to "%s".' % 
+                                    (input_name, cell_name))
+            connect_cells(cells[input_name], cell, plasm)
+            already_processed_connections.add(connection)
+        # link to outputs ...
+        for output_name in ork_params[cell_name].get('outputs', []):
+            connection = (cell_name, output_name)
+            # ... but only once
+            if connection in already_processed_connections:
+                continue
+            if output_name not in cells:
+                raise OrkPlasmError('You need a cell of name "%s" as it is an output to "%s".' % 
+                                    (output_name, cell_name))
+            connect_cells(cell, cells[output_name], plasm)
+            already_processed_connections.add(connection)
 
     return plasm
