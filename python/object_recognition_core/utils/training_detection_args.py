@@ -128,8 +128,19 @@ def read_arguments_from_string(parameter_str):
     if not params:
         raise OrkConfigurationError('The configuration parameters cannot be empty')
 
-    for _key_level0, val_level0 in params.items():
-        for key_level1, val_level1 in val_level0.items():
+    # make sure we have a dictionary
+    if not isinstance(params, dict):
+        raise OrkConfigurationError('Your config file must be a JSON string of (key,val) where key: "a_cell_name" and '
+                                    'val is the dictionary or its parameters')
+
+    # Go over the different cells
+    for cell_name, cell_params in params.items():
+        # Make sure we can find the cell:
+        if 'type' not in cell_params or 'module' not in cell_params:
+            raise OrkConfigurationError('To find your cell "%s", you must define the parameters ' % cell_name +
+                                        '"type" and "module": the ecto cell whose class is "type" in the module '
+                                        '"module" can then be loaded.')
+        for key_level1, val_level1 in cell_params.items():
             # special case of parameters that is yet another level
             if key_level1 == 'parameters':
                 for key_level2, val_level2 in val_level1.items():
@@ -145,7 +156,7 @@ def read_arguments_from_string(parameter_str):
                                                     val_level2)
                 continue
             elif isinstance(val_level1, (list, dict)):
-                val_level0[key_level1] = json.dumps(val_level1)
+                cell_params[key_level1] = json.dumps(val_level1)
 
     return params
 
