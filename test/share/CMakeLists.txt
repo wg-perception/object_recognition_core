@@ -1,11 +1,10 @@
 # install some files so that they can be used by other projects when using the macros
 set(TEST_FILES run_test.sh
                desktop_test.sh
-               test_detection_pipeline.py
+               test_config.py
                test_help.py
                test_sink.py
                test_source.py
-               test_training_pipeline.py
 )
 
 if (ROS_GROOVY_OR_ABOVE_FOUND)

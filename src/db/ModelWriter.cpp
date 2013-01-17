@@ -59,7 +59,7 @@ namespace object_recognition_core
       static void
       declare_params(ecto::tendrils& params)
       {
-        params.declare(&C::db_params_, "db_params", //
+        params.declare(&C::json_db_, "json_db", //
                        "The DB parameters").required(true);
         params.declare(&C::object_id_, "object_id", //
                        "The object id, to associate this model with.").required(true);
@@ -82,7 +82,7 @@ namespace object_recognition_core
       void
       configure(const ecto::tendrils& params, const ecto::tendrils& inputs, const ecto::tendrils& outputs)
       {
-        db_ = db_params_->generateDb();
+        db_ = ObjectDbParameters(*json_db_).generateDb();
       }
 
       int
@@ -129,7 +129,7 @@ namespace object_recognition_core
       }
     private:
       ObjectDbPtr db_;
-      ecto::spore<ObjectDbParameters> db_params_;
+      ecto::spore<std::string> json_db_;
       ecto::spore<DocumentId> object_id_;
       ecto::spore<std::string> session_ids_, model_parameters_, model_method_, model_submethod_;
       ecto::spore<Document> db_document_;
