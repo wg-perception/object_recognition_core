@@ -78,5 +78,6 @@ in order to find the ObjectDb you are looking for
     module = db_params_raw.get('module', None)
     if not module:
         raise RuntimeError("The 'module' property is not set. It is required to find the DB object")
-    object_db_factory = find_classes([module], [ObjectDbFactory])[db_type]
-    return object_db_factory.object_db(db_params_raw)
+    for db_factory in find_classes([module], [ObjectDbFactory]):
+        if db_factory.__name__ == db_type:
+            return db_factory.object_db(db_params_raw)
