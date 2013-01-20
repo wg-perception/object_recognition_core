@@ -46,7 +46,7 @@ def create_plasm(ork_params):
                 if 'parameters' in parameters:
                     cells[cell_name] = cell_class(cell_name, **parameters['parameters'])
                 else:
-                   cells[cell_name] = cell_class(cell_name)
+                    cells[cell_name] = cell_class(cell_name)
             except TypeError as err:
                 raise OrkPlasmError('Could not initialize cell "%s" because of: %s' % (cell_name, err))
 
