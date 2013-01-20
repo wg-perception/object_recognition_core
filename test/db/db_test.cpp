@@ -88,17 +88,17 @@ parse_status(const std::string& status)
 }
 
 void
-expect_not_found(ObjectDb& db, const std::string& collection)
+expect_not_found(ObjectDbPtr& db, const std::string& collection)
 {
-  std::string status = db.Status(collection);
+  std::string status = db->Status(collection);
   or_json::mObject ps = parse_status(status);
   EXPECT_EQ(ps["error"].get_str(), std::string("not_found"));
 }
 
 void
-delete_c(ObjectDb& db, const std::string& collection)
+delete_c(ObjectDbPtr& db, const std::string& collection)
 {
-  db.DeleteCollection(collection);
+  db->DeleteCollection(collection);
   expect_not_found(db, collection);
 }
 
@@ -149,15 +149,13 @@ handling_valid_server(const std::string & db_type, const std::string & status)
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-TEST(OR_db, Status)
-{
-  BOOST_FOREACH(const std::string &db_type, db_types())
-      {
-        ObjectDbParameters db_params(db_type);
-        ObjectDb db(db_params);
-        std::string status = db.Status();
-        handling_valid_server(db_type, status);
-      }
+TEST(OR_db, Status) {
+  BOOST_FOREACH(const std::string &db_type, db_types()) {
+    ObjectDbParameters db_params(db_type);
+    ObjectDbPtr db = db_params.generateDb();
+    std::string status = db->Status();
+    handling_valid_server(db_type, status);
+  }
 }
 
 TEST(OR_db, CreateDelete)
@@ -166,14 +164,14 @@ TEST(OR_db, CreateDelete)
       {
         ObjectDbParameters db_params(db_type);
         {
-          ObjectDb db(db_params);
-          db.CreateCollection("test_it");
-          std::string status = db.Status("test_it");
+          ObjectDbPtr db = db_params.generateDb();
+          db->CreateCollection("test_it");
+          std::string status = db->Status("test_it");
           or_json::mObject ps = parse_status(status);
           EXPECT_EQ(ps["db_name"].get_str(), std::string("test_it"));
         }
         {
-          ObjectDb db(db_params);
+          ObjectDbPtr db = db_params.generateDb();
           delete_c(db, "test_it");
         }
       }
@@ -183,8 +181,8 @@ TEST(OR_db, DeleteNonexistant)
   BOOST_FOREACH(const std::string &db_type, db_types())
       {
         ObjectDbParameters db_params(db_type);
-        ObjectDb db(db_params);
-        db.DeleteCollection("dgadf");
+        ObjectDbPtr db = db_params.generateDb();
+        db->DeleteCollection("dgadf");
       }
 }
 
@@ -192,7 +190,7 @@ TEST(OR_db, DocumentPersistLoad)
 {
   BOOST_FOREACH(const std::string &db_type, db_types())
       {
-        ObjectDb db(params_valid(db_type));
+        ObjectDbPtr db = params_valid(db_type).generateDb();
         delete_c(db, "test_it");
         std::string id;
         std::string original_attachment = "Ecto is awesome";
@@ -219,10 +217,10 @@ TEST(OR_db, NonExistantCouch)
   BOOST_FOREACH(const std::string &db_type, db_types())
       {
         ObjectDbParameters db_params = params_test(db_type);
-        ObjectDb db(db_params);
+        ObjectDbPtr db = db_params.generateDb();
         try
         {
-          std::string status = db.Status();
+          std::string status = db->Status();
           ASSERT_FALSE(true);
         } catch (std::runtime_error& e)
         {
@@ -236,11 +234,11 @@ TEST(OR_db, StatusCollectionNonExistantDb)
   BOOST_FOREACH(const std::string &db_type, db_types())
       {
         ObjectDbParameters db_params = params_test(db_type);
-        ObjectDb db(db_params);
+        ObjectDbPtr db = db_params.generateDb();
         std::string collection = "test_it";
         try
         {
-          std::string status = db.Status(collection);
+          std::string status = db->Status(collection);
           ASSERT_FALSE(true);
         } catch (std::runtime_error& e)
         {
@@ -254,11 +252,11 @@ TEST(OR_db, DeleteBogus)
   BOOST_FOREACH(const std::string &db_type, db_types())
       {
         ObjectDbParameters db_params = params_test(db_type);
-        ObjectDb db(db_params);
+        ObjectDbPtr db = db_params.generateDb();
         std::string collection = "test_it";
         try
         {
-          db.DeleteCollection(collection);
+          db->DeleteCollection(collection);
           ASSERT_FALSE(true);
         } catch (std::runtime_error& e)
         {
@@ -272,10 +270,10 @@ TEST(OR_db, StatusCollectionNonExistant)
   BOOST_FOREACH(const std::string &db_type, db_types())
       {
         ObjectDbParameters db_params(db_type);
-        ObjectDb db(db_params);
-        db.DeleteCollection("test_it");
+        ObjectDbPtr db = db_params.generateDb();
+        db->DeleteCollection("test_it");
 
-        std::string status = db.Status("test_it");
+        std::string status = db->Status("test_it");
         or_json::mObject ps = parse_status(status);
         EXPECT_EQ(ps["error"].get_str(), std::string("not_found"));
         EXPECT_EQ(ps["reason"].get_str(), std::string("no_db_file"));
@@ -287,13 +285,13 @@ TEST(OR_db, StatusCollectionExistant)
   BOOST_FOREACH(const std::string &db_type, db_types())
       {
         ObjectDbParameters db_params(db_type);
-        ObjectDb db(db_params);
-        db.DeleteCollection("test_it");
-        db.CreateCollection("test_it");
-        std::string status = db.Status("test_it");
+        ObjectDbPtr db = db_params.generateDb();
+        db->DeleteCollection("test_it");
+        db->CreateCollection("test_it");
+        std::string status = db->Status("test_it");
         or_json::mObject ps = parse_status(status);
         EXPECT_EQ(ps["db_name"].get_str(), std::string("test_it"));
-        db.DeleteCollection("test_it");
+        db->DeleteCollection("test_it");
       }
 }
 
@@ -301,7 +299,7 @@ TEST(OR_db, DocumentBadId)
 {
   BOOST_FOREACH(const std::string &db_type, db_types())
       {
-        ObjectDb db(params_valid(db_type));
+        ObjectDbPtr db = params_valid(db_type).generateDb();
         try
         {
           Document doc(db, "bogus_id");
@@ -331,7 +329,7 @@ TEST(OR_db, DocumentUrl)
       {
         ObjectDbParameters db_params = params_test(db_type);
         db_params.set_parameter("collection", "test_it");
-        ObjectDb db(db_params);
+        ObjectDbPtr db = db_params.generateDb();
         std::string bogus_id = "bogus_id";
         try
         {
@@ -349,10 +347,10 @@ TEST(OR_db, DoubleCreate)
   BOOST_FOREACH(const std::string &db_type, db_types())
       {
         ObjectDbParameters db_params(db_type);
-        ObjectDb db(db_params);
-        db.CreateCollection("aa");
-        db.CreateCollection("aa");
-        db.DeleteCollection("aa");
+        ObjectDbPtr db = db_params.generateDb();
+        db->CreateCollection("aa");
+        db->CreateCollection("aa");
+        db->DeleteCollection("aa");
       }
 }
 
@@ -361,10 +359,10 @@ TEST(OR_db, DoubleDelete)
   BOOST_FOREACH(const std::string &db_type, db_types())
       {
         ObjectDbParameters db_params(db_type);
-        ObjectDb db(db_params);
-        db.CreateCollection("aa");
-        db.DeleteCollection("aa");
-        db.DeleteCollection("aa");
+        ObjectDbPtr db = db_params.generateDb();
+        db->CreateCollection("aa");
+        db->DeleteCollection("aa");
+        db->DeleteCollection("aa");
       }
 }
 
@@ -372,7 +370,7 @@ TEST(OR_db, ParamsBogus)
 {
   try
   {
-    ObjectDb db(params_bogus());
+    ObjectDbPtr db = params_bogus().generateDb();
     ASSERT_FALSE(true);
   } catch (std::runtime_error& e)
   {
@@ -395,10 +393,10 @@ TEST(OR_db, ParamsGarbage)
 
 TEST(OR_db, NonArgsDbCreate)
 {
-  ObjectDb db;
+  ObjectDbPtr db;
   try
   {
-    db.CreateCollection("aa");
+    db->CreateCollection("aa");
     ASSERT_FALSE(true);
   } catch (std::runtime_error& e)
   {
@@ -408,7 +406,7 @@ TEST(OR_db, NonArgsDbCreate)
 }
 TEST(OR_db, NonArgsDbInsert)
 {
-  ObjectDb db;
+  ObjectDbPtr db;
 
   std::string id;
   {
@@ -432,15 +430,14 @@ TEST(OR_db, InitSeperatelyChangeURL)
   BOOST_FOREACH(const std::string &db_type, db_types())
       {
         ObjectDbParameters db_params(db_type);
-        ObjectDb db;
-        db.set_parameters(db_params);
-        std::string status = db.Status();
+        ObjectDbPtr db = db_params.generateDb();
+        std::string status = db->Status();
         handling_valid_server(db_type, status);
         ObjectDbParameters params = params_test(db_type);
-        db.set_parameters(params);
+        db = params.generateDb();
         try
         {
-          db.Status(status);
+          db->Status(status);
           ASSERT_FALSE(true);
         } catch (std::runtime_error& e)
         {
@@ -456,11 +453,11 @@ TEST(OR_db, ObjectDbCopy)
   BOOST_FOREACH(const std::string &db_type, db_types())
       {
         ObjectDbParameters db_params(db_type);
-        ObjectDb db(db_params), db2;
+        ObjectDbPtr db = db_params.generateDb(), db2;
         db2 = db;
         std::string s1, s2;
-        db.Status(s1);
-        db2.Status(s2);
+        db->Status(s1);
+        db2->Status(s2);
         EXPECT_EQ(s1, s2);
       }
 }
