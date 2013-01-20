@@ -12,7 +12,8 @@ DEBUG = False
 
 if __name__ == '__main__':
     parser = create_parser(do_training=True)
-    ork_params, args = read_arguments(parser)
+    args = parser.parse_args()
+    ork_params, args = read_arguments(args)
     pipelines = find_cells([ pipeline_param['module'] for pipeline_param in pipeline_params.itervalues()])
 
     for _pipeline_id, pipeline_param in pipeline_params.iteritems():

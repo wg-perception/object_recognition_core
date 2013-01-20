@@ -16,9 +16,9 @@ if __name__ == '__main__':
     scheduler_options(parser)
 
     # create the plasm that will run the detection
-    ork_params, args = read_arguments(parser)
+    args = parser.parse_args()
+    ork_params, _args = read_arguments(args)
     plasm = create_plasm(ork_params)
 
     # run the detection plasm
-    options = parser.parse_args()
-    run_plasm(options, plasm)
+    run_plasm(args, plasm)

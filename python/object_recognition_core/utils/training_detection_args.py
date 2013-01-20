@@ -8,15 +8,7 @@ from object_recognition_core.db.object_db import core_db_types
 from object_recognition_core.utils.parser import ObjectRecognitionParser
 import json
 import os
-import sys
 import yaml
-
-# set a global variable defining whether ROS is used
-try:
-    import ecto_ros
-    ECTO_ROS_FOUND = True
-except ImportError:
-    ECTO_ROS_FOUND = False
 
 class OrkConfigurationError(Exception):
     """
@@ -101,14 +93,6 @@ def create_parser(do_training=False):
         parser.add_argument('--commit', dest='commit', action='store_true',
                         default=False, help='Commit the data to the database.')
 
-    if ECTO_ROS_FOUND:
-        # add ROS parameters if ROS was found
-        def filter_node_name(node_name):
-            return node_name
-        ros_group = parser.add_argument_group('ROS parameters')
-        ros_group.add_argument('--node_name', help='The name for the node. If "", it is not run in a ROS node',
-                           default='object_recognition', type=filter_node_name)
-
     return parser
 
 def read_arguments_from_string(parameter_str):
@@ -160,25 +144,14 @@ def read_arguments_from_string(parameter_str):
 
     return params
 
-def read_arguments(parser):
+def read_arguments(args):
     """
     Given a command line parser, get the parameters from the configuration file
 
-    :param parser: an argparse parser
+    :param parser: the parsed arguments (after ROS cleanup if needed)
     :return: a tuple (ork_parameters, raw arguments after ROS cleanup). The ork_parameters describe the graph that
             will be run. It is the dict version of the YAML inside the configuration file
     """
-    if ECTO_ROS_FOUND:
-        original_argv = sys.argv
-        clean_args = sys.argv
-        ecto_ros.strip_ros_args(clean_args)
-        args = parser.parse_args(args=clean_args[1:])
-
-        if args.node_name and args.node_name != '""':
-            ecto_ros.init(original_argv, args.node_name, False)
-    else:
-        args = parser.parse_args()
-
     if args.config_file is None or not os.path.exists(args.config_file):
         raise OrkConfigurationError('The option file does not exist. --help for usage.')
 

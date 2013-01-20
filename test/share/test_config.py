@@ -17,7 +17,8 @@ if __name__ == '__main__':
     scheduler_options(parser)
 
     # read the config file
-    ork_params, args = read_arguments(parser)
+    args = parser.parse_args()
+    ork_params, args = read_arguments(args)
 
     # override the database parameters
     for cell_name, parameters in ork_params.items():
