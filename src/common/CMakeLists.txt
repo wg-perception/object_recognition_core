@@ -16,9 +16,16 @@ target_link_libraries(object_recognition_core_common
                       ${Boost_LIBRARIES}
 )
 
+if (ROS_GROOVY_OR_ABOVE_FOUND)
+install(TARGETS object_recognition_core_common
+        DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+)
+else()
 install(TARGETS object_recognition_core_common
         DESTINATION lib
 )
+endif()
+
 
 # create a Python module to wrap the PoseResult
 add_library(common_interface SHARED module_python.cpp
