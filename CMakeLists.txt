@@ -1,9 +1,10 @@
 cmake_minimum_required(VERSION 2.8)
 project(object_recognition_core)
 
-find_package(catkin REQUIRED ecto)
+find_package(catkin)
 
 if (${catkin_VERSION} VERSION_GREATER "0.5.28")
+find_package(catkin REQUIRED ecto)
 catkin_package(DEPENDS ecto
                INCLUDE_DIRS include
                LIBRARIES object_recognition_core_db object_recognition_core_common
