@@ -17,6 +17,8 @@ catkin_project(object_recognition_core
                LIBRARIES object_recognition_core_db object_recognition_core_common
                CFG_EXTRAS test.cmake
 )
+set(CATKIN_LIBRARIES ${ROS_LIBRARIES})
+set(CATKIN_INCLUDE_DIRS ${ROS_INCLUDE_DIRS})
 set(CATKIN_DEVEL_PREFIX CMAKE_BINARY_DIR)
 set(CATKIN_PACKAGE_BIN_DESTINATION share/${PROJECT_NAME}/bin)
 set(CATKIN_PACKAGE_INCLUDE_DESTINATION include/${PROJECT_NAME})
