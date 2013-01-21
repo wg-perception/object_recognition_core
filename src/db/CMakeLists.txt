@@ -9,7 +9,6 @@ find_package(Boost COMPONENTS
 
 find_package(CURL REQUIRED)
 find_package(OpenCV REQUIRED)
-find_package(ecto REQUIRED)
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
@@ -31,14 +30,11 @@ add_library(object_recognition_core_db
 target_link_libraries(object_recognition_core_db ${Boost_LIBRARIES}
                                                  ${catkin_LIBRARIES}
                                                  ${CURL_LIBRARIES}
-                                                 ${OpenCV_LIBS}
                                                  ${OpenCV_LIBRARIES}
-                                                 ${ecto_LIBRARIES}
-                                                 ${ROS_LIBRARIES}
 )
 
 install(TARGETS object_recognition_core_db
-        DESTINATION lib
+        DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
 )
 
 # create a Python module to wrap the DB functionalities
@@ -54,22 +50,22 @@ target_link_libraries(db_interface
                       object_recognition_core_db
 )
 
-
 if (ROS_GROOVY_OR_ABOVE_FOUND)
-set(ECTO_PYTHON_BUILD_PATH ${CATKIN_DEVEL_PREFIX}/${CATKIN_GLOBAL_PYTHON_DESTINATION}/)
-else()
-  set(ECTO_PYTHON_BUILD_PATH ${CMAKE_BINARY_DIR}/gen/py/)                  
-endif()
-
-
 set_target_properties(db_interface PROPERTIES
-                      LIBRARY_OUTPUT_DIRECTORY ${ECTO_PYTHON_BUILD_PATH}/object_recognition_core/boost
+                      LIBRARY_OUTPUT_DIRECTORY ${CATKIN_DEVEL_PREFIX}/${CATKIN_PACKAGE_PYTHON_DESTINATION}/boost
                       OUTPUT_NAME interface
                       PREFIX ""
 )
+else()
+set_target_properties(db_interface PROPERTIES
+                      LIBRARY_OUTPUT_DIRECTORY ${CATKIN_DEVEL_PREFIX}/${CATKIN_PACKAGE_PYTHON_BUILD_DESTINATION}/boost
+                      OUTPUT_NAME interface
+                      PREFIX ""
+)
+endif()
 
 install(TARGETS db_interface
-        DESTINATION ${ECTO_PYTHON_INSTALL_PATH}/object_recognition_core/boost
+        DESTINATION ${CATKIN_PACKAGE_PYTHON_DESTINATION}/boost
 )
 
 # Create the ecto module with a few cells

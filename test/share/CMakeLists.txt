@@ -7,16 +7,9 @@ set(TEST_FILES run_test.sh
                test_source.py
 )
 
-if (ROS_GROOVY_OR_ABOVE_FOUND)
 file(COPY ${TEST_FILES}
      DESTINATION ${CATKIN_DEVEL_PREFIX}/${CATKIN_PACKAGE_SHARE_DESTINATION}/test)
 
 install(PROGRAMS ${TEST_FILES}
         DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/test
 )
-else()
-file(COPY ${TEST_FILES} DESTINATION ${CMAKE_BINARY_DIR}/share/test/)
-install(PROGRAMS ${TEST_FILES}
-        DESTINATION share/object_recognition_core/test
-)
-endif()
