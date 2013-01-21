@@ -9,13 +9,11 @@
 
   <url>http://ecto.willowgarage.com/recognition</url>
 
-  <build_depend>actionlib</build_depend>
   <build_depend>boost</build_depend>
   <build_depend>curl</build_depend>
   <build_depend>ecto</build_depend>
   <build_depend>ecto_image_pipeline</build_depend>
 
-  <run_depend>actionlib</run_depend>
   <run_depend>boost</run_depend>
   <run_depend>couchdb</run_depend>
   <run_depend>curl</run_depend>
