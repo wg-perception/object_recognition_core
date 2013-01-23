@@ -40,6 +40,9 @@ add_definitions("-Wno-pragmas -fno-strict-aliasing -Wall -Wl,--no-undefined -Wer
 find_package(Boost REQUIRED system filesystem serialization)
 find_package(OpenCV REQUIRED)
 
+include_directories(SYSTEM ${Boost_INCLUDE_DIRS}
+                           ${OpenCV_INCLUDE_DIRS}
+)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
 
 add_subdirectory(src)
