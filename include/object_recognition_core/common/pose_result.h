@@ -242,17 +242,17 @@ namespace object_recognition_core
   }
 
   template<>
-  inline cv::Mat_<float>
+  inline cv::Matx33f
   PoseResult::R() const
   {
-    return (cv::Mat_<float>(3, 3) << R_[0], R_[1], R_[2], R_[3], R_[4], R_[5], R_[6], R_[7], R_[8]);
+    return cv::Matx33f(R_[0], R_[1], R_[2], R_[3], R_[4], R_[5], R_[6], R_[7], R_[8]);
   }
 
   template<>
-  inline cv::Mat_<float>
+  inline cv::Vec3f
   PoseResult::T() const
   {
-    return (cv::Mat_<float>(3, 1) << T_[0], T_[1], T_[2]);
+    return cv::Vec3f(T_[0], T_[1], T_[2]);
   }
 #endif
 

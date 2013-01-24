@@ -66,15 +66,16 @@ namespace object_recognition_core
         BOOST_FOREACH(const common::PoseResult & pose_result, *pose_results_)
             {
               const ObjectId & object_id = pose_result.object_id();
-              cv::Mat_<float> R = pose_result.R<cv::Mat_<float> >(), T = pose_result.T<cv::Mat_<float> >();
+              cv::Matx33f R = pose_result.R<cv::Matx33f>();
+              cv::Vec3f T = pose_result.T<cv::Vec3f>();
 
               PoseInfo poseInfo;
               for (int i = 0; i < 9; i++)
-                poseInfo.Rot[i] = R.at<float>(i % 3, i / 3);
+                poseInfo.Rot[i] = R(i % 3, i / 3);
 
-              poseInfo.Tx = T.at<float>(0);
-              poseInfo.Ty = T.at<float>(1);
-              poseInfo.Tz = T.at<float>(2);
+              poseInfo.Tx = T(0);
+              poseInfo.Ty = T(1);
+              poseInfo.Tz = T(2);
               poseInfo.ts.set();
               //poseInfo.frame = point_cloud.header.seq;
               poseInfo.oID = object_id;

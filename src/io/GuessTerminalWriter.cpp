@@ -81,10 +81,11 @@ namespace object_recognition_core
         BOOST_FOREACH(const common::PoseResult & pose_result, *pose_results_)
             {
               const ObjectId & object_id = pose_result.object_id();
-              cv::Mat_<float> R = pose_result.R<cv::Mat_<float> >(), T = pose_result.T<cv::Mat_<float> >();
+              cv::Matx33f R = pose_result.R<cv::Matx33f>();
+              cv::Vec3f T = pose_result.T<cv::Vec3f>();
 
               //poseInfo.frame = point_cloud.header.seq;
-              std::cout << "Found object " << object_id << " with pose (R,t) = " << std::endl << R << " " << T
+              std::cout << "Found object " << object_id << " with pose (R,t) = " << std::endl << cv::Mat(R) << " " << cv::Mat(T)
                         << std::endl;
             }
 
