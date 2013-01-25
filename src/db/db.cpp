@@ -261,8 +261,7 @@ namespace object_recognition_core
 
       StreamAttachment::ptr stream_attachment(new StreamAttachment(mime_type));
       // Otherwise, load it from the DB
-      RevisionId revision_id;
-      db_->get_attachment_stream(document_id_, attachment_name, mime_type, stream_attachment->stream_, revision_id);
+      db_->get_attachment_stream(document_id_, revision_id_, attachment_name, mime_type, stream_attachment->stream_);
       stream << stream_attachment->stream_.rdbuf();
     }
 
@@ -288,7 +287,7 @@ namespace object_recognition_core
 
       StreamAttachment::ptr stream_attachment(new StreamAttachment(mime_type));
       // Otherwise, load it from the DB
-      db_->get_attachment_stream(document_id_, attachment_name, mime_type, stream_attachment->stream_, revision_id_);
+      db_->get_attachment_stream(document_id_, revision_id_, attachment_name, mime_type, stream_attachment->stream_);
       stream << stream_attachment->stream_.rdbuf();
 
       attachments_[attachment_name] = stream_attachment;

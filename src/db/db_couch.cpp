@@ -129,8 +129,8 @@ ObjectDbCouch::set_attachment_stream(const DocumentId & document_id, const Attac
 }
 
 void
-ObjectDbCouch::get_attachment_stream(const DocumentId & document_id, const std::string& attachment_name,
-                                     const std::string& content_type, std::ostream& stream, RevisionId & revision_id)
+ObjectDbCouch::get_attachment_stream(const DocumentId & document_id, const RevisionId & revision_id, const std::string& attachment_name,
+                                     const std::string& content_type, std::ostream& stream)
 {
   object_recognition_core::curl::writer binary_writer(stream);
   curl_.reset();

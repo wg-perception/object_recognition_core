@@ -73,8 +73,8 @@ public:
   load_fields(const DocumentId & document_id, or_json::mObject &fields) {}
 
   inline virtual void
-  get_attachment_stream(const DocumentId & document_id, const std::string& attachment_name,
-                        const std::string& content_type, std::ostream& stream, RevisionId & revision_id) {}
+  get_attachment_stream(const DocumentId & document_id, const RevisionId & revision_id, const std::string& attachment_name,
+                        const std::string& content_type, std::ostream& stream) {}
 
   inline virtual void
   set_attachment_stream(const DocumentId & document_id, const AttachmentName& attachment_name,
