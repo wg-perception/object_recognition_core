@@ -5,11 +5,11 @@ a graph. Those parameters could be copied/pasted into a config file for ORK.
 
 """
 
-from object_recognition_core.io.sink import Sink
-from object_recognition_core.io.source import Source
-from object_recognition_core.io.voter import Voter
-from object_recognition_core.pipelines.detection import DetectionPipeline
-from object_recognition_core.pipelines.training import TrainingPipeline
+from object_recognition_core.io.sink import SinkBase
+from object_recognition_core.io.source import SourceBase
+from object_recognition_core.io.voter import VoterBase
+from object_recognition_core.pipelines.detection import DetectorBase
+from object_recognition_core.pipelines.training import TrainerBase
 from object_recognition_core.utils.find_classes import find_classes
 import argparse
 import json
@@ -56,8 +56,8 @@ if __name__=='__main__':
     parser.add_argument('class_name', type=str, help='The names of the classes to get instance configs of', nargs='*')
     args = parser.parse_args()
 
-    supported_classes = {'detection_pipeline': DetectionPipeline, 'training_pipeline': TrainingPipeline,
-                         'source': Source, 'sink': Sink}
+    supported_classes = {'detection_pipeline': DetectorBase, 'training_pipeline': TrainerBase,
+                         'source': SourceBase, 'sink': SinkBase}
     if args.class_type not in supported_classes:
         raise RuntimeError('Class type not support: %s. Accepted are: %s' % (args.class_type,
                                                                              str(supported_classes.keys())))
