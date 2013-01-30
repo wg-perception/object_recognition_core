@@ -4,6 +4,8 @@ Loaders for all object recognition pipelines
 from object_recognition_core.io.voter import VoterBase
 from object_recognition_core.utils.find_classes import find_cell
 import ecto
+import sys
+import traceback
 
 class OrkPlasmError(RuntimeError):
     pass
@@ -48,7 +50,9 @@ def create_plasm(ork_params):
                 else:
                     cells[cell_name] = cell_class(cell_name)
             except TypeError as err:
-                raise OrkPlasmError('Could not initialize cell "%s" because of: %s' % (cell_name, err))
+                exc_type, exc_value, exc_traceback = sys.exc_info()
+                err = traceback.format_exception(exc_type, exc_value, exc_traceback)
+                raise OrkPlasmError('Could not initialize cell "%s" because of: %s' % (cell_name, ''.join(err)))
 
     # Figure out the number of inputs to each voter
     for cell_name, parameters in ork_params.items():

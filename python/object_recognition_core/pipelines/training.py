@@ -3,7 +3,7 @@ Loaders for all object recognition pipelines
 '''
 from abc import ABCMeta
 from ecto import BlackBoxCellInfo as CellInfo
-from object_recognition_core.db import Document, Documents
+from object_recognition_core.db import Document, Documents, ObjectDb, ObjectDbParameters
 from object_recognition_core.db.cells import ObservationReader
 import ecto
 
@@ -28,13 +28,13 @@ class ObservationDealer(ecto.BlackBox):
     def declare_cells(p):
         return {'db_reader': CellInfo(ObservationReader),
                 'observation_dealer': CellInfo(ecto.Dealer, {'tendril': ecto.Tendril(Document()),
-                                               'iterable': [ x for x in Documents(p.object_db, p.observation_ids)]})
+                'iterable': [ x for x in Documents(ObjectDb(ObjectDbParameters(p.json_db)), p.observation_ids)]})
                }
 
     @staticmethod
     def declare_direct_params(p):
         p.declare('observation_ids', 'An iterable of observation ids.', [])
-        p.declare('object_db', 'The db to query the parameters from.', '')
+        p.declare('json_db', 'The parameters as a JSON string defining the db to query the parameters from.', '')
 
     @staticmethod
     def declare_forwards(_p):
