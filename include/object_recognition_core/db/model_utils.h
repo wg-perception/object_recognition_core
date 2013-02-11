@@ -53,7 +53,6 @@ namespace object_recognition_core
     /** Function filling a DB document for a model with the common attributes
      * @param db the DB where the model will be saved
      * @param object_id the id of the object for that model
-     * @param session_ids A json string list of session id's that this model was created from.
      * @param method the method used to compute the models (e.g. 'TOD')
      * @param submethod_str a JSON string detailing the discriminative parameters used in the method (e.g.
      * "{"descriptor":"ORB"}" in TOD)
@@ -62,7 +61,7 @@ namespace object_recognition_core
      */
 
     Document
-    PopulateDoc(const ObjectDbPtr& db, const ObjectId& object_id, const std::string& session_ids,
+    PopulateDoc(const ObjectDbPtr& db, const ObjectId& object_id,
                 const std::string& method, const std::string& submethod_str, const std::string& parameters_str);
 
     /**
@@ -71,7 +70,7 @@ namespace object_recognition_core
      * @param document output document
      */
     void
-    PopulateDoc(const ObjectId& object_id, const std::string& session_ids, const std::string& method,
+    PopulateDoc(const ObjectId& object_id, const std::string& method,
                 const std::string& submethod_str, const std::string& parameters_str, Document& document);
 
     /** Given some parameters, retrieve Documents that are models either of id in model_ids, or with an object_id

@@ -74,28 +74,32 @@ namespace object_recognition_core
     }
 
     Document
-    PopulateDoc(const ObjectDbPtr& db, const ObjectId& object_id, const std::string& session_ids,
-                const std::string& method, const std::string& submethod_str, const std::string& parameters_str)
+    PopulateDoc(const ObjectDbPtr& db, const ObjectId& object_id,
+    const std::string& method, const std::string& submethod_str,
+    const std::string& parameters_str)
     {
       //create a document, and initialize all the common bits.
       Document doc(db);
-      PopulateDoc(object_id, session_ids, method, submethod_str, parameters_str, doc);
+      PopulateDoc(object_id, method, submethod_str, parameters_str, doc);
       return doc;
     }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     void
-    PopulateDoc(const ObjectId& object_id, const std::string& session_ids, const std::string& method,
+    PopulateDoc(const ObjectId& object_id, const std::string& method,
                 const std::string& submethod_str, const std::string& parameters_str, Document& doc)
     {
+      if (method.empty()) {
+        std::stringstream ss;
+        throw std::runtime_error("You need to define a \"method\" argument in your model document");
+      }
+
       doc.set_value("object_id", object_id);
       // Convert the parameters to a property tree and insert them
       or_json::mValue submethod = to_json(submethod_str);
       or_json::mValue parameters = to_json(parameters_str);
-      or_json::mValue sessions = to_json(session_ids);
 
-      doc.set_value("session_ids", sessions);
       doc.set_value("Type", "Model");
       doc.set_value("method", method);
       doc.set_value("submethod", submethod);

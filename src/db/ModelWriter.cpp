@@ -59,12 +59,6 @@ namespace object_recognition_core
       static void
       declare_params(ecto::tendrils& params)
       {
-        params.declare(&C::json_db_, "json_db", //
-                       "The DB parameters").required(true);
-        params.declare(&C::object_id_, "object_id", //
-                       "The object id, to associate this model with.").required(true);
-        params.declare(&C::session_ids_, "session_ids", //
-                       "The session ids, to associate this model with.").required(true);
         params.declare(&C::model_method_, "method", //
                        "The method used to compute the model (e.g. 'TOD' ...).").required(true);
         params.declare(&C::model_submethod_, "json_submethod", //
@@ -77,20 +71,20 @@ namespace object_recognition_core
       declare_io(const ecto::tendrils& params, ecto::tendrils& inputs, ecto::tendrils& outputs)
       {
         inputs.declare(&C::db_document_, "db_document");
-      }
-
-      void
-      configure(const ecto::tendrils& params, const ecto::tendrils& inputs, const ecto::tendrils& outputs)
-      {
-        db_ = ObjectDbParameters(*json_db_).generateDb();
+        inputs.declare(&C::json_db_, "json_db", "The DB parameters", "{}").required(
+            true);
+        inputs.declare(&C::object_id_, "object_id",
+                       "The object id, to associate this model with.").required(true);
       }
 
       int
       process(const ecto::tendrils& inputs, const ecto::tendrils& outputs)
       {
+        db_ = ObjectDbParameters(*json_db_).generateDb();
+
         Document doc_new = *db_document_;
         doc_new.update_db(db_);
-        PopulateDoc(*object_id_, *session_ids_, *model_method_, *model_submethod_, *model_parameters_, doc_new);
+        PopulateDoc(*object_id_, *model_method_, *model_submethod_, *model_parameters_, doc_new);
 
         // Read the input model parameters
         or_json::mValue in_submethod = to_json(*model_submethod_);
@@ -131,7 +125,7 @@ namespace object_recognition_core
       ObjectDbPtr db_;
       ecto::spore<std::string> json_db_;
       ecto::spore<DocumentId> object_id_;
-      ecto::spore<std::string> session_ids_, model_parameters_, model_method_, model_submethod_;
+      ecto::spore<std::string> model_parameters_, model_method_, model_submethod_;
       ecto::spore<Document> db_document_;
     };
   }
