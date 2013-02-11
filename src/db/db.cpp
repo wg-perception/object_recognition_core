@@ -58,10 +58,13 @@ namespace object_recognition_core
     /** Default constructor for certain types
      * @param type Default type
      */
-    ObjectDbParameters::ObjectDbParameters(const std::string& type_str)
+    ObjectDbParameters::ObjectDbParameters(const std::string& json_str)
     {
-      type_ = StringToType(type_str);
-      *this = ObjectDbParameters(type_);
+      or_json::mValue value;
+      or_json::read(json_str, value);
+      ObjectDbParametersRaw params = value.get_obj();
+
+      *this = ObjectDbParameters(params);
     }
 
     ObjectDbParameters::ObjectDbParameters(ObjectDbType type)
@@ -72,10 +75,11 @@ namespace object_recognition_core
     void
     ObjectDbParameters::set_type(const std::string &type)
     {
+      type_ = StringToType(type);
+
       if (raw_["type"] == type)
         return;
 
-      type_ = StringToType(type);
       switch (type_)
       {
         case ObjectDbParameters::COUCHDB:
@@ -153,7 +157,6 @@ namespace object_recognition_core
         default:
           return "noncore";
       }
-      return "";
     }
 
     ObjectDbPtr
@@ -175,6 +178,7 @@ namespace object_recognition_core
           res.reset(new ObjectDbFilesystem(params_raw));
           break;
         default:
+          std::cerr << "Cannot generate DB for non-core" << std::endl;
           break;
       }
 

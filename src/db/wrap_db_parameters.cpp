@@ -70,12 +70,7 @@ namespace object_recognition_core
     boost::shared_ptr<ObjectDbParameters>
     ObjectDbParametersConstructorStr(const std::string &str)
     {
-      or_json::mValue value;
-      or_json::read(str, value);
-      or_json::mObject params = value.get_obj();
-      if (params.empty())
-        params.insert(std::make_pair("type", ObjectDbParameters::TypeToString(ObjectDbParameters::EMPTY)));
-      ObjectDbParametersPtr p(new ObjectDbParameters(params));
+      ObjectDbParametersPtr p(new ObjectDbParameters(str));
       return p;
     }
 

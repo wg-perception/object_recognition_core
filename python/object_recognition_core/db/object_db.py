@@ -6,6 +6,7 @@ It also provides a factory you can use to wrap your own DB
 from abc import ABCMeta
 from object_recognition_core.boost.interface import ObjectDbParameters
 from object_recognition_core.utils.find_classes import find_classes
+import json
 
 ########################################################################################################################
 
@@ -55,15 +56,19 @@ Return the current DB types implemented in object_recognition_core
 
 def ObjectDb(db_params):
     """
-Returns the ObjectDb for the given db_params given as a dictionary
-It crawls the object_recognition_core module or any other module
-in order to find the ObjectDb you are looking for
-:param db_params: ObjectDbParameters defining a DB
-"""
+    Returns the ObjectDb for the given db_params given as a dictionary
+    It crawls the object_recognition_core module or any other module
+    in order to find the ObjectDb you are looking for
+
+    :param db_params: ObjectDbParameters defining a DB, or json string or dict
+    """
 
     if (isinstance(db_params, ObjectDbParameters)):
         db_params_raw = db_params.raw
         object_db_params = db_params
+    elif (isinstance(db_params, str)):
+        db_params_raw = json.loads(db_params)
+        object_db_params = ObjectDbParameters(db_params)
     else:
         db_params_raw = db_params
         object_db_params = ObjectDbParameters(db_params)
