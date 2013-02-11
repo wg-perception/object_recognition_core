@@ -19,8 +19,14 @@ if __name__ == '__main__':
     for _pipeline_id, pipeline_param in ork_params.iteritems():
         pipeline_class = find_class([ pipeline_param['module'] ], pipeline_param['type'] )
         if not pipeline_class:
-            sys.stderr.write('Invalid pipeline name: %s\nMake sure that the pipeline type is defined by a TrainingPipeline class, in the name class function.' % pipeline_param['type'])
-            sys.exit(-1)
+            raise RuntimeError('Invalid pipeline name: %s\nMake sure that the pipeline type is defined by a '
+                               'TrainingPipeline class, in the name class function.' % pipeline_param['type'])
+
+        # make sure we have a method
+        if 'method' not in pipeline_param:
+            raise RuntimeError('You need to define the "method" parameter of your training pipeline')
+        method = pipeline_param['method']
+        sub_method = pipeline_param.get('sub_method', '')
 
         db_params_raw = pipeline_param['parameters'].get('json_db', {})
         db_params = db_params_raw
@@ -42,8 +48,8 @@ if __name__ == '__main__':
                     print >> sys.stderr, 'No observations found for (object,session): (%s,%s)' % (object_id, session_id)
                     continue
 
-                pipeline = pipeline_class(object_id=object_id,
-                                           subtype=pipeline_param.get('subtype', ''),
+                pipeline = pipeline_class(object_id=object_id, method=method,
+                                           subtype=sub_method,
                                            pipeline_params=pipeline_param.get('parameters', {}), object_db=object_db,
                                            json_db=db_params_raw, args=args)
 

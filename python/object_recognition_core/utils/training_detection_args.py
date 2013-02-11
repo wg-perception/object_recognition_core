@@ -1,10 +1,6 @@
 """
 Module that creates a function to define/read common arguments for the training/detection pipeline
 """
-
-from object_recognition_core.boost.interface import ObjectDbParameters
-from object_recognition_core.db import models, tools as dbtools
-from object_recognition_core.db.object_db import core_db_types
 from object_recognition_core.utils.parser import ObjectRecognitionParser
 import json
 import os
@@ -16,67 +12,6 @@ class OrkConfigurationError(Exception):
     """
     pass
 
-def common_interpret_object_ids(pipeline_param_full, args=None):
-    """
-    Given command line arguments and the parameters of the pipeline, clean the 'object_ids' field to be a list of
-    object ids
-    """
-    pipeline_param = pipeline_param_full['parameters']
-
-    # read the object_ids
-    object_ids = None
-    if args:
-        objs = [args.__dict__, pipeline_param]
-    else:
-        objs = [pipeline_param]
-
-    for obj in objs:
-        ids = obj.get('object_ids', None)
-        names = obj.get('object_names', None)
-
-        if ids is None and names is None:
-            continue
-        
-        db_params = pipeline_param.get('db', {})
-        db_type = db_params.get('type', '')
-        if db_type.lower() not in core_db_types():
-            continue
-
-        # initialize the DB
-        if isinstance(ids, str) and ids != 'all' and ids != 'missing':
-            ids = eval(ids)
-        if isinstance(names, str) and names != 'all' and names != 'missing':
-            names = eval(names)
-
-        if not ids and not names:
-            break
-
-        if object_ids is None:
-            object_ids = set()
-
-        db = dbtools.db_params_to_db(ObjectDbParameters(db_params))
-        if 'all' in (ids, names):
-            object_ids = set([ str(x.id) for x in models.Object.all(db) ])  # unicode without the str()
-            break
-        if 'missing' in (ids, names):
-            tmp_object_ids = set([ str(x.id) for x in models.Object.all(db) ])
-            tmp_object_ids_from_names = set([ str(x.object_id) for x in models.Model.all(db) ])
-            object_ids.update(tmp_object_ids.difference(tmp_object_ids_from_names))
-
-        if ids and ids != 'missing':
-            object_ids.update(ids)
-        if names and names != 'missing':
-            for object_name in names:
-                object_ids.update([str(x.id) for x in models.objects_by_name(db, object_name)])
-        # if we got some ids through the command line, just stop here
-
-        if object_ids:
-            break
-    if isinstance(object_ids, set):
-        pipeline_param['object_ids'] = list(object_ids)
-    else:
-        pipeline_param['object_ids'] = []
-
 def create_parser(do_training=False):
     """
     Convenience function for creating a Python argument parser for ORK
@@ -86,8 +21,6 @@ def create_parser(do_training=False):
     """
     parser = ObjectRecognitionParser()
     parser.add_argument('-c', '--config_file', help='Config file')
-    parser.add_argument('--object_ids', help='If set, it overrides the list of object_ids in the config file. E.g.: \'["1ef112f21f12"]\'')
-    parser.add_argument('--object_names', help='If set, it overrides the list of object names in the config file')
 
     if do_training:
         parser.add_argument('--commit', dest='commit', action='store_true',

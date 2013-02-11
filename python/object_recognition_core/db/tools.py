@@ -1,4 +1,10 @@
+"""
+Module defining several DB utility function for other scripts
+"""
 from object_recognition_core.boost.interface import ObjectDbParameters, ObjectDbTypes
+from object_recognition_core.db.object_db import core_db_types
+import models
+import tools as dbtools
 
 DEFAULT_DB_COLLECTION = 'object_recognition'
 DEFAULT_DB_ROOT = 'http://localhost:5984'
@@ -18,7 +24,6 @@ def create_db(db_name, couch):
 
 def init_object_databases(couch, db_name='object_recognition'):
     db = create_db('object_recognition', couch)
-    import models
     models.sync_models(db)
     return db
 
@@ -72,3 +77,44 @@ def db_params_to_db(db_params):
     if db_params.type == ObjectDbTypes.COUCHDB:
         import couchdb
         return init_object_databases(couchdb.Server(db_params.raw['root']))
+
+########################################################################################################################
+
+def interpret_object_ids(db_params, ids=[], names=[]):
+    """
+    Given db parameters, clean the 'object_ids' field to be a list of object ids
+    (as it could be the string 'all')
+    """
+    db_type = eval(db_params).get('type', '')
+    if db_type.lower() not in core_db_types():
+        return []
+
+    # initialize the DB
+    if isinstance(ids, str) and ids != 'all' and ids != 'missing':
+        ids = eval(ids)
+    if isinstance(names, str) and names != 'all' and names != 'missing':
+        names = eval(names)
+
+    if not ids and not names:
+        return []
+
+    object_ids = set()
+
+    db = dbtools.db_params_to_db(ObjectDbParameters(db_params))
+    if 'all' in (ids, names):
+        return set([ str(x.id) for x in models.Object.all(db) ])  # unicode without the str()
+    if 'missing' in (ids, names):
+        tmp_object_ids = set([ str(x.id) for x in models.Object.all(db) ])
+        tmp_object_ids_from_names = set([ str(x.object_id) for x in models.Model.all(db) ])
+        object_ids.update(tmp_object_ids.difference(tmp_object_ids_from_names))
+
+    if ids and ids != 'missing':
+        object_ids.update(ids)
+    if names and names != 'missing':
+        for object_name in names:
+            object_ids.update([str(x.id) for x in models.objects_by_name(db, object_name)])
+
+    if isinstance(object_ids, set):
+        return list(object_ids)
+    else:
+        return []
