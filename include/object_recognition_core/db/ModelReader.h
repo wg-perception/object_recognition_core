@@ -64,6 +64,10 @@ namespace object_recognition_core
        */
       struct ModelReaderBase
       {
+        ModelReaderBase() :
+          object_id_is_all_(false) {
+        }
+
         virtual
         ~ModelReaderBase()
         {
@@ -77,13 +81,34 @@ namespace object_recognition_core
         virtual void
         parameter_callback(const Documents & db_documents) = 0;
 
+        /** This function must be called from the child in the configure() function to set some default parameters
+         * and their callbacks
+         */
         void
         configure_impl()
         {
+          method_.set_callback(boost::bind(&ModelReaderBase::parameterCallbackMethod, this, _1));
+
           // Make sure that whenever parameters related to the models or objects changes, the list of models is regenerated
           json_db_.set_callback(boost::bind(&ModelReaderBase::parameterCallbackJsonDb, this, _1));
           json_object_ids_.set_callback(boost::bind(&ModelReaderBase::parameterCallbackJsonObjectIds, this, _1));
-          method_.set_callback(boost::bind(&ModelReaderBase::parameterCallbackMethod, this, _1));
+          json_submethod_.set_callback(boost::bind(&ModelReaderBase::parameterCallbackJsonSubMethod, this, _1));
+          json_object_ids_.dirty(true);
+        }
+
+        /** This function must be called from the child in the configure() function to set some default parameters
+         * and their callbacks. It will not allow  the cell to have a method parameter as it will be set to the input
+         * parameter (this function is useful if your cell will always read the same models)
+         * @param method the method
+         */
+        void
+        configure_impl(const std::string &method)
+        {
+          *method_ = method;
+
+          // Make sure that whenever parameters related to the models or objects changes, the list of models is regenerated
+          json_db_.set_callback(boost::bind(&ModelReaderBase::parameterCallbackJsonDb, this, _1));
+          json_object_ids_.set_callback(boost::bind(&ModelReaderBase::parameterCallbackJsonObjectIds, this, _1));
           json_submethod_.set_callback(boost::bind(&ModelReaderBase::parameterCallbackJsonSubMethod, this, _1));
           json_object_ids_.dirty(true);
         }
@@ -101,11 +126,14 @@ namespace object_recognition_core
         void
         parameterCallbackCommon()
         {
-          if (!db_)
+          if ((!db_) || (method_->empty()))
             return;
 
           // define the documents from the database
-          documents_ = ModelDocuments(db_, object_ids_, *method_, *json_submethod_);
+          if (object_id_is_all_)
+            documents_ = ModelDocuments(db_, *method_, *json_submethod_);
+          else
+            documents_ = ModelDocuments(db_, object_ids_, *method_, *json_submethod_);
 
           parameter_callback(documents_);
         }
@@ -127,9 +155,19 @@ namespace object_recognition_core
         {
           // read the object ids from the JSON string
           object_ids_.clear();
-          or_json::mArray array = or_json::mValue(json_object_ids).get_array();
-          for (or_json::mArray::const_iterator iter = array.begin(), end = array.end(); iter != end; ++iter)
-            object_ids_.push_back(iter->get_str());
+          object_id_is_all_ = ((json_object_ids == "all")
+              || (json_object_ids == "\"all\"") || (json_object_ids == "'all'"));
+          if (!object_id_is_all_) {
+            or_json::mArray array;
+            try {
+              array = or_json::mValue(json_object_ids).get_array();
+            } catch(...) {
+              throw std::runtime_error("object_ids needs to be the string \"all\" or an array of object ids as strings");
+            }
+            for (or_json::mArray::const_iterator iter = array.begin(), end =
+                array.end(); iter != end; ++iter)
+              object_ids_.push_back(iter->get_str());
+          }
 
           parameterCallbackCommon();
         }
@@ -156,6 +194,8 @@ namespace object_recognition_core
         ecto::spore<std::string> json_db_;
         /** The DB documents for the models stored as a JSON string*/
         ecto::spore<std::string> json_object_ids_;
+        /** internal bool that says if object_ids should actually be considered as all ids */
+        bool object_id_is_all_;
       };
 
       void

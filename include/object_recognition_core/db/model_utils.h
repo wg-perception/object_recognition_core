@@ -73,7 +73,7 @@ namespace object_recognition_core
     PopulateDoc(const ObjectId& object_id, const std::string& method,
                 const std::string& submethod_str, const std::string& parameters_str, Document& document);
 
-    /** Given some parameters, retrieve Documents that are models either of id in model_ids, or with an object_id
+    /** Given some parameters, retrieve Documents that are models with an object_id
      * that is in object_ids and with parameters matching model_json_params
      * @param db
      * @param object_ids
@@ -84,7 +84,16 @@ namespace object_recognition_core
     Documents
     ModelDocuments(ObjectDbPtr &db, const std::vector<ObjectId> & object_ids, const std::string & method,
                    const std::string & json_submethod);
-  }
+
+    /** Given some parameters, retrieve Documents that are models with parameters matching model_json_params
+     * @param db
+     * @param method
+     * @param json_submethod
+     * @return
+     */
+    Documents
+    ModelDocuments(ObjectDbPtr &db, const std::string & method, const std::string & json_submethod);
+}
 }
 
 #endif /* ORK_CORE_DB_UTILS_H_ */

@@ -107,6 +107,7 @@ namespace object_recognition_core
     }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
     Documents
     ModelDocuments(ObjectDbPtr &db, const std::vector<ObjectId> & object_ids, const std::string & method,
                    const std::string & json_submethod)
@@ -135,6 +136,34 @@ namespace object_recognition_core
           ++view_iterator;
         }
       }
+      return model_documents;
+    }
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    Documents
+    ModelDocuments(ObjectDbPtr &db, const std::string & method, const std::string & json_submethod)
+    {
+      Documents model_documents;
+
+      // ext, for each object id, find the models (if any) that fit the parameters
+      or_json::mValue submethod;
+      or_json::read(json_submethod, submethod);
+
+      View view(View::VIEW_MODEL_WHERE_OBJECT_ID_AND_MODEL_TYPE);
+      view.Initialize(method);
+      ViewIterator view_iterator = ViewIterator(view, db).begin();
+
+      while (view_iterator != ViewIterator::end())
+      {
+        const or_json::mObject & obj = (*view_iterator).fields();
+        // Compare the parameters to the input ones
+        if (CompareJsonIntersection(submethod, obj.find("submethod")->second))
+          model_documents.push_back(Document(db, obj.find("_id")->second.get_str()));
+
+        ++view_iterator;
+      }
+
       return model_documents;
     }
   }

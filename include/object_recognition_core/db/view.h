@@ -266,7 +266,8 @@ namespace object_recognition_core
         VIEW_MODEL_WHERE_OBJECT_ID_AND_MODEL_TYPE, VIEW_OBJECT_INFO_WHERE_OBJECT_ID
       };
 
-      View(ViewType type)
+      View(ViewType type):
+        is_key_set_(false)
       {
         type_ = type;
       }
