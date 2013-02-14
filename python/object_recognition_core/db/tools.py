@@ -3,7 +3,6 @@ Module defining several DB utility function for other scripts
 """
 from object_recognition_core.boost.interface import ObjectDbParameters, ObjectDbTypes
 from object_recognition_core.db.object_db import core_db_types
-import models
 import tools as dbtools
 
 DEFAULT_DB_COLLECTION = 'object_recognition'
@@ -24,6 +23,7 @@ def create_db(db_name, couch):
 
 def init_object_databases(couch, db_name='object_recognition'):
     db = create_db('object_recognition', couch)
+    import models
     models.sync_models(db)
     return db
 
@@ -101,6 +101,7 @@ def interpret_object_ids(db_params, ids=[], names=[]):
     object_ids = set()
 
     db = dbtools.db_params_to_db(ObjectDbParameters(db_params))
+    import models
     if 'all' in (ids, names):
         return set([ str(x.id) for x in models.Object.all(db) ])  # unicode without the str()
     if 'missing' in (ids, names):
