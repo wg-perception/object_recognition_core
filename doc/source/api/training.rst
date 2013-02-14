@@ -93,5 +93,5 @@ Python Plasm
 Your pipeline also has to provide an implementation of the :py:class:`object_recognition_core.pipelines.training.TrainingPipeline` class so that
 ``ORK`` can find it (as it will be on the ``PYTHONPATH``), generate docs for it and do everything that is basically not the raw computation.
 
-.. autoclass:: object_recognition_core.pipelines.training.TrainingPipeline
+.. autoclass:: object_recognition_core.pipelines.training.TrainerBase
    :members:

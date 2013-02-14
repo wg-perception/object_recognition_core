@@ -5,12 +5,12 @@ Source/Sink
 For both, you now know the drill: you need a Python wrapper that wraps your ``Sourc/Sink`` cell. you just need to implement a Python object inheriting
 from some base classes.
 
-For a ``Source``:  :py:class:`object_recognition_core.io.source.Source`:
+For a ``Source``:  :py:class:`object_recognition_core.io.source.SourceBase`:
 
-.. autoclass:: object_recognition_core.io.source.Source
+.. autoclass:: object_recognition_core.io.source.OpenNI
    :members:
 
-And for a ``Sink``: py:class:`object_recognition_core.io.source.Sink`:
+And for a ``Sink``: py:class:`object_recognition_core.io.source.SinkBase`:
 
 .. autoclass:: object_recognition_core.io.sink.Sink
    :members:

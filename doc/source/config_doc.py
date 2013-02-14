@@ -70,15 +70,16 @@ if __name__=='__main__':
         if not os.path.isdir(path):
             continue
         for name in os.listdir(path):
-            if os.path.isdir(name) and name.startswith('object_recognition'):
+            if os.path.isdir(os.path.join(path,name)) and (name.startswith('object_recognition') or name.startswith('ork')):
                 modules.add(name)
     # find all the objects of the right type
+    print modules
     classes = find_classes(modules, [supported_classes[args.class_type]])
+    print classes
 
     # create a string with the config documentation
-    print ''
-    """
     res = ''
+    """
     class_number = 0
     for _class_name, class_object in classes.items():
         res += '[%s%s]\n' % (args.class_type, class_number)
@@ -87,7 +88,6 @@ if __name__=='__main__':
             res += indent_yaml(class_object.config_doc())
         class_number += 1
         res += '\n'
-    
-    print res[:-1]
     """
+    print res[:-1]
     #json.dumps(doc,final_doc,indent=0)
