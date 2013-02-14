@@ -3,6 +3,8 @@ Function that finds classes of a certain base type on the path in certain module
 '''
 
 import inspect
+import os
+import pkgutil
 import sys
 
 class CellNotFound(Exception):
@@ -23,23 +25,53 @@ def find_classes(modules, base_types):
     Given a list of python packages, or modules, find all implementations of a class.
 
     :param modules: The names of the modules to look into
-    :param base_type: any class type (TrainingPipeline, Sink ...)
+    :param base_type: any class type (TrainingPipeline, Sink ...). Can be empty.
     :returns: A set of found classes
     """
     classes = set()
-    ms = []
+    modules_loaded = []
+    module_names = set()
     for module in modules:
         if module == '':
             continue
 
-        __import__(module)
-        ms.append(sys.modules[module])
+        m = __import__(module)
+        modules_loaded.append(sys.modules[module])
 
-    for pymodule in ms:
+        path_list = m.__path__
+        if not isinstance(path_list, list):
+            path_list = [ path_list ]
+        for module_path in path_list:
+            path_len = len(os.path.split(module_path)[0])
+            for root, dirs, files in os.walk(module_path):
+                # record the files as being modules
+                for name in files:
+                    if name == '__init__.py':
+                        package_name = os.path.split(module_path)[0][path_len+1:].replace(os.path.sep,'.')
+                        if package_name:
+                            module_names.add(package_name)
+                    elif name.endswith('.py') or name.endswith('.so'):
+                        path = os.path.join(root, name)
+                        module_names.add(path[path_len+1:-3].replace(os.path.sep,'.'))
+                # record the files as being modules
+                for dir in dirs:
+                    path = os.path.join(root, dir)
+                    module_names.add(path[path_len+1:].replace(os.path.sep,'.'))
+
+    for module_name in module_names:
+        try:
+            m = __import__(module_name, fromlist=[module_name])
+            modules_loaded.append(m)
+        except:
+            continue
+
+    # Look into the modules
+    for pymodule in modules_loaded:
         for _name, potential_pipeline in inspect.getmembers(pymodule):
-            if inspect.isclass(potential_pipeline):
-                if not base_types or any([issubclass(potential_pipeline, base_type)
-                                                            for base_type in base_types]):
+            # check if an object is a class that is none of the sought ones
+            if inspect.isclass(potential_pipeline) and potential_pipeline not in base_types:
+                # make sure the class is a subclass of the base types
+                if not base_types or any([ issubclass(potential_pipeline, base_type) for base_type in base_types]):
                     classes.add(potential_pipeline)
 
     return classes
