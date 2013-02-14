@@ -45,7 +45,7 @@ endmacro()
 # macro testing an ORK configuration file
 macro(object_recognition_core_config_test config_file)
   add_test(${PROJECT_NAME}_${config_file}
-    ${object_recognition_core_TEST_DIR}/run_test.sh ${SETUP_DOT_SH} "${object_recognition_core_TEST_DIR}/test_config.py -c ${config_file} --object_ids []"
+    ${object_recognition_core_TEST_DIR}/run_test.sh ${SETUP_DOT_SH} "${object_recognition_core_TEST_DIR}/test_config.py -c ${config_file}"
     )
 endmacro()
 
