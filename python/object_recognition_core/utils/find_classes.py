@@ -68,8 +68,14 @@ def find_classes(modules, base_types):
     # Look into the modules
     for pymodule in modules_loaded:
         for _name, potential_pipeline in inspect.getmembers(pymodule):
+            # check if an object is a class
+            if not inspect.isclass(potential_pipeline):
+                continue
+            # make sure the class is from the right module (with recursion, weird things can happen)
+            if not any([potential_pipeline.__module__.startswith(module_name) for module_name in modules]):
+                continue
             # check if an object is a class that is none of the sought ones
-            if inspect.isclass(potential_pipeline) and potential_pipeline not in base_types:
+            if potential_pipeline not in base_types:
                 # make sure the class is a subclass of the base types
                 if not base_types or any([ issubclass(potential_pipeline, base_type) for base_type in base_types]):
                     classes.add(potential_pipeline)
