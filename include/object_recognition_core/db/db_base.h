@@ -160,7 +160,7 @@ namespace object_recognition_core
 
       /** Given a Document, set a binary blobs
        * @param document_id the id (unique identifier) of the document to update
-       * @param name the name/key of the binary blob to add
+       * @param attachment_name the name/key of the binary blob to add
        * @param mime_type the MIME type of the binary blob to add
        * @param stream the binary blob itself
        * @param revision_id the new revision id of the object after insertion/update

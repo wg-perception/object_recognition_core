@@ -67,7 +67,12 @@ namespace object_recognition_core
     /**
      * This does an in-place modification of an existing document.
      * @see other PopulateDoc
-     * @param document output document
+     * @param object_id the id of the object for that model
+     * @param method the method used to compute the models (e.g. 'TOD')
+     * @param submethod_str a JSON string detailing the discriminative parameters used in the method (e.g.
+     * "{"descriptor":"ORB"}" in TOD)
+     * @param parameters_str a JSON string detailing the non-discriminative parameters used in the method
+     * @param document the current document to modify
      */
     void
     PopulateDoc(const ObjectId& object_id, const std::string& method,
