@@ -14,3 +14,4 @@ bin
 *.yaml
 *.yml
 *~
+doc_config.py

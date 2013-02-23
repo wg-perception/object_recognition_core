@@ -64,17 +64,4 @@ catkin_doxygen(object_recognition_core-doxygen ${CMAKE_CURRENT_SOURCE_DIR}/inclu
 
 # Use the ecto scripts to build top-level documentation
 set(ecto_SPHINX_DIR ${CMAKE_CURRENT_SOURCE_DIR}/doc/source)
-ecto_sphinx(${CMAKE_CURRENT_SOURCE_DIR}/doc/source)
-
-# create a target to copy the doxygen files inside
-add_custom_target(object_recognition_doc-copy-doxygen-to-doc COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_BINARY_DIR}/object_ecognition_core/api ${CMAKE_BINARY_DIR}/doc/html/object_recognition_doc/api
-                                                             DEPENDS doxygen
-)
-
-# Make sure that doxygen is generated before sphinx docs
-add_dependencies(sphinx-doc object_recognition_doc-copy-doxygen-to-doc)
-
-# Add 'doc' target for convenience
-add_custom_target(doc DEPENDS sphinx-doc)
-
-
+ecto_sphinx(${CMAKE_CURRENT_SOURCE_DIR}/doc/source doc)

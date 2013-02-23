@@ -12,5 +12,5 @@ For a ``Source``:  :py:class:`object_recognition_core.io.source.SourceBase`:
 
 And for a ``Sink``: py:class:`object_recognition_core.io.source.SinkBase`:
 
-.. autoclass:: object_recognition_core.io.sink.Sink
+.. autoclass:: object_recognition_core.io.sink.SinkBase
    :members:

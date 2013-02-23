@@ -22,8 +22,4 @@ Implementing your own DB type
 -----------------------------
 
 If you want to create your own DB type, look at the examples from the core like CouchDb or filesystem.
-You have to inherit from:
-
-.. doxygenclass:: object_recognition_core::db::ObjectDbBase
-    :project: object_recognition_core
-    :members:
+You just have to inherit from ``ObjectDb``.

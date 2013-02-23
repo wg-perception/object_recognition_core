@@ -8,7 +8,7 @@ Python Plasm
 
 Your pipeline has to provide an implementation of the :py:class:`object_recognition_core.pipelines.detection.DetectionPipeline` class to be fully integrated with object recognition infrastructure:
 
-.. autoclass:: object_recognition_core.pipelines.detection.DetectionPipeline
+.. autoclass:: object_recognition_core.pipelines.detection.DetectorBase
    :members:
 
 By providing so, after parsing the config file, the detection script will be able to find/load you cell when present on the PYTHONPATH.

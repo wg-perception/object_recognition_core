@@ -21,38 +21,32 @@ Download & Build from Source
 
     If you want to install from source without ROS, you need to have common dependencies (OpenCV, PCL) on your path. You also need to execute the following:
 
-    .. code-block:: sh
 
-        sudo pip install rosinstall
+    .. code-block:: bash
 
-    Write a .rosinstall file containing:
+        mkdir src && cd src
+        git clone http://github.com/ros/catkin.git
+        git clone http://github.com/ros-infrastructure/catkin_pkg.git
+        ln -s catkin/cmake/toplevel.cmake CMakeLists.txt
 
-    the core:
-
-    .. literalinclude:: ../../install/rosinstall_main
-        :language: yaml
-
+    ``catkin`` is a set of CMake macros that simplify build and maintenance.
 
 .. toggle:: Fuerte
 
-    First source your ROS setup file:
+    First install catkin and source your ROS setup file:
 
     .. code-block:: sh
 
+        sudo apt-get install ros-fuerte-catkin ros-fuerte-ecto* ros-fuerte-opencv-candidate
         source /opt/ros/fuerte/setup.sh
 
-    Install rosinstall if you don't already have it:
+    Install the catkin package from source as the package does not have the toplevel.cmake file:
 
     .. code-block:: sh
 
-        sudo apt-get install python-rosinstall
+        git clone http://github.com/ros/catkin.git && git checkout fuerte-devel
+        ln -s catkin/toplevel.cmake CMakeLists.txt
 
-    Write a .rosinstall file containing:
-
-    the core:
-
-    .. literalinclude:: ../../install/rosinstall_main_fuerte
-        :language: yaml
 
 .. toggle:: Groovy
 
@@ -60,27 +54,22 @@ Download & Build from Source
 
     .. code-block:: sh
 
+        sudo apt-get install ros-groovy-catkin ros-groovy-ecto* ros-groovy-opencv-candidate
         source /opt/ros/groovy/setup.sh
 
-    Install rosinstall if you don't already have it:
+Then install any pipeline you need:
 
-    .. code-block:: sh
+.. code-block:: sh
 
-        sudo apt-get install python-rosinstall
+    git clone http://github.com/wg-perception/object_recognition_core
+    git clone http://github.com/wg-perception/capture
+    git clone http://github.com/wg-perception/reconstruction
+    git clone http://github.com/wg-perception/linemod
+    git clone http://github.com/wg-perception/tabletop
+    git clone http://github.com/wg-perception/tod
+    git clone http://github.com/wg-perception/transparent_objects
 
-    Write a .rosinstall file containing:
-
-    the core:
-
-    .. literalinclude:: ../../install/rosinstall_main
-        :language: yaml
-
-the pipelines:
-
-.. literalinclude:: ../../install/rosinstall_pipelines
-    :language: yaml
-
-ROS stuff:
+any ROS stuff:
 
 .. toggle_table::
     :arg1: Non-ROS
@@ -94,74 +83,55 @@ ROS stuff:
 
 .. toggle:: Fuerte
 
-    .. literalinclude:: ../../install/rosinstall_ros_fuerte
-        :language: yaml
+    .. code-block:: sh
 
+        git clone http://github.com/wg-perception/object_recognition_msgs
+        git clone http://github.com/wg-perception/object_recognition_ros
 
 .. toggle:: Groovy
 
-    .. literalinclude:: ../../install/rosinstall_ros
-       :language: yaml
+    .. code-block:: sh
+
+        git clone http://github.com/wg-perception/object_recognition_msgs
+        git clone http://github.com/wg-perception/object_recognition_ros 
 
 
-You'll notice that one of the packages is ``catkin`` http://www.ros.org/wiki/catkin. It is a set of CMake macros that simplify build and maintenance.
-If you are a developer and have write access to the repositories, search and replace ``https://`` above and replace by ``git@github.com:``.
+and then build your code:
 
-Then simply run:
-
-.. code-block:: sh
-
-    rosinstall . .rosinstall
-
-
-Set the main ``CMakeLists.txt`` file:
 
 .. toggle_table::
     :arg1: Non-ROS
     :arg2: Fuerte
     :arg3: Groovy
 
+
 .. toggle:: Non-ROS
 
     .. code-block:: sh
 
-        ln -s catkin/cmake/toplevel.cmake CMakeLists.txt
-
+        cd ../ && mkdir build && cd build && cmake ../src && make
 
 
 .. toggle:: Fuerte
 
     .. code-block:: sh
 
-        ln -s catkin/toplevel.cmake CMakeLists.txt
-
+        mkdir ../cd ../ && mkdir build && cd build && cmake ../src && make
 
 
 .. toggle:: Groovy
 
     .. code-block:: sh
 
-        ln -s catkin/cmake/toplevel.cmake CMakeLists.txt
+        cd ../ && catkin_make
 
 
-The different components should then be copied over.
 
-From here on, it's a normal CMake build:
+If you are a developer and have write access to the repositories, search and replace ``https://`` above and replace by ``git@github.com:``.
 
-.. code-block:: sh
 
-    mkdir build
-    cd build
-    cmake ..
-    make
+To maintain your code, each folder is each own ``git`` repository and you can pull/push from there.
 
-To maintain your code, each folder is each own ``git`` repository and you can pull/push from there. Little convenience: if you want to update everything:
-
-.. code-block:: sh
-
-    source build/buildspace/setup.sh
-    catkin_ws pull
-    
 Building the documentation
 --------------------------
 
@@ -174,16 +144,6 @@ You will need some up to date packages:
 
   sudo pip install -U breathe sphinxcontrib-programoutput
 
-And you will need to add the object_recognition_doc package to your workspace:
-
-  https://github.com/wg-perception/object_recognition_doc
-
-or add to your rosinstall:
-
-.. code-block:: yaml
-
-  - git: {local-name: object_recognition_doc, uri: 'https://github.com/wg-perception/object_recognition_doc.git'}
-
 From the root, just type:
 ::
 
@@ -193,22 +153,4 @@ From the root, just type:
   
 You will find the generated documentation under ``build/doc/html``.
 
-If you want to upload the documentation to the webserver, it's a bit harder because of intersphinx (you will alsoneed developer access to do that).
-
-First, build the docs making sure that ``ecto_module_root`` is set to the source version in ``ecto/doc/kitchen/doc_config.py``. Then rsync
-::
-
-
-  rsync -vrz --delete build/doc/html/ecto/ ecto.willowgarage.com:/var/www/
-  rsync -vrz --delete build/doc/html/object_recognition_doc/ ecto.willowgarage.com:/var/www/recognition
-  rsync -vrz --delete build/doc/html/ecto_* ecto.willowgarage.com:/var/www/
-
-Then, build the docs again setting ``ecto_module_root`` to the release version. Then rsync again
-::
-
-  rsync -vrz --delete build/doc/html/ecto/ ecto.willowgarage.com:/var/www/
-  rsync -vrz --delete build/doc/html/object_recognition_doc/ ecto.willowgarage.com:/var/www/recognition
-  rsync -vrz --delete build/doc/html/ecto_* ecto.willowgarage.com:/var/www/
-
-
-
+Once the documentation is built, you can simply copy it (except for the ``.doctree`` folder) to the ``gh-pages`` branch on GitHub.

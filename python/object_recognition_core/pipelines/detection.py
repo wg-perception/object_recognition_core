@@ -13,10 +13,11 @@ class DetectorBase(object):
     but if you do, it will make sure that its inputs/outputs fit the ORK standard (which is good if you want to
     interact with the official ORK pipelines).
     You need to call the BlackBox constructor in your __init__ first and then this function. Typically, your __init__ is
-    class Foo(ecto.BlackBox, DetectorBase):
-        def __init__(self, *args, **kwargs):
-            ecto.BlackBox.__init__(self, *args, **kwargs)
-            DetectorBase.__init__(self)
+
+        >>> class Foo(ecto.BlackBox, DetectorBase):
+        >>>    def __init__(self, *args, **kwargs):
+        >>>        ecto.BlackBox.__init__(self, *args, **kwargs)
+        >>>        DetectorBase.__init__(self)
     """
     def __init__(self):
         # check for the pose_results output

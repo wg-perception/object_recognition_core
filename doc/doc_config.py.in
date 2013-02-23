@@ -11,11 +11,13 @@ breathe_projects = dict(object_recognition_core='${CMAKE_CURRENT_BINARY_DIR}/../
 # for release
 ork_module_url_root = 'http://wg-perception.github.com/'
 
-intersphinx_mapping = {'ork_capture': (ork_module_url_root + 'capture', None),
-                       'ork_linemod': (ork_module_url_root + 'linemod', None),
-                       'ork_tabletop': (ork_module_url_root + 'tabletop', None),
-                       'ork_tod': (ork_module_url_root + 'tod', None),
-                       'ork_transparent_object': (ork_module_url_root + 'transparent_objects', None),
+intersphinx_mapping = {'orkcapture': (ork_module_url_root + 'capture', None),
+                       'orklinemod': (ork_module_url_root + 'linemod', None),
+                       'orkreconstruction': (ork_module_url_root + 'reconstruction', None),
+                       'orkros': (ork_module_url_root + 'object_recognition_ros', None),
+                       'orktabletop': (ork_module_url_root + 'tabletop', None),
+                       'orktod': (ork_module_url_root + 'tod', None),
+                       'orktransparentobjects': (ork_module_url_root + 'transparent_objects', None),
                        }
 
 programoutput_path = '${DOC_SOURCE_DIRS}'.split(';')
