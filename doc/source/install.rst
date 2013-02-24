@@ -1,15 +1,17 @@
+:orphan:
+
 .. _install:
 
 Installation
-============
+############
 
 From the ROS repositories
--------------------------
+*************************
 
 Install the ``ros-*-object-recognition-core`` package from the official ROS repositories and the different pipelines (packages starting with ``ros-*-object-recognition-``).
 
 Download & Build from Source
-----------------------------
+****************************
 
 .. toggle_table::
     :arg1: Non-ROS
@@ -133,24 +135,24 @@ If you are a developer and have write access to the repositories, search and rep
 To maintain your code, each folder is each own ``git`` repository and you can pull/push from there.
 
 Building the documentation
---------------------------
+**************************
 
 Before you can build the documentation (which you are reading right now),
 you need to have followed the installation instructions and have already
 successfully called ``make`` in the ``build`` folder.
 
 You will need some up to date packages:
-::
+=======================================
 
   sudo pip install -U breathe sphinxcontrib-programoutput
 
 From the root, just type:
-::
+=========================
 
   cd build
   make doxygen
   make doc
-  
+
 You will find the generated documentation under ``build/doc/html``.
 
 Once the documentation is built, you can simply copy it (except for the ``.doctree`` folder) to the ``gh-pages`` branch on GitHub.

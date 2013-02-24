@@ -1,11 +1,15 @@
-ROS Quick Guide
----------------
+:orphan:
+
+.. _quickguide:
+
+Quick Guide
+###########
 
 If you want to do the everything while understanding the bare minimum, just install the ``object_recognition`` package
 and here you go:
 
 Setup Your Environment
-^^^^^^^^^^^^^^^^^^^^^^
+**********************
 
 .. toggle_table::
     :arg1: Non-ROS
@@ -42,7 +46,7 @@ This will add the built software to your ``PATH``, ``LD_LIBRARY_PATH`` and ``PYT
 The currently stored models are on http://localhost:5984/model_viewer/_design/viewer/index.html
 
 Setup ROS
-^^^^^^^^^
+*********
 
 Terminal 1:
 
@@ -57,7 +61,7 @@ Terminal 2:
     roslaunch openni_launch openni.launch
 
 Setup the capture workspace
-^^^^^^^^^^^^^^^^^^^^^^^^^^^
+***************************
 
 First capture an ORB template of your capture workspace. It  should be take from an planar frontal view, and the
 center of the image should be filled by the plane. Press 's' to save an image. The result will be placed in the
@@ -82,7 +86,7 @@ Uuse the SXGA (roughly 1 megapixel) mode of your openni device if possible.
     rosrun dynamic_reconfigure dynparam set /openni_node1 image_mode 1
 
 Capture objects
-^^^^^^^^^^^^^^^
+***************
 
 Once you are happy with the workspace tracking, its time to capure an object. Place an object at the origin of the
 workspace. An run the capture program in preview mode. Make sure the mask and pose are being picked up.
@@ -106,7 +110,7 @@ Now time for upload. Make sure you install couch db on your machien. Give the ob
     rosrun object_recognition_capture upload -i silk.bag -n 'Silk' milk soy silk --commit
 
 Train objects
-^^^^^^^^^^^^^
+*************
 
 Repeat the steps above for the objects you would like to recognize. Once you have captured and uploaded all of the
 data, it time to mesh and train object recognition.
@@ -126,7 +130,7 @@ Next objects should be trained. It may take some time between objects, this is n
     --visualize
 
 Detect objects
-^^^^^^^^^^^^^^
+**************
 
 Now we're ready for detection. First launch rviz, it should be subscribed to the right markers for recognition
 results. /markers is used for the results, and it is a marker array.

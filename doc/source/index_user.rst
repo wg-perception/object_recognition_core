@@ -1,7 +1,9 @@
-.. _object_recognition_core_user:
+:orphan:
+
+.. _ork_user:
 
 object_recognition_core for users
-=================================
+#################################
 
 object_recognition_core provides an infrastructure for easy development and usage of object recognition pipelines.
 When using/developing a new method you created or found, you usually always have to recreate the following:
@@ -20,7 +22,7 @@ to work on the juicy stuff: the pipeline itself.
 If you are a user, the docs are right below.
 
 User Docs
-^^^^^^^^^
+*********
 .. toctree::
    :maxdepth: 2
    
