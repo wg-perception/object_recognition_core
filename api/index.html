@@ -1,0 +1,150 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>DB API &mdash; object_recognition_core</title>
+    
+    <link rel="stylesheet" href="../_static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/breathe.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="object_recognition_core" href="../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li><a href="../index.html">object_recognition_core</a> &raquo;</li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../index.html">
+              <img class="logo" src="../_static/or.svg" alt="Logo"/>
+            </a></p>
+  <h3><a href="../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">DB API</a><ul>
+</ul>
+</li>
+<li><a class="reference internal" href="#object-recognition-api">Object Recognition API</a><ul>
+</ul>
+</li>
+</ul>
+
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/api/index.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="db-api">
+<h1>DB API<a class="headerlink" href="#db-api" title="Permalink to this headline">¶</a></h1>
+<p>DB interactions are done with a specific API. You can either use the default types, or create your own.</p>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="db.html">DB API</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="db.html#core-types">Core Types</a></li>
+<li class="toctree-l2"><a class="reference internal" href="db.html#implementing-your-own-db-type">Implementing your own DB type</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+<div class="section" id="object-recognition-api">
+<h1>Object Recognition API<a class="headerlink" href="#object-recognition-api" title="Permalink to this headline">¶</a></h1>
+<p>In the Object Recognition Kitchen each algorithm is defined in terms of a pipeline. We have a few interfaces you should follow if
+you wish to add a new pipeline to reduce the amount of code to write.</p>
+<p>Our infrastructure is very flexible thanks to <tt class="docutils literal"><span class="pre">ecto</span></tt> and we have developed several tools to facilitate the traditional
+pipelines that contain a training phase and a detection phase. If your pipeline does not require training, just skip
+the section.</p>
+<p>Once you wrap your code into those <tt class="docutils literal"><span class="pre">base</span> <span class="pre">classes</span></tt> (it&#8217;s slightly more complex than a base class), you have access to everything
+we&#8217;ve coded for you. Doing so usually requires two steps: writing an <tt class="docutils literal"><span class="pre">ecto</span></tt> cell in pure C++ (or Python if you know a bit of <tt class="docutils literal"><span class="pre">ecto</span></tt>)
+which is the core of your processing, and a simple Python wrapper that enables ORK to exploit your cell fully (by being able to find it,
+by getting automatic docs from it ...).</p>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="generic.html">Generic Comments</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="generic.html#source-pipeline-sink">Source/Pipeline/Sink</a></li>
+<li class="toctree-l2"><a class="reference internal" href="generic.html#unit-tests">Unit Tests</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="training.html">Training</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="training.html#database-cell">Database Cell</a></li>
+<li class="toctree-l2"><a class="reference internal" href="training.html#python-plasm">Python Plasm</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="detection.html">Detection</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="detection.html#python-plasm">Python Plasm</a></li>
+<li class="toctree-l2"><a class="reference internal" href="detection.html#database-cell">Database Cell</a></li>
+<li class="toctree-l2"><a class="reference internal" href="detection.html#sink">Sink</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="source_sink.html">Source/Sink</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cells.html">Cells API</a></li>
+</ul>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li><a href="../index.html">object_recognition_core</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2013,  Willow Garage, Inc.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

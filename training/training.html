@@ -1,0 +1,264 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Training &mdash; object_recognition_core</title>
+    
+    <link rel="stylesheet" href="../_static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/breathe.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="object_recognition_core" href="../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li><a href="../index.html">object_recognition_core</a> &raquo;</li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../index.html">
+              <img class="logo" src="../_static/or.svg" alt="Logo"/>
+            </a></p>
+  <h3><a href="../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Training</a><ul>
+<li><a class="reference internal" href="#config-file">Config File</a></li>
+<li><a class="reference internal" href="#use">Use</a></li>
+<li><a class="reference internal" href="#command-line-interface">Command Line Interface</a></li>
+<li><a class="reference internal" href="#extras">Extras</a></li>
+</ul>
+</li>
+</ul>
+
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/training/training.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="training">
+<h1><a class="toc-backref" href="#id1">Training</a><a class="headerlink" href="#training" title="Permalink to this headline">¶</a></h1>
+<div class="contents topic" id="contents">
+<p class="topic-title first">Contents</p>
+<ul class="simple">
+<li><a class="reference internal" href="#training" id="id1">Training</a><ul>
+<li><a class="reference internal" href="#config-file" id="id2">Config File</a></li>
+<li><a class="reference internal" href="#use" id="id3">Use</a></li>
+<li><a class="reference internal" href="#command-line-interface" id="id4">Command Line Interface</a></li>
+<li><a class="reference internal" href="#extras" id="id5">Extras</a></li>
+</ul>
+</li>
+</ul>
+</div>
+<p>Once some observations are stored in the database, models can be built from them.</p>
+<div class="section" id="config-file">
+<h2><a class="toc-backref" href="#id2">Config File</a><a class="headerlink" href="#config-file" title="Permalink to this headline">¶</a></h2>
+<p>Training, just like recognition, requires a configuration file.</p>
+</div>
+<div class="section" id="use">
+<h2><a class="toc-backref" href="#id3">Use</a><a class="headerlink" href="#use" title="Permalink to this headline">¶</a></h2>
+<div class="container">
+<button class="toggleable_button label_Non-ROS" onclick="
+function toggle(label) {
+  $('.toggleable_button').css({border: '2px outset', 'border-radius': '4px'});
+  $('.toggleable_button.label_' + label).css({border: '2px inset', 'border-radius': '4px'});
+  $('.toggleable_div').css('display', 'none');
+  $('.toggleable_div.label_' + label).css('display', 'block');
+};
+toggle('Non-ROS')">Non-ROS</button>
+<script>
+
+function toggle(label) {
+  $('.toggleable_button').css({border: '2px outset', 'border-radius': '4px'});
+  $('.toggleable_button.label_' + label).css({border: '2px inset', 'border-radius': '4px'});
+  $('.toggleable_div').css('display', 'none');
+  $('.toggleable_div.label_' + label).css('display', 'block');
+};
+
+$(document).ready(function() {
+  var classList =$('.toggleable_button').attr('class').split(/\s+/);
+  $.each( classList, function(index, item){
+    if (item.substring(0, 5) === 'label') {
+      toggle(item.substring(6));
+    };
+  });
+});
+</script>
+<button class="toggleable_button label_Fuerte/Groovy" onclick="
+function toggle(label) {
+  $('.toggleable_button').css({border: '2px outset', 'border-radius': '4px'});
+  $('.toggleable_button.label_' + label).css({border: '2px inset', 'border-radius': '4px'});
+  $('.toggleable_div').css('display', 'none');
+  $('.toggleable_div.label_' + label).css('display', 'block');
+};
+toggle('Fuerte/Groovy')">Fuerte/Groovy</button>
+<script>
+
+function toggle(label) {
+  $('.toggleable_button').css({border: '2px outset', 'border-radius': '4px'});
+  $('.toggleable_button.label_' + label).css({border: '2px inset', 'border-radius': '4px'});
+  $('.toggleable_div').css('display', 'none');
+  $('.toggleable_div.label_' + label).css('display', 'block');
+};
+
+$(document).ready(function() {
+  var classList =$('.toggleable_button').attr('class').split(/\s+/);
+  $.each( classList, function(index, item){
+    if (item.substring(0, 5) === 'label') {
+      toggle(item.substring(6));
+    };
+  });
+});
+</script>
+</div>
+<div class="container">
+<div class="toggleable_div label_Non-ROS"><p>Just run the training.py script in <tt class="docutils literal"><span class="pre">/apps</span></tt>. It requires a configuration file through the <tt class="docutils literal"><span class="pre">-c</span></tt> option. Some of the
+options in there can be overriden through the command line for convenience. Change the following parameters to your needs:</p>
+<ul class="simple">
+<li>the <tt class="docutils literal"><span class="pre">object_ids</span></tt> should be the list of object ids you want to train on. If you want, you can also use object_names,
+that are more human readable. object_ids is of the form [&#8220;6b3de86feee4e840280b4caad90003fb&#8221;] but there are two special
+options: if it is &#8220;all&#8221;, then all models are recomputed; if it is &#8220;missing&#8221;, only the missing models are computed.</li>
+</ul>
+</div></div>
+<div class="container">
+<div class="toggleable_div label_Fuerte/Groovy"><p>The training script can be run as follow:</p>
+<div class="highlight-sh"><div class="highlight"><pre>rosrun object_recognition_core training <span class="se">\</span>
+-c <span class="sb">`</span>rospack find object_recognition_tod<span class="sb">`</span>/conf/config_training.tod <span class="se">\</span>
+--visualize
+</pre></div>
+</div>
+<p>You can choose whatever configuration file; a few are provided in <tt class="docutils literal"><span class="pre">object_recognition_server/conf</span></tt>.</p>
+</div></div>
+<p>A typical command line session might look like:</p>
+<div class="highlight-ectosh"><div class="highlight"><pre><span class="mf">%</span><span class="gd"> apps/training -c config_training.txt</span>
+Prepare G2O: processing image 65/65
+Performing full BA:
+iteration= 0     chi2= 168324165740673896546304.000000   time= 39.2803   cumTime= 39.2803        lambda= 154861.907021 edges= 64563     schur= 1
+Persisted
+</pre></div>
+</div>
+</div>
+<div class="section" id="command-line-interface">
+<h2><a class="toc-backref" href="#id4">Command Line Interface</a><a class="headerlink" href="#command-line-interface" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-text"><div class="highlight"><pre>usage: training [-h] [-c CONFIG_FILE] [--commit]
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -c CONFIG_FILE, --config_file CONFIG_FILE
+                        Config file
+  --commit              Commit the data to the database.
+</pre></div>
+</div>
+</div>
+<div class="section" id="extras">
+<h2><a class="toc-backref" href="#id5">Extras</a><a class="headerlink" href="#extras" title="Permalink to this headline">¶</a></h2>
+<p>To verify that the model is good looking, you can (at least for the TOD models), launch the feature_viewer script in
+the apps folder in TOD.</p>
+<div class="highlight-text"><div class="highlight"><pre>usage: feature_viewer [-h] [--db_type DB_TYPE] [--db_root DB_ROOT_URL]
+                      [--db_collection DB_COLLECTION] [--commit]
+                      [--niter ITERATIONS] [--shell] [--gui]
+                      [--logfile LOGFILE] [--graphviz] [--dotfile DOTFILE]
+                      [--stats]
+                      object_id
+
+positional arguments:
+  object_id             The id of the object for which the TOD model will be
+                        displayed.
+
+optional arguments:
+  -h, --help            show this help message and exit
+
+Database Parameters:
+  --db_type DB_TYPE     The type of database used: one of [CouchDB]. Default:
+                        CouchDB
+  --db_root DB_ROOT_URL
+                        The database root URL to connect to. Default:
+                        http://localhost:5984
+  --db_collection DB_COLLECTION
+                        The database root URL to connect to. Default:
+                        object_recognition
+  --commit              Commit the data to the database.
+
+Ecto runtime parameters:
+  --niter ITERATIONS    Run the graph for niter iterations. 0 means run until
+                        stopped by a cell or external forces. (default: 0)
+  --shell               &#39;Bring up an ipython prompt, and execute
+                        asynchronously.(default: False)
+  --gui                 Bring up a gui to help execute the plasm.
+  --logfile LOGFILE     Log to the given file, use tail -f LOGFILE to see the
+                        live output. May be useful in combination with --shell
+  --graphviz            Show the graphviz of the plasm. (default: False)
+  --dotfile DOTFILE     Output a graph in dot format to the given file. If no
+                        file is given, no output will be generated. (default:
+                        )
+  --stats               Show the runtime statistics of the plasm.
+</pre></div>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li><a href="../index.html">object_recognition_core</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2013,  Willow Garage, Inc.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

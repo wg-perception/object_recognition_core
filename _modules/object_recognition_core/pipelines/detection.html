@@ -1,0 +1,149 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>object_recognition_core.pipelines.detection &mdash; object_recognition_core</title>
+    
+    <link rel="stylesheet" href="../../../_static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/breathe.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <link rel="top" title="object_recognition_core" href="../../../index.html" />
+    <link rel="up" title="Module code" href="../../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li><a href="../../../index.html">object_recognition_core</a> &raquo;</li>
+          <li><a href="../../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../../../index.html">
+              <img class="logo" src="../../../_static/or.svg" alt="Logo"/>
+            </a></p>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for object_recognition_core.pipelines.detection</h1><div class="highlight"><pre>
+<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">ABC for Detection pipelines</span>
+<span class="sd">&#39;&#39;&#39;</span>
+<span class="kn">from</span> <span class="nn">object_recognition_core.ecto_cells.io</span> <span class="kn">import</span> <span class="n">PipelineInfo</span>
+<span class="kn">from</span> <span class="nn">object_recognition_core.utils.json_helper</span> <span class="kn">import</span> <span class="n">obj_to_cpp_json_str</span>
+<span class="kn">import</span> <span class="nn">ecto</span>
+<span class="kn">from</span> <span class="nn">ecto</span> <span class="kn">import</span> <span class="n">BlackBoxCellInfo</span> <span class="k">as</span> <span class="n">CellInfo</span>
+<span class="kn">import</span> <span class="nn">warnings</span>
+
+<div class="viewcode-block" id="DetectorBase"><a class="viewcode-back" href="../../../api/detection.html#object_recognition_core.pipelines.detection.DetectorBase">[docs]</a><span class="k">class</span> <span class="nc">DetectorBase</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This is a base class for a detection pipeline: you don&#39;t need to have your pipeline cell inherit from that class</span>
+<span class="sd">    but if you do, it will make sure that its inputs/outputs fit the ORK standard (which is good if you want to</span>
+<span class="sd">    interact with the official ORK pipelines).</span>
+<span class="sd">    You need to call the BlackBox constructor in your __init__ first and then this function. Typically, your __init__ is</span>
+
+<span class="sd">        &gt;&gt;&gt; class Foo(ecto.BlackBox, DetectorBase):</span>
+<span class="sd">        &gt;&gt;&gt;    def __init__(self, *args, **kwargs):</span>
+<span class="sd">        &gt;&gt;&gt;        ecto.BlackBox.__init__(self, *args, **kwargs)</span>
+<span class="sd">        &gt;&gt;&gt;        DetectorBase.__init__(self)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c"># check for the pose_results output</span>
+        <span class="k">if</span> <span class="s">&#39;pose_results&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">outputs</span><span class="p">:</span>
+            <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s">&quot;The detector needs to have a &#39;pose_results&#39; output tendril.&quot;</span><span class="p">)</span>
+        <span class="c"># check for the right type for the pose_results output</span>
+        <span class="n">type_name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">outputs</span><span class="o">.</span><span class="n">at</span><span class="p">(</span><span class="s">&#39;pose_results&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">type_name</span>
+        <span class="k">if</span> <span class="n">type_name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="s">&#39;std::vector&lt;object_recognition_core::common::PoseResult, std::allocator&lt;object_recognition_core::common::PoseResult&gt; &gt;&#39;</span><span class="p">]:</span>
+            <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s">&quot;The detector does not have a &#39;pose_results&#39; tendril of the right type.</span><span class="se">\n</span><span class="s">&quot;</span>
+                                      <span class="s">&quot;Must have an output named &#39;pose_results&#39;, with type </span><span class="si">%s</span><span class="se">\n</span><span class="s">&quot;</span>
+                                      <span class="s">&quot;This cells output at &#39;pose_results&#39; has type </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="s">&#39;std::vector&lt;PoseResult&gt;&#39;</span><span class="p">,</span> <span class="n">type_name</span><span class="p">))</span>
+
+<span class="c">########################################################################################################################</span>
+</div>
+<span class="k">class</span> <span class="nc">DetectorAndInfo</span><span class="p">(</span><span class="n">ecto</span><span class="o">.</span><span class="n">BlackBox</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This blackbox contains a detection pipeline and a cell that simply forwards its parameters</span>
+<span class="sd">    Each executed pipeline is actually wrapped in such an object so that outputs can be linked</span>
+<span class="sd">    to where they are coming from (through the info).</span>
+<span class="sd">    This is for private implementation</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">detection_class</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_detector</span> <span class="o">=</span> <span class="n">detection_class</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_info</span> <span class="o">=</span> <span class="n">PipelineInfo</span><span class="p">(</span><span class="n">parameters</span><span class="o">=</span><span class="n">obj_to_cpp_json_str</span><span class="p">(</span><span class="n">kwargs</span><span class="p">))</span>
+        <span class="n">ecto</span><span class="o">.</span><span class="n">BlackBox</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">declare_cells</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">_p</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">{</span><span class="s">&#39;detector&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_detector</span><span class="p">,</span>
+                <span class="s">&#39;info&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_info</span>
+               <span class="p">}</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">declare_forwards</span><span class="p">(</span><span class="n">_p</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">({</span><span class="s">&#39;detector&#39;</span><span class="p">:</span> <span class="s">&#39;all&#39;</span><span class="p">},</span> <span class="p">{</span><span class="s">&#39;detector&#39;</span><span class="p">:</span> <span class="s">&#39;all&#39;</span><span class="p">},</span> <span class="p">{</span><span class="s">&#39;detector&#39;</span><span class="p">:</span> <span class="s">&#39;all&#39;</span><span class="p">,</span> <span class="s">&#39;info&#39;</span><span class="p">:</span> <span class="s">&#39;all&#39;</span><span class="p">})</span>
+
+    <span class="k">def</span> <span class="nf">connections</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">_p</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">[</span> <span class="bp">self</span><span class="o">.</span><span class="n">detector</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">info</span> <span class="p">]</span>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li><a href="../../../index.html">object_recognition_core</a> &raquo;</li>
+          <li><a href="../../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2013,  Willow Garage, Inc.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

@@ -1,0 +1,450 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Installation &mdash; object_recognition_core</title>
+    
+    <link rel="stylesheet" href="_static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="_static/breathe.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="object_recognition_core" href="index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li><a href="index.html">object_recognition_core</a> &raquo;</li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="index.html">
+              <img class="logo" src="_static/or.svg" alt="Logo"/>
+            </a></p>
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Installation</a><ul>
+<li><a class="reference internal" href="#from-the-ros-repositories">From the ROS repositories</a></li>
+<li><a class="reference internal" href="#download-build-from-source">Download &amp; Build from Source</a></li>
+<li><a class="reference internal" href="#building-the-documentation">Building the documentation</a><ul>
+<li><a class="reference internal" href="#you-will-need-some-up-to-date-packages">You will need some up to date packages:</a></li>
+<li><a class="reference internal" href="#from-the-root-just-type">From the root, just type:</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/install.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="installation">
+<span id="install"></span><h1>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="from-the-ros-repositories">
+<h2>From the ROS repositories<a class="headerlink" href="#from-the-ros-repositories" title="Permalink to this headline">¶</a></h2>
+<p>Install the <tt class="docutils literal"><span class="pre">ros-*-object-recognition-core</span></tt> package from the official ROS repositories and the different pipelines (packages starting with <tt class="docutils literal"><span class="pre">ros-*-object-recognition-</span></tt>).</p>
+</div>
+<div class="section" id="download-build-from-source">
+<h2>Download &amp; Build from Source<a class="headerlink" href="#download-build-from-source" title="Permalink to this headline">¶</a></h2>
+<div class="container">
+<button class="toggleable_button label_Non-ROS" onclick="
+function toggle(label) {
+  $('.toggleable_button').css({border: '2px outset', 'border-radius': '4px'});
+  $('.toggleable_button.label_' + label).css({border: '2px inset', 'border-radius': '4px'});
+  $('.toggleable_div').css('display', 'none');
+  $('.toggleable_div.label_' + label).css('display', 'block');
+};
+toggle('Non-ROS')">Non-ROS</button>
+<script>
+
+function toggle(label) {
+  $('.toggleable_button').css({border: '2px outset', 'border-radius': '4px'});
+  $('.toggleable_button.label_' + label).css({border: '2px inset', 'border-radius': '4px'});
+  $('.toggleable_div').css('display', 'none');
+  $('.toggleable_div.label_' + label).css('display', 'block');
+};
+
+$(document).ready(function() {
+  var classList =$('.toggleable_button').attr('class').split(/\s+/);
+  $.each( classList, function(index, item){
+    if (item.substring(0, 5) === 'label') {
+      toggle(item.substring(6));
+    };
+  });
+});
+</script>
+<button class="toggleable_button label_Fuerte" onclick="
+function toggle(label) {
+  $('.toggleable_button').css({border: '2px outset', 'border-radius': '4px'});
+  $('.toggleable_button.label_' + label).css({border: '2px inset', 'border-radius': '4px'});
+  $('.toggleable_div').css('display', 'none');
+  $('.toggleable_div.label_' + label).css('display', 'block');
+};
+toggle('Fuerte')">Fuerte</button>
+<script>
+
+function toggle(label) {
+  $('.toggleable_button').css({border: '2px outset', 'border-radius': '4px'});
+  $('.toggleable_button.label_' + label).css({border: '2px inset', 'border-radius': '4px'});
+  $('.toggleable_div').css('display', 'none');
+  $('.toggleable_div.label_' + label).css('display', 'block');
+};
+
+$(document).ready(function() {
+  var classList =$('.toggleable_button').attr('class').split(/\s+/);
+  $.each( classList, function(index, item){
+    if (item.substring(0, 5) === 'label') {
+      toggle(item.substring(6));
+    };
+  });
+});
+</script>
+<button class="toggleable_button label_Groovy" onclick="
+function toggle(label) {
+  $('.toggleable_button').css({border: '2px outset', 'border-radius': '4px'});
+  $('.toggleable_button.label_' + label).css({border: '2px inset', 'border-radius': '4px'});
+  $('.toggleable_div').css('display', 'none');
+  $('.toggleable_div.label_' + label).css('display', 'block');
+};
+toggle('Groovy')">Groovy</button>
+<script>
+
+function toggle(label) {
+  $('.toggleable_button').css({border: '2px outset', 'border-radius': '4px'});
+  $('.toggleable_button.label_' + label).css({border: '2px inset', 'border-radius': '4px'});
+  $('.toggleable_div').css('display', 'none');
+  $('.toggleable_div.label_' + label).css('display', 'block');
+};
+
+$(document).ready(function() {
+  var classList =$('.toggleable_button').attr('class').split(/\s+/);
+  $.each( classList, function(index, item){
+    if (item.substring(0, 5) === 'label') {
+      toggle(item.substring(6));
+    };
+  });
+});
+</script>
+</div>
+<div class="container">
+<div class="toggleable_div label_Non-ROS"><p>If you want to install from source without ROS, you need to have common dependencies (OpenCV, PCL) on your path. You also need to execute the following:</p>
+<div class="highlight-bash"><div class="highlight"><pre>mkdir src <span class="o">&amp;&amp;</span> <span class="nb">cd </span>src
+git clone http://github.com/ros/catkin.git
+git clone http://github.com/ros-infrastructure/catkin_pkg.git
+ln -s catkin/cmake/toplevel.cmake CMakeLists.txt
+</pre></div>
+</div>
+<p><tt class="docutils literal"><span class="pre">catkin</span></tt> is a set of CMake macros that simplify build and maintenance.</p>
+</div></div>
+<div class="container">
+<div class="toggleable_div label_Fuerte"><p>First install catkin and source your ROS setup file:</p>
+<div class="highlight-sh"><div class="highlight"><pre>sudo apt-get install ros-fuerte-catkin ros-fuerte-ecto* ros-fuerte-opencv-candidate
+<span class="nb">source</span> /opt/ros/fuerte/setup.sh
+</pre></div>
+</div>
+<p>Install the catkin package from source as the package does not have the toplevel.cmake file:</p>
+<div class="highlight-sh"><div class="highlight"><pre>git clone http://github.com/ros/catkin.git <span class="o">&amp;&amp;</span> git checkout fuerte-devel
+ln -s catkin/toplevel.cmake CMakeLists.txt
+</pre></div>
+</div>
+</div></div>
+<div class="container">
+<div class="toggleable_div label_Groovy"><p>First source your ROS setup file:</p>
+<div class="highlight-sh"><div class="highlight"><pre>sudo apt-get install ros-groovy-catkin ros-groovy-ecto* ros-groovy-opencv-candidate
+<span class="nb">source</span> /opt/ros/groovy/setup.sh
+</pre></div>
+</div>
+</div></div>
+<p>Then install any pipeline you need:</p>
+<div class="highlight-sh"><div class="highlight"><pre>git clone http://github.com/wg-perception/object_recognition_core
+git clone http://github.com/wg-perception/capture
+git clone http://github.com/wg-perception/reconstruction
+git clone http://github.com/wg-perception/linemod
+git clone http://github.com/wg-perception/tabletop
+git clone http://github.com/wg-perception/tod
+git clone http://github.com/wg-perception/transparent_objects
+</pre></div>
+</div>
+<p>any ROS stuff:</p>
+<div class="container">
+<button class="toggleable_button label_Non-ROS" onclick="
+function toggle(label) {
+  $('.toggleable_button').css({border: '2px outset', 'border-radius': '4px'});
+  $('.toggleable_button.label_' + label).css({border: '2px inset', 'border-radius': '4px'});
+  $('.toggleable_div').css('display', 'none');
+  $('.toggleable_div.label_' + label).css('display', 'block');
+};
+toggle('Non-ROS')">Non-ROS</button>
+<script>
+
+function toggle(label) {
+  $('.toggleable_button').css({border: '2px outset', 'border-radius': '4px'});
+  $('.toggleable_button.label_' + label).css({border: '2px inset', 'border-radius': '4px'});
+  $('.toggleable_div').css('display', 'none');
+  $('.toggleable_div.label_' + label).css('display', 'block');
+};
+
+$(document).ready(function() {
+  var classList =$('.toggleable_button').attr('class').split(/\s+/);
+  $.each( classList, function(index, item){
+    if (item.substring(0, 5) === 'label') {
+      toggle(item.substring(6));
+    };
+  });
+});
+</script>
+<button class="toggleable_button label_Fuerte" onclick="
+function toggle(label) {
+  $('.toggleable_button').css({border: '2px outset', 'border-radius': '4px'});
+  $('.toggleable_button.label_' + label).css({border: '2px inset', 'border-radius': '4px'});
+  $('.toggleable_div').css('display', 'none');
+  $('.toggleable_div.label_' + label).css('display', 'block');
+};
+toggle('Fuerte')">Fuerte</button>
+<script>
+
+function toggle(label) {
+  $('.toggleable_button').css({border: '2px outset', 'border-radius': '4px'});
+  $('.toggleable_button.label_' + label).css({border: '2px inset', 'border-radius': '4px'});
+  $('.toggleable_div').css('display', 'none');
+  $('.toggleable_div.label_' + label).css('display', 'block');
+};
+
+$(document).ready(function() {
+  var classList =$('.toggleable_button').attr('class').split(/\s+/);
+  $.each( classList, function(index, item){
+    if (item.substring(0, 5) === 'label') {
+      toggle(item.substring(6));
+    };
+  });
+});
+</script>
+<button class="toggleable_button label_Groovy" onclick="
+function toggle(label) {
+  $('.toggleable_button').css({border: '2px outset', 'border-radius': '4px'});
+  $('.toggleable_button.label_' + label).css({border: '2px inset', 'border-radius': '4px'});
+  $('.toggleable_div').css('display', 'none');
+  $('.toggleable_div.label_' + label).css('display', 'block');
+};
+toggle('Groovy')">Groovy</button>
+<script>
+
+function toggle(label) {
+  $('.toggleable_button').css({border: '2px outset', 'border-radius': '4px'});
+  $('.toggleable_button.label_' + label).css({border: '2px inset', 'border-radius': '4px'});
+  $('.toggleable_div').css('display', 'none');
+  $('.toggleable_div.label_' + label).css('display', 'block');
+};
+
+$(document).ready(function() {
+  var classList =$('.toggleable_button').attr('class').split(/\s+/);
+  $.each( classList, function(index, item){
+    if (item.substring(0, 5) === 'label') {
+      toggle(item.substring(6));
+    };
+  });
+});
+</script>
+</div>
+<div class="container">
+<div class="toggleable_div label_Non-ROS"><p>Nothing for non-ROS.</p>
+</div></div>
+<div class="container">
+<div class="toggleable_div label_Fuerte"><div class="highlight-sh"><div class="highlight"><pre>git clone http://github.com/wg-perception/object_recognition_msgs
+git clone http://github.com/wg-perception/object_recognition_ros
+</pre></div>
+</div>
+</div></div>
+<div class="container">
+<div class="toggleable_div label_Groovy"><div class="highlight-sh"><div class="highlight"><pre>git clone http://github.com/wg-perception/object_recognition_msgs
+git clone http://github.com/wg-perception/object_recognition_ros
+</pre></div>
+</div>
+</div></div>
+<p>and then build your code:</p>
+<div class="container">
+<button class="toggleable_button label_Non-ROS" onclick="
+function toggle(label) {
+  $('.toggleable_button').css({border: '2px outset', 'border-radius': '4px'});
+  $('.toggleable_button.label_' + label).css({border: '2px inset', 'border-radius': '4px'});
+  $('.toggleable_div').css('display', 'none');
+  $('.toggleable_div.label_' + label).css('display', 'block');
+};
+toggle('Non-ROS')">Non-ROS</button>
+<script>
+
+function toggle(label) {
+  $('.toggleable_button').css({border: '2px outset', 'border-radius': '4px'});
+  $('.toggleable_button.label_' + label).css({border: '2px inset', 'border-radius': '4px'});
+  $('.toggleable_div').css('display', 'none');
+  $('.toggleable_div.label_' + label).css('display', 'block');
+};
+
+$(document).ready(function() {
+  var classList =$('.toggleable_button').attr('class').split(/\s+/);
+  $.each( classList, function(index, item){
+    if (item.substring(0, 5) === 'label') {
+      toggle(item.substring(6));
+    };
+  });
+});
+</script>
+<button class="toggleable_button label_Fuerte" onclick="
+function toggle(label) {
+  $('.toggleable_button').css({border: '2px outset', 'border-radius': '4px'});
+  $('.toggleable_button.label_' + label).css({border: '2px inset', 'border-radius': '4px'});
+  $('.toggleable_div').css('display', 'none');
+  $('.toggleable_div.label_' + label).css('display', 'block');
+};
+toggle('Fuerte')">Fuerte</button>
+<script>
+
+function toggle(label) {
+  $('.toggleable_button').css({border: '2px outset', 'border-radius': '4px'});
+  $('.toggleable_button.label_' + label).css({border: '2px inset', 'border-radius': '4px'});
+  $('.toggleable_div').css('display', 'none');
+  $('.toggleable_div.label_' + label).css('display', 'block');
+};
+
+$(document).ready(function() {
+  var classList =$('.toggleable_button').attr('class').split(/\s+/);
+  $.each( classList, function(index, item){
+    if (item.substring(0, 5) === 'label') {
+      toggle(item.substring(6));
+    };
+  });
+});
+</script>
+<button class="toggleable_button label_Groovy" onclick="
+function toggle(label) {
+  $('.toggleable_button').css({border: '2px outset', 'border-radius': '4px'});
+  $('.toggleable_button.label_' + label).css({border: '2px inset', 'border-radius': '4px'});
+  $('.toggleable_div').css('display', 'none');
+  $('.toggleable_div.label_' + label).css('display', 'block');
+};
+toggle('Groovy')">Groovy</button>
+<script>
+
+function toggle(label) {
+  $('.toggleable_button').css({border: '2px outset', 'border-radius': '4px'});
+  $('.toggleable_button.label_' + label).css({border: '2px inset', 'border-radius': '4px'});
+  $('.toggleable_div').css('display', 'none');
+  $('.toggleable_div.label_' + label).css('display', 'block');
+};
+
+$(document).ready(function() {
+  var classList =$('.toggleable_button').attr('class').split(/\s+/);
+  $.each( classList, function(index, item){
+    if (item.substring(0, 5) === 'label') {
+      toggle(item.substring(6));
+    };
+  });
+});
+</script>
+</div>
+<div class="container">
+<div class="toggleable_div label_Non-ROS"><div class="highlight-sh"><div class="highlight"><pre><span class="nb">cd</span> ../ <span class="o">&amp;&amp;</span> mkdir build <span class="o">&amp;&amp;</span> <span class="nb">cd </span>build <span class="o">&amp;&amp;</span> cmake ../src <span class="o">&amp;&amp;</span> make
+</pre></div>
+</div>
+</div></div>
+<div class="container">
+<div class="toggleable_div label_Fuerte"><div class="highlight-sh"><div class="highlight"><pre>mkdir ../cd ../ <span class="o">&amp;&amp;</span> mkdir build <span class="o">&amp;&amp;</span> <span class="nb">cd </span>build <span class="o">&amp;&amp;</span> cmake ../src <span class="o">&amp;&amp;</span> make
+</pre></div>
+</div>
+</div></div>
+<div class="container">
+<div class="toggleable_div label_Groovy"><div class="highlight-sh"><div class="highlight"><pre><span class="nb">cd</span> ../ <span class="o">&amp;&amp;</span> catkin_make
+</pre></div>
+</div>
+</div></div>
+<p>If you are a developer and have write access to the repositories, search and replace <tt class="docutils literal"><span class="pre">https://</span></tt> above and replace by <tt class="docutils literal"><span class="pre">git&#64;github.com:</span></tt>.</p>
+<p>To maintain your code, each folder is each own <tt class="docutils literal"><span class="pre">git</span></tt> repository and you can pull/push from there.</p>
+</div>
+<div class="section" id="building-the-documentation">
+<h2>Building the documentation<a class="headerlink" href="#building-the-documentation" title="Permalink to this headline">¶</a></h2>
+<p>Before you can build the documentation (which you are reading right now),
+you need to have followed the installation instructions and have already
+successfully called <tt class="docutils literal"><span class="pre">make</span></tt> in the <tt class="docutils literal"><span class="pre">build</span></tt> folder.</p>
+<div class="section" id="you-will-need-some-up-to-date-packages">
+<h3>You will need some up to date packages:<a class="headerlink" href="#you-will-need-some-up-to-date-packages" title="Permalink to this headline">¶</a></h3>
+<blockquote>
+<div>sudo pip install -U breathe sphinxcontrib-programoutput</div></blockquote>
+</div>
+<div class="section" id="from-the-root-just-type">
+<h3>From the root, just type:<a class="headerlink" href="#from-the-root-just-type" title="Permalink to this headline">¶</a></h3>
+<blockquote>
+<div>cd build
+make doxygen
+make doc</div></blockquote>
+<p>You will find the generated documentation under <tt class="docutils literal"><span class="pre">build/doc/html</span></tt>.</p>
+<p>Once the documentation is built, you can simply copy it (except for the <tt class="docutils literal"><span class="pre">.doctree</span></tt> folder) to the <tt class="docutils literal"><span class="pre">gh-pages</span></tt> branch on GitHub.</p>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li><a href="index.html">object_recognition_core</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2013,  Willow Garage, Inc.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

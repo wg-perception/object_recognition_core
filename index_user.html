@@ -1,0 +1,147 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>object_recognition_core for users &mdash; object_recognition_core</title>
+    
+    <link rel="stylesheet" href="_static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="_static/breathe.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="object_recognition_core" href="index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li><a href="index.html">object_recognition_core</a> &raquo;</li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="index.html">
+              <img class="logo" src="_static/or.svg" alt="Logo"/>
+            </a></p>
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">object_recognition_core for users</a><ul>
+<li><a class="reference internal" href="#user-docs">User Docs</a><ul>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/index_user.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="object-recognition-core-for-users">
+<span id="ork-user"></span><h1>object_recognition_core for users<a class="headerlink" href="#object-recognition-core-for-users" title="Permalink to this headline">¶</a></h1>
+<p>object_recognition_core provides an infrastructure for easy development and usage of object recognition pipelines.
+When using/developing a new method you created or found, you usually always have to recreate the following:</p>
+<blockquote>
+<div><ul class="simple">
+<li>figure out a way to store/query/use your training data</li>
+<li>figure out a way to store/query/use your models</li>
+<li>an easy to train your objects</li>
+<li>deal with where your data is coming from (cameras, ROS rosbag, ROS topics)</li>
+<li>deal with where your data is going to</li>
+<li>integrate it with ROS by listening to the right topics and publishing something</li>
+<li>compare it to other pipelines by having several pipelines running at once</li>
+</ul>
+</div></blockquote>
+<p><tt class="docutils literal"><span class="pre">object_recognition_core</span> <span class="pre">takes</span> <span class="pre">care</span></tt> of all that (and more !) by providing base classes and a flexible infrastructure because let&#8217;s face it, you want
+to work on the juicy stuff: the pipeline itself.</p>
+<p>If you are a user, the docs are right below.</p>
+<div class="section" id="user-docs">
+<h2>User Docs<a class="headerlink" href="#user-docs" title="Permalink to this headline">¶</a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="db/couch.html">Database</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="db/couch.html#implementations">Implementations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="db/couch.html#couch-db">Couch Db</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="training/training.html">Training</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="training/training.html#config-file">Config File</a></li>
+<li class="toctree-l2"><a class="reference internal" href="training/training.html#use">Use</a></li>
+<li class="toctree-l2"><a class="reference internal" href="training/training.html#command-line-interface">Command Line Interface</a></li>
+<li class="toctree-l2"><a class="reference internal" href="training/training.html#extras">Extras</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="detection/detection.html">Detection</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="detection/detection.html#use">Use</a></li>
+<li class="toctree-l2"><a class="reference internal" href="detection/detection.html#command-line-interface">Command Line Interface</a></li>
+<li class="toctree-l2"><a class="reference internal" href="detection/detection.html#configuration-file">Configuration File</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li><a href="index.html">object_recognition_core</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2013,  Willow Garage, Inc.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

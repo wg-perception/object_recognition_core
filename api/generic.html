@@ -1,0 +1,130 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Generic Comments &mdash; object_recognition_core</title>
+    
+    <link rel="stylesheet" href="../_static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/breathe.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="object_recognition_core" href="../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li><a href="../index.html">object_recognition_core</a> &raquo;</li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../index.html">
+              <img class="logo" src="../_static/or.svg" alt="Logo"/>
+            </a></p>
+  <h3><a href="../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Generic Comments</a><ul>
+<li><a class="reference internal" href="#source-pipeline-sink">Source/Pipeline/Sink</a></li>
+<li><a class="reference internal" href="#unit-tests">Unit Tests</a></li>
+</ul>
+</li>
+</ul>
+
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/api/generic.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="generic-comments">
+<h1>Generic Comments<a class="headerlink" href="#generic-comments" title="Permalink to this headline">¶</a></h1>
+<p><tt class="docutils literal"><span class="pre">ORK</span></tt> is able to run different object recognition pipelines concurrently while using a common infrastructure: data will come in
+through a <tt class="docutils literal"><span class="pre">Source</span></tt> that will then go to a <tt class="docutils literal"><span class="pre">Pipeline</span></tt> which will output information to a <tt class="docutils literal"><span class="pre">Sink</span></tt>.</p>
+<div class="section" id="source-pipeline-sink">
+<h2>Source/Pipeline/Sink<a class="headerlink" href="#source-pipeline-sink" title="Permalink to this headline">¶</a></h2>
+<p>Those are usually written in C++ and can come from any library out there. To be usable, they need to be wrapper in a C++ <tt class="docutils literal"><span class="pre">ecto</span></tt> cell as
+<tt class="docutils literal"><span class="pre">ORK</span></tt> is running everything in a big <tt class="docutils literal"><span class="pre">ecto</span> <span class="pre">graph</span></tt>. To have this cell foundable and easier to use, it also needs to be wrapped in a Python
+object  (there is a base class for any of the types).</p>
+</div>
+<div class="section" id="unit-tests">
+<h2>Unit Tests<a class="headerlink" href="#unit-tests" title="Permalink to this headline">¶</a></h2>
+<p>To make sure your <tt class="docutils literal"><span class="pre">Source</span></tt>/<tt class="docutils literal"><span class="pre">Pipeline</span></tt>/<tt class="docutils literal"><span class="pre">Sink</span></tt> is compatible with <tt class="docutils literal"><span class="pre">ORK</span></tt>, we provide CMake macros to test your code. Use them as follows:</p>
+<div class="highlight-cmake"><div class="highlight"><pre><span class="nb">find_package</span><span class="p">(</span><span class="s">object_recognition_core</span><span class="p">)</span>
+<span class="c"># for a detection pipeline</span>
+<span class="nb">object_recognition_core_detection_test</span><span class="p">(</span><span class="o">${</span><span class="nv">PATH_TO_YOUR_DETECTION_CONFIG_FILE</span><span class="o">}</span><span class="p">)</span>
+<span class="c"># for a training pipeline</span>
+<span class="nb">object_recognition_core_training_test</span><span class="p">(</span><span class="o">${</span><span class="nv">PATH_TO_YOUR_TRAINING_CONFIG_FILE</span><span class="o">}</span><span class="p">)</span>
+<span class="c"># for a sink</span>
+<span class="nb">object_recognition_core_sink_test</span><span class="p">(</span><span class="o">${</span><span class="nv">YOUR_SINK_NAME</span><span class="o">}</span><span class="p">)</span>
+<span class="c"># for a source</span>
+<span class="nb">object_recognition_core_source_test</span><span class="p">(</span><span class="o">${</span><span class="nv">YOUR_SOURCE_NAME</span><span class="o">}</span><span class="p">)</span>
+<span class="c"># for a generic Python script you want to test --help on</span>
+<span class="nb">object_recognition_core_help_test</span><span class="p">(</span><span class="o">${</span><span class="nv">PATH_TO_YOUR_PYTHON_SCRIPT</span><span class="o">}</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li><a href="../index.html">object_recognition_core</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2013,  Willow Garage, Inc.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

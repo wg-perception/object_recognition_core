@@ -1,0 +1,194 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Object Recognition Kitchen &mdash; object_recognition_core</title>
+    
+    <link rel="stylesheet" href="_static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="_static/breathe.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="object_recognition_core" href="#" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li><a href="#">object_recognition_core</a> &raquo;</li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="#">
+              <img class="logo" src="_static/or.svg" alt="Logo"/>
+            </a></p>
+  <h3><a href="#">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Object Recognition Kitchen</a></li>
+<li><a class="reference internal" href="#developers-corner">Developers&#8217; corner</a></li>
+<li><a class="reference internal" href="#contacts">Contacts</a></li>
+</ul>
+
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/index.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="object-recognition-kitchen">
+<h1>Object Recognition Kitchen<a class="headerlink" href="#object-recognition-kitchen" title="Permalink to this headline">¶</a></h1>
+<p>The Object Recognition Kitchen (<tt class="docutils literal"><span class="pre">ORK</span></tt>) is a project started at Willow Garage for object recognition.</p>
+<p>There is currently no unique method to perform object recognition. Objects can be textured, non textured, transparent, articulated, etc.
+For this reason, the Object Recognition Kitchen was designed to easily develop and run simultaneously several object recognition techniques.
+In short, ORK takes care of all the non-vision aspects of the problem for you (database management, inputs/outputs handling, robot/ROS integration ...) and
+eases reuse of code.</p>
+<p><tt class="docutils literal"><span class="pre">ORK</span></tt> is built on top of <a class="reference external" href="http://ecto.willowgarage.com">ecto</a> which is a lightweight hybrid C++/Python framework for organizing computations as directed acyclic graphs.</p>
+<p class="rubric">Install</p>
+<p>Well, all good things must start so check out the <a class="reference internal" href="install.html#install"><em>Install</em></a>.</p>
+<p class="rubric">Quickguide</p>
+<p>We know you can&#8217;t wait; if you don&#8217;t care about the intricacies and want to have a
+quick overview, follow the <a class="reference internal" href="quickguide.html#quickguide"><em>Quick Guide</em></a></p>
+<p class="rubric">General Usage</p>
+<p>Ok, now that you have a bit more time, we suggest you learn about the two steps to object recognition:
+<a class="reference external" href="http://wg-perception.github.com/capture/index.html#ork-capture" title="(in object_recognition_capture v0.1.0)"><em class="xref std std-ref">Data Capture</em></a> and <a class="reference internal" href="index_user.html#ork-user"><em>Recognition</em></a>.</p>
+<p class="rubric">ROS integration</p>
+<p>The recognition kitchen was built in a ROS agnostic way, but ROS components were
+also developed for integration with the ROS ecosystem (e.g. publishers, subscribers,
+actionlib server, RViz plugin ...). For more info, check out the <a class="reference external" href="http://wg-perception.github.com/object_recognition_ros/index.html#ros" title="(in object_recognition_ros v)"><em class="xref std std-ref">ROS Integration</em></a>.</p>
+<p class="rubric">Recognition Pipelines</p>
+<p>Several object recognition pipelines have been implemented for this framework. Their documentation is work in progress :) :</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="33%" />
+<col width="22%" />
+<col width="45%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Techniques</th>
+<th class="head">Types of object</th>
+<th class="head">Limitations</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td><a class="reference external" href="http://wg-perception.github.com/linemod/index.html#line-mod" title="(in object_recognition_linemod v)"><em class="xref std std-ref">LINE-MOD</em></a></td>
+<td><ul class="first last simple">
+<li>rigid, Lambertian</li>
+</ul>
+</td>
+<td><ul class="first last simple">
+<li>does not work with partial occlusions</li>
+</ul>
+</td>
+</tr>
+<tr class="row-odd"><td><a class="reference external" href="http://wg-perception.github.com/tabletop/index.html#tabletop" title="(in object_recognition_tabletop v)"><em class="xref std std-ref">tabletop</em></a></td>
+<td><ul class="first last simple">
+<li>rigid, Lambertian</li>
+<li>rotationally symmetric</li>
+<li>also finds planar surfaces</li>
+</ul>
+</td>
+<td><ul class="first last simple">
+<li>scales linearly with the number of objects</li>
+<li>the object is assumed to be on a table with no 3d rotation</li>
+</ul>
+</td>
+</tr>
+<tr class="row-even"><td><a class="reference external" href="http://wg-perception.github.com/tod/index.html#tod" title="(in object_recognition_tod v)"><em class="xref std std-ref">TOD</em></a></td>
+<td><ul class="first last simple">
+<li>textured</li>
+</ul>
+</td>
+<td>&nbsp;</td>
+</tr>
+<tr class="row-odd"><td><a class="reference external" href="http://wg-perception.github.com/transparent_objects/index.html#transparent-objects" title="(in object_recognition_transparent_objects v)"><em class="xref std std-ref">transparent objects</em></a></td>
+<td><ul class="first last simple">
+<li>rigid and transparent</li>
+</ul>
+</td>
+<td><ul class="first last simple">
+<li>Training has to be done on a painted version of the object</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Tools</p>
+<p>There are several tools that are used by some of the pipeline and you might need them for your own work or pipelines:</p>
+<blockquote>
+<div><ul class="simple">
+<li><a class="reference external" href="http://wg-perception.github.com/reconstruction/index.html#reconstruction" title="(in object_recognition_reconstruction v)"><em class="xref std std-ref">Reconstruction</em></a></li>
+</ul>
+</div></blockquote>
+</div>
+<div class="section" id="developers-corner">
+<h1>Developers&#8217; corner<a class="headerlink" href="#developers-corner" title="Permalink to this headline">¶</a></h1>
+<p>You like <tt class="docutils literal"><span class="pre">ORK</span></tt> ? Well you can add any pipeline or database to it. It is fairly simple and modular, just follow the
+<a class="reference internal" href="index_developer.html#ork-developer"><em>Developer Guide</em></a></p>
+</div>
+<div class="section" id="contacts">
+<h1>Contacts<a class="headerlink" href="#contacts" title="Permalink to this headline">¶</a></h1>
+<p>For bug reports and comments, please use the github infrastructure at <a class="reference external" href="https://github.com/wg-perception/">https://github.com/wg-perception/</a></p>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li><a href="#">object_recognition_core</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2013,  Willow Garage, Inc.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>
