@@ -98,5 +98,5 @@ namespace object_recognition_core
   }
 }
 
-ECTO_CELL(io, object_recognition_core::io::GuessTerminalWriter, "GuessCsvWriter",
+ECTO_CELL(io, object_recognition_core::io::GuessTerminalWriter, "GuessTerminalWriter",
           "Given guesses, writes them to the terminal.")
