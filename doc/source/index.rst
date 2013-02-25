@@ -1,3 +1,5 @@
+.. _index:
+
 Object Recognition Kitchen
 ##########################
 
@@ -5,12 +7,13 @@ Object Recognition Kitchen
 
 The Object Recognition Kitchen (``ORK``) is a project started at Willow Garage for object recognition.
 
-There is currently no unique method to perform object recognition. Objects can be textured, non textured, transparent, articulated, etc.
-For this reason, the Object Recognition Kitchen was designed to easily develop and run simultaneously several object recognition techniques.
-In short, ORK takes care of all the non-vision aspects of the problem for you (database management, inputs/outputs handling, robot/ROS integration ...) and
-eases reuse of code.
+There is currently no unique method to perform object recognition. Objects can be textured, non textured, transparent,
+articulated, etc. For this reason, the Object Recognition Kitchen was designed to easily develop and run simultaneously
+several object recognition techniques. In short, ORK takes care of all the non-vision aspects of the problem for you
+(database management, inputs/outputs handling, robot/ROS integration ...) and eases reuse of code.
 
-``ORK`` is built on top of `ecto <http://ecto.willowgarage.com>`_ which is a lightweight hybrid C++/Python framework for organizing computations as directed acyclic graphs.
+``ORK`` is built on top of `ecto <http://plasmodic.github.com/ecto>`_ which is a lightweight hybrid C++/Python framework
+for organizing computations as directed acyclic graphs.
 
 .. rubric:: Install
 
@@ -18,23 +21,29 @@ Well, all good things must start so check out the :ref:`Install <install>`.
 
 .. rubric:: Quickguide
 
-We know you can't wait; if you don't care about the intricacies and want to have a
-quick overview, follow the :ref:`Quick Guide <quickguide>`
+We know you can't wait; if you don't care about the intricacies and want to have a quick overview, follow the
+:ref:`Quick Guide <quickguide>`
 
 .. rubric:: General Usage
 
-Ok, now that you have a bit more time, we suggest you learn about the two steps to object recognition:
-:ref:`Data Capture <orkcapture:ork_capture>` and :ref:`Recognition <ork_user>`.
+Now that you have a bit more time, we suggest you read about the
+:ref:`Infrastructure <infrastructure>` to understand how to interact with ``ORK``. You can then go through the different
+steps of object recognition:
+
+   * :ref:`Data Capture <orkcapture:ork_capture>` ...
+   * ... from which you can perform :ref:`Training <training>` of object models ...
+   * ... that you can then use for :ref:`Detection <detection>`
 
 .. rubric:: ROS integration
 
-The recognition kitchen was built in a ROS agnostic way, but ROS components were
-also developed for integration with the ROS ecosystem (e.g. publishers, subscribers,
-actionlib server, RViz plugin ...). For more info, check out the :ref:`ROS Integration <orkros:ros>`.
+The recognition kitchen was built in a ROS agnostic way, but ROS components were also developed for integration with the
+ROS ecosystem (e.g. publishers, subscribers, actionlib server, RViz plugin ...). For more info, check out the
+:ref:`ROS Integration <orkros:ros>`.
 
 .. rubric:: Recognition Pipelines
 
-Several object recognition pipelines have been implemented for this framework. Their documentation is work in progress :) :
+Several object recognition pipelines have been implemented for this framework. Their documentation is work in progress
+:) :
 
 +----------------------------------------------+------------------------------+--------------------------------------------------------------+
 | Techniques                                   | Types of object              | Limitations                                                  |

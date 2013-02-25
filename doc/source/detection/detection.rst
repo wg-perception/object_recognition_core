@@ -1,5 +1,9 @@
+:orphan:
+
+.. _detection:
+
 Detection
-=========
+#########
 .. highlight:: ectosh
 
 .. contents::
@@ -7,7 +11,7 @@ Detection
 Using the different trained objects, we can now detect them.
 
 Use
-^^^
+***
 
 .. toggle_table::
     :arg1: Non-ROS
@@ -17,13 +21,7 @@ Use
 
     Just run the detection.py script in /apps. This will run continuously on the input image/point cloud.
 
-
-    The server requires a configuration file through the ``-c`` option. Some of the
-    options in there can be overriden by the command line for convenience.
-    Use a config file from one of the pipelines or create your own and change the following parameters to your needs:
-
-    * the object_ids should be the list of object ids you want to train on. If you want, you can also use object_names,
-      that are more human readable
+    The server requires a configuration file through the ``-c`` option.
 
 .. toggle:: ROS
 
@@ -74,12 +72,12 @@ A typical command line session might look like::
 
 
 Command Line Interface
-^^^^^^^^^^^^^^^^^^^^^^
+**********************
 .. program-output:: apps/detection --help
    :in_srcdir:
 
 Configuration File
-^^^^^^^^^^^^^^^^^^
+******************
 
 The configuration file is where you define your graph and with the current ORK, you can choose any of the following sources:
 
