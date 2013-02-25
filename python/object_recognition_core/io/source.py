@@ -13,7 +13,8 @@ All source cells will have the following outputs:
 """
 
 import ecto
-from ecto_image_pipeline.io.source import create_source
+from ecto_image_pipeline.io.source import create_source_class
+from ecto.blackbox import BlackBoxCellInfo as CellInfo
 
 ########################################################################################################################
 
@@ -74,10 +75,12 @@ class OpenNI(ecto.BlackBox, SourceBase):
         ecto.BlackBox.__init__(self, *args, **kwargs)
         SourceBase.__init__(self)
 
-    def declare_cells(self, p):
-        return {'main': create_source(*('image_pipeline', 'OpenNISource'), **p)}
+    @staticmethod
+    def declare_cells(p):
+        return {'main': CellInfo(create_source_class('image_pipeline', 'OpenNISource'))}
 
-    def declare_params(self, p):
+    @staticmethod
+    def declare_direct_params(p):
         from ecto_openni import FpsMode, ResolutionMode, StreamMode
         p.declare('image_fps', "The number of frames per second for the RGB image: %s" % str(FpsMode.values.values()))
         p.declare('depth_fps', "The number of frames per second for the depth image: %s" % str(FpsMode.values.values()))
@@ -85,7 +88,8 @@ class OpenNI(ecto.BlackBox, SourceBase):
         p.declare('depth_mode', "The resolution for the depth image: %s" % str(ResolutionMode.values.values()))
         p.declare('stream_mode', "The stream mode: %s" % str(StreamMode.values.values()))
 
-    def declare_forwards(self, _p):
+    @staticmethod
+    def declare_forwards(_p):
         return ({}, {'main': 'all'}, {'main': 'all'})
 
     def connections(self, _p):
