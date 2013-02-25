@@ -47,7 +47,6 @@
   <ul>
 <li><a class="reference internal" href="#">Quick Guide</a><ul>
 <li><a class="reference internal" href="#setup-your-environment">Setup Your Environment</a></li>
-<li><a class="reference internal" href="#setup-ros">Setup ROS</a></li>
 <li><a class="reference internal" href="#setup-the-capture-workspace">Setup the capture workspace</a></li>
 <li><a class="reference internal" href="#capture-objects">Capture objects</a></li>
 <li><a class="reference internal" href="#train-objects">Train objects</a></li>
@@ -84,86 +83,78 @@
             
   <div class="section" id="quick-guide">
 <span id="quickguide"></span><h1>Quick Guide<a class="headerlink" href="#quick-guide" title="Permalink to this headline">¶</a></h1>
-<p>If you want to do the everything while understanding the bare minimum, just install the <tt class="docutils literal"><span class="pre">object_recognition</span></tt> package
-and here you go:</p>
+<p>Instructions are slightly different on whether you use ROS or not. For ROS, instructions will work whether you build
+<tt class="docutils literal"><span class="pre">ROS</span></tt> from source or not.</p>
+<div class="container">
+<button class="toggleable_button label_FromSource" onclick="
+function toggle(label) {
+  $('.toggleable_button').css({border: '2px outset', 'border-radius': '4px'});
+  $('.toggleable_button.label_' + label).css({border: '2px inset', 'border-radius': '4px'});
+  $('.toggleable_div').css('display', 'none');
+  $('.toggleable_div.label_' + label).css('display', 'block');
+};
+toggle('FromSource')">From Source</button>
+<script>
+
+function toggle(label) {
+  $('.toggleable_button').css({border: '2px outset', 'border-radius': '4px'});
+  $('.toggleable_button.label_' + label).css({border: '2px inset', 'border-radius': '4px'});
+  $('.toggleable_div').css('display', 'none');
+  $('.toggleable_div.label_' + label).css('display', 'block');
+};
+
+$(document).ready(function() {
+  var classList =$('.toggleable_button').attr('class').split(/\s+/);
+  $.each( classList, function(index, item){
+    if (item.substring(0, 5) === 'label') {
+      toggle(item.substring(6));
+    };
+  });
+});
+</script>
+<button class="toggleable_button label_FromROSpackages" onclick="
+function toggle(label) {
+  $('.toggleable_button').css({border: '2px outset', 'border-radius': '4px'});
+  $('.toggleable_button.label_' + label).css({border: '2px inset', 'border-radius': '4px'});
+  $('.toggleable_div').css('display', 'none');
+  $('.toggleable_div.label_' + label).css('display', 'block');
+};
+toggle('FromROSpackages')">From ROS packages</button>
+<script>
+
+function toggle(label) {
+  $('.toggleable_button').css({border: '2px outset', 'border-radius': '4px'});
+  $('.toggleable_button.label_' + label).css({border: '2px inset', 'border-radius': '4px'});
+  $('.toggleable_div').css('display', 'none');
+  $('.toggleable_div.label_' + label).css('display', 'block');
+};
+
+$(document).ready(function() {
+  var classList =$('.toggleable_button').attr('class').split(/\s+/);
+  $.each( classList, function(index, item){
+    if (item.substring(0, 5) === 'label') {
+      toggle(item.substring(6));
+    };
+  });
+});
+</script>
+</div>
 <div class="section" id="setup-your-environment">
 <h2>Setup Your Environment<a class="headerlink" href="#setup-your-environment" title="Permalink to this headline">¶</a></h2>
+<p>You need to setup your environment:</p>
 <div class="container">
-<button class="toggleable_button label_Non-ROS" onclick="
-function toggle(label) {
-  $('.toggleable_button').css({border: '2px outset', 'border-radius': '4px'});
-  $('.toggleable_button.label_' + label).css({border: '2px inset', 'border-radius': '4px'});
-  $('.toggleable_div').css('display', 'none');
-  $('.toggleable_div.label_' + label).css('display', 'block');
-};
-toggle('Non-ROS')">Non-ROS</button>
-<script>
-
-function toggle(label) {
-  $('.toggleable_button').css({border: '2px outset', 'border-radius': '4px'});
-  $('.toggleable_button.label_' + label).css({border: '2px inset', 'border-radius': '4px'});
-  $('.toggleable_div').css('display', 'none');
-  $('.toggleable_div.label_' + label).css('display', 'block');
-};
-
-$(document).ready(function() {
-  var classList =$('.toggleable_button').attr('class').split(/\s+/);
-  $.each( classList, function(index, item){
-    if (item.substring(0, 5) === 'label') {
-      toggle(item.substring(6));
-    };
-  });
-});
-</script>
-<button class="toggleable_button label_ROS" onclick="
-function toggle(label) {
-  $('.toggleable_button').css({border: '2px outset', 'border-radius': '4px'});
-  $('.toggleable_button.label_' + label).css({border: '2px inset', 'border-radius': '4px'});
-  $('.toggleable_div').css('display', 'none');
-  $('.toggleable_div.label_' + label).css('display', 'block');
-};
-toggle('ROS')">ROS</button>
-<script>
-
-function toggle(label) {
-  $('.toggleable_button').css({border: '2px outset', 'border-radius': '4px'});
-  $('.toggleable_button.label_' + label).css({border: '2px inset', 'border-radius': '4px'});
-  $('.toggleable_div').css('display', 'none');
-  $('.toggleable_div.label_' + label).css('display', 'block');
-};
-
-$(document).ready(function() {
-  var classList =$('.toggleable_button').attr('class').split(/\s+/);
-  $.each( classList, function(index, item){
-    if (item.substring(0, 5) === 'label') {
-      toggle(item.substring(6));
-    };
-  });
-});
-</script>
-</div>
-<div class="container">
-<div class="toggleable_div label_Non-ROS"><p>Nothing.</p>
-</div></div>
-<div class="container">
-<div class="toggleable_div label_ROS"><p>Source your distribution <tt class="docutils literal"><span class="pre">setup.sh</span></tt>.</p>
-<div class="highlight-bash"><div class="highlight"><pre><span class="nb">source</span> /opt/ros/*/setup.sh
+<div class="toggleable_div label_FromSource"><div class="highlight-bash"><div class="highlight"><pre><span class="nb">source </span>devel/setup.sh
 </pre></div>
 </div>
 </div></div>
-<p>If you built from source, you also need to run:</p>
-<div class="highlight-bash"><div class="highlight"><pre><span class="nb">source </span>build/setup.sh
+<div class="container">
+<div class="toggleable_div label_FromROSpackages"><div class="highlight-bash"><div class="highlight"><pre><span class="nb">source</span> /opt/ros/DISTRO_NAME/setup.sh
 </pre></div>
 </div>
-<p>Or if the file is not present:</p>
-<div class="highlight-bash"><div class="highlight"><pre><span class="nb">source </span>build/devel/setup.sh
-</pre></div>
-</div>
-<p>This will add the built software to your <tt class="docutils literal"><span class="pre">PATH</span></tt>, <tt class="docutils literal"><span class="pre">LD_LIBRARY_PATH</span></tt> and <tt class="docutils literal"><span class="pre">PYTHONPATH</span></tt>.</p>
-<p>The currently stored models are on <a class="reference external" href="http://localhost:5984/model_viewer/_design/viewer/index.html">http://localhost:5984/model_viewer/_design/viewer/index.html</a></p>
-</div>
-<div class="section" id="setup-ros">
-<h2>Setup ROS<a class="headerlink" href="#setup-ros" title="Permalink to this headline">¶</a></h2>
+</div></div>
+<p>This will add all the necessary packages to your <tt class="docutils literal"><span class="pre">PATH</span></tt>, <tt class="docutils literal"><span class="pre">LD_LIBRARY_PATH</span></tt> and <tt class="docutils literal"><span class="pre">PYTHONPATH</span></tt>.</p>
+<div class="container">
+<div class="toggleable_div label_FromROSpackages"><p class="rubric">Setup ROS</p>
 <p>Terminal 1:</p>
 <div class="highlight-sh"><div class="highlight"><pre>roscore
 </pre></div>
@@ -172,13 +163,20 @@ $(document).ready(function() {
 <div class="highlight-sh"><div class="highlight"><pre>roslaunch openni_launch openni.launch
 </pre></div>
 </div>
+</div></div>
 </div>
 <div class="section" id="setup-the-capture-workspace">
 <h2>Setup the capture workspace<a class="headerlink" href="#setup-the-capture-workspace" title="Permalink to this headline">¶</a></h2>
 <p>First capture an ORB template of your capture workspace. It  should be take from an planar frontal view, and the
 center of the image should be filled by the plane. Press &#8216;s&#8217; to save an image. The result will be placed in the
 directory given, e.g. my_textured_plane. Press &#8216;q&#8217; to quit the template capture program.</p>
-<p>Terminal 3:</p>
+<div class="container">
+<div class="toggleable_div label_FromSource"><div class="highlight-sh"><div class="highlight"><pre>./object_recognition_capture/apps/orb_template.py -o my_textured_plane
+</pre></div>
+</div>
+</div></div>
+<div class="container">
+<div class="toggleable_div label_FromROSpackages"><p>Terminal 3:</p>
 <div class="highlight-sh"><div class="highlight"><pre>rosrun object_recognition_capture orb_template.py -o my_textured_plane
 </pre></div>
 </div>
@@ -190,49 +188,97 @@ directory given, e.g. my_textured_plane. Press &#8216;q&#8217; to quit the templ
 <div class="highlight-sh"><div class="highlight"><pre>rosrun dynamic_reconfigure dynparam <span class="nb">set</span> /openni_node1 image_mode 1
 </pre></div>
 </div>
+</div></div>
 </div>
 <div class="section" id="capture-objects">
 <h2>Capture objects<a class="headerlink" href="#capture-objects" title="Permalink to this headline">¶</a></h2>
 <p>Once you are happy with the workspace tracking, its time to capure an object. Place an object at the origin of the
 workspace. An run the capture program in preview mode. Make sure the mask and pose are being picked up.</p>
-<div class="highlight-sh"><div class="highlight"><pre>rosrun object_recognition_capture capture -i my_textured_plane --seg_z_min 0.01 -o silk.bag --preview
+<div class="container">
+<div class="toggleable_div label_FromSource"><div class="highlight-sh"><div class="highlight"><pre>./object_recognition_capture/apps/capture -i my_textured_plane --seg_z_min 0.01 -o silk.bag --preview
 </pre></div>
 </div>
+</div></div>
+<div class="container">
+<div class="toggleable_div label_FromROSpackages"><div class="highlight-sh"><div class="highlight"><pre>rosrun object_recognition_capture capture -i my_textured_plane --seg_z_min 0.01 -o silk.bag --preview
+</pre></div>
+</div>
+</div></div>
 <p>When satisified by the preview mode, run it for real.  The following will capture a bag of 60 views where each view
 is normally distributed on the view sphere. The mask and pose displays should only refresh when a novel view is
 captured.  The program will finish when 35 (-n) views are captured. Press &#8216;q&#8217; to quit early.</p>
-<div class="highlight-sh"><div class="highlight"><pre>rosrun object_recognition_capture capture -i my_textured_plane --seg_z_min 0.01 -o silk.bag
+<div class="container">
+<div class="toggleable_div label_FromSource"><div class="highlight-sh"><div class="highlight"><pre>./object_recognition_capture/apps/capture -i my_textured_plane --seg_z_min 0.01 -o silk.bag
 </pre></div>
 </div>
+</div></div>
+<div class="container">
+<div class="toggleable_div label_FromROSpackages"><div class="highlight-sh"><div class="highlight"><pre>rosrun object_recognition_capture capture -i my_textured_plane --seg_z_min 0.01 -o silk.bag
+</pre></div>
+</div>
+</div></div>
 <p>Now time for upload. Make sure you install couch db on your machien. Give the object a name and useful tags seperated by a space, e.g. milk soy silk.</p>
-<div class="highlight-sh"><div class="highlight"><pre>rosrun object_recognition_capture upload -i silk.bag -n <span class="s1">&#39;Silk&#39;</span> milk soy silk --commit
+<div class="container">
+<div class="toggleable_div label_FromSource"><div class="highlight-sh"><div class="highlight"><pre>./object_recognition_capture/apps/upload -i silk.bag -n <span class="s1">&#39;Silk&#39;</span> milk soy silk --commit
 </pre></div>
 </div>
+</div></div>
+<div class="container">
+<div class="toggleable_div label_FromROSpackages"><div class="highlight-sh"><div class="highlight"><pre>rosrun object_recognition_capture upload -i silk.bag -n <span class="s1">&#39;Silk&#39;</span> milk soy silk --commit
+</pre></div>
+</div>
+</div></div>
 </div>
 <div class="section" id="train-objects">
 <h2>Train objects<a class="headerlink" href="#train-objects" title="Permalink to this headline">¶</a></h2>
 <p>Repeat the steps above for the objects you would like to recognize. Once you have captured and uploaded all of the
 data, it time to mesh and train object recognition.</p>
 <p>Meshing objects can be done in a batch mode, assuming you are in the binary directory.</p>
-<div class="highlight-sh"><div class="highlight"><pre>rosrun object_recognition_reconstruction mesh_object --all --visualize --commit
+<div class="container">
+<div class="toggleable_div label_FromSource"><div class="highlight-sh"><div class="highlight"><pre>./object_recognition_reconstruction/apps/mesh_object --all --visualize --commit
 </pre></div>
 </div>
+</div></div>
+<div class="container">
+<div class="toggleable_div label_FromROSpackages"><div class="highlight-sh"><div class="highlight"><pre>rosrun object_recognition_reconstruction mesh_object --all --visualize --commit
+</pre></div>
+</div>
+</div></div>
+<p>The currently stored models are on <a class="reference external" href="http://localhost:5984/model_viewer/_design/viewer/index.html">http://localhost:5984/model_viewer/_design/viewer/index.html</a></p>
 <p>Next objects should be trained. It may take some time between objects, this is normal.</p>
-<div class="highlight-sh"><div class="highlight"><pre>rosrun object_recognition_core training <span class="se">\</span>
+<div class="container">
+<div class="toggleable_div label_FromSource"><div class="highlight-sh"><div class="highlight"><pre>./object_recognition_core/apps/training <span class="se">\</span>
+-c object_recognition_tod/conf/config_training.tod <span class="se">\</span>
+--visualize
+</pre></div>
+</div>
+</div></div>
+<div class="container">
+<div class="toggleable_div label_FromROSpackages"><div class="highlight-sh"><div class="highlight"><pre>rosrun object_recognition_core training <span class="se">\</span>
 -c <span class="sb">`</span>rospack find object_recognition_tod<span class="sb">`</span>/conf/config_training.tod <span class="se">\</span>
 --visualize
 </pre></div>
 </div>
+</div></div>
 </div>
 <div class="section" id="detect-objects">
 <h2>Detect objects<a class="headerlink" href="#detect-objects" title="Permalink to this headline">¶</a></h2>
 <p>Now we&#8217;re ready for detection. First launch rviz, it should be subscribed to the right markers for recognition
 results. /markers is used for the results, and it is a marker array.</p>
-<div class="highlight-sh"><div class="highlight"><pre>rosrun object_recognition_core detection <span class="se">\</span>
+<div class="container">
+<div class="toggleable_div label_FromSource"><div class="highlight-sh"><div class="highlight"><pre>./rosrun object_recognition_core/apps/detection <span class="se">\</span>
+-c object_recognition_tod/conf/config_detection.tod <span class="se">\</span>
+--visualize
+</pre></div>
+</div>
+</div></div>
+<div class="container">
+<div class="toggleable_div label_FromROSpackages"><div class="highlight-sh"><div class="highlight"><pre>rosrun object_recognition_core detection <span class="se">\</span>
 -c <span class="sb">`</span>rospack find object_recognition_tod<span class="sb">`</span>/conf/config_detection.tod <span class="se">\</span>
 --visualize
 </pre></div>
 </div>
+</div></div>
 </div>
 </div>
 

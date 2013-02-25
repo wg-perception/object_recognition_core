@@ -77,27 +77,37 @@
           <div class="body">
             
   <div class="section" id="object-recognition-kitchen">
-<h1>Object Recognition Kitchen<a class="headerlink" href="#object-recognition-kitchen" title="Permalink to this headline">¶</a></h1>
+<span id="index"></span><h1>Object Recognition Kitchen<a class="headerlink" href="#object-recognition-kitchen" title="Permalink to this headline">¶</a></h1>
 <p>The Object Recognition Kitchen (<tt class="docutils literal"><span class="pre">ORK</span></tt>) is a project started at Willow Garage for object recognition.</p>
-<p>There is currently no unique method to perform object recognition. Objects can be textured, non textured, transparent, articulated, etc.
-For this reason, the Object Recognition Kitchen was designed to easily develop and run simultaneously several object recognition techniques.
-In short, ORK takes care of all the non-vision aspects of the problem for you (database management, inputs/outputs handling, robot/ROS integration ...) and
-eases reuse of code.</p>
-<p><tt class="docutils literal"><span class="pre">ORK</span></tt> is built on top of <a class="reference external" href="http://ecto.willowgarage.com">ecto</a> which is a lightweight hybrid C++/Python framework for organizing computations as directed acyclic graphs.</p>
+<p>There is currently no unique method to perform object recognition. Objects can be textured, non textured, transparent,
+articulated, etc. For this reason, the Object Recognition Kitchen was designed to easily develop and run simultaneously
+several object recognition techniques. In short, ORK takes care of all the non-vision aspects of the problem for you
+(database management, inputs/outputs handling, robot/ROS integration ...) and eases reuse of code.</p>
+<p><tt class="docutils literal"><span class="pre">ORK</span></tt> is built on top of <a class="reference external" href="http://plasmodic.github.com/ecto">ecto</a> which is a lightweight hybrid C++/Python framework
+for organizing computations as directed acyclic graphs.</p>
 <p class="rubric">Install</p>
 <p>Well, all good things must start so check out the <a class="reference internal" href="install.html#install"><em>Install</em></a>.</p>
 <p class="rubric">Quickguide</p>
-<p>We know you can&#8217;t wait; if you don&#8217;t care about the intricacies and want to have a
-quick overview, follow the <a class="reference internal" href="quickguide.html#quickguide"><em>Quick Guide</em></a></p>
+<p>We know you can&#8217;t wait; if you don&#8217;t care about the intricacies and want to have a quick overview, follow the
+<a class="reference internal" href="quickguide.html#quickguide"><em>Quick Guide</em></a></p>
 <p class="rubric">General Usage</p>
-<p>Ok, now that you have a bit more time, we suggest you learn about the two steps to object recognition:
-<a class="reference external" href="http://wg-perception.github.com/capture/index.html#ork-capture" title="(in object_recognition_capture v0.1.0)"><em class="xref std std-ref">Data Capture</em></a> and <a class="reference internal" href="index_user.html#ork-user"><em>Recognition</em></a>.</p>
+<p>Now that you have a bit more time, we suggest you read about the
+<a class="reference internal" href="infrastructure/infrastructure.html#infrastructure"><em>Infrastructure</em></a> to understand how to interact with <tt class="docutils literal"><span class="pre">ORK</span></tt>. You can then go through the different
+steps of object recognition:</p>
+<blockquote>
+<div><ul class="simple">
+<li><a class="reference external" href="http://wg-perception.github.com/capture/index.html#ork-capture" title="(in object_recognition_capture v0.1.0)"><em class="xref std std-ref">Data Capture</em></a> ...</li>
+<li>... from which you can perform <a class="reference internal" href="training/training.html#training"><em>Training</em></a> of object models ...</li>
+<li>... that you can then use for <a class="reference internal" href="detection/detection.html#detection"><em>Detection</em></a></li>
+</ul>
+</div></blockquote>
 <p class="rubric">ROS integration</p>
-<p>The recognition kitchen was built in a ROS agnostic way, but ROS components were
-also developed for integration with the ROS ecosystem (e.g. publishers, subscribers,
-actionlib server, RViz plugin ...). For more info, check out the <a class="reference external" href="http://wg-perception.github.com/object_recognition_ros/index.html#ros" title="(in object_recognition_ros v)"><em class="xref std std-ref">ROS Integration</em></a>.</p>
+<p>The recognition kitchen was built in a ROS agnostic way, but ROS components were also developed for integration with the
+ROS ecosystem (e.g. publishers, subscribers, actionlib server, RViz plugin ...). For more info, check out the
+<a class="reference external" href="http://wg-perception.github.com/object_recognition_ros/index.html#ros" title="(in object_recognition_ros v)"><em class="xref std std-ref">ROS Integration</em></a>.</p>
 <p class="rubric">Recognition Pipelines</p>
-<p>Several object recognition pipelines have been implemented for this framework. Their documentation is work in progress :) :</p>
+<p>Several object recognition pipelines have been implemented for this framework. Their documentation is work in progress
+:) :</p>
 <table border="1" class="docutils">
 <colgroup>
 <col width="33%" />

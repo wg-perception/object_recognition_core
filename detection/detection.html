@@ -80,21 +80,21 @@
           <div class="body">
             
   <div class="section" id="detection">
-<h1><a class="toc-backref" href="#id1">Detection</a><a class="headerlink" href="#detection" title="Permalink to this headline">¶</a></h1>
+<span id="id1"></span><h1><a class="toc-backref" href="#id2">Detection</a><a class="headerlink" href="#detection" title="Permalink to this headline">¶</a></h1>
 <div class="contents topic" id="contents">
 <p class="topic-title first">Contents</p>
 <ul class="simple">
-<li><a class="reference internal" href="#detection" id="id1">Detection</a><ul>
-<li><a class="reference internal" href="#use" id="id2">Use</a></li>
-<li><a class="reference internal" href="#command-line-interface" id="id3">Command Line Interface</a></li>
-<li><a class="reference internal" href="#configuration-file" id="id4">Configuration File</a></li>
+<li><a class="reference internal" href="#detection" id="id2">Detection</a><ul>
+<li><a class="reference internal" href="#use" id="id3">Use</a></li>
+<li><a class="reference internal" href="#command-line-interface" id="id4">Command Line Interface</a></li>
+<li><a class="reference internal" href="#configuration-file" id="id5">Configuration File</a></li>
 </ul>
 </li>
 </ul>
 </div>
 <p>Using the different trained objects, we can now detect them.</p>
 <div class="section" id="use">
-<h2><a class="toc-backref" href="#id2">Use</a><a class="headerlink" href="#use" title="Permalink to this headline">¶</a></h2>
+<h2><a class="toc-backref" href="#id3">Use</a><a class="headerlink" href="#use" title="Permalink to this headline">¶</a></h2>
 <div class="container">
 <button class="toggleable_button label_Non-ROS" onclick="
 function toggle(label) {
@@ -151,13 +151,7 @@ $(document).ready(function() {
 </div>
 <div class="container">
 <div class="toggleable_div label_Non-ROS"><p>Just run the detection.py script in /apps. This will run continuously on the input image/point cloud.</p>
-<p>The server requires a configuration file through the <tt class="docutils literal"><span class="pre">-c</span></tt> option. Some of the
-options in there can be overriden by the command line for convenience.
-Use a config file from one of the pipelines or create your own and change the following parameters to your needs:</p>
-<ul class="simple">
-<li>the object_ids should be the list of object ids you want to train on. If you want, you can also use object_names,
-that are more human readable</li>
-</ul>
+<p>The server requires a configuration file through the <tt class="docutils literal"><span class="pre">-c</span></tt> option.</p>
 </div></div>
 <div class="container">
 <div class="toggleable_div label_ROS"><p>Just rosrun:</p>
@@ -202,7 +196,7 @@ span: 0.433393 meters
 </div>
 </div>
 <div class="section" id="command-line-interface">
-<h2><a class="toc-backref" href="#id3">Command Line Interface</a><a class="headerlink" href="#command-line-interface" title="Permalink to this headline">¶</a></h2>
+<h2><a class="toc-backref" href="#id4">Command Line Interface</a><a class="headerlink" href="#command-line-interface" title="Permalink to this headline">¶</a></h2>
 <div class="highlight-text"><div class="highlight"><pre>usage: detection [-h] [-c CONFIG_FILE] [--niter ITERATIONS] [--shell] [--gui]
                  [--logfile LOGFILE] [--graphviz] [--dotfile DOTFILE]
                  [--stats]
@@ -229,23 +223,156 @@ Ecto runtime parameters:
 </div>
 </div>
 <div class="section" id="configuration-file">
-<h2><a class="toc-backref" href="#id4">Configuration File</a><a class="headerlink" href="#configuration-file" title="Permalink to this headline">¶</a></h2>
+<h2><a class="toc-backref" href="#id5">Configuration File</a><a class="headerlink" href="#configuration-file" title="Permalink to this headline">¶</a></h2>
 <p>The configuration file is where you define your graph and with the current ORK, you can choose any of the following sources:</p>
-<div class="highlight-text"><div class="highlight"><pre>set([&#39;object_recognition_capture&#39;, &#39;object_recognition_core&#39;, &#39;object_recognition_msgs&#39;, &#39;object_recognition_tod&#39;, &#39;object_recognition_ros&#39;, &#39;object_recognition_linemod&#39;, &#39;object_recognition_transparent_objects&#39;, &#39;object_recognition_tabletop&#39;, &#39;object_recognition_by_parts&#39;])
-detector: declare_params
-set([&lt;class &#39;object_recognition_core.io.source.OpenNI&#39;&gt;, &lt;class &#39;object_recognition_ros.io.source.ros_kinect.RosKinect&#39;&gt;, &lt;class &#39;object_recognition_ros.io.source.bag_reader.BagReader&#39;&gt;])
+<div class="highlight-text"><div class="highlight"><pre>source_0:
+   type: RosKinect
+   module: object_recognition_ros.io.source.ros_kinect
+   parameters:
+      crop_enabled: True
+      depth_camera_info: /camera/depth_registered/camera_info
+      depth_image_topic: /camera/depth_registered/image
+      rgb_camera_info: /camera/rgb/camera_info
+      rgb_image_topic: /camera/rgb/image_color
+      x_max: 3.40282346639e+38
+      x_min: -3.40282346639e+38
+      y_max: 3.40282346639e+38
+      y_min: -3.40282346639e+38
+      z_max: 3.40282346639e+38
+      z_min: -3.40282346639e+38
+
+source_1:
+   type: BagReader
+   module: object_recognition_ros.io.source.bag_reader
+   parameters:
+      bag: data.bag
+      crop_enabled: True
+      depth_camera_info: /camera/depth_registered/camera_info
+      depth_image_topic: /camera/depth_registered/image
+      rgb_camera_info: /camera/rgb/camera_info
+      rgb_image_topic: /camera/rgb/image_color
+      x_max: 3.40282346639e+38
+      x_min: -3.40282346639e+38
+      y_max: 3.40282346639e+38
+      y_min: -3.40282346639e+38
+      z_max: 3.40282346639e+38
+      z_min: -3.40282346639e+38
+
+source_2:
+   type: OpenNI
+   module: object_recognition_core.io.source
+   parameters:
+      depth_fps: None
+      depth_mode: None
+      image_fps: None
+      image_mode: None
+      stream_mode: None
 </pre></div>
 </div>
 <p>any of the following sinks:</p>
-<div class="highlight-text"><div class="highlight"><pre>set([&#39;object_recognition_capture&#39;, &#39;object_recognition_core&#39;, &#39;object_recognition_msgs&#39;, &#39;object_recognition_tod&#39;, &#39;object_recognition_ros&#39;, &#39;object_recognition_linemod&#39;, &#39;object_recognition_transparent_objects&#39;, &#39;object_recognition_tabletop&#39;, &#39;object_recognition_by_parts&#39;])
-detector: declare_params
-set([&lt;class &#39;object_recognition_core.io.sink.GuessCsvWriter&#39;&gt;, &lt;class &#39;object_recognition_ros.io.sink.publisher.Publisher&#39;&gt;, &lt;class &#39;object_recognition_tabletop.table_publisher.TablePublisher&#39;&gt;])
+<div class="highlight-text"><div class="highlight"><pre>sink_0:
+   type: Publisher
+   module: object_recognition_ros.io.sink.publisher
+   parameters:
+      db_params: &lt;object_recognition_core.boost.interface.ObjectDbParameters object at 0x1e09d08&gt;
+      do_visualize: True
+      latched: True
+      markers_topic: markers
+      object_ids_topic: object_ids
+      pose_topic: poses
+      publish_clusters: True
+      recognized_object_array_topic: recognized_object_array
+
+sink_1:
+   type: GuessCsvWriter
+   module: object_recognition_core.io.sink
+   parameters:
+      run_number: 0
+      team_name: 
+
+sink_2:
+   type: TablePublisher
+   module: object_recognition_tabletop.table_publisher
+   parameters:
+      latched: True
+      marker_array_clusters: marker_array_clusters
+      marker_hull_topic: marker_table_hulls
+      marker_origin_topic: marker_table_origins
+      marker_table_topic: marker_tables
+      table_array: table_array
 </pre></div>
 </div>
 <p>or the following pipelines:</p>
-<div class="highlight-text"><div class="highlight"><pre>set([&#39;object_recognition_capture&#39;, &#39;object_recognition_core&#39;, &#39;object_recognition_msgs&#39;, &#39;object_recognition_tod&#39;, &#39;object_recognition_ros&#39;, &#39;object_recognition_linemod&#39;, &#39;object_recognition_transparent_objects&#39;, &#39;object_recognition_tabletop&#39;, &#39;object_recognition_by_parts&#39;])
-detector: declare_params
-set([&lt;class &#39;object_recognition_transparent_objects.detector.TransparentObjectsDetector&#39;&gt;, &lt;class &#39;object_recognition_tabletop.detector.TabletopObjectDetector&#39;&gt;, &lt;class &#39;object_recognition_by_parts.detector.PartsBasedDetector&#39;&gt;, &lt;class &#39;object_recognition_linemod.detector.LinemodDetector&#39;&gt;, &lt;class &#39;object_recognition_tabletop.detector.TabletopTableDetector&#39;&gt;, &lt;class &#39;object_recognition_tod.detector.TodDetector&#39;&gt;])
+<div class="highlight-text"><div class="highlight"><pre>detection_pipeline_0:
+   type: LinemodDetector
+   module: object_recognition_linemod.detector
+   parameters:
+      json_db: 
+      json_object_ids: all
+      json_submethod: 
+      method: 
+      threshold: 90.0
+      visualize: False
+
+detection_pipeline_1:
+   type: TransparentObjectsDetector
+   module: object_recognition_transparent_objects.detector
+   parameters:
+      json_db: 
+      json_object_ids: all
+      json_submethod: 
+      method: 
+      object_db: None
+      registrationMaskFilename: 
+      visualize: False
+
+detection_pipeline_2:
+   type: TabletopTableDetector
+   module: object_recognition_tabletop.detector
+   parameters:
+      cluster_distance: 0.019999999553
+      min_cluster_size: 300
+      min_table_size: 10000
+      plane_threshold: 0.019999999553
+      table_cluster_tolerance: 0.20000000298
+      vertical_frame_id: /map
+      z_crop: 0.5
+      z_min: 0.00749999983236
+
+detection_pipeline_3:
+   type: PartsBasedDetector
+   module: object_recognition_by_parts.detector
+   parameters:
+      json_db: 
+      json_object_ids: all
+      json_submethod: 
+      max_overlap: 0.10000000149
+      method: 
+      model_file: 
+      remove_planes: False
+      visualize: False
+
+detection_pipeline_4:
+   type: TabletopObjectDetector
+   module: object_recognition_tabletop.detector
+   parameters:
+      json_db: 
+      json_object_ids: 
+
+detection_pipeline_5:
+   type: TodDetector
+   module: object_recognition_tod.detector
+   parameters:
+      json_db: {}
+      json_descriptor_params: {&quot;type&quot;: &quot;ORB&quot;, &quot;module&quot;: &quot;ecto_opencv.features2d&quot;}
+      json_feature_params: {&quot;type&quot;: &quot;ORB&quot;, &quot;module&quot;: &quot;ecto_opencv.features2d&quot;}
+      json_object_ids: all
+      min_inliers: 15
+      n_ransac_iterations: 1000
+      rgb_frame_id: default_frame
+      search: {}
+      sensor_error: 0.00999999977648
+      visualize: False
 </pre></div>
 </div>
 <p>More of any of those can be added by the user obviously</p>

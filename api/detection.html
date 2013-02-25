@@ -91,7 +91,7 @@
 <p>Your pipeline has to provide an implementation of the <tt class="xref py py-class docutils literal"><span class="pre">object_recognition_core.pipelines.detection.DetectionPipeline</span></tt> class to be fully integrated with object recognition infrastructure:</p>
 <dl class="class">
 <dt id="object_recognition_core.pipelines.detection.DetectorBase">
-<em class="property">class </em><tt class="descclassname">object_recognition_core.pipelines.detection.</tt><tt class="descname">DetectorBase</tt><a class="reference internal" href="../_modules/object_recognition_core/pipelines/detection.html#DetectorBase"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#object_recognition_core.pipelines.detection.DetectorBase" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><tt class="descclassname">object_recognition_core.pipelines.detection.</tt><tt class="descname">DetectorBase</tt><big>(</big><em>do_check_object_ids=True</em>, <em>do_check_db=True</em><big>)</big><a class="reference internal" href="../_modules/object_recognition_core/pipelines/detection.html#DetectorBase"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#object_recognition_core.pipelines.detection.DetectorBase" title="Permalink to this definition">¶</a></dt>
 <dd><p>This is a base class for a detection pipeline: you don&#8217;t need to have your pipeline cell inherit from that class
 but if you do, it will make sure that its inputs/outputs fit the ORK standard (which is good if you want to
 interact with the official ORK pipelines).

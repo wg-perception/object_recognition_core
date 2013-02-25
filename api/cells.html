@@ -190,8 +190,8 @@
 </div>
 </div>
 <h1>object_recognition_core.ecto_cells.io<a class="headerlink" href="#cells-api" title="Permalink to this headline">¶</a></h1>
-<div class="section" id="GuessCsvWriter">
-<span id="index-3"></span><span id="object_recognition_core.ecto_cells.io.GuessCsvWriter"></span><h2>GuessCsvWriter<a class="headerlink" href="#GuessCsvWriter" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="GuessTerminalWriter">
+<span id="index-3"></span><span id="object_recognition_core.ecto_cells.io.GuessTerminalWriter"></span><h2>GuessTerminalWriter<a class="headerlink" href="#GuessTerminalWriter" title="Permalink to this headline">¶</a></h2>
 <p></p>
 <div class="topic">
 <p class="topic-title first">Brief doc<p>Given guesses, writes them to the terminal.</p>
@@ -214,8 +214,32 @@
 <p></p>
 </div>
 </div>
+<div class="section" id="GuessCsvWriter">
+<span id="index-4"></span><span id="object_recognition_core.ecto_cells.io.GuessCsvWriter"></span><h2>GuessCsvWriter<a class="headerlink" href="#GuessCsvWriter" title="Permalink to this headline">¶</a></h2>
+<p></p>
+<div class="topic">
+<p class="topic-title first">Brief doc<p>Given guesses, writes them to a CSV in the NIST format.</p>
+</p>
+<p class="topic-title first">Parameters<ul>
+<li><p class="first"><strong>run_number</strong><tt class="docutils literal">&nbsp;&nbsp; </tt><em>   type: </em><tt class="docutils literal"><span class="pre">int</span> </tt><tt class="docutils literal">&nbsp;&nbsp; </tt><em> not </em><em>required</em><tt class="docutils literal">&nbsp;&nbsp; </tt><em> no default value</em></p>
+<p>The run number</p>
+</li>
+<li><p class="first"><strong>team_name</strong><tt class="docutils literal">&nbsp;&nbsp; </tt><em>   type: </em><tt class="docutils literal"><span class="pre">std::string</span> </tt><tt class="docutils literal">&nbsp;&nbsp; </tt><em> not </em><em>required</em><tt class="docutils literal">&nbsp;&nbsp; </tt><em> no default value</em></p>
+<p>The name of the team to consider</p>
+</li>
+</ul>
+</p>
+<p class="topic-title first">Inputs<ul>
+<li><p class="first"><strong>pose_results</strong><tt class="docutils literal">&nbsp;&nbsp; </tt><em>   type: </em><tt class="docutils literal"><span class="pre">std::vector&lt;object_recognition_core::common::PoseResult,</span> <span class="pre">std::allocator&lt;object_recognition_core::common::PoseResult&gt;</span> <span class="pre">&gt;</span> </tt><tt class="docutils literal">&nbsp;&nbsp; </tt></p>
+<p>The results of object recognition</p>
+</li>
+</ul>
+</p>
+<p></p>
+</div>
+</div>
 <div class="section" id="PipelineInfo">
-<span id="index-4"></span><span id="object_recognition_core.ecto_cells.io.PipelineInfo"></span><h2>PipelineInfo<a class="headerlink" href="#PipelineInfo" title="Permalink to this headline">¶</a></h2>
+<span id="index-5"></span><span id="object_recognition_core.ecto_cells.io.PipelineInfo"></span><h2>PipelineInfo<a class="headerlink" href="#PipelineInfo" title="Permalink to this headline">¶</a></h2>
 <p></p>
 <div class="topic">
 <p class="topic-title first">Brief doc<p>Spits out the parameters given as a JSON sting.</p>
@@ -240,7 +264,7 @@
 </div>
 <h1>object_recognition_ros.ecto_cells.io_ros<a class="headerlink" href="#cells-api" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="VisualizationMsgAssembler">
-<span id="index-5"></span><span id="object_recognition_ros.ecto_cells.io_ros.VisualizationMsgAssembler"></span><h2>VisualizationMsgAssembler<a class="headerlink" href="#VisualizationMsgAssembler" title="Permalink to this headline">¶</a></h2>
+<span id="index-6"></span><span id="object_recognition_ros.ecto_cells.io_ros.VisualizationMsgAssembler"></span><h2>VisualizationMsgAssembler<a class="headerlink" href="#VisualizationMsgAssembler" title="Permalink to this headline">¶</a></h2>
 <p></p>
 <div class="topic">
 <p class="topic-title first">Brief doc<p>Given an existing message, create visualization messages from it.</p>
@@ -267,7 +291,7 @@
 </div>
 </div>
 <div class="section" id="MsgAssembler">
-<span id="index-6"></span><span id="object_recognition_ros.ecto_cells.io_ros.MsgAssembler"></span><h2>MsgAssembler<a class="headerlink" href="#MsgAssembler" title="Permalink to this headline">¶</a></h2>
+<span id="index-7"></span><span id="object_recognition_ros.ecto_cells.io_ros.MsgAssembler"></span><h2>MsgAssembler<a class="headerlink" href="#MsgAssembler" title="Permalink to this headline">¶</a></h2>
 <p></p>
 <div class="topic">
 <p class="topic-title first">Brief doc<p>Given object ids and poses, fill the object recognition message.</p>
@@ -296,7 +320,7 @@
 </div>
 </div>
 <div class="section" id="Publisher_MarkerArray">
-<span id="index-7"></span><span id="object_recognition_ros.ecto_cells.io_ros.Publisher_MarkerArray"></span><h2>Publisher_MarkerArray<a class="headerlink" href="#Publisher_MarkerArray" title="Permalink to this headline">¶</a></h2>
+<span id="index-8"></span><span id="object_recognition_ros.ecto_cells.io_ros.Publisher_MarkerArray"></span><h2>Publisher_MarkerArray<a class="headerlink" href="#Publisher_MarkerArray" title="Permalink to this headline">¶</a></h2>
 <p></p>
 <div class="topic">
 <p class="topic-title first">Brief doc<p>Publishes a visualization_msgs::MarkerArray.</p>
@@ -323,7 +347,7 @@
 </div>
 </div>
 <div class="section" id="Subscriber_Marker">
-<span id="index-8"></span><span id="object_recognition_ros.ecto_cells.io_ros.Subscriber_Marker"></span><h2>Subscriber_Marker<a class="headerlink" href="#Subscriber_Marker" title="Permalink to this headline">¶</a></h2>
+<span id="index-9"></span><span id="object_recognition_ros.ecto_cells.io_ros.Subscriber_Marker"></span><h2>Subscriber_Marker<a class="headerlink" href="#Subscriber_Marker" title="Permalink to this headline">¶</a></h2>
 <p></p>
 <div class="topic">
 <p class="topic-title first">Brief doc<p>Subscribes to a visualization_msgs::Marker.</p>
@@ -347,7 +371,7 @@
 </div>
 </div>
 <div class="section" id="Subscriber_MarkerArray">
-<span id="index-9"></span><span id="object_recognition_ros.ecto_cells.io_ros.Subscriber_MarkerArray"></span><h2>Subscriber_MarkerArray<a class="headerlink" href="#Subscriber_MarkerArray" title="Permalink to this headline">¶</a></h2>
+<span id="index-10"></span><span id="object_recognition_ros.ecto_cells.io_ros.Subscriber_MarkerArray"></span><h2>Subscriber_MarkerArray<a class="headerlink" href="#Subscriber_MarkerArray" title="Permalink to this headline">¶</a></h2>
 <p></p>
 <div class="topic">
 <p class="topic-title first">Brief doc<p>Subscribes to a visualization_msgs::MarkerArray.</p>
@@ -371,7 +395,7 @@
 </div>
 </div>
 <div class="section" id="Bagger_MarkerArray">
-<span id="index-10"></span><span id="object_recognition_ros.ecto_cells.io_ros.Bagger_MarkerArray"></span><h2>Bagger_MarkerArray<a class="headerlink" href="#Bagger_MarkerArray" title="Permalink to this headline">¶</a></h2>
+<span id="index-11"></span><span id="object_recognition_ros.ecto_cells.io_ros.Bagger_MarkerArray"></span><h2>Bagger_MarkerArray<a class="headerlink" href="#Bagger_MarkerArray" title="Permalink to this headline">¶</a></h2>
 <p></p>
 <div class="topic">
 <p class="topic-title first">Brief doc<p>A bagger for messages of a given type. Can enable read/write to ros bags.</p>
@@ -390,7 +414,7 @@
 </div>
 </div>
 <div class="section" id="Bagger_Marker">
-<span id="index-11"></span><span id="object_recognition_ros.ecto_cells.io_ros.Bagger_Marker"></span><h2>Bagger_Marker<a class="headerlink" href="#Bagger_Marker" title="Permalink to this headline">¶</a></h2>
+<span id="index-12"></span><span id="object_recognition_ros.ecto_cells.io_ros.Bagger_Marker"></span><h2>Bagger_Marker<a class="headerlink" href="#Bagger_Marker" title="Permalink to this headline">¶</a></h2>
 <p></p>
 <div class="topic">
 <p class="topic-title first">Brief doc<p>A bagger for messages of a given type. Can enable read/write to ros bags.</p>
@@ -409,7 +433,7 @@
 </div>
 </div>
 <div class="section" id="Publisher_Marker">
-<span id="index-12"></span><span id="object_recognition_ros.ecto_cells.io_ros.Publisher_Marker"></span><h2>Publisher_Marker<a class="headerlink" href="#Publisher_Marker" title="Permalink to this headline">¶</a></h2>
+<span id="index-13"></span><span id="object_recognition_ros.ecto_cells.io_ros.Publisher_Marker"></span><h2>Publisher_Marker<a class="headerlink" href="#Publisher_Marker" title="Permalink to this headline">¶</a></h2>
 <p></p>
 <div class="topic">
 <p class="topic-title first">Brief doc<p>Publishes a visualization_msgs::Marker.</p>
@@ -437,7 +461,7 @@
 </div>
 <h1>object_recognition_core.ecto_cells.filters<a class="headerlink" href="#cells-api" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="depth_filter">
-<span id="index-13"></span><span id="object_recognition_core.ecto_cells.filters.depth_filter"></span><h2>depth_filter<a class="headerlink" href="#depth_filter" title="Permalink to this headline">¶</a></h2>
+<span id="index-14"></span><span id="object_recognition_core.ecto_cells.filters.depth_filter"></span><h2>depth_filter<a class="headerlink" href="#depth_filter" title="Permalink to this headline">¶</a></h2>
 <p></p>
 <div class="topic">
 <p class="topic-title first">Brief doc<p>Given a depth image, return the mask of what is between two depths.</p>
@@ -467,7 +491,7 @@
 </div>
 <h1>object_recognition_core.ecto_cells.voter<a class="headerlink" href="#cells-api" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="Aggregator">
-<span id="index-14"></span><span id="object_recognition_core.ecto_cells.voter.Aggregator"></span><h2>Aggregator<a class="headerlink" href="#Aggregator" title="Permalink to this headline">¶</a></h2>
+<span id="index-15"></span><span id="object_recognition_core.ecto_cells.voter.Aggregator"></span><h2>Aggregator<a class="headerlink" href="#Aggregator" title="Permalink to this headline">¶</a></h2>
 <p></p>
 <div class="topic">
 <p class="topic-title first">Brief doc<p>Simply aggregates the results from several pipelines</p>

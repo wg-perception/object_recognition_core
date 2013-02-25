@@ -48,11 +48,7 @@
 <li><a class="reference internal" href="#">Installation</a><ul>
 <li><a class="reference internal" href="#from-the-ros-repositories">From the ROS repositories</a></li>
 <li><a class="reference internal" href="#download-build-from-source">Download &amp; Build from Source</a></li>
-<li><a class="reference internal" href="#building-the-documentation">Building the documentation</a><ul>
-<li><a class="reference internal" href="#you-will-need-some-up-to-date-packages">You will need some up to date packages:</a></li>
-<li><a class="reference internal" href="#from-the-root-just-type">From the root, just type:</a></li>
-</ul>
-</li>
+<li><a class="reference internal" href="#building-the-documentation">Building the documentation</a></li>
 </ul>
 </li>
 </ul>
@@ -180,6 +176,16 @@ ln -s catkin/cmake/toplevel.cmake CMakeLists.txt
 </pre></div>
 </div>
 <p><tt class="docutils literal"><span class="pre">catkin</span></tt> is a set of CMake macros that simplify build and maintenance.</p>
+<p>Then install the <tt class="docutils literal"><span class="pre">ecto</span></tt> modules:</p>
+<div class="highlight-sh"><div class="highlight"><pre>git clone http://github.com/plasmodic/ecto
+git clone http://github.com/plasmodic/ecto_image_pipeline
+git clone http://github.com/plasmodic/ecto_openni
+git clone http://github.com/plasmodic/ecto_opencv
+git clone http://github.com/plasmodic/ecto_pcl
+git clone http://github.com/plasmodic/ecto_ros
+git clone http://github.com/wg-perception/opencv_candidate
+</pre></div>
+</div>
 </div></div>
 <div class="container">
 <div class="toggleable_div label_Fuerte"><p>First install catkin and source your ROS setup file:</p>
@@ -393,7 +399,7 @@ $(document).ready(function() {
 </div>
 </div></div>
 <div class="container">
-<div class="toggleable_div label_Fuerte"><div class="highlight-sh"><div class="highlight"><pre>mkdir ../cd ../ <span class="o">&amp;&amp;</span> mkdir build <span class="o">&amp;&amp;</span> <span class="nb">cd </span>build <span class="o">&amp;&amp;</span> cmake ../src <span class="o">&amp;&amp;</span> make
+<div class="toggleable_div label_Fuerte"><div class="highlight-sh"><div class="highlight"><pre><span class="nb">cd</span> ../ <span class="o">&amp;&amp;</span> mkdir build <span class="o">&amp;&amp;</span> <span class="nb">cd </span>build <span class="o">&amp;&amp;</span> cmake ../src <span class="o">&amp;&amp;</span> make
 </pre></div>
 </div>
 </div></div>
@@ -402,7 +408,7 @@ $(document).ready(function() {
 </pre></div>
 </div>
 </div></div>
-<p>If you are a developer and have write access to the repositories, search and replace <tt class="docutils literal"><span class="pre">https://</span></tt> above and replace by <tt class="docutils literal"><span class="pre">git&#64;github.com:</span></tt>.</p>
+<p>If you are a developer and have write access to the repositories, search and replace <tt class="docutils literal"><span class="pre">http://</span></tt> above and replace by <tt class="docutils literal"><span class="pre">git&#64;github.com:</span></tt>.</p>
 <p>To maintain your code, each folder is each own <tt class="docutils literal"><span class="pre">git</span></tt> repository and you can pull/push from there.</p>
 </div>
 <div class="section" id="building-the-documentation">
@@ -410,20 +416,19 @@ $(document).ready(function() {
 <p>Before you can build the documentation (which you are reading right now),
 you need to have followed the installation instructions and have already
 successfully called <tt class="docutils literal"><span class="pre">make</span></tt> in the <tt class="docutils literal"><span class="pre">build</span></tt> folder.</p>
-<div class="section" id="you-will-need-some-up-to-date-packages">
-<h3>You will need some up to date packages:<a class="headerlink" href="#you-will-need-some-up-to-date-packages" title="Permalink to this headline">¶</a></h3>
-<blockquote>
-<div>sudo pip install -U breathe sphinxcontrib-programoutput</div></blockquote>
+<p>You then need some up to date packages:</p>
+<div class="highlight-sh"><div class="highlight"><pre>sudo pip install -U breathe sphinxcontrib-programoutput
+</pre></div>
 </div>
-<div class="section" id="from-the-root-just-type">
-<h3>From the root, just type:<a class="headerlink" href="#from-the-root-just-type" title="Permalink to this headline">¶</a></h3>
-<blockquote>
-<div>cd build
+<p>From root, just type:</p>
+<div class="highlight-sh"><div class="highlight"><pre><span class="nb">cd </span>build
 make doxygen
-make doc</div></blockquote>
-<p>You will find the generated documentation under <tt class="docutils literal"><span class="pre">build/doc/html</span></tt>.</p>
-<p>Once the documentation is built, you can simply copy it (except for the <tt class="docutils literal"><span class="pre">.doctree</span></tt> folder) to the <tt class="docutils literal"><span class="pre">gh-pages</span></tt> branch on GitHub.</p>
+make doc
+</pre></div>
 </div>
+<p>You will find the generated documentation under <tt class="docutils literal"><span class="pre">build/doc/html</span></tt>.</p>
+<p>Once the documentation is built, you can simply copy it (except for the <tt class="docutils literal"><span class="pre">.doctree</span></tt> folder)
+to the <tt class="docutils literal"><span class="pre">gh-pages</span></tt> branch on GitHub.</p>
 </div>
 </div>
 

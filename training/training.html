@@ -49,7 +49,6 @@
 <li><a class="reference internal" href="#config-file">Config File</a></li>
 <li><a class="reference internal" href="#use">Use</a></li>
 <li><a class="reference internal" href="#command-line-interface">Command Line Interface</a></li>
-<li><a class="reference internal" href="#extras">Extras</a></li>
 </ul>
 </li>
 </ul>
@@ -81,26 +80,27 @@
           <div class="body">
             
   <div class="section" id="training">
-<h1><a class="toc-backref" href="#id1">Training</a><a class="headerlink" href="#training" title="Permalink to this headline">¶</a></h1>
+<span id="id1"></span><h1><a class="toc-backref" href="#id2">Training</a><a class="headerlink" href="#training" title="Permalink to this headline">¶</a></h1>
 <div class="contents topic" id="contents">
 <p class="topic-title first">Contents</p>
 <ul class="simple">
-<li><a class="reference internal" href="#training" id="id1">Training</a><ul>
-<li><a class="reference internal" href="#config-file" id="id2">Config File</a></li>
-<li><a class="reference internal" href="#use" id="id3">Use</a></li>
-<li><a class="reference internal" href="#command-line-interface" id="id4">Command Line Interface</a></li>
-<li><a class="reference internal" href="#extras" id="id5">Extras</a></li>
+<li><a class="reference internal" href="#training" id="id2">Training</a><ul>
+<li><a class="reference internal" href="#config-file" id="id3">Config File</a></li>
+<li><a class="reference internal" href="#use" id="id4">Use</a></li>
+<li><a class="reference internal" href="#command-line-interface" id="id5">Command Line Interface</a></li>
 </ul>
 </li>
 </ul>
 </div>
 <p>Once some observations are stored in the database, models can be built from them.</p>
 <div class="section" id="config-file">
-<h2><a class="toc-backref" href="#id2">Config File</a><a class="headerlink" href="#config-file" title="Permalink to this headline">¶</a></h2>
-<p>Training, just like recognition, requires a configuration file.</p>
+<h2><a class="toc-backref" href="#id3">Config File</a><a class="headerlink" href="#config-file" title="Permalink to this headline">¶</a></h2>
+<p>Training, just like recognition, requires a configuration file but it usually only contains one cell that defines a
+pipeline that reads data from the database and computes a model. Then again, nothing prevents you to train several
+models at the same time by executing several pipelines.</p>
 </div>
 <div class="section" id="use">
-<h2><a class="toc-backref" href="#id3">Use</a><a class="headerlink" href="#use" title="Permalink to this headline">¶</a></h2>
+<h2><a class="toc-backref" href="#id4">Use</a><a class="headerlink" href="#use" title="Permalink to this headline">¶</a></h2>
 <div class="container">
 <button class="toggleable_button label_Non-ROS" onclick="
 function toggle(label) {
@@ -158,23 +158,31 @@ $(document).ready(function() {
 <div class="container">
 <div class="toggleable_div label_Non-ROS"><p>Just run the training.py script in <tt class="docutils literal"><span class="pre">/apps</span></tt>. It requires a configuration file through the <tt class="docutils literal"><span class="pre">-c</span></tt> option. Some of the
 options in there can be overriden through the command line for convenience. Change the following parameters to your needs:</p>
-<ul class="simple">
-<li>the <tt class="docutils literal"><span class="pre">object_ids</span></tt> should be the list of object ids you want to train on. If you want, you can also use object_names,
-that are more human readable. object_ids is of the form [&#8220;6b3de86feee4e840280b4caad90003fb&#8221;] but there are two special
-options: if it is &#8220;all&#8221;, then all models are recomputed; if it is &#8220;missing&#8221;, only the missing models are computed.</li>
+<blockquote>
+<div><ul>
+<li><dl class="first docutils">
+<dt>the <tt class="docutils literal"><span class="pre">object_ids</span></tt> should be the list of object ids you want to train on. If you want, you can also use object_names,</dt>
+<dd><p class="first last">that are more human readable. object_ids is of the form [&#8220;6b3de86feee4e840280b4caad90003fb&#8221;] but there are two special
+options: if it is &#8220;all&#8221;, then all models are recomputed; if it is &#8220;missing&#8221;, only the missing models are computed.</p>
+</dd>
+</dl>
+</li>
 </ul>
+</div></blockquote>
 </div></div>
 <div class="container">
-<div class="toggleable_div label_Fuerte/Groovy"><p>The training script can be run as follow:</p>
+<div class="toggleable_div label_Fuerte/Groovy"><blockquote>
+<div><p>The training script can be run as follow:</p>
 <div class="highlight-sh"><div class="highlight"><pre>rosrun object_recognition_core training <span class="se">\</span>
 -c <span class="sb">`</span>rospack find object_recognition_tod<span class="sb">`</span>/conf/config_training.tod <span class="se">\</span>
 --visualize
 </pre></div>
 </div>
+</div></blockquote>
 <p>You can choose whatever configuration file; a few are provided in <tt class="docutils literal"><span class="pre">object_recognition_server/conf</span></tt>.</p>
 </div></div>
 <p>A typical command line session might look like:</p>
-<div class="highlight-ectosh"><div class="highlight"><pre><span class="mf">%</span><span class="gd"> apps/training -c config_training.txt</span>
+<div class="highlight-ectosh"><div class="highlight"><pre><span class="mf">%</span><span class="gd"> apps/training -c config_training.txt --commmit</span>
 Prepare G2O: processing image 65/65
 Performing full BA:
 iteration= 0     chi2= 168324165740673896546304.000000   time= 39.2803   cumTime= 39.2803        lambda= 154861.907021 edges= 64563     schur= 1
@@ -183,7 +191,7 @@ Persisted
 </div>
 </div>
 <div class="section" id="command-line-interface">
-<h2><a class="toc-backref" href="#id4">Command Line Interface</a><a class="headerlink" href="#command-line-interface" title="Permalink to this headline">¶</a></h2>
+<h2><a class="toc-backref" href="#id5">Command Line Interface</a><a class="headerlink" href="#command-line-interface" title="Permalink to this headline">¶</a></h2>
 <div class="highlight-text"><div class="highlight"><pre>usage: training [-h] [-c CONFIG_FILE] [--commit]
 
 optional arguments:
@@ -191,51 +199,6 @@ optional arguments:
   -c CONFIG_FILE, --config_file CONFIG_FILE
                         Config file
   --commit              Commit the data to the database.
-</pre></div>
-</div>
-</div>
-<div class="section" id="extras">
-<h2><a class="toc-backref" href="#id5">Extras</a><a class="headerlink" href="#extras" title="Permalink to this headline">¶</a></h2>
-<p>To verify that the model is good looking, you can (at least for the TOD models), launch the feature_viewer script in
-the apps folder in TOD.</p>
-<div class="highlight-text"><div class="highlight"><pre>usage: feature_viewer [-h] [--db_type DB_TYPE] [--db_root DB_ROOT_URL]
-                      [--db_collection DB_COLLECTION] [--commit]
-                      [--niter ITERATIONS] [--shell] [--gui]
-                      [--logfile LOGFILE] [--graphviz] [--dotfile DOTFILE]
-                      [--stats]
-                      object_id
-
-positional arguments:
-  object_id             The id of the object for which the TOD model will be
-                        displayed.
-
-optional arguments:
-  -h, --help            show this help message and exit
-
-Database Parameters:
-  --db_type DB_TYPE     The type of database used: one of [CouchDB]. Default:
-                        CouchDB
-  --db_root DB_ROOT_URL
-                        The database root URL to connect to. Default:
-                        http://localhost:5984
-  --db_collection DB_COLLECTION
-                        The database root URL to connect to. Default:
-                        object_recognition
-  --commit              Commit the data to the database.
-
-Ecto runtime parameters:
-  --niter ITERATIONS    Run the graph for niter iterations. 0 means run until
-                        stopped by a cell or external forces. (default: 0)
-  --shell               &#39;Bring up an ipython prompt, and execute
-                        asynchronously.(default: False)
-  --gui                 Bring up a gui to help execute the plasm.
-  --logfile LOGFILE     Log to the given file, use tail -f LOGFILE to see the
-                        live output. May be useful in combination with --shell
-  --graphviz            Show the graphviz of the plasm. (default: False)
-  --dotfile DOTFILE     Output a graph in dot format to the given file. If no
-                        file is given, no output will be generated. (default:
-                        )
-  --stats               Show the runtime statistics of the plasm.
 </pre></div>
 </div>
 </div>

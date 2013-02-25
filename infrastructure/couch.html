@@ -1,0 +1,188 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Database &mdash; object_recognition_core</title>
+    
+    <link rel="stylesheet" href="../_static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/breathe.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="object_recognition_core" href="../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li><a href="../index.html">object_recognition_core</a> &raquo;</li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../index.html">
+              <img class="logo" src="../_static/or.svg" alt="Logo"/>
+            </a></p>
+  <h3><a href="../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Database</a><ul>
+<li><a class="reference internal" href="#implementations">Implementations</a></li>
+<li><a class="reference internal" href="#couch-db">Couch Db</a><ul>
+<li><a class="reference internal" href="#configuration">Configuration</a></li>
+<li><a class="reference internal" href="#web-ui">Web UI</a></li>
+<li><a class="reference internal" href="#library">Library</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/infrastructure/couch.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="database">
+<h1>Database<a class="headerlink" href="#database" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="implementations">
+<span id="object-recognition-core-db"></span><h2>Implementations<a class="headerlink" href="#implementations" title="Permalink to this headline">¶</a></h2>
+<p>Several DB implementations are provided by default. They accept the following parameters:</p>
+<p>CouchDb:</p>
+<div class="highlight-text"><div class="highlight"><pre>{&#39;type&#39;: &#39;CouchDB&#39;, &#39;root&#39;: &#39;http://localhost:5984&#39;, &#39;collection&#39;: &#39;object_recognition&#39;}
+</pre></div>
+</div>
+<p>Filesystem:</p>
+<div class="highlight-text"><div class="highlight"><pre>{&#39;path&#39;: &#39;/tmp&#39;, &#39;type&#39;: &#39;filesystem&#39;, &#39;collection&#39;: &#39;object_recognition&#39;}
+</pre></div>
+</div>
+<p>Empty (only for testing):</p>
+<div class="highlight-text"><div class="highlight"><pre>{&#39;type&#39;: &#39;empty&#39;}
+</pre></div>
+</div>
+<p>Any custom implementation will have the &#8220;noncore&#8221; type.</p>
+</div>
+<div class="section" id="couch-db">
+<h2>Couch Db<a class="headerlink" href="#couch-db" title="Permalink to this headline">¶</a></h2>
+<p>We are using <a class="reference external" href="http://couchdb.apache.org">couchdb</a> as our main database and it is the most tested implementation.  To set up your local instance, all you
+must do is install couchdb, and ensure that the service has started.</p>
+<p>The following should download and start the couch on Ubuntu like distros:</p>
+<div class="highlight-sh"><div class="highlight"><pre>sudo apt-get install couchdb
+</pre></div>
+</div>
+<p>To test that it is working properly:</p>
+<div class="highlight-sh"><div class="highlight"><pre>curl -X GET http://localhost:5984
+% <span class="o">{</span><span class="s2">&quot;couchdb&quot;</span>:<span class="s2">&quot;Welcome&quot;</span>,<span class="s2">&quot;version&quot;</span>:<span class="s2">&quot;1.0.1&quot;</span><span class="o">}</span>
+</pre></div>
+</div>
+<p>The couchdb version should be greater than <tt class="docutils literal"><span class="pre">0.10.0</span></tt>.</p>
+<div class="section" id="configuration">
+<h3>Configuration<a class="headerlink" href="#configuration" title="Permalink to this headline">¶</a></h3>
+<p>If you would like to expose your couchdb instance to a different port, or bind
+to a different interface, besides the loopback, edit <tt class="docutils literal"><span class="pre">/etc/couchdb/local.ini</span></tt>.</p>
+<p>For instance, changing the bind_address to <tt class="docutils literal"><span class="pre">0.0.0.0</span></tt> will allow your couchdb
+to be accessed on any interface.</p>
+<div class="highlight-ectosh"><div class="highlight"><pre>[httpd]
+port = 5984
+bind_address = 0.0.0.0
+</pre></div>
+</div>
+<p>After editing this file, restart the couchdb service:</p>
+<div class="highlight-sh"><div class="highlight"><pre>sudo service couchdb restart
+</pre></div>
+</div>
+</div>
+<div class="section" id="web-ui">
+<h3>Web UI<a class="headerlink" href="#web-ui" title="Permalink to this headline">¶</a></h3>
+<p>We have a set of webpages that may be pushed to your couchdb instance that help
+browse the objects that you train, or models created.</p>
+<p>First make sure you have <tt class="docutils literal"><span class="pre">couchapp</span></tt>:</p>
+<div class="highlight-sh"><div class="highlight"><pre>sudo pip install -U couchapp
+</pre></div>
+</div>
+<p>There is a make target for installing the web ui for your convenience.:</p>
+<div class="highlight-sh"><div class="highlight"><pre>make or_web_ui
+</pre></div>
+</div>
+<p>This will push the app to the location specified in the Cmake cache, by the variable,
+<tt class="docutils literal"><span class="pre">OR_WEB_UI_LOCATION</span></tt>.  Use ccache or cmake-gui to point it to a different location if you
+like.</p>
+<p>You can manually push it also, if you need more flexibility, or hate the cmake cache.
+cd to the <tt class="docutils literal"><span class="pre">object_recognition/web_ui</span></tt> directory and run couchapp in a manner similar to the
+following.:</p>
+<div class="highlight-sh"><div class="highlight"><pre>couchapp push . http://localhost:5984/or_web_ui
+</pre></div>
+</div>
+<p>This will upload the contents of the directory to collection in your couchdb instance,
+called <tt class="docutils literal"><span class="pre">or_web_ui</span></tt>.  After this you can browse the web ui using the url
+<a class="reference external" href="http://localhost:5984/or_web_ui/_design/viewer/index.html">http://localhost:5984/or_web_ui/_design/viewer/index.html</a></p>
+</div>
+<div class="section" id="library">
+<h3>Library<a class="headerlink" href="#library" title="Permalink to this headline">¶</a></h3>
+<p>Object Recognition tools manipulate the database either using libCURL or python-couchdb.
+You may find it helpful to browse the default db HTML interface at <a class="reference external" href="http://localhost:5984/_utils">http://localhost:5984/_utils</a></p>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li><a href="../index.html">object_recognition_core</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2013,  Willow Garage, Inc.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

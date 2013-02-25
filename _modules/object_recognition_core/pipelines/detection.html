@@ -70,11 +70,10 @@
 <span class="sd">&#39;&#39;&#39;</span>
 <span class="sd">ABC for Detection pipelines</span>
 <span class="sd">&#39;&#39;&#39;</span>
+<span class="kn">from</span> <span class="nn">ecto</span> <span class="kn">import</span> <span class="n">BlackBoxCellInfo</span> <span class="k">as</span> <span class="n">CellInfo</span>
 <span class="kn">from</span> <span class="nn">object_recognition_core.ecto_cells.io</span> <span class="kn">import</span> <span class="n">PipelineInfo</span>
 <span class="kn">from</span> <span class="nn">object_recognition_core.utils.json_helper</span> <span class="kn">import</span> <span class="n">obj_to_cpp_json_str</span>
 <span class="kn">import</span> <span class="nn">ecto</span>
-<span class="kn">from</span> <span class="nn">ecto</span> <span class="kn">import</span> <span class="n">BlackBoxCellInfo</span> <span class="k">as</span> <span class="n">CellInfo</span>
-<span class="kn">import</span> <span class="nn">warnings</span>
 
 <div class="viewcode-block" id="DetectorBase"><a class="viewcode-back" href="../../../api/detection.html#object_recognition_core.pipelines.detection.DetectorBase">[docs]</a><span class="k">class</span> <span class="nc">DetectorBase</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
@@ -88,16 +87,34 @@
 <span class="sd">        &gt;&gt;&gt;        ecto.BlackBox.__init__(self, *args, **kwargs)</span>
 <span class="sd">        &gt;&gt;&gt;        DetectorBase.__init__(self)</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="c"># check for the pose_results output</span>
-        <span class="k">if</span> <span class="s">&#39;pose_results&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">outputs</span><span class="p">:</span>
-            <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s">&quot;The detector needs to have a &#39;pose_results&#39; output tendril.&quot;</span><span class="p">)</span>
-        <span class="c"># check for the right type for the pose_results output</span>
-        <span class="n">type_name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">outputs</span><span class="o">.</span><span class="n">at</span><span class="p">(</span><span class="s">&#39;pose_results&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">type_name</span>
-        <span class="k">if</span> <span class="n">type_name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="s">&#39;std::vector&lt;object_recognition_core::common::PoseResult, std::allocator&lt;object_recognition_core::common::PoseResult&gt; &gt;&#39;</span><span class="p">]:</span>
-            <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s">&quot;The detector does not have a &#39;pose_results&#39; tendril of the right type.</span><span class="se">\n</span><span class="s">&quot;</span>
-                                      <span class="s">&quot;Must have an output named &#39;pose_results&#39;, with type </span><span class="si">%s</span><span class="se">\n</span><span class="s">&quot;</span>
-                                      <span class="s">&quot;This cells output at &#39;pose_results&#39; has type </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="s">&#39;std::vector&lt;PoseResult&gt;&#39;</span><span class="p">,</span> <span class="n">type_name</span><span class="p">))</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">do_check_object_ids</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">do_check_db</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Normal constructor that checks for the validity of inputs/outputs</span>
+<span class="sd">        </span>
+<span class="sd">        :param do_check_object_ids: if True, it is checked that the cell has an input &#39;json_object_ids&#39; that is a string</span>
+<span class="sd">        :param do_check_db: if True, it is checked that the cell has an input &#39;json_db&#39; that is a string</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">checks</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;output&#39;</span><span class="p">:</span> <span class="p">[</span> <span class="p">(</span><span class="s">&#39;pose_results&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s">&#39;std::vector&lt;object_recognition_core::common::PoseResult, std::allocator&lt;object_recognition_core::common::PoseResult&gt; &gt;&#39;</span><span class="p">],</span> <span class="s">&#39;std::vector&lt;PoseResult&gt;&#39;</span><span class="p">),</span>
+                             <span class="p">],</span>
+                  <span class="s">&#39;input&#39;</span><span class="p">:</span> <span class="p">[],</span>
+                  <span class="s">&#39;param&#39;</span><span class="p">:</span> <span class="p">[]}</span>
+        <span class="k">if</span> <span class="n">do_check_object_ids</span><span class="p">:</span>
+            <span class="n">checks</span><span class="p">[</span><span class="s">&#39;param&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="s">&#39;json_object_ids&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s">&#39;std::string&#39;</span><span class="p">,</span> <span class="s">&#39;boost::python::api::object&#39;</span><span class="p">],</span> <span class="s">&#39;std::string&#39;</span><span class="p">))</span>
+        <span class="k">if</span> <span class="n">do_check_db</span><span class="p">:</span>
+            <span class="n">checks</span><span class="p">[</span><span class="s">&#39;param&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="s">&#39;json_db&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s">&#39;std::string&#39;</span><span class="p">,</span> <span class="s">&#39;boost::python::api::object&#39;</span><span class="p">],</span> <span class="s">&#39;std::string&#39;</span><span class="p">))</span>
+
+        <span class="k">for</span> <span class="n">check_type</span><span class="p">,</span> <span class="n">check_list</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="n">checks</span><span class="o">.</span><span class="n">items</span><span class="p">()):</span>
+            <span class="n">tendrils</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;input&#39;</span><span class="p">:</span><span class="bp">self</span><span class="o">.</span><span class="n">inputs</span><span class="p">,</span> <span class="s">&#39;output&#39;</span><span class="p">:</span><span class="bp">self</span><span class="o">.</span><span class="n">outputs</span><span class="p">,</span> <span class="s">&#39;param&#39;</span><span class="p">:</span><span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">}[</span><span class="n">check_type</span><span class="p">]</span>
+            <span class="k">for</span> <span class="n">check</span> <span class="ow">in</span> <span class="n">check_list</span><span class="p">:</span>
+                <span class="n">tendril_name</span><span class="p">,</span> <span class="n">tendril_types_cpp</span><span class="p">,</span> <span class="n">tendril_types_print</span> <span class="o">=</span> <span class="n">check</span>
+                <span class="k">if</span> <span class="n">tendril_name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">tendrils</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s">&#39;The detector needs to have a &quot;</span><span class="si">%s</span><span class="s">&quot; </span><span class="si">%s</span><span class="s"> tendril.&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">tendril_name</span><span class="p">,</span> <span class="n">check_type</span><span class="p">))</span>
+                <span class="c"># check for the right type for the pose_results output</span>
+                <span class="n">type_name</span> <span class="o">=</span> <span class="n">tendrils</span><span class="o">.</span><span class="n">at</span><span class="p">(</span><span class="n">tendril_name</span><span class="p">)</span><span class="o">.</span><span class="n">type_name</span>
+                <span class="k">if</span> <span class="n">type_name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">tendril_types_cpp</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s">&#39;The detector does not have a &quot;</span><span class="si">%s</span><span class="s">&quot; tendril of the right type.</span><span class="se">\n</span><span class="s">&#39;</span> <span class="o">%</span> <span class="n">tendril_name</span> <span class="o">+</span> 
+                                    <span class="s">&#39;Must have a </span><span class="si">%s</span><span class="s"> named &quot;</span><span class="si">%s</span><span class="s">&quot;, with type &quot;</span><span class="si">%s</span><span class="s">&quot;</span><span class="se">\n</span><span class="s"> and not &quot;</span><span class="si">%s</span><span class="s">&quot;&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">check_type</span><span class="p">,</span>
+                                                                        <span class="n">tendril_name</span><span class="p">,</span> <span class="n">tendril_types_print</span><span class="p">,</span> <span class="n">type_name</span><span class="p">))</span>
 
 <span class="c">########################################################################################################################</span>
 </div>
