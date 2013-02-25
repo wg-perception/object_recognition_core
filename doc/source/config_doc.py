@@ -5,50 +5,19 @@ a graph. Those parameters could be copied/pasted into a config file for ORK.
 
 """
 
+from __future__ import print_function
 from object_recognition_core.io.sink import SinkBase
 from object_recognition_core.io.source import SourceBase
 from object_recognition_core.io.voter import VoterBase
 from object_recognition_core.pipelines.detection import DetectorBase
 from object_recognition_core.pipelines.training import TrainerBase
 from object_recognition_core.utils.find_classes import find_classes
+from object_recognition_core.utils.doc import config_yaml_for_ecto_cell
 import argparse
+import ecto
 import json
 import os
 import yaml
-
-def indent_yaml(yaml_str):
-    """
-    Receive a string, and make sure the indentation of the top levels is 0
-    """
-    # figure out the smallest indent we have
-    for line in yaml_str.split('\n'):
-        if not line.strip():
-            continue
-        if line.strip().startswith('#'):
-            continue
-        min_indent = 0
-        for char in line:
-            if char == ' ':
-                min_indent += 1
-            else:
-                break
-        break
-    # clean the original string
-    final_yaml_str = ''
-    for line in yaml_str.split('\n'):
-        if not line.strip():
-            continue
-        if line.strip().startswith('#'):
-            new_line = line[min_indent:]
-            if new_line.strip().startswith('#'):
-                final_yaml_str += new_line
-            else:
-                final_yaml_str += line
-        else:
-            final_yaml_str += line[min_indent:]
-        final_yaml_str += '\n'
-
-    return final_yaml_str
 
 if __name__=='__main__':
     parser = argparse.ArgumentParser()
@@ -73,21 +42,16 @@ if __name__=='__main__':
             if os.path.isdir(os.path.join(path,name)) and (name.startswith('object_recognition') or name.startswith('ork')):
                 modules.add(name)
     # find all the objects of the right type
-    print modules
     classes = find_classes(modules, [supported_classes[args.class_type]])
-    print classes
 
     # create a string with the config documentation
-    res = ''
-    """
+    res_list = []
+
     class_number = 0
-    for _class_name, class_object in classes.items():
-        res += '[%s%s]\n' % (args.class_type, class_number)
-        res += indent_yaml(class_object.config_doc_default())
-        if yaml.load(class_object.config_doc()):
-            res += indent_yaml(class_object.config_doc())
+    for class_object in classes:
+        res = config_yaml_for_ecto_cell(class_object, '%s_%s' % (args.class_type, class_number))
+
         class_number += 1
-        res += '\n'
-    """
-    print res[:-1]
-    #json.dumps(doc,final_doc,indent=0)
+        res_list.append(res)
+
+    print('\n'.join(res_list))

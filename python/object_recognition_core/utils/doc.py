@@ -2,25 +2,26 @@
 This file implements functions to help documentation:
 - autogeneration of config files
 """
+import ecto
 
-def config_yaml_for_generator_class(cls):
-    """
-    Given a pipeline, generate YAML that will be understable in a config file to parameterize it
-    """
-    return """
-           # the type as returned by the type_name function
-           type: '%s'
-           # the Python module in which that object is
-           module: '%s'
-           # the parameters that can be used to construct the cells though that object
-           """ % (cls.type_name(), cls.__module__)
-
-def config_yaml_for_ecto_cell(cls):
+def config_yaml_for_ecto_cell(cls, header):
     """
     Given an ecto cell, generate YAML for all the possibles parameters
+
+    :param cls: the class of an ecto cell
+    :param header: this is just the name of the cell section
     """
-    return """
-           # The type as returned by the type_name function
-           type: '%s'
-           module: '%s'
-           """ % (cls.type_name(), cls.__module__)
+    res = '%s:\n' % header
+    res += '   type: %s\n' % cls.__name__
+    res += '   module: %s\n' % cls.__module__
+    # display the parameters
+    res += '   parameters:\n'
+    p = ecto.Tendrils()
+    try:
+        cls.declare_params(p)
+    except AttributeError:
+        p = cls.params
+    for tendril_name, tendril in list(p.items()):
+        res += '      %s: %s\n' % (tendril_name, tendril.val)
+
+    return res
