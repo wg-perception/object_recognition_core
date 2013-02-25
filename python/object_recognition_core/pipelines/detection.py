@@ -5,7 +5,6 @@ from ecto import BlackBoxCellInfo as CellInfo
 from object_recognition_core.ecto_cells.io import PipelineInfo
 from object_recognition_core.utils.json_helper import obj_to_cpp_json_str
 import ecto
-import warnings
 
 class DetectorBase(object):
     """
@@ -31,21 +30,21 @@ class DetectorBase(object):
                   'input': [],
                   'param': []}
         if do_check_object_ids:
-            checks['param'].append(('json_object_ids', ['std::string'], 'std::string'))
+            checks['param'].append(('json_object_ids', ['std::string', 'boost::python::api::object'], 'std::string'))
         if do_check_db:
-            checks['param'].append(('json_db', ['std::string'], 'std::string'))
+            checks['param'].append(('json_db', ['std::string', 'boost::python::api::object'], 'std::string'))
 
         for check_type, check_list in list(checks.items()):
             tendrils = {'input':self.inputs, 'output':self.outputs, 'param':self.params}[check_type]
             for check in check_list:
                 tendril_name, tendril_types_cpp, tendril_types_print = check
                 if tendril_name not in tendrils:
-                    warnings.warn('The detector needs to have a "%s" %s tendril.' % (tendril_name, check_type))
+                    raise RuntimeError('The detector needs to have a "%s" %s tendril.' % (tendril_name, check_type))
                 # check for the right type for the pose_results output
                 type_name = tendrils.at(tendril_name).type_name
                 if type_name not in tendril_types_cpp:
-                    warnings.warn('The detector does not have a "%s" tendril of the right type.\n' % tendril_name + 
-                                    'Must have an %s named "%s", with type "%s"\n and not "%s"' % (check_type,
+                    raise RuntimeError('The detector does not have a "%s" tendril of the right type.\n' % tendril_name +
+                                    'Must have a %s named "%s", with type "%s"\n and not "%s"' % (check_type,
                                                                         tendril_name, tendril_types_print, type_name))
 
 ########################################################################################################################
