@@ -4,7 +4,6 @@ Function that finds classes of a certain base type on the path in certain module
 
 import inspect
 import os
-import pkgutil
 import sys
 
 class CellNotFound(Exception):
@@ -54,8 +53,8 @@ def find_classes(modules, base_types):
                         path = os.path.join(root, name)
                         module_names.add(path[path_len+1:-3].replace(os.path.sep,'.'))
                 # record the files as being modules
-                for dir in dirs:
-                    path = os.path.join(root, dir)
+                for directory in dirs:
+                    path = os.path.join(root, directory)
                     module_names.add(path[path_len+1:].replace(os.path.sep,'.'))
 
     for module_name in module_names:
