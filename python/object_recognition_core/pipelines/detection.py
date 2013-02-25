@@ -1,10 +1,10 @@
 '''
 ABC for Detection pipelines
 '''
+from ecto import BlackBoxCellInfo as CellInfo
 from object_recognition_core.ecto_cells.io import PipelineInfo
 from object_recognition_core.utils.json_helper import obj_to_cpp_json_str
 import ecto
-from ecto import BlackBoxCellInfo as CellInfo
 import warnings
 
 class DetectorBase(object):
@@ -19,16 +19,34 @@ class DetectorBase(object):
         >>>        ecto.BlackBox.__init__(self, *args, **kwargs)
         >>>        DetectorBase.__init__(self)
     """
-    def __init__(self):
-        # check for the pose_results output
-        if 'pose_results' not in self.outputs:
-            warnings.warn("The detector needs to have a 'pose_results' output tendril.")
-        # check for the right type for the pose_results output
-        type_name = self.outputs.at('pose_results').type_name
-        if type_name not in ['std::vector<object_recognition_core::common::PoseResult, std::allocator<object_recognition_core::common::PoseResult> >']:
-            warnings.warn("The detector does not have a 'pose_results' tendril of the right type.\n"
-                                      "Must have an output named 'pose_results', with type %s\n"
-                                      "This cells output at 'pose_results' has type %s" % ('std::vector<PoseResult>', type_name))
+    def __init__(self, do_check_object_ids=True, do_check_db=True):
+        """
+        Normal constructor that checks for the validity of inputs/outputs
+        
+        :param do_check_object_ids: if True, it is checked that the cell has an input 'json_object_ids' that is a string
+        :param do_check_db: if True, it is checked that the cell has an input 'json_db' that is a string
+        """
+        checks = {'output': [ ('pose_results', ['std::vector<object_recognition_core::common::PoseResult, std::allocator<object_recognition_core::common::PoseResult> >'], 'std::vector<PoseResult>'),
+                             ],
+                  'input': [],
+                  'param': []}
+        if do_check_object_ids:
+            checks['param'].append(('json_object_ids', ['std::string'], 'std::string'))
+        if do_check_db:
+            checks['param'].append(('json_db', ['std::string'], 'std::string'))
+
+        for check_type, check_list in list(checks.items()):
+            tendrils = {'input':self.inputs, 'output':self.outputs, 'param':self.params}[check_type]
+            for check in check_list:
+                tendril_name, tendril_types_cpp, tendril_types_print = check
+                if tendril_name not in tendrils:
+                    warnings.warn('The detector needs to have a "%s" %s tendril.' % (tendril_name, check_type))
+                # check for the right type for the pose_results output
+                type_name = tendrils.at(tendril_name).type_name
+                if type_name not in tendril_types_cpp:
+                    warnings.warn('The detector does not have a "%s" tendril of the right type.\n' % tendril_name + 
+                                    'Must have an %s named "%s", with type "%s"\n and not "%s"' % (check_type,
+                                                                        tendril_name, tendril_types_print, type_name))
 
 ########################################################################################################################
 
