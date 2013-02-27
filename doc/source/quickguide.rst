@@ -151,7 +151,9 @@ Meshing objects can be done in a batch mode, assuming you are in the binary dire
 
 The currently stored models are on http://localhost:5984/model_viewer/_design/viewer/index.html
 
-Next objects should be trained. It may take some time between objects, this is normal.
+Next objects should be trained. It may take some time between objects, this is normal. Also, this quickguide assumes
+that you are using :ref:`TOD <orktod:tod>` which only works for textured objects. Please refer to the documentation
+of other methods.
 
 .. toggle:: From Source
 
