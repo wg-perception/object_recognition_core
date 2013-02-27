@@ -73,7 +73,7 @@ A typical command line session might look like::
 
 Command Line Interface
 **********************
-.. program-output:: apps/detection --help
+.. program-output:: ../../../apps/detection --help
    :in_srcdir:
 
 Configuration File

@@ -57,5 +57,5 @@ A typical command line session might look like::
 
 Command Line Interface
 **********************
-.. program-output:: apps/training --help
+.. program-output:: ../../../apps/training --help
    :in_srcdir:
