@@ -33,7 +33,9 @@
  *
  */
 
+#include <stdlib.h>
 #include <string>
+
 #include <Eigen/Core>
 
 #include <ecto/ecto.hpp>
@@ -46,6 +48,24 @@ using ecto::spore;
 using object_recognition_core::db::ObjectId;
 using object_recognition_core::common::PoseResult;
 using object_recognition_core::db::ObjectDbPtr;
+
+struct ConstantSource {
+  static void declare_io(const tendrils& params, tendrils& inputs,
+      tendrils& outputs) {
+    outputs.declare(&ConstantSource::frame_id_, "frame_id",
+        "The frame in which everything is computed");
+  }
+
+  int process(const tendrils& inputs, const tendrils& outputs) {
+    *frame_id_ = "/bogus_frame_id";
+
+    return ecto::OK;
+  }
+
+  spore<std::string> frame_id_;
+};
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 struct ConstantDetector {
   static void declare_params(tendrils& params) {
@@ -73,7 +93,7 @@ struct ConstantDetector {
     result.set_confidence(1.0);
 
     // set the clustered cloud's center as a center...
-    result.set_T(Eigen::Vector3f(0, 0, 0));
+    result.set_T(Eigen::Vector3f(float(std::rand())/RAND_MAX, float(std::rand())/RAND_MAX, float(std::rand())/RAND_MAX));
 
     // Only one point of view for this object...
     /*sensor_msgs::PointCloud2Ptr cluster_cloud(new sensor_msgs::PointCloud2());
@@ -91,6 +111,8 @@ struct ConstantDetector {
   spore<std::vector<PoseResult> > pose_results_;
 };
 
-// register the ECTO cell
+// register the ECTO cells
+ECTO_CELL(pipelines, ConstantSource, "ConstantSource",
+          "A source that only spits a frame id.")
 ECTO_CELL(pipelines, ConstantDetector, "ConstantDetector",
     "A pipelines that always spits out the same output. Means for testing.")
