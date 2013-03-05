@@ -303,8 +303,11 @@
 </ul>
 </p>
 <p class="topic-title first">Inputs<ul>
+<li><p class="first"><strong>frame_id</strong><tt class="docutils literal">&nbsp;&nbsp; </tt><em>   type: </em><tt class="docutils literal"><span class="pre">std::string</span> </tt><tt class="docutils literal">&nbsp;&nbsp; </tt></p>
+<p>The frame_id where the objects are seen. It can be obtained from image_message too.</p>
+</li>
 <li><p class="first"><strong>image_message</strong><tt class="docutils literal">&nbsp;&nbsp; </tt><em>   type: </em><tt class="docutils literal"><span class="pre">boost::shared_ptr&lt;sensor_msgs::Image_&lt;std::allocator&lt;void&gt;</span> <span class="pre">&gt;</span> <span class="pre">const&gt;</span> </tt><tt class="docutils literal">&nbsp;&nbsp; </tt></p>
-<p>the image message to get the header</p>
+<p>The image message to get the header</p>
 </li>
 <li><p class="first"><strong>pose_results</strong><tt class="docutils literal">&nbsp;&nbsp; </tt><em>   type: </em><tt class="docutils literal"><span class="pre">std::vector&lt;object_recognition_core::common::PoseResult,</span> <span class="pre">std::allocator&lt;object_recognition_core::common::PoseResult&gt;</span> <span class="pre">&gt;</span> </tt><tt class="docutils literal">&nbsp;&nbsp; </tt></p>
 <p>The results of object recognition</p>

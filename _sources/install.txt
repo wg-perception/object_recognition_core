@@ -8,7 +8,8 @@ Installation
 From the ROS repositories
 *************************
 
-Install the ``ros-*-object-recognition-core`` package from the official ROS repositories and the different pipelines (packages starting with ``ros-*-object-recognition-``).
+Install the
+``ros-*-object-recognition-core`` package from the official ROS repositories and the different pipelines (packages starting with ``ros-*-object-recognition-``).
 
 Download & Build from Source
 ****************************
@@ -51,7 +52,7 @@ Download & Build from Source
    
    .. code-block:: sh
    
-      sudo apt-get install ros-fuerte-catkin ros-fuerte-ecto* ros-fuerte-opencv-candidate
+      sudo apt-get install libopenni-dev ros-fuerte-catkin ros-fuerte-ecto* ros-fuerte-opencv-candidate ros-fuerte-moveit-msgs
       source /opt/ros/fuerte/setup.sh
    
    Install the catkin package from source as the package does not have the toplevel.cmake file:
@@ -68,7 +69,7 @@ Download & Build from Source
    
    .. code-block:: sh
    
-      sudo apt-get install ros-groovy-catkin ros-groovy-ecto* ros-groovy-opencv-candidate
+      sudo apt-get install libopenni-dev ros-groovy-catkin ros-groovy-ecto* ros-groovy-opencv-candidate ros-groovy-moveit-msgs
       source /opt/ros/groovy/setup.sh
 
 
@@ -80,6 +81,7 @@ Then install any pipeline you need:
    git clone http://github.com/wg-perception/capture
    git clone http://github.com/wg-perception/reconstruction
    git clone http://github.com/wg-perception/linemod
+   git clone http://github.com/wg-perception/ork_renderer
    git clone http://github.com/wg-perception/tabletop
    git clone http://github.com/wg-perception/tod
    git clone http://github.com/wg-perception/transparent_objects
@@ -142,7 +144,8 @@ and then build your code:
 
 
 
-If you are a developer and have write access to the repositories, search and replace ``http://`` above and replace by ``git@github.com:``.
+If you are a developer and have write access to the repositories, search and replace ``http://`` above and replace by
+``git@github.com:``.
 
 
 To maintain your code, each folder is each own ``git`` repository and you can pull/push from there.
@@ -150,9 +153,8 @@ To maintain your code, each folder is each own ``git`` repository and you can pu
 Building the documentation
 **************************
 
-Before you can build the documentation (which you are reading right now),
-you need to have followed the installation instructions and have already
-successfully called ``make`` in the ``build`` folder.
+Before you can build the documentation (which you are reading right now), you need to have followed the installation
+instructions and have already successfully called ``make`` in the ``build`` folder.
 
 You then need some up to date packages:
 
@@ -170,5 +172,5 @@ From root, just type:
 
 You will find the generated documentation under ``build/doc/html``.
 
-Once the documentation is built, you can simply copy it (except for the ``.doctree`` folder)
-to the ``gh-pages`` branch on GitHub.
+Once the documentation is built, you can simply copy it (except for the ``.doctree`` folder) to the ``gh-pages`` branch
+on GitHub.
