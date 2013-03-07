@@ -79,19 +79,20 @@ Command Line Interface
 Configuration File
 ******************
 
-The configuration file is where you define your graph and with the current ORK, you can choose any of the following sources:
+The configuration file is where you define your graph and with the current ORK, you can choose any of the following
+sources:
 
-.. program-output:: ../config_doc.py source
-   :in_srcdir:
+.. program-output:: python -c "from object_recognition_core.utils.doc import config_yaml_for_ecto_cells; print '\n'.join(config_yaml_for_ecto_cells('source'))"
+   :shell:
 
 any of the following sinks:
 
-.. program-output:: ../config_doc.py sink
-   :in_srcdir:
+.. program-output:: python -c "from object_recognition_core.utils.doc import config_yaml_for_ecto_cells; print '\n'.join(config_yaml_for_ecto_cells('sink'))"
+   :shell:
 
 or the following pipelines:
 
-.. program-output:: ../config_doc.py detection_pipeline
-   :in_srcdir:
+.. program-output:: python -c "from object_recognition_core.utils.doc import config_yaml_for_ecto_cells; print '\n'.join(config_yaml_for_ecto_cells('detection_pipeline'))"
+   :shell:
 
 More of any of those can be added by the user obviously
