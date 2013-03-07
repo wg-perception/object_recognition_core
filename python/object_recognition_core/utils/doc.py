@@ -6,25 +6,39 @@ from object_recognition_core.utils.find_classes import find_classes
 import ecto
 import os
 
-def config_yaml_for_ecto_cell(cls, header):
+def config_yaml_for_ecto_cell(cls, header=None):
     """
     Given an ecto cell, generate YAML for all the possibles parameters
 
     :param cls: the class of an ecto cell
-    :param header: this is just the name of the cell section
+    :param header: this is just the name of the cell section. If None, no header is written and no indent is given
     """
-    res = '%s:\n' % header
-    res += '   type: %s\n' % cls.__name__
-    res += '   module: %s\n' % cls.__module__
+    if header:
+        res = '%s:\n' % header
+        indent = '   '
+    else:
+        res = ''
+        indent = ''
+    res += '%stype: %s\n' % (indent, cls.__name__)
+    res += '%smodule: %s\n' % (indent, cls.__module__)
     # display the parameters
-    res += '   parameters:\n'
+    res += '%sparameters:\n' % indent
     p = ecto.Tendrils()
     try:
         cls.declare_params(p)
     except AttributeError:
         p = cls.params
     for tendril_name, tendril in list(p.items()):
-        res += '      %s: %s\n' % (tendril_name, tendril.val)
+        # Split the doc string to 100 characters
+        line = '%s   # ' % indent
+        for word in tendril.doc.split():
+            if len(line + ' ' + word) > 100:
+                res += line + '\n'
+                line = '%s   # %s' % (indent, word)
+            else:
+                line += ' ' + word
+        res += line + '\n'
+        res += '%s   %s: %s\n' % (indent, tendril_name, tendril.val)
 
     return res
 
@@ -32,7 +46,7 @@ def config_yaml_for_ecto_cell(cls, header):
 
 def config_yaml_for_ecto_cells(class_type):
     """
-    Function returning an arry of doc strings for each cell of class `class_type` in object_recognition
+    Function returning an array of doc strings for each cell of class `class_type` in object_recognition
     :param class_type: one of 'detection_pipeline', 'training_pipeline', 'source', 'sink'
     """
     from object_recognition_core.io.sink import SinkBase
