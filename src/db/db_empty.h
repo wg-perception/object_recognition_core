@@ -58,7 +58,7 @@ using object_recognition_core::db::ViewElement;
 class ObjectDbEmpty: public object_recognition_core::db::ObjectDb
 {
 public:
-  inline ObjectDbParametersRaw
+  inline virtual ObjectDbParametersRaw
   default_raw_parameters() const {
     return ObjectDbParametersRaw();
   }
