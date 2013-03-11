@@ -39,6 +39,7 @@
 #include <boost/foreach.hpp>
 
 #include "db_couch.h"
+#include "db_default.h"
 #include "db_empty.h"
 #include "db_filesystem.h"
 #include <object_recognition_core/db/db.h>
@@ -77,27 +78,24 @@ namespace object_recognition_core
     {
       type_ = StringToType(type);
 
-      if (raw_["type"] == type)
+      if ((raw_.find("type") != raw_.end()) && (raw_["type"] == type))
         return;
 
       switch (type_)
       {
         case ObjectDbParameters::COUCHDB:
         {
-          ObjectDbCouch tmp;
-          raw_ = tmp.default_raw_parameters();
+          raw_ = object_recognition_core::db::ObjectDbDefaults<ObjectDbCouch>::default_raw_parameters();
           break;
         }
         case ObjectDbParameters::EMPTY:
         {
-          raw_.clear();
-          raw_["type"] = "empty";
+          raw_ = object_recognition_core::db::ObjectDbDefaults<ObjectDbEmpty>::default_raw_parameters();
           break;
         }
         case ObjectDbParameters::FILESYSTEM:
         {
-          ObjectDbFilesystem tmp;
-          raw_ = tmp.default_raw_parameters();
+          raw_ = object_recognition_core::db::ObjectDbDefaults<ObjectDbFilesystem>::default_raw_parameters();
           break;
         }
         case ObjectDbParameters::NONCORE:
@@ -169,20 +167,21 @@ namespace object_recognition_core
       switch (type())
       {
         case ObjectDbParameters::COUCHDB:
-          res.reset(new ObjectDbCouch(params_raw));
+          res.reset(new ObjectDbCouch());
           break;
         case ObjectDbParameters::EMPTY:
           res.reset(new ObjectDbEmpty());
           break;
         case ObjectDbParameters::FILESYSTEM:
-          res.reset(new ObjectDbFilesystem(params_raw));
+          res.reset(new ObjectDbFilesystem());
           break;
         default:
           std::cerr << "Cannot generate DB for non-core" << std::endl;
           break;
       }
 
-      res->set_parameters(*this);
+      ObjectDbParameters params_non_const = *this;
+      res->set_parameters(params_non_const);
 
       return res;
     }

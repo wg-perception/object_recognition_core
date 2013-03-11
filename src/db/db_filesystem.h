@@ -80,10 +80,11 @@ class ObjectDbFilesystem: public object_recognition_core::db::ObjectDb
 public:
   ObjectDbFilesystem();
 
-  ObjectDbFilesystem(ObjectDbParametersRaw & parameters);
-
   ObjectDbParametersRaw
   default_raw_parameters() const;
+
+  void
+  set_parameters(object_recognition_core::db::ObjectDbParameters & parameters);
 
   virtual void
   insert_object(const or_json::mObject &fields, DocumentId & document_id, RevisionId & revision_id);
@@ -128,10 +129,7 @@ public:
   DeleteCollection(const CollectionName &collection);
 
   virtual DbType
-  type() const
-  {
-    return "filesystem";
-  }
+  type() const;
 private:
   static const RevisionId DEFAULT_REVISION_ID_;
 

@@ -40,6 +40,31 @@
 #include <sstream>
 
 #include "db_filesystem.h"
+#include "db_default.h"
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+class ObjectDbFilesystem;
+
+namespace object_recognition_core {
+namespace db {
+
+template<>
+struct ObjectDbDefaults<ObjectDbFilesystem> {
+  static object_recognition_core::db::ObjectDbParametersRaw default_raw_parameters() {
+    ObjectDbParametersRaw res;
+    res["path"] = "/tmp";
+    res["collection"] = "object_recognition";
+    res["type"] = type();
+
+    return res;
+  }
+  static object_recognition_core::db::DbType type() {
+    return "filesystem";
+  }
+};
+}
+}
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -47,27 +72,22 @@ const RevisionId ObjectDbFilesystem::DEFAULT_REVISION_ID_ = "0";
 
 ObjectDbFilesystem::ObjectDbFilesystem()
 {
-  or_json::mObject parameters = default_raw_parameters();
-  path_ = parameters.at("path").get_str();
-  collection_ = parameters.at("collection").get_str();
+  object_recognition_core::db::ObjectDbParameters parameters(default_raw_parameters());
+  this->set_parameters(parameters);
 }
 
-ObjectDbFilesystem::ObjectDbFilesystem(ObjectDbParametersRaw & parameters)
-    :
-      path_(parameters.at("path").get_str()),
-      collection_(parameters.at("collection").get_str())
-{
+void
+ObjectDbFilesystem::set_parameters(object_recognition_core::db::ObjectDbParameters & parameters) {
+  parameters_ = parameters;
+
+  path_ = parameters.at("path").get_str();
+  collection_ = parameters.at("collection").get_str();
 }
 
 ObjectDbParametersRaw
 ObjectDbFilesystem::default_raw_parameters() const
 {
-  ObjectDbParametersRaw res;
-  res["path"] = "/tmp";
-  res["collection"] = "object_recognition";
-  res["type"] = type();
-
-  return res;
+  return object_recognition_core::db::ObjectDbDefaults<ObjectDbFilesystem>::default_raw_parameters();
 }
 
 void
@@ -253,4 +273,10 @@ ObjectDbFilesystem::DeleteCollection(const CollectionName &collection)
     // Delete the folder infrastructure
     boost::filesystem::remove_all(path_ / collection);
   }
+}
+
+DbType
+ObjectDbFilesystem::type() const
+{
+  return object_recognition_core::db::ObjectDbDefaults<ObjectDbFilesystem>::type();
 }

@@ -35,8 +35,31 @@
 
 #include <sstream>
 #include "db_couch.h"
+#include "db_default.h"
 
 object_recognition_core::curl::cURL_GS curl_init_cleanup;
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+namespace object_recognition_core {
+namespace db {
+
+template<>
+struct ObjectDbDefaults<ObjectDbCouch> {
+  static object_recognition_core::db::ObjectDbParametersRaw default_raw_parameters() {
+    ObjectDbParametersRaw res;
+    res["root"] = "http://localhost:5984";
+    res["collection"] = "object_recognition";
+    res["type"] = type();
+
+    return res;
+  }
+  static object_recognition_core::db::DbType type() {
+    return "CouchDB";
+  }
+};
+}
+}
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -45,29 +68,22 @@ ObjectDbCouch::ObjectDbCouch()
       json_writer_(json_writer_stream_),
       json_reader_(json_reader_stream_)
 {
-  ObjectDbParametersRaw parameters = default_raw_parameters();
-  root_ = parameters.at("root").get_str();
-  collection_ = parameters.at("collection").get_str();
-}
-
-ObjectDbCouch::ObjectDbCouch(ObjectDbParametersRaw & parameters)
-    :
-      json_writer_(json_writer_stream_),
-      json_reader_(json_reader_stream_),
-      root_(parameters.at("root").get_str()),
-      collection_(parameters.at("collection").get_str())
-{
+  object_recognition_core::db::ObjectDbParameters parameters(default_raw_parameters());
+  this->set_parameters(parameters);
 }
 
 ObjectDbParametersRaw
 ObjectDbCouch::default_raw_parameters() const
 {
-  ObjectDbParametersRaw res;
-  res["root"] = "http://localhost:5984";
-  res["collection"] = "object_recognition";
-  res["type"] = type();
+  return object_recognition_core::db::ObjectDbDefaults<ObjectDbCouch>::default_raw_parameters();
+}
 
-  return res;
+void
+ObjectDbCouch::set_parameters(object_recognition_core::db::ObjectDbParameters & parameters) {
+  parameters_ = parameters;
+
+  root_ = parameters.at("root").get_str();
+  collection_ = parameters.at("collection").get_str();
 }
 
 void
@@ -431,4 +447,9 @@ ObjectDbCouch::upload_json(const or_json::mObject &params, const std::string& ur
     curl_.setCustomRequest(request.c_str());
   }
   curl_.perform();
+}
+
+DbType
+ObjectDbCouch::type() const {
+  return object_recognition_core::db::ObjectDbDefaults<ObjectDbCouch>::type();
 }

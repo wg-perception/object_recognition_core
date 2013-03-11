@@ -101,6 +101,17 @@ namespace object_recognition_core
       virtual ObjectDbParametersRaw
       default_raw_parameters() const = 0;
 
+      /** Set the parameters of a database: this can only be done from the ObjectDBParameters
+       * This is also where internals can be set. The parameter is not const as it can be modified to show what
+       * was actually used.
+       * @param parameters the parameters to impose to the database
+       */
+      virtual void
+      set_parameters(ObjectDbParameters & parameters)
+      {
+        parameters_ = parameters;
+      }
+
       /** Insert a document in the database
        * @param fields the JSON description of the document to insert
        * @param document_id the returned id of the document that was inserted
@@ -203,24 +214,13 @@ namespace object_recognition_core
       virtual void
       DeleteCollection(const CollectionName &collection) = 0;
 
-      /** The type of the DB : e.g. 'CouchDB' ... 
+      /** The type of the DB : e.g. 'CouchDB' ...
        * @return one of the enum defining the possible types
        */
       virtual DbType
       type() const = 0;
 
-      friend class ObjectDbParameters;
     protected:
-      /** Set the parameters of a database: this can only be done from the ObjectDBParameters
-       * @param parameters the parameters to impose to the database
-       */
-      void
-      set_parameters(const ObjectDbParameters & parameters)
-      {
-        parameters_ = parameters;
-      }
-
-    private:
       /** The parameters of the current DB */
       ObjectDbParameters parameters_;
     };

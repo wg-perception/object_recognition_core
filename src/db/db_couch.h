@@ -58,10 +58,11 @@ class ObjectDbCouch: public object_recognition_core::db::ObjectDb
 public:
   ObjectDbCouch();
 
-  ObjectDbCouch(ObjectDbParametersRaw & parameters);
-
   virtual ObjectDbParametersRaw
   default_raw_parameters() const;
+
+  virtual void
+  set_parameters(object_recognition_core::db::ObjectDbParameters & parameters);
 
   virtual void
   insert_object(const or_json::mObject &fields, DocumentId & document_id, RevisionId & revision_id);
@@ -106,10 +107,7 @@ public:
   DeleteCollection(const CollectionName &collection);
 
   virtual DbType
-  type() const
-  {
-    return "CouchDB";
-  }
+  type() const;
 private:
 
   inline void

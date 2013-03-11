@@ -36,9 +36,10 @@
 #ifndef LOCAL_ORK_CORE_DB_DB_EMPTY_H_
 #define LOCAL_ORK_CORE_DB_DB_EMPTY_H_
 
-
 #include <object_recognition_core/common/types.h>
 #include <object_recognition_core/db/db_base.h>
+
+#include "db_default.h"
 
 using object_recognition_core::db::AttachmentName;
 using object_recognition_core::db::CollectionName;
@@ -53,6 +54,28 @@ using object_recognition_core::db::ViewElement;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+class ObjectDbEmpty;
+
+namespace object_recognition_core {
+namespace db {
+
+template<>
+struct ObjectDbDefaults<ObjectDbEmpty> {
+  static object_recognition_core::db::ObjectDbParametersRaw default_raw_parameters() {
+    ObjectDbParametersRaw res;
+    res["type"] = type();
+
+    return res;
+  }
+  static object_recognition_core::db::DbType type() {
+    return "empty";
+  }
+};
+}
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 /** This class saves any data to disk, following: http://code.google.com/p/couchdb-fuse
  */
 class ObjectDbEmpty: public object_recognition_core::db::ObjectDb
@@ -60,7 +83,7 @@ class ObjectDbEmpty: public object_recognition_core::db::ObjectDb
 public:
   inline virtual ObjectDbParametersRaw
   default_raw_parameters() const {
-    return ObjectDbParametersRaw();
+    return object_recognition_core::db::ObjectDbDefaults<ObjectDbEmpty>::default_raw_parameters();
   }
 
   inline virtual void
@@ -110,7 +133,7 @@ public:
   inline virtual DbType
   type() const
   {
-    return "empty";
+    return object_recognition_core::db::ObjectDbDefaults<ObjectDbEmpty>::type();
   }
 };
 
