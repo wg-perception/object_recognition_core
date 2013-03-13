@@ -1,19 +1,14 @@
-add documentation about the tests
-
 why is there no affienTransform
 sse optimization of perspectiveTransform
 
 Build:
 - no default build of tutorials
-- no default build of tests
 - split the tests (db tests should at least be separated)
 - make Factories depend on an ABC
 
 Interface:
 - --all should also have a --missing. Fix missing, object_names
 - meshing should support --all, --missing, --object_ids
-- autogeneration of parameter files:autogenerate if it does not exist
-- normalize source parameters.  training and detection use a config file, everything else uses args...
 - create a simple graph plasm viewer for ORK
 - get the ecto_gooey to work with ORK
 
@@ -30,18 +25,13 @@ DB:
 - add meta data that is missing (meet with everybody). We want: timestamp of the session, the sensor id
 - use a single view for all model types
 - is models.py obsolete?
-- fix meshing so that it uses current db interface
 - make more db manipulation scripts apps/dbscripts ... FIXME don't break these.
 
 Capture:
-- GUI for capturing obejcts on a dot pattern: the current box is hacky
 - upload through the capture GUI. Also have the triggering of all the other models (RabbitMQ ...)
 - should be a parameter file for the type of fiducials
-- unify the different Kinect calls to use the Kinect source (grep for /camera/depth)
 
 Doc:
-- API docs
-- autogeneration of config files
 - write docs for ecto_gooey
 
 New cells:
@@ -76,11 +66,3 @@ doc_config belongs to python_or_core
 
 
 document what a submethod is in ORK
-add default DB parameters to the config_doc
-
-make sure you can parametrize topics in soruce (for PR2 and:
-/head_mount_kinect/rgb/image_color
-/head_mount_kinect/rgb/camera_info
-/head_mount_kinect/depth/camera_info
-/head_mount_kinect/depth/image
-)
