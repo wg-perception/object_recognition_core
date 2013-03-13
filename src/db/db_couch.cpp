@@ -35,7 +35,6 @@
 
 #include <sstream>
 #include "db_couch.h"
-#include "db_default.h"
 
 object_recognition_core::curl::cURL_GS curl_init_cleanup;
 

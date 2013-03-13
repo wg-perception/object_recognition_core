@@ -38,9 +38,11 @@
 
 #include <boost/filesystem.hpp>
 
-#include "curl_interface.h"
 #include <object_recognition_core/common/types.h>
 #include <object_recognition_core/db/db_base.h>
+
+#include "curl_interface.h"
+#include "db_default.h"
 
 using object_recognition_core::db::AttachmentName;
 using object_recognition_core::db::CollectionName;
@@ -54,6 +56,8 @@ using object_recognition_core::db::View;
 using object_recognition_core::db::ViewElement;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+class ObjectDbFilesystem;
 
 class ObjectDbFilesystem;
 
