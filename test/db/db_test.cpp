@@ -195,16 +195,19 @@ TEST(OR_db, DocumentPersistLoad)
         std::string id;
         std::string original_attachment = "Ecto is awesome";
         {
-          Document doc(db);
-          doc.set_value("x", 1.0);
-          doc.set_value("foo", "UuU");
+          Document doc;
+          doc.set_db(db);
+          doc.set_field("x", 1.0);
+          doc.set_field("foo", "UuU");
           doc.Persist();
           id = doc.id();
         }
         {
-          Document doc(db, id);
-          EXPECT_EQ(doc.get_value<double>("x"), 1.0);
-          EXPECT_EQ(doc.get_value<std::string>("foo"), std::string("UuU"));
+          Document doc;
+          doc.set_db(db);
+          doc.set_document_id(id);
+          EXPECT_EQ(doc.get_field<double>("x"), 1.0);
+          EXPECT_EQ(doc.get_field<std::string>("foo"), std::string("UuU"));
         }
         delete_c(db, "test_it");
       }
@@ -302,7 +305,9 @@ TEST(OR_db, DocumentBadId)
         ObjectDbPtr db = params_valid(db_type).generateDb();
         try
         {
-          Document doc(db, "bogus_id");
+          Document doc;
+          doc.set_db(db);
+          doc.set_document_id("bogus_id");
           ASSERT_FALSE(true);
         } catch (std::runtime_error& e)
         {
@@ -333,7 +338,9 @@ TEST(OR_db, DocumentUrl)
         std::string bogus_id = "bogus_id";
         try
         {
-          Document doc(db, bogus_id);
+          Document doc;
+          doc.set_db(db);
+          doc.set_document_id(bogus_id);
           ASSERT_FALSE(true);
         } catch (std::runtime_error& e)
         {
@@ -410,9 +417,10 @@ TEST(OR_db, NonArgsDbInsert)
 
   std::string id;
   {
-    Document doc(db);
-    doc.set_value("x", 1.0);
-    doc.set_value("foo", "UuU");
+    Document doc;
+    doc.set_db(db);
+    doc.set_field("x", 1.0);
+    doc.set_field("foo", "UuU");
     try
     {
       doc.Persist();
