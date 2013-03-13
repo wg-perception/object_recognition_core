@@ -73,37 +73,28 @@ namespace object_recognition_core
       return is_same;
     }
 
-    Document
-    PopulateDoc(const ObjectDbPtr& db, const ObjectId& object_id,
-    const std::string& method, const std::string& submethod_str,
-    const std::string& parameters_str)
-    {
-      //create a document, and initialize all the common bits.
-      Document doc(db);
-      PopulateDoc(object_id, method, submethod_str, parameters_str, doc);
-      return doc;
-    }
-
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     void
-    PopulateDoc(const ObjectId& object_id, const std::string& method,
+    PopulateModel(const ObjectDbPtr& db, const ObjectId& object_id, const std::string& method,
                 const std::string& submethod_str, const std::string& parameters_str, Document& doc)
     {
+      //create a document, and initialize all the common bits.
+      doc.set_db(db);
       if (method.empty()) {
         std::stringstream ss;
         throw std::runtime_error("You need to define a \"method\" argument in your model document");
       }
 
-      doc.set_value("object_id", object_id);
+      doc.set_field("object_id", object_id);
       // Convert the parameters to a property tree and insert them
       or_json::mValue submethod = to_json(submethod_str);
       or_json::mValue parameters = to_json(parameters_str);
 
-      doc.set_value("Type", "Model");
-      doc.set_value("method", method);
-      doc.set_value("submethod", submethod);
-      doc.set_value("parameters", parameters);
+      doc.set_field("Type", "Model");
+      doc.set_field("method", method);
+      doc.set_field("submethod", submethod);
+      doc.set_field("parameters", parameters);
     }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -130,8 +121,13 @@ namespace object_recognition_core
         {
           const or_json::mObject & obj = (*view_iterator).fields();
           // Compare the parameters to the input ones
-          if (CompareJsonIntersection(submethod, obj.find("submethod")->second))
-            model_documents.push_back(Document(db, obj.find("_id")->second.get_str()));
+          if (CompareJsonIntersection(submethod, obj.find("submethod")->second)) {
+            Document doc;
+            doc.set_db(db);
+            doc.set_document_id(obj.find("_id")->second.get_str());
+            doc.load_fields();
+            model_documents.push_back(doc);
+          }
 
           ++view_iterator;
         }
@@ -158,8 +154,13 @@ namespace object_recognition_core
       {
         const or_json::mObject & obj = (*view_iterator).fields();
         // Compare the parameters to the input ones
-        if (CompareJsonIntersection(submethod, obj.find("submethod")->second))
-          model_documents.push_back(Document(db, obj.find("_id")->second.get_str()));
+        if (CompareJsonIntersection(submethod, obj.find("submethod")->second)) {
+          Document doc;
+          doc.set_db(db);
+          doc.set_document_id(obj.find("_id")->second.get_str());
+          doc.load_fields();
+          model_documents.push_back(doc);
+        }
 
         ++view_iterator;
       }

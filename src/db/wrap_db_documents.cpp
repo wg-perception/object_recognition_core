@@ -71,7 +71,11 @@ namespace object_recognition_core
 
       BOOST_FOREACH(const DocumentId & document_id, document_ids)
           {
-            p->push_back(Document(db, document_id));
+            Document doc;
+            doc.set_db(db);
+            doc.set_document_id(document_id);
+            doc.load_fields();
+            p->push_back(doc);
           }
 
       return p;

@@ -325,7 +325,7 @@ ObjectDbCouch::QueryView(const std::string & in_url, int limit_rows, int start_o
     // values are: id, key, value
     const or_json::mObject & object = v.get_obj();
     view_elements.push_back(ViewElement(object.find("id")->second.get_str(), object.find("key")->second));
-    view_elements.back().set_values(object.find("value")->second.get_obj());
+    view_elements.back().set_fields(object.find("value")->second.get_obj());
   }
   offset = fields["offset"].get_int() + view_elements.size();
 }

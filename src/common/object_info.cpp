@@ -33,6 +33,7 @@
  *
  */
 
+#include <iostream>
 #include <map>
 
 #include <object_recognition_core/db/prototypes/object_info.h>
@@ -43,19 +44,19 @@ namespace object_recognition_core
   namespace prototypes
   {
     /** Define the static member */
-    std::map<std::string, ObjectInfo::Attributes> ObjectInfo::cached_name_mesh_id_ =
-        std::map<std::string, Attributes>();
+    std::map<std::string, ObjectInfo> ObjectInfo::cached_name_mesh_id_ =
+        std::map<std::string, ObjectInfo>();
 
     /** Read the name_ and mesh_id_ from the DB and store it */
     void
-    ObjectInfo::check_db() const
+    ObjectInfo::load_fields_and_attachments()
     {
       // Check if the data is already cached
       {
-        std::map<std::string, Attributes>::const_iterator iter = cached_name_mesh_id_.find(cache_key());
+        std::map<std::string, ObjectInfo>::const_iterator iter = cached_name_mesh_id_.find(cache_key());
         if (iter != cached_name_mesh_id_.end())
         {
-          attributes_ = iter->second;
+          *this = iter->second;
           return;
         }
       }
@@ -78,17 +79,17 @@ namespace object_recognition_core
 
         // Get the object name
         if (fields.find("object_name") == fields.end())
-          attributes_.fields_["name"] = "";
+          set_field("name", "");
         else
-          attributes_.fields_["name"] = fields.find("name")->second.get_str();
+          set_field("name", fields.find("name")->second.get_str());
 
         // If no name, set one
-        if (attributes_.fields_["name"].get_str().empty())
-          attributes_.fields_["name"] = object_id_;
+        if (get_field("name").get_str().empty())
+          set_field("name", object_id_);
 
         // Get the mesh_id
         if (fields.find("mesh_uri") != fields.end())
-          attributes_.fields_["mesh_uri"] = fields.find("mesh_uri")->second.get_str();
+          set_field("mesh_uri", fields.find("mesh_uri")->second.get_str());
 
         // The view should return only one element
         break;
@@ -102,33 +103,41 @@ namespace object_recognition_core
       view_iterator = db::ViewIterator(view, db_);
       iter = view_iterator.begin();
       end = view_iterator.end();
-      for (; iter != end; ++iter)
-      {
-        const or_json::mObject &fields = (*iter).fields();
-        mesh_id = fields.find("_id")->second.get_str();
-        break;
-      }
 
-      // Get the mesh_URI if not set
-      if (attributes_.fields_.find("mesh_uri") == attributes_.fields_.end())
-      {
-        switch (db_->parameters().type())
-        {
-          case db::ObjectDbParameters::COUCHDB:
-            // E.g. http://localhost:5984/object_recognition/_design/models/_view/by_object_id_and_mesh?key=%2212a1e6eb663a41f8a4fb9baa060f191c%22
-            if (!mesh_id.empty())
-              attributes_.fields_["mesh_uri"] = db_->parameters().at("root").get_str() + std::string("/")
-                                                + db_->parameters().at("collection").get_str() + "/" + mesh_id
-                                                + "/mesh.stl";
-            break;
-          default:
-            attributes_.fields_["mesh_uri"] = "";
-            break;
+  // Get the mesh_URI if not set
+  switch (db_->parameters().type()) {
+    case db::ObjectDbParameters::COUCHDB:
+      for (; iter != end; ++iter) {
+        if ((*iter).has_field("_id")) {
+          mesh_id = (*iter).get_field<std::string>("_id");
+          break;
         }
       }
+      // E.g. http://localhost:5984/object_recognition/_design/models/_view/by_object_id_and_mesh?key=%2212a1e6eb663a41f8a4fb9baa060f191c%22
+      if (!mesh_id.empty())
+        set_field(
+            "mesh_uri",
+            db_->parameters().at("root").get_str() + std::string("/")
+                + db_->parameters().at("collection").get_str() + "/" + mesh_id
+                + "/mesh.stl");
+      break;
+    default:
+      for (; iter != end; ++iter) {
+        if ((*iter).has_field("mesh_uri")) {
+          set_field("mesh_uri", (*iter).get_field<std::string>("mesh_uri"));
+          break;
+        } else if ((*iter).has_attachment("mesh")) {
+          std::stringstream stream;
+          (*iter).get_attachment_stream("mesh", stream);
+          set_attachment_stream("mesh", stream);
+          break;
+        }
+      }
+      break;
+  }
 
       // Cache all the results
-      cached_name_mesh_id_[cache_key()] = attributes_;
+      cached_name_mesh_id_[cache_key()] = *this;
     }
   }
 }

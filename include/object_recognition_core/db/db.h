@@ -66,8 +66,6 @@ namespace object_recognition_core
     public:
       Document();
       ~Document();
-      Document(const ObjectDbPtr & db);
-      Document(const ObjectDbPtr & db, const DocumentId &document_id);
 
       bool
       operator==(const Document & document) const
@@ -80,7 +78,19 @@ namespace object_recognition_core
        * @param db
        */
       void
-      update_db(const ObjectDbPtr& db);
+      set_db(const ObjectDbPtr& db);
+
+      /**
+       * Update the document_id that this document should be associated with.
+       * @param db
+       */
+      void
+      set_document_id(const DocumentId &document_id);
+
+      /** Fill the fields of the object
+       */
+      void
+      load_fields();
 
       /** Persist your object to a given DB
        */
@@ -109,7 +119,7 @@ namespace object_recognition_core
        */
       template<typename T>
       void
-      get_attachment(const AttachmentName &attachment_name, T & value) const;
+      get_attachment_and_cache(const AttachmentName &attachment_name, T & value);
 
       /** Extract the stream of a specific attachment for a Document from the DB
        * @param attachment_name the name of the attachment
@@ -120,14 +130,6 @@ namespace object_recognition_core
       get_attachment_stream(const AttachmentName &attachment_name, std::ostream& stream, MimeType mime_type =
           MIME_TYPE_DEFAULT) const;
 
-      /** Extract a specific attachment from a document in the DB
-       * @param attachment_name
-       * @param value
-       */
-      template<typename T>
-      void
-      get_attachment_and_cache(const AttachmentName &attachment_name, T & value);
-
       /** Extract the stream of a specific attachment for a Document from the DB
        * @param attachment_name the name of the attachment
        * @param stream the string of data to write to
@@ -136,14 +138,6 @@ namespace object_recognition_core
       void
       get_attachment_stream_and_cache(const AttachmentName &attachment_name, std::ostream& stream, MimeType mime_type =
           MIME_TYPE_DEFAULT);
-
-      /** Add a specific field to a Document (that has been pre-loaded or not)
-       * @param attachment_name the name of the attachment
-       * @param value the attachment itself, that needs to be boost serializable
-       */
-      template<typename T>
-      void
-      set_attachment(const AttachmentName &attachment_name, const T & value);
     private:
       ObjectDbPtr db_;
       DocumentId document_id_;

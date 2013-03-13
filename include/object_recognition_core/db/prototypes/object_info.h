@@ -48,8 +48,9 @@ namespace object_recognition_core
      * The possible attributes are as follows:
      * - std::string name: the name of the object, some string you can understand: "Can of Coke"
      * - std::string mesh_uri: the full URI of where the mesh can be retrieved (this can be useful for RViz)
+     * - stream mesh: the mesh as a file
      */
-    class ObjectInfo
+    class ObjectInfo : public object_recognition_core::db::DummyDocument
     {
     public:
       ObjectInfo()
@@ -82,21 +83,10 @@ namespace object_recognition_core
         return object_id_;
       }
 
-      const or_json::mObject &
-      attributes() const
-      {
-        check_db();
-        return attributes_.fields_;
-      }
+      /** Read the name_ and mesh_id_ from the DB and store it */
+      void
+      load_fields_and_attachments();
     private:
-      /** This class contains whatever extra info that can be retrieved from the DB
-       */
-      struct Attributes
-      {
-        /** contains the fields: they are of integral types */
-        or_json::mObject fields_;
-      };
-
       inline std::string
       cache_key() const
       {
@@ -104,19 +94,12 @@ namespace object_recognition_core
         return parameter_hash + object_id_;
       }
 
-      /** Read the name_ and mesh_id_ from the DB and store it */
-      void
-      check_db() const;
-
       /** The object id of the found object */
       db::ObjectId object_id_;
       /** The db in which the object_id is */
       db::ObjectDbPtr db_;
 
-      /** DB info */
-      mutable Attributes attributes_;
-
-      static std::map<std::string, Attributes> cached_name_mesh_id_;
+      static std::map<std::string, ObjectInfo> cached_name_mesh_id_;
     };
   }
 }

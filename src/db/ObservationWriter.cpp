@@ -71,7 +71,8 @@ namespace object_recognition_core
 
         obs.object_id = object_id;
         obs.session_id = session_id;
-        Document doc(db);
+        Document doc;
+        doc.set_db(db);
         obs >> doc;
         doc.Persist();
         return ecto::OK;

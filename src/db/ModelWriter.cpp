@@ -83,8 +83,7 @@ namespace object_recognition_core
         db_ = ObjectDbParameters(*json_db_).generateDb();
 
         Document doc_new = *db_document_;
-        doc_new.update_db(db_);
-        PopulateDoc(*object_id_, *model_method_, *model_submethod_, *model_parameters_, doc_new);
+        PopulateModel(db_, *object_id_, *model_method_, *model_submethod_, *model_parameters_, doc_new);
 
         // Read the input model parameters
         or_json::mValue in_submethod = to_json(*model_submethod_);

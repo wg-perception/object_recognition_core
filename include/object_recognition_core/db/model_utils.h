@@ -57,26 +57,11 @@ namespace object_recognition_core
      * @param submethod_str a JSON string detailing the discriminative parameters used in the method (e.g.
      * "{"descriptor":"ORB"}" in TOD)
      * @param parameters_str a JSON string detailing the non-discriminative parameters used in the method
-     * @return
-     */
-
-    Document
-    PopulateDoc(const ObjectDbPtr& db, const ObjectId& object_id,
-                const std::string& method, const std::string& submethod_str, const std::string& parameters_str);
-
-    /**
-     * This does an in-place modification of an existing document.
-     * @see other PopulateDoc
-     * @param object_id the id of the object for that model
-     * @param method the method used to compute the models (e.g. 'TOD')
-     * @param submethod_str a JSON string detailing the discriminative parameters used in the method (e.g.
-     * "{"descriptor":"ORB"}" in TOD)
-     * @param parameters_str a JSON string detailing the non-discriminative parameters used in the method
-     * @param document the current document to modify
+     * @return the Document to update
      */
     void
-    PopulateDoc(const ObjectId& object_id, const std::string& method,
-                const std::string& submethod_str, const std::string& parameters_str, Document& document);
+    PopulateModel(const ObjectDbPtr& db, const ObjectId& object_id, const std::string& method,
+                    const std::string& submethod_str, const std::string& parameters_str, Document& doc);
 
     /** Given some parameters, retrieve Documents that are models with an object_id
      * that is in object_ids and with parameters matching model_json_params

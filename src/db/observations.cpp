@@ -42,18 +42,18 @@ namespace object_recognition_core
       object_recognition_core::db::png_attach(o.mask, doc, "mask");
       doc.set_attachment_stream("intrinsics.yml", intr_ss, "text/x-yaml");
       doc.set_attachment_stream("extrinsics.yml", extr_ss, "text/x-yaml");
-      doc.set_value("Type", "Observation");
-      doc.set_value("object_id", o.object_id);
-      doc.set_value("session_id", o.session_id);
-      doc.set_value("frame_number", o.frame_number);
+      doc.set_field("Type", "Observation");
+      doc.set_field("object_id", o.object_id);
+      doc.set_field("session_id", o.session_id);
+      doc.set_field("frame_number", o.frame_number);
     }
 
     void
     operator<<(Observation& o, db::Document& doc)
     {
-      o.object_id = doc.get_value<std::string>("object_id");
-      o.session_id = doc.get_value<std::string>("session_id");
-      o.frame_number = doc.get_value<int>("frame_number");
+      o.object_id = doc.get_field<std::string>("object_id");
+      o.session_id = doc.get_field<std::string>("session_id");
+      o.frame_number = doc.get_field<int>("frame_number");
       object_recognition_core::db::get_png_attachment(o.image, doc, "image");
       object_recognition_core::db::get_png_attachment(o.depth, doc, "depth");
       object_recognition_core::db::get_png_attachment(o.mask, doc, "mask");

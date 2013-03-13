@@ -63,6 +63,16 @@ namespace object_recognition_core
       {
       }
 
+      /**
+       * @param attachment_name the name of the attachment to check
+       * @return true if there is such an attachment stored
+       */
+      bool
+      has_attachment(const AttachmentName &attachment_name)
+      {
+        return attachments_.find(attachment_name) != attachments_.end();
+      }
+
       /** Extract a specific attachment from a document in the DB
        * @param attachment_name
        * @param value
@@ -78,7 +88,7 @@ namespace object_recognition_core
        */
       virtual void
       get_attachment_stream(const AttachmentName &attachment_name, std::ostream& stream, MimeType mime_type =
-          MIME_TYPE_DEFAULT) const = 0;
+          MIME_TYPE_DEFAULT) const;
 
       /** Add a specific field to a Document (that has been pre-loaded or not)
        * @param attachment_name the name of the attachment
@@ -97,10 +107,20 @@ namespace object_recognition_core
       set_attachment_stream(const AttachmentName &attachment_name, const std::istream& stream,
                             const MimeType& mime_type = MIME_TYPE_DEFAULT);
 
+      /**
+       * @param key the name of the field to check
+       * @return true if there is such a value stored
+       */
+      bool
+      has_field(const std::string& key) const
+      {
+        return fields_.find(key) != fields_.end();
+      }
+
       /** Get a specific value */
       template<typename T>
       T
-      get_value(const std::string& key) const
+      get_field(const std::string& key) const
       {
         or_json::mObject::const_iterator iter = fields_.find(key);
         if (iter != fields_.end())
@@ -111,7 +131,7 @@ namespace object_recognition_core
 
       /** Get a specific value */
       or_json::mValue
-      get_value(const std::string& key) const
+      get_field(const std::string& key) const
       {
         or_json::mObject::const_iterator iter = fields_.find(key);
         if (iter != fields_.end())
@@ -130,21 +150,21 @@ namespace object_recognition_core
       /** Set a specific value */
       template<typename T>
       void
-      set_value(const std::string& key, const T& val)
+      set_field(const std::string& key, const T& val)
       {
         fields_[key] = or_json::mValue(val);
       }
 
       /** Set several values by inserting a property tree */
       void
-      set_values(const or_json::mObject & json_tree)
+      set_fields(const or_json::mObject & json_tree)
       {
         fields_.insert(json_tree.begin(), json_tree.end());
       }
 
       /** Set several values by inserting a property tree at a specific key*/
       void
-      set_values(const std::string& key, const or_json::mObject & json_tree)
+      set_fields(const std::string& key, const or_json::mObject & json_tree)
       {
         or_json::mObject::const_iterator iter = fields_.find(key);
         if (iter == fields_.end())
@@ -194,7 +214,7 @@ namespace object_recognition_core
 
       typedef std::map<AttachmentName, StreamAttachment::ptr> AttachmentMap;
 
-      /** ALl the attachments */
+      /** All the attachments */
       AttachmentMap attachments_;
 
       /** contains the fields: they are of integral types */
