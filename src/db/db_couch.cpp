@@ -41,28 +41,6 @@ object_recognition_core::curl::cURL_GS curl_init_cleanup;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-namespace object_recognition_core {
-namespace db {
-
-template<>
-struct ObjectDbDefaults<ObjectDbCouch> {
-  static object_recognition_core::db::ObjectDbParametersRaw default_raw_parameters() {
-    ObjectDbParametersRaw res;
-    res["root"] = "http://localhost:5984";
-    res["collection"] = "object_recognition";
-    res["type"] = type();
-
-    return res;
-  }
-  static object_recognition_core::db::DbType type() {
-    return "CouchDB";
-  }
-};
-}
-}
-
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
 ObjectDbCouch::ObjectDbCouch()
     :
       json_writer_(json_writer_stream_),
