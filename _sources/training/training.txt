@@ -49,7 +49,7 @@ Use
 
 A typical command line session might look like::
 
-   % apps/training -c config_training.txt --commmit
+   % apps/training -c config_training.txt --commit
    Prepare G2O: processing image 65/65
    Performing full BA:
    iteration= 0     chi2= 168324165740673896546304.000000   time= 39.2803   cumTime= 39.2803        lambda= 154861.907021 edges= 64563     schur= 1

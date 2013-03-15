@@ -137,6 +137,26 @@
 </table>
 </p>
 </div></blockquote>
+<p id=""><span id="object_recognition_coreclassobject__recognition__core_1_1db_1_1ObjectDb_1a09beeb44f1c708a6de65d8c0cd91a1a1"></span><div class="line-block">
+<div class="line">void <strong>set_parameters</strong>(<a class="reference internal" href="#object_recognition_coreclassobject__recognition__core_1_1db_1_1ObjectDbParameters"><em>ObjectDbParameters</em></a>  &amp; parameters)</div>
+</div>
+</p>
+<blockquote>
+<div><p></p>
+<p>Set the parameters of a database: this can only be done from the ObjectDBParameters This is also where internals can be set. The parameter is not const as it can be modified to show what was actually used. <table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="breatheparameterlist first last">
+<li><tt class="first docutils literal"><span class="pre">parameters</span></tt> - <p>the parameters to impose to the database </p>
+</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</p>
+</div></blockquote>
 <p id=""><span id="object_recognition_coreclassobject__recognition__core_1_1db_1_1ObjectDb_1a1a4a30312b8c5a167c67c803ad2391c0"></span><div class="line-block">
 <div class="line">void <strong>insert_object</strong>(const  or_json::mObject  &amp; fields, DocumentId  &amp; document_id, RevisionId  &amp; revision_id)</div>
 </div>
@@ -630,22 +650,6 @@
 <div><p></p>
 <p></p>
 </div></blockquote>
-<p id=""><span id="object_recognition_coreclassobject__recognition__core_1_1db_1_1Document_1a1845c6fd111bb2daa165e8f959debab4"></span><div class="line-block">
-<div class="line"> <strong>Document</strong>(const  ObjectDbPtr  &amp; db)</div>
-</div>
-</p>
-<blockquote>
-<div><p></p>
-<p></p>
-</div></blockquote>
-<p id=""><span id="object_recognition_coreclassobject__recognition__core_1_1db_1_1Document_1aa77b9cb1bdc0f4d8ec480164340e0329"></span><div class="line-block">
-<div class="line"> <strong>Document</strong>(const  ObjectDbPtr  &amp; db, const  DocumentId  &amp; document_id)</div>
-</div>
-</p>
-<blockquote>
-<div><p></p>
-<p></p>
-</div></blockquote>
 <p id=""><span id="object_recognition_coreclassobject__recognition__core_1_1db_1_1Document_1ab68d911a09ad26ef7dfa1397ae6eb085"></span><div class="line-block">
 <div class="line">bool <strong>operator==</strong>(const  <a class="reference internal" href="#object_recognition_coreclassobject__recognition__core_1_1db_1_1Document"><em>Document</em></a>  &amp; document)</div>
 </div>
@@ -654,8 +658,8 @@
 <div><p></p>
 <p></p>
 </div></blockquote>
-<p id=""><span id="object_recognition_coreclassobject__recognition__core_1_1db_1_1Document_1a7c791ed854ec458afdc0a3a9a4a4f6ff"></span><div class="line-block">
-<div class="line">void <strong>update_db</strong>(const  ObjectDbPtr  &amp; db)</div>
+<p id=""><span id="object_recognition_coreclassobject__recognition__core_1_1db_1_1Document_1aa843ca7f44cc1d0f61bdd361444685b4"></span><div class="line-block">
+<div class="line">void <strong>set_db</strong>(const  ObjectDbPtr  &amp; db)</div>
 </div>
 </p>
 <blockquote>
@@ -673,6 +677,34 @@
 </tbody>
 </table>
 </p>
+</div></blockquote>
+<p id=""><span id="object_recognition_coreclassobject__recognition__core_1_1db_1_1Document_1a37bb6683c009195be04d058a61ae9888"></span><div class="line-block">
+<div class="line">void <strong>set_document_id</strong>(const  DocumentId  &amp; document_id)</div>
+</div>
+</p>
+<blockquote>
+<div><p></p>
+<p>Update the document_id that this document should be associated with. <table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="breatheparameterlist first last">
+<li><tt class="first docutils literal"><span class="pre">db</span></tt> - <p></p>
+</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</p>
+</div></blockquote>
+<p id=""><span id="object_recognition_coreclassobject__recognition__core_1_1db_1_1Document_1a658bd8489fa1c51097aff7a438178509"></span><div class="line-block">
+<div class="line">void <strong>load_fields</strong>()</div>
+</div>
+</p>
+<blockquote>
+<div><p></p>
+<p>Fill the fields of the object </p>
 </div></blockquote>
 <p id=""><span id="object_recognition_coreclassobject__recognition__core_1_1db_1_1Document_1a940b7f0272fa0c189c44c675bf485dae"></span><div class="line-block">
 <div class="line">void <strong>Persist</strong>()</div>
@@ -706,9 +738,9 @@
 <div><p></p>
 <p></p>
 </div></blockquote>
-<p id=""><span id="object_recognition_coreclassobject__recognition__core_1_1db_1_1Document_1a8d41894b0b24d88f6abc37d391727080"></span><div class="line-block">
+<p id=""><span id="object_recognition_coreclassobject__recognition__core_1_1db_1_1Document_1a76cbbbb3cd88ff4890aa115466658ecb"></span><div class="line-block">
 <div class="line">template &lt; typename T &gt;</div>
-<div class="line">void <strong>get_attachment</strong>(const  AttachmentName  &amp; attachment_name, T &amp; value)</div>
+<div class="line">void <strong>get_attachment_and_cache</strong>(const  AttachmentName  &amp; attachment_name, T &amp; value)</div>
 </div>
 </p>
 <blockquote>
@@ -753,29 +785,6 @@
 </table>
 </p>
 </div></blockquote>
-<p id=""><span id="object_recognition_coreclassobject__recognition__core_1_1db_1_1Document_1a76cbbbb3cd88ff4890aa115466658ecb"></span><div class="line-block">
-<div class="line">template &lt; typename T &gt;</div>
-<div class="line">void <strong>get_attachment_and_cache</strong>(const  AttachmentName  &amp; attachment_name, T &amp; value)</div>
-</div>
-</p>
-<blockquote>
-<div><p></p>
-<p>Extract a specific attachment from a document in the DB <table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="breatheparameterlist first last">
-<li><tt class="first docutils literal"><span class="pre">attachment_name</span></tt> - <p></p>
-</li>
-<li><tt class="first docutils literal"><span class="pre">value</span></tt> - <p></p>
-</li>
-</ul>
-</td>
-</tr>
-</tbody>
-</table>
-</p>
-</div></blockquote>
 <p id=""><span id="object_recognition_coreclassobject__recognition__core_1_1db_1_1Document_1a1e89a17800fa03caa85538a4d17b0ca5"></span><div class="line-block">
 <div class="line">void <strong>get_attachment_stream_and_cache</strong>(const  AttachmentName  &amp; attachment_name, std::ostream &amp; stream, MimeType mime_type = MIME_TYPE_DEFAULT)</div>
 </div>
@@ -792,29 +801,6 @@
 <li><tt class="first docutils literal"><span class="pre">stream</span></tt> - <p>the string of data to write to </p>
 </li>
 <li><tt class="first docutils literal"><span class="pre">mime_type</span></tt> - <p>the MIME type as stored in the DB </p>
-</li>
-</ul>
-</td>
-</tr>
-</tbody>
-</table>
-</p>
-</div></blockquote>
-<p id=""><span id="object_recognition_coreclassobject__recognition__core_1_1db_1_1Document_1abfe08bc690ff69ca49d9b8dfba204a2d"></span><div class="line-block">
-<div class="line">template &lt; typename T &gt;</div>
-<div class="line">void <strong>set_attachment</strong>(const  AttachmentName  &amp; attachment_name, const T &amp; value)</div>
-</div>
-</p>
-<blockquote>
-<div><p></p>
-<p>Add a specific field to a <a class="reference internal" href="#object_recognition_coreclassobject__recognition__core_1_1db_1_1Document"><em>Document</em></a> (that has been pre-loaded or not) <table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="breatheparameterlist first last">
-<li><tt class="first docutils literal"><span class="pre">attachment_name</span></tt> - <p>the name of the attachment </p>
-</li>
-<li><tt class="first docutils literal"><span class="pre">value</span></tt> - <p>the attachment itself, that needs to be boost serializable </p>
 </li>
 </ul>
 </td>

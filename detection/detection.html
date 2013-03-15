@@ -151,21 +151,28 @@ $(document).ready(function() {
 </div>
 <div class="container">
 <div class="toggleable_div label_Non-ROS"><p>Just run the detection.py script in /apps. This will run continuously on the input image/point cloud.</p>
+<div class="highlight-sh"><div class="highlight"><pre>./apps/detection -c config_detection.sample
+</pre></div>
+</div>
 <p>The server requires a configuration file through the <tt class="docutils literal"><span class="pre">-c</span></tt> option.</p>
 </div></div>
 <div class="container">
-<div class="toggleable_div label_ROS"><p>Just rosrun:</p>
-<div class="highlight-sh"><div class="highlight"><pre>rosrun object_recognition_server server -c config_detection.sample
+<div class="toggleable_div label_ROS"><p>If you want continuous detection, you can just run the detection script:</p>
+<div class="highlight-sh"><div class="highlight"><pre>rosrun object_recognition_core detection -c config_detection.sample
+</pre></div>
+</div>
+<p>Then again, there is also an actionlib server as detailed on <a class="reference external" href="http://wg-perception.github.com/object_recognition_ros/server.html#actionlib" title="(in object_recognition_ros v)"><em class="xref std std-ref">actionlib server</em></a>:</p>
+<div class="highlight-sh"><div class="highlight"><pre>rosrun object_recognition_ros server -c config_detection.sample
 </pre></div>
 </div>
 <p>This will start a server with a given configuration file.
 If you want to test the server, just execute the client once:</p>
-<div class="highlight-sh"><div class="highlight"><pre>rosrun object_recognition_server client
+<div class="highlight-sh"><div class="highlight"><pre>rosrun object_recognition_ros client
 </pre></div>
 </div>
 <p>You can also use roslaunch if you want traditional actionlib support. There is a <tt class="docutils literal"><span class="pre">config_file</span></tt> argument
 that can help you choose different pipelines:</p>
-<div class="highlight-sh"><div class="highlight"><pre>roslaunch object_recognition_server server.robot.launch
+<div class="highlight-sh"><div class="highlight"><pre>roslaunch object_recognition_ros server.robot.launch
 </pre></div>
 </div>
 </div></div>
@@ -311,6 +318,37 @@ source_2:
 </div>
 <p>any of the following sinks:</p>
 <div class="highlight-text"><div class="highlight"><pre>sink_0:
+   type: Publisher
+   module: object_recognition_ros.io.sink.publisher
+   parameters:
+      #  The DB parameters
+      db_params: &lt;object_recognition_core.boost.interface.ObjectDbParameters object at 0x2344050&gt;
+      #  If True some markers are displayed for visualization. For RSO Groovy and above, use the
+      # RViz plugin instead.
+      do_visualize: False
+      #  Determines if the topics will be latched.
+      latched: True
+      #  The ROS topic to use for the marker array.
+      markers_topic: markers
+      #  The ROS topic to use for the object meta info string
+      object_ids_topic: object_ids
+      #  The ROS topic to use for the pose array.
+      pose_topic: poses
+      #  Sets whether the point cloud clusters have to be published or not
+      publish_clusters: True
+      #  The ROS topic to use for the recognized object
+      recognized_object_array_topic: recognized_object_array
+
+sink_1:
+   type: GuessCsvWriter
+   module: object_recognition_core.io.sink
+   parameters:
+      #  The run number
+      run_number: 0
+      #  The name of the team to consider
+      team_name: 
+
+sink_2:
    type: TablePublisher
    module: object_recognition_tabletop.table_publisher
    parameters:
@@ -326,69 +364,23 @@ source_2:
       marker_table_topic: marker_tables
       #  The array of found tables.
       table_array: table_array
-
-sink_1:
-   type: GuessCsvWriter
-   module: object_recognition_core.io.sink
-   parameters:
-      #  The run number
-      run_number: 0
-      #  The name of the team to consider
-      team_name: 
-
-sink_2:
-   type: Publisher
-   module: object_recognition_ros.io.sink.publisher
-   parameters:
-      #  The DB parameters
-      db_params: &lt;object_recognition_core.boost.interface.ObjectDbParameters object at 0x2b02f18&gt;
-      #  If True some markers are displayed for visualization.
-      do_visualize: True
-      #  Determines if the topics will be latched.
-      latched: True
-      #  The ROS topic to use for the marker array.
-      markers_topic: markers
-      #  The ROS topic to use for the object meta info string
-      object_ids_topic: object_ids
-      #  The ROS topic to use for the pose array.
-      pose_topic: poses
-      #  Sets whether the point cloud clusters have to be published or not
-      publish_clusters: True
-      #  The ROS topic to use for the recognized object
-      recognized_object_array_topic: recognized_object_array
 </pre></div>
 </div>
 <p>or the following pipelines:</p>
 <div class="highlight-text"><div class="highlight"><pre>detection_pipeline_0:
-   type: TodDetector
-   module: object_recognition_tod.detector
+   type: TabletopObjectDetector
+   module: object_recognition_tabletop.detector
    parameters:
-      #  The DB to get data from as a JSON string
-      json_db: {}
-      #  Parameters for the descriptor as a JSON string. It should have the format:
-      # &quot;{&quot;type&quot;:&quot;ORB/SIFT whatever&quot;, &quot;module&quot;:&quot;where_it_is&quot;, &quot;param_1&quot;:val1, ....}
-      json_descriptor_params: {&quot;type&quot;: &quot;ORB&quot;, &quot;module&quot;: &quot;ecto_opencv.features2d&quot;}
-      #  Parameters for the feature as a JSON string. It should have the format: &quot;{&quot;type&quot;:&quot;ORB/SIFT
-      # whatever&quot;, &quot;module&quot;:&quot;where_it_is&quot;, &quot;param_1&quot;:val1, ....}
-      json_feature_params: {&quot;type&quot;: &quot;ORB&quot;, &quot;module&quot;: &quot;ecto_opencv.features2d&quot;}
-      #  The ids of the objects to find as a JSON list or the keyword &quot;all&quot;.
-      json_object_ids: all
-      #  Minimum number of inliers
-      min_inliers: 15
-      #  Number of RANSAC iterations.
-      n_ransac_iterations: 1000
-      #  Frame this data is associated with
-      rgb_frame_id: default_frame
-      #  The search parameters as a JSON string
-      search: {}
-      #  The error (in meters) from the Kinect
-      sensor_error: 0.00999999977648
-      #  If true, some windows pop up to see the progress
-      visualize: False
+      #  The DB parameters
+      json_db: 
+      #  The DB id of the objects to load in the household database.
+      json_object_ids: 
+      #  The object_ids set as defined by the household object database.
+      tabletop_object_ids: REDUCED_MODEL_SET
 
 detection_pipeline_1:
-   type: PartsBasedDetector
-   module: object_recognition_by_parts.detector
+   type: TransparentObjectsDetector
+   module: object_recognition_transparent_objects.detector
    parameters:
       #  The DB configuration parameters as a JSON string
       json_db: 
@@ -396,14 +388,12 @@ detection_pipeline_1:
       json_object_ids: all
       #  The submethod used to compute the models.
       json_submethod: 
-      #  The maximum overlap allowed between object detections
-      max_overlap: 0.10000000149
       #  The method the models were computed with
       method: 
-      #  The path to the model file
-      model_file: 
-      #  The cell should remove planes from the scene before the cluster extraction
-      remove_planes: False
+      #  The DB parameters
+      object_db: None
+      #  The filename of the registration mask.
+      registrationMaskFilename: 
       #  Visualize results
       visualize: False
 
@@ -430,8 +420,8 @@ detection_pipeline_2:
       z_min: 0.00749999983236
 
 detection_pipeline_3:
-   type: TransparentObjectsDetector
-   module: object_recognition_transparent_objects.detector
+   type: PartsBasedDetector
+   module: object_recognition_by_parts.detector
    parameters:
       #  The DB configuration parameters as a JSON string
       json_db: 
@@ -439,23 +429,43 @@ detection_pipeline_3:
       json_object_ids: all
       #  The submethod used to compute the models.
       json_submethod: 
+      #  The maximum overlap allowed between object detections
+      max_overlap: 0.10000000149
       #  The method the models were computed with
       method: 
-      #  The DB parameters
-      object_db: None
-      #  The filename of the registration mask.
-      registrationMaskFilename: 
+      #  The path to the model file
+      model_file: 
+      #  The cell should remove planes from the scene before the cluster extraction
+      remove_planes: False
       #  Visualize results
       visualize: False
 
 detection_pipeline_4:
-   type: TabletopObjectDetector
-   module: object_recognition_tabletop.detector
+   type: TodDetector
+   module: object_recognition_tod.detector
    parameters:
-      #  The DB parameters
-      json_db: 
-      #  The DB id of the objects to load in the household database.
-      json_object_ids: 
+      #  The DB to get data from as a JSON string
+      json_db: {}
+      #  Parameters for the descriptor as a JSON string. It should have the format:
+      # &quot;{&quot;type&quot;:&quot;ORB/SIFT whatever&quot;, &quot;module&quot;:&quot;where_it_is&quot;, &quot;param_1&quot;:val1, ....}
+      json_descriptor_params: {&quot;type&quot;: &quot;ORB&quot;, &quot;module&quot;: &quot;ecto_opencv.features2d&quot;}
+      #  Parameters for the feature as a JSON string. It should have the format: &quot;{&quot;type&quot;:&quot;ORB/SIFT
+      # whatever&quot;, &quot;module&quot;:&quot;where_it_is&quot;, &quot;param_1&quot;:val1, ....}
+      json_feature_params: {&quot;type&quot;: &quot;ORB&quot;, &quot;module&quot;: &quot;ecto_opencv.features2d&quot;}
+      #  The ids of the objects to find as a JSON list or the keyword &quot;all&quot;.
+      json_object_ids: all
+      #  Minimum number of inliers
+      min_inliers: 15
+      #  Number of RANSAC iterations.
+      n_ransac_iterations: 1000
+      #  Frame this data is associated with
+      rgb_frame_id: default_frame
+      #  The search parameters as a JSON string
+      search: {}
+      #  The error (in meters) from the Kinect
+      sensor_error: 0.00999999977648
+      #  If true, some windows pop up to see the progress
+      visualize: False
 
 detection_pipeline_5:
    type: LinemodDetector
