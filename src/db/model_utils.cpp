@@ -150,6 +150,9 @@ namespace object_recognition_core
       view.Initialize(method);
       ViewIterator view_iterator = ViewIterator(view, db).begin();
 
+      if (view_iterator == ViewIterator::end())
+        std::cerr << "No models found for method \"" << method << "\"" << std::endl;
+
       while (view_iterator != ViewIterator::end())
       {
         const or_json::mObject & obj = (*view_iterator).fields();
