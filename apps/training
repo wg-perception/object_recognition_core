@@ -3,13 +3,12 @@
 This script launches several training pipelines defined in a configuration file to train several models for several
 objects
 """
-from object_recognition_core.db import ObjectDb, ObjectDbParameters, models
-from object_recognition_core.db.tools import interpret_object_ids
+from object_recognition_core.db import ObjectDb, ObjectDbParameters, ObjectDbTypes, models
+from object_recognition_core.db.tools import interpret_object_ids, init_object_databases
 from object_recognition_core.utils.find_classes import find_class
 from object_recognition_core.utils.training_detection_args import create_parser, read_arguments
 import ecto
 import sys
-DEBUG = False
 
 if __name__ == '__main__':
     parser = create_parser(do_training=True)
@@ -32,13 +31,11 @@ if __name__ == '__main__':
         db_params = db_params_raw
         object_ids = interpret_object_ids(db_params, pipeline_param.get('parameters', {}).get('json_object_ids', []))
         print 'Training %d objects.' % len(object_ids)
+        object_db = ObjectDb(db_params)
+        db_params = ObjectDbParameters(db_params)
         for object_id in object_ids:
             print 'computing object_id: %s' % object_id
             object_id = object_id.encode('ascii')
-            if not db_params:
-                continue
-            object_db = ObjectDb(db_params)
-            db_params = ObjectDbParameters(db_params)
             session_ids = models.find_all_sessions_for_object(db_params, object_id)
 
             for session_id in session_ids:
@@ -54,3 +51,11 @@ if __name__ == '__main__':
                                            json_db=db_params_raw, args=args)
 
                 pipeline.process()
+
+        # Make sure the views exist
+        if db_params.type == ObjectDbTypes.COUCHDB:
+            import couchdb
+            import json
+            dic = json.loads(db_params_raw)
+            couch = couchdb.Server(dic['root'])
+            init_object_databases(couch)
