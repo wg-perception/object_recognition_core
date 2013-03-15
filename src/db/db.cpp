@@ -447,6 +447,11 @@ namespace object_recognition_core
     }
 
     bool
+    ViewIterator::operator==(const ViewIterator & document_view) const {
+      return !this->operator !=(document_view);
+    }
+
+    bool
     ViewIterator::operator!=(const ViewIterator & document_view) const
     {
       if (document_view.view_elements_.empty())

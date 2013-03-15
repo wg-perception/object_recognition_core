@@ -195,6 +195,9 @@ namespace object_recognition_core
       set_db(const ObjectDbPtr & db);
 
       bool
+      operator==(const ViewIterator & document_view) const;
+
+      bool
       operator!=(const ViewIterator & document_view) const;
 
       ViewElement
