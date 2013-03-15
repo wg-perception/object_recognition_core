@@ -19,31 +19,41 @@ Use
 
 .. toggle:: Non-ROS
 
-    Just run the detection.py script in /apps. This will run continuously on the input image/point cloud.
+   Just run the detection.py script in /apps. This will run continuously on the input image/point cloud.
 
-    The server requires a configuration file through the ``-c`` option.
+   .. code-block:: sh
+
+      ./apps/detection -c config_detection.sample
+
+   The server requires a configuration file through the ``-c`` option.
 
 .. toggle:: ROS
 
-    Just rosrun:
+   If you want continuous detection, you can just run the detection script:
 
-    .. code-block:: sh
+   .. code-block:: sh
 
-        rosrun object_recognition_server server -c config_detection.sample
+      rosrun object_recognition_core detection -c config_detection.sample
 
-    This will start a server with a given configuration file.
-    If you want to test the server, just execute the client once:
+   Then again, there is also an actionlib server as detailed on :ref:`actionlib server <orkros:actionlib>`:
 
-    .. code-block:: sh
+   .. code-block:: sh
 
-        rosrun object_recognition_server client
+      rosrun object_recognition_ros server -c config_detection.sample
 
-    You can also use roslaunch if you want traditional actionlib support. There is a ``config_file`` argument
-    that can help you choose different pipelines:
+   This will start a server with a given configuration file.
+   If you want to test the server, just execute the client once:
 
-    .. code-block:: sh
+   .. code-block:: sh
 
-        roslaunch object_recognition_server server.robot.launch
+      rosrun object_recognition_ros client
+
+   You can also use roslaunch if you want traditional actionlib support. There is a ``config_file`` argument
+   that can help you choose different pipelines:
+
+   .. code-block:: sh
+
+      roslaunch object_recognition_ros server.robot.launch
 
 A typical command line session might look like::
 
