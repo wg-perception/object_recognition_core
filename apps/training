@@ -46,9 +46,9 @@ if __name__ == '__main__':
                     continue
 
                 pipeline = pipeline_class(object_id=object_id, method=method,
-                                           subtype=sub_method,
+                                           subtype=sub_method, observation_ids = observation_ids,
                                            pipeline_params=pipeline_param.get('parameters', {}), object_db=object_db,
-                                           json_db=db_params_raw, args=args)
+                                           json_db=db_params_raw, json_db_dealer=db_params_raw, args=args)
 
                 pipeline.process()
 

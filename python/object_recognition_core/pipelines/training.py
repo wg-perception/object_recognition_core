@@ -29,13 +29,13 @@ class ObservationDealer(ecto.BlackBox):
     def declare_cells(p):
         return {'db_reader': CellInfo(ObservationReader),
                 'observation_dealer': CellInfo(ecto.Dealer, {'tendril': ecto.Tendril(Document()),
-                'iterable': [ x for x in Documents(ObjectDb(ObjectDbParameters(p.json_db)), p.observation_ids)]})
+                'iterable': [ x for x in Documents(ObjectDb(ObjectDbParameters(p.json_db_dealer)), p.observation_ids)]})
                }
 
     @staticmethod
     def declare_direct_params(p):
         p.declare('observation_ids', 'An iterable of observation ids.', [])
-        p.declare('json_db', 'The parameters as a JSON string defining the db to query the parameters from.', '')
+        p.declare('json_db_dealer', 'The parameters as a JSON string defining the db to query the parameters from.', '')
 
     @staticmethod
     def declare_forwards(_p):
