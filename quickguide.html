@@ -185,7 +185,8 @@ directory given, e.g. my_textured_plane. Press &#8216;q&#8217; to quit the templ
 </pre></div>
 </div>
 <p>Uuse the SXGA (roughly 1 megapixel) mode of your openni device if possible.</p>
-<div class="highlight-sh"><div class="highlight"><pre>rosrun dynamic_reconfigure dynparam <span class="nb">set</span> /openni_node1 image_mode 1
+<div class="highlight-sh"><div class="highlight"><pre>rosrun dynamic_reconfigure dynparam <span class="nb">set</span> /camera/driver image_mode 1
+rosrun dynamic_reconfigure dynparam <span class="nb">set</span> /camera/driver depth_registration True
 </pre></div>
 </div>
 </div></div>

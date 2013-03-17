@@ -78,7 +78,8 @@ directory given, e.g. my_textured_plane. Press 'q' to quit the template capture 
    
    .. code-block:: sh
    
-      rosrun dynamic_reconfigure dynparam set /openni_node1 image_mode 1
+      rosrun dynamic_reconfigure dynparam set /camera/driver image_mode 1
+      rosrun dynamic_reconfigure dynparam set /camera/driver depth_registration True
 
 Capture objects
 ***************
