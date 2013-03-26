@@ -46,6 +46,7 @@
   <h3><a href="index.html">Table Of Contents</a></h3>
   <ul>
 <li><a class="reference internal" href="#">Quick Guide</a><ul>
+<li><a class="reference internal" href="#install">Install</a></li>
 <li><a class="reference internal" href="#setup-your-environment">Setup Your Environment</a></li>
 <li><a class="reference internal" href="#setup-the-capture-workspace">Setup the capture workspace</a></li>
 <li><a class="reference internal" href="#capture-objects">Capture objects</a></li>
@@ -83,8 +84,7 @@
             
   <div class="section" id="quick-guide">
 <span id="quickguide"></span><h1>Quick Guide<a class="headerlink" href="#quick-guide" title="Permalink to this headline">¶</a></h1>
-<p>Instructions are slightly different on whether you use ROS or not. For ROS, instructions will work whether you build
-<tt class="docutils literal"><span class="pre">ROS</span></tt> from source or not.</p>
+<p>Instructions are slightly different on whether you use ROS or not. For ROS, instructions will work whether you build <tt class="docutils literal"><span class="pre">ROS</span></tt> from source or not.</p>
 <div class="container">
 <button class="toggleable_button label_FromSource" onclick="
 function toggle(label) {
@@ -139,6 +139,21 @@ $(document).ready(function() {
 });
 </script>
 </div>
+<div class="section" id="install">
+<h2>Install<a class="headerlink" href="#install" title="Permalink to this headline">¶</a></h2>
+<p>Install <tt class="docutils literal"><span class="pre">ORK</span></tt> as detailed on the <a class="reference internal" href="install.html#install"><em>Install</em></a> page.</p>
+<p>If you want to visualize data in the database, you also need to run:</p>
+<div class="container">
+<div class="toggleable_div label_FromSource"><div class="highlight-bash"><div class="highlight"><pre><span class="nb">cd </span>object_recognition_core/web_ui <span class="o">&amp;&amp;</span> ./push.sh
+</pre></div>
+</div>
+</div></div>
+<div class="container">
+<div class="toggleable_div label_FromROSpackages"><div class="highlight-bash"><div class="highlight"><pre>rosrun object_recognition_core push.sh
+</pre></div>
+</div>
+</div></div>
+</div>
 <div class="section" id="setup-your-environment">
 <h2>Setup Your Environment<a class="headerlink" href="#setup-your-environment" title="Permalink to this headline">¶</a></h2>
 <p>You need to setup your environment:</p>
@@ -167,9 +182,7 @@ $(document).ready(function() {
 </div>
 <div class="section" id="setup-the-capture-workspace">
 <h2>Setup the capture workspace<a class="headerlink" href="#setup-the-capture-workspace" title="Permalink to this headline">¶</a></h2>
-<p>First capture an ORB template of your capture workspace. It  should be take from an planar frontal view, and the
-center of the image should be filled by the plane. Press &#8216;s&#8217; to save an image. The result will be placed in the
-directory given, e.g. my_textured_plane. Press &#8216;q&#8217; to quit the template capture program.</p>
+<p>First capture an ORB template of your capture workspace. It  should be take from an planar frontal view, and the center of the image should be filled by the plane. Press &#8216;s&#8217; to save an image. The result will be placed in the directory given, e.g. my_textured_plane. Press &#8216;q&#8217; to quit the template capture program.</p>
 <div class="container">
 <div class="toggleable_div label_FromSource"><div class="highlight-sh"><div class="highlight"><pre>./object_recognition_capture/apps/orb_template.py -o my_textured_plane
 </pre></div>
@@ -193,8 +206,7 @@ rosrun dynamic_reconfigure dynparam <span class="nb">set</span> /camera/driver d
 </div>
 <div class="section" id="capture-objects">
 <h2>Capture objects<a class="headerlink" href="#capture-objects" title="Permalink to this headline">¶</a></h2>
-<p>Once you are happy with the workspace tracking, its time to capure an object. Place an object at the origin of the
-workspace. An run the capture program in preview mode. Make sure the mask and pose are being picked up.</p>
+<p>Once you are happy with the workspace tracking, its time to capure an object. Place an object at the origin of the workspace. An run the capture program in preview mode. Make sure the mask and pose are being picked up.</p>
 <div class="container">
 <div class="toggleable_div label_FromSource"><div class="highlight-sh"><div class="highlight"><pre>./object_recognition_capture/apps/capture -i my_textured_plane --seg_z_min 0.01 -o silk.bag --preview
 </pre></div>
@@ -205,9 +217,7 @@ workspace. An run the capture program in preview mode. Make sure the mask and po
 </pre></div>
 </div>
 </div></div>
-<p>When satisified by the preview mode, run it for real.  The following will capture a bag of 60 views where each view
-is normally distributed on the view sphere. The mask and pose displays should only refresh when a novel view is
-captured.  The program will finish when 35 (-n) views are captured. Press &#8216;q&#8217; to quit early.</p>
+<p>When satisified by the preview mode, run it for real.  The following will capture a bag of 60 views where each view is normally distributed on the view sphere. The mask and pose displays should only refresh when a novel view is captured. The program will finish when 35 (-n) views are captured. Press &#8216;q&#8217; to quit early.</p>
 <div class="container">
 <div class="toggleable_div label_FromSource"><div class="highlight-sh"><div class="highlight"><pre>./object_recognition_capture/apps/capture -i my_textured_plane --seg_z_min 0.01 -o silk.bag
 </pre></div>
@@ -232,8 +242,7 @@ captured.  The program will finish when 35 (-n) views are captured. Press &#8216
 </div>
 <div class="section" id="train-objects">
 <h2>Train objects<a class="headerlink" href="#train-objects" title="Permalink to this headline">¶</a></h2>
-<p>Repeat the steps above for the objects you would like to recognize. Once you have captured and uploaded all of the
-data, it time to mesh and train object recognition.</p>
+<p>Repeat the steps above for the objects you would like to recognize. Once you have captured and uploaded all of the data, it time to mesh and train object recognition.</p>
 <p>Meshing objects can be done in a batch mode, assuming you are in the binary directory.</p>
 <div class="container">
 <div class="toggleable_div label_FromSource"><div class="highlight-sh"><div class="highlight"><pre>./object_recognition_reconstruction/apps/mesh_object --all --visualize --commit
@@ -246,9 +255,7 @@ data, it time to mesh and train object recognition.</p>
 </div>
 </div></div>
 <p>The currently stored models are on <a class="reference external" href="http://localhost:5984/model_viewer/_design/viewer/index.html">http://localhost:5984/model_viewer/_design/viewer/index.html</a></p>
-<p>Next objects should be trained. It may take some time between objects, this is normal. Also, this quickguide assumes
-that you are using <a class="reference external" href="http://wg-perception.github.com/tod/index.html#tod" title="(in object_recognition_tod v)"><em class="xref std std-ref">TOD</em></a> which only works for textured objects. Please refer to the documentation
-of other methods.</p>
+<p>Next objects should be trained. It may take some time between objects, this is normal. Also, this quickguide assumes that you are using <a class="reference external" href="http://wg-perception.github.com/tod/index.html#tod" title="(in object_recognition_tod v)"><em class="xref std std-ref">TOD</em></a> which only works for textured objects. Please refer to the documentation of other methods.</p>
 <div class="container">
 <div class="toggleable_div label_FromSource"><div class="highlight-sh"><div class="highlight"><pre>./object_recognition_core/apps/training <span class="se">\</span>
 -c object_recognition_tod/conf/config_training.tod <span class="se">\</span>
@@ -266,8 +273,7 @@ of other methods.</p>
 </div>
 <div class="section" id="detect-objects">
 <h2>Detect objects<a class="headerlink" href="#detect-objects" title="Permalink to this headline">¶</a></h2>
-<p>Now we&#8217;re ready for detection. First launch rviz, it should be subscribed to the right markers for recognition
-results. /markers is used for the results, and it is a marker array.</p>
+<p>Now we&#8217;re ready for detection. First launch rviz, it should be subscribed to the right markers for recognition results. /markers is used for the results, and it is a marker array.</p>
 <div class="container">
 <div class="toggleable_div label_FromSource"><div class="highlight-sh"><div class="highlight"><pre>./rosrun object_recognition_core/apps/detection <span class="se">\</span>
 -c object_recognition_tod/conf/config_detection.tod <span class="se">\</span>

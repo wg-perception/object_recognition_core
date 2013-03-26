@@ -104,8 +104,7 @@
 </div>
 <div class="section" id="couch-db">
 <h2>Couch Db<a class="headerlink" href="#couch-db" title="Permalink to this headline">¶</a></h2>
-<p>We are using <a class="reference external" href="http://couchdb.apache.org">couchdb</a> as our main database and it is the most tested implementation.  To set up your local instance, all you
-must do is install couchdb, and ensure that the service has started.</p>
+<p>We are using <a class="reference external" href="http://couchdb.apache.org">couchdb</a> as our main database and it is the most tested implementation.  To set up your local instance, all you must do is install couchdb, and ensure that the service has started.</p>
 <p>The following should download and start the couch on Ubuntu like distros:</p>
 <div class="highlight-sh"><div class="highlight"><pre>sudo apt-get install couchdb
 </pre></div>
@@ -118,13 +117,9 @@ must do is install couchdb, and ensure that the service has started.</p>
 <p>The couchdb version should be greater than <tt class="docutils literal"><span class="pre">0.10.0</span></tt>.</p>
 <div class="section" id="configuration">
 <h3>Configuration<a class="headerlink" href="#configuration" title="Permalink to this headline">¶</a></h3>
-<p>If you would like to expose your couchdb instance to a different port, or bind
-to a different interface, besides the loopback, edit <tt class="docutils literal"><span class="pre">/etc/couchdb/local.ini</span></tt>.</p>
-<p>For instance, changing the bind_address to <tt class="docutils literal"><span class="pre">0.0.0.0</span></tt> will allow your couchdb
-to be accessed on any interface.</p>
-<div class="highlight-ectosh"><div class="highlight"><pre>[httpd]
-port = 5984
-bind_address = 0.0.0.0
+<p>If you would like to expose your couchdb instance to a different port, or bind to a different interface, besides the loopback, edit <tt class="docutils literal"><span class="pre">/etc/couchdb/local.ini</span></tt>.</p>
+<p>For instance, changing the bind_address to <tt class="docutils literal"><span class="pre">0.0.0.0</span></tt> will allow your couchdb to be accessed on any interface.</p>
+<div class="highlight-ectosh"><div class="highlight"><pre>[httpd] port = 5984 bind_address = 0.0.0.0
 </pre></div>
 </div>
 <p>After editing this file, restart the couchdb service:</p>
@@ -134,33 +129,89 @@ bind_address = 0.0.0.0
 </div>
 <div class="section" id="web-ui">
 <h3>Web UI<a class="headerlink" href="#web-ui" title="Permalink to this headline">¶</a></h3>
-<p>We have a set of webpages that may be pushed to your couchdb instance that help
-browse the objects that you train, or models created.</p>
+<p>We have a set of webpages that may be pushed to your couchdb instance that help browse the objects that you train, or models created.</p>
 <p>First make sure you have <tt class="docutils literal"><span class="pre">couchapp</span></tt>:</p>
 <div class="highlight-sh"><div class="highlight"><pre>sudo pip install -U couchapp
 </pre></div>
 </div>
-<p>There is a make target for installing the web ui for your convenience.:</p>
+<div class="container">
+<button class="toggleable_button label_FromSource" onclick="
+function toggle(label) {
+  $('.toggleable_button').css({border: '2px outset', 'border-radius': '4px'});
+  $('.toggleable_button.label_' + label).css({border: '2px inset', 'border-radius': '4px'});
+  $('.toggleable_div').css('display', 'none');
+  $('.toggleable_div.label_' + label).css('display', 'block');
+};
+toggle('FromSource')">From Source</button>
+<script>
+
+function toggle(label) {
+  $('.toggleable_button').css({border: '2px outset', 'border-radius': '4px'});
+  $('.toggleable_button.label_' + label).css({border: '2px inset', 'border-radius': '4px'});
+  $('.toggleable_div').css('display', 'none');
+  $('.toggleable_div.label_' + label).css('display', 'block');
+};
+
+$(document).ready(function() {
+  var classList =$('.toggleable_button').attr('class').split(/\s+/);
+  $.each( classList, function(index, item){
+    if (item.substring(0, 5) === 'label') {
+      toggle(item.substring(6));
+    };
+  });
+});
+</script>
+<button class="toggleable_button label_FromROSpackages" onclick="
+function toggle(label) {
+  $('.toggleable_button').css({border: '2px outset', 'border-radius': '4px'});
+  $('.toggleable_button.label_' + label).css({border: '2px inset', 'border-radius': '4px'});
+  $('.toggleable_div').css('display', 'none');
+  $('.toggleable_div.label_' + label).css('display', 'block');
+};
+toggle('FromROSpackages')">From ROS packages</button>
+<script>
+
+function toggle(label) {
+  $('.toggleable_button').css({border: '2px outset', 'border-radius': '4px'});
+  $('.toggleable_button.label_' + label).css({border: '2px inset', 'border-radius': '4px'});
+  $('.toggleable_div').css('display', 'none');
+  $('.toggleable_div.label_' + label).css('display', 'block');
+};
+
+$(document).ready(function() {
+  var classList =$('.toggleable_button').attr('class').split(/\s+/);
+  $.each( classList, function(index, item){
+    if (item.substring(0, 5) === 'label') {
+      toggle(item.substring(6));
+    };
+  });
+});
+</script>
+</div>
+<div class="container">
+<div class="toggleable_div label_FromSource"><p>There is a make target for installing the web ui for your convenience.:</p>
 <div class="highlight-sh"><div class="highlight"><pre>make or_web_ui
 </pre></div>
 </div>
-<p>This will push the app to the location specified in the Cmake cache, by the variable,
-<tt class="docutils literal"><span class="pre">OR_WEB_UI_LOCATION</span></tt>.  Use ccache or cmake-gui to point it to a different location if you
-like.</p>
-<p>You can manually push it also, if you need more flexibility, or hate the cmake cache.
-cd to the <tt class="docutils literal"><span class="pre">object_recognition/web_ui</span></tt> directory and run couchapp in a manner similar to the
-following.:</p>
+<p>This will push the app to the location specified in the Cmake cache, by the variable, <tt class="docutils literal"><span class="pre">OR_WEB_UI_LOCATION</span></tt>.  Use
+ccache or cmake-gui to point it to a different location if you like.</p>
+<p>You can manually push it also, if you need more flexibility, or hate the cmake cache. cd to the
+<tt class="docutils literal"><span class="pre">object_recognition/web_ui</span></tt> directory and run couchapp in a manner similar to the following.:</p>
 <div class="highlight-sh"><div class="highlight"><pre>couchapp push . http://localhost:5984/or_web_ui
 </pre></div>
 </div>
-<p>This will upload the contents of the directory to collection in your couchdb instance,
-called <tt class="docutils literal"><span class="pre">or_web_ui</span></tt>.  After this you can browse the web ui using the url
-<a class="reference external" href="http://localhost:5984/or_web_ui/_design/viewer/index.html">http://localhost:5984/or_web_ui/_design/viewer/index.html</a></p>
+</div></div>
+<div class="container">
+<div class="toggleable_div label_FromROSpackages"><p>We provide a utility that automatically installa the visualizer on the DB.</p>
+<div class="highlight-bash"><div class="highlight"><pre>rosrun object_recognition_core push.sh
+</pre></div>
+</div>
+</div></div>
+<p>This will upload the contents of the directory to collection in your couchdb instance, called <tt class="docutils literal"><span class="pre">or_web_ui</span></tt>.  After this you can browse the web ui using the url <a class="reference external" href="http://localhost:5984/or_web_ui/_design/viewer/index.html">http://localhost:5984/or_web_ui/_design/viewer/index.html</a></p>
 </div>
 <div class="section" id="library">
 <h3>Library<a class="headerlink" href="#library" title="Permalink to this headline">¶</a></h3>
-<p>Object Recognition tools manipulate the database either using libCURL or python-couchdb.
-You may find it helpful to browse the default db HTML interface at <a class="reference external" href="http://localhost:5984/_utils">http://localhost:5984/_utils</a></p>
+<p>Object Recognition tools manipulate the database either using libCURL or python-couchdb. You may find it helpful to browse the default db HTML interface at <a class="reference external" href="http://localhost:5984/_utils">http://localhost:5984/_utils</a></p>
 </div>
 </div>
 </div>
