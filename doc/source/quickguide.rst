@@ -5,12 +5,30 @@
 Quick Guide
 ###########
 
-Instructions are slightly different on whether you use ROS or not. For ROS, instructions will work whether you build
-``ROS`` from source or not.
+Instructions are slightly different on whether you use ROS or not. For ROS, instructions will work whether you build ``ROS`` from source or not.
 
 .. toggle_table::
    :arg1: From Source
    :arg2: From ROS packages
+
+Install
+*******
+
+Install ``ORK`` as detailed on the :ref:`Install <install>` page.
+
+If you want to visualize data in the database, you also need to run:
+
+.. toggle:: From Source
+
+   .. code-block:: bash
+   
+      cd object_recognition_core/web_ui && ./push.sh
+
+.. toggle:: From ROS packages
+
+   .. code-block:: bash
+
+      rosrun object_recognition_core push.sh
 
 Setup Your Environment
 **********************
@@ -21,7 +39,7 @@ You need to setup your environment:
 
    .. code-block:: bash
    
-         source devel/setup.sh
+      source devel/setup.sh
 
 .. toggle:: From ROS packages
 
@@ -50,9 +68,7 @@ This will add all the necessary packages to your ``PATH``, ``LD_LIBRARY_PATH`` a
 Setup the capture workspace
 ***************************
 
-First capture an ORB template of your capture workspace. It  should be take from an planar frontal view, and the
-center of the image should be filled by the plane. Press 's' to save an image. The result will be placed in the
-directory given, e.g. my_textured_plane. Press 'q' to quit the template capture program.
+First capture an ORB template of your capture workspace. It  should be take from an planar frontal view, and the center of the image should be filled by the plane. Press 's' to save an image. The result will be placed in the directory given, e.g. my_textured_plane. Press 'q' to quit the template capture program.
 
 .. toggle:: From Source
 
@@ -84,8 +100,7 @@ directory given, e.g. my_textured_plane. Press 'q' to quit the template capture 
 Capture objects
 ***************
 
-Once you are happy with the workspace tracking, its time to capure an object. Place an object at the origin of the
-workspace. An run the capture program in preview mode. Make sure the mask and pose are being picked up.
+Once you are happy with the workspace tracking, its time to capure an object. Place an object at the origin of the workspace. An run the capture program in preview mode. Make sure the mask and pose are being picked up.
 
 .. toggle:: From Source
 
@@ -99,9 +114,7 @@ workspace. An run the capture program in preview mode. Make sure the mask and po
    
       rosrun object_recognition_capture capture -i my_textured_plane --seg_z_min 0.01 -o silk.bag --preview
 
-When satisified by the preview mode, run it for real.  The following will capture a bag of 60 views where each view
-is normally distributed on the view sphere. The mask and pose displays should only refresh when a novel view is
-captured.  The program will finish when 35 (-n) views are captured. Press 'q' to quit early.
+When satisified by the preview mode, run it for real.  The following will capture a bag of 60 views where each view is normally distributed on the view sphere. The mask and pose displays should only refresh when a novel view is captured. The program will finish when 35 (-n) views are captured. Press 'q' to quit early.
 
 .. toggle:: From Source
 
@@ -132,8 +145,7 @@ Now time for upload. Make sure you install couch db on your machien. Give the ob
 Train objects
 *************
 
-Repeat the steps above for the objects you would like to recognize. Once you have captured and uploaded all of the
-data, it time to mesh and train object recognition.
+Repeat the steps above for the objects you would like to recognize. Once you have captured and uploaded all of the data, it time to mesh and train object recognition.
 
 Meshing objects can be done in a batch mode, assuming you are in the binary directory.
 
@@ -152,9 +164,7 @@ Meshing objects can be done in a batch mode, assuming you are in the binary dire
 
 The currently stored models are on http://localhost:5984/model_viewer/_design/viewer/index.html
 
-Next objects should be trained. It may take some time between objects, this is normal. Also, this quickguide assumes
-that you are using :ref:`TOD <orktod:tod>` which only works for textured objects. Please refer to the documentation
-of other methods.
+Next objects should be trained. It may take some time between objects, this is normal. Also, this quickguide assumes that you are using :ref:`TOD <orktod:tod>` which only works for textured objects. Please refer to the documentation of other methods.
 
 .. toggle:: From Source
 
@@ -175,8 +185,7 @@ of other methods.
 Detect objects
 **************
 
-Now we're ready for detection. First launch rviz, it should be subscribed to the right markers for recognition
-results. /markers is used for the results, and it is a marker array.
+Now we're ready for detection. First launch rviz, it should be subscribed to the right markers for recognition results. /markers is used for the results, and it is a marker array.
 
 .. toggle:: From Source
 

@@ -1,3 +1,4 @@
 #!/bin/sh
 #sudo pip install -U couchapp"
-couchapp push . http://localhost:5984/or_web_ui
+DIR="$( cd "$( dirname "$0" )" && pwd )"
+couchapp push ${DIR} http://localhost:5984/or_web_ui

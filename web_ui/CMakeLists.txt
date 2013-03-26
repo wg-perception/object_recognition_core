@@ -12,3 +12,14 @@ set(OR_WEB_UI_LOCATION http://localhost:5984/or_web_ui CACHE STRING "The locatio
 add_custom_command(TARGET or_web_ui
     COMMAND ${COUCHAPP} push ${CMAKE_CURRENT_SOURCE_DIR} ${OR_WEB_UI_LOCATION}
     )
+
+# install the components
+install(DIRECTORY _attachments
+        DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}/web_ui/
+)
+install(FILES _id
+        DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}/web_ui/
+)
+install(PROGRAMS push.sh
+        DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}/web_ui/
+)
