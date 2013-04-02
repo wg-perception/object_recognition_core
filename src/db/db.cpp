@@ -261,6 +261,7 @@ namespace object_recognition_core
       StreamAttachment::ptr stream_attachment(new StreamAttachment(mime_type));
       // Otherwise, load it from the DB
       db_->get_attachment_stream(document_id_, revision_id_, attachment_name, mime_type, stream_attachment->stream_);
+
       stream << stream_attachment->stream_.rdbuf();
     }
 
@@ -318,7 +319,10 @@ namespace object_recognition_core
       // check if it is loaded
       AttachmentMap::const_iterator val = attachments_.find(attachment_name);
       if (val != attachments_.end())
-        stream << val->second->stream_.rdbuf();
+      {
+	  val->second->stream_.seekg(0);
+	  stream << val->second->stream_.rdbuf();
+      }
     }
 
     /** Add a stream attachment to a a Document
