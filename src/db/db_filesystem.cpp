@@ -194,6 +194,11 @@ ObjectDbFilesystem::QueryView(const object_recognition_core::db::View & view, in
       throw std::runtime_error("Function not implemented in the Filesystem DB.");
       break;
     }
+    case object_recognition_core::db::View::VIEW_OBSERVATION_WHERE_OBJECT_ID:
+    {
+      throw std::runtime_error("Function not implemented in the Filesystem DB.");
+      break;
+    }
   }
 }
 

@@ -283,7 +283,7 @@ namespace object_recognition_core
        */
       enum ViewType
       {
-        VIEW_MODEL_WHERE_OBJECT_ID_AND_MODEL_TYPE, VIEW_OBJECT_INFO_WHERE_OBJECT_ID
+        VIEW_MODEL_WHERE_OBJECT_ID_AND_MODEL_TYPE, VIEW_OBJECT_INFO_WHERE_OBJECT_ID, VIEW_OBSERVATION_WHERE_OBJECT_ID
       };
 
       View(ViewType type):

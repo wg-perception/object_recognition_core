@@ -94,6 +94,7 @@ namespace object_recognition_core
           break;
         }
         case VIEW_OBJECT_INFO_WHERE_OBJECT_ID:
+        case VIEW_OBSERVATION_WHERE_OBJECT_ID:
         {
           // It is a dummy document so it never belong to the db
           return false;

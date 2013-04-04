@@ -211,30 +211,27 @@ ObjectDbCouch::QueryView(const object_recognition_core::db::View & view, int lim
     case object_recognition_core::db::View::VIEW_MODEL_WHERE_OBJECT_ID_AND_MODEL_TYPE:
     {
       url = root_ + "/" + collection_ + "/_design/models/_view/by_object_id_and_" + parameters["model_type"].get_str();
-      do_throw = false;
-
-      object_recognition_core::db::View::Key key;
-      std::string options;
-      if (view.key(key))
-        options = "&key=\"" + key.get_str() + "\"";
-      QueryView(url, limit_rows, start_offset, options, total_rows, offset, view_elements, do_throw);
-
       break;
     }
     case object_recognition_core::db::View::VIEW_OBJECT_INFO_WHERE_OBJECT_ID:
     {
       url = root_ + "/" + collection_ + "/_design/models/_view/by_object_id";
-      do_throw = false;
-
-      object_recognition_core::db::View::Key key;
-      std::string options;
-      if (view.key(key))
-        options = "&key=\"" + key.get_str() + "\"";
-      QueryView(url, limit_rows, start_offset, options, total_rows, offset, view_elements, do_throw);
-
+      break;
+    }
+    case object_recognition_core::db::View::VIEW_OBSERVATION_WHERE_OBJECT_ID:
+    {
+      url = root_ + "/" + collection_ + "/_design/observations/_view/by_object_id";
       break;
     }
   }
+
+  do_throw = false;
+
+  object_recognition_core::db::View::Key key;
+  std::string options;
+  if (view.key(key))
+    options = "&key=\"" + key.get_str() + "\"";
+  QueryView(url, limit_rows, start_offset, options, total_rows, offset, view_elements, do_throw);
 }
 
 void
