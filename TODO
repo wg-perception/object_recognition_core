@@ -1,3 +1,6 @@
+ecto:
+update the docs to say devel is done but still maintained
+
 OpenCV:
 why is there no affienTransform
 sse optimization of perspectiveTransform
