@@ -5,7 +5,6 @@
 #include <string>
 
 #include <object_recognition_core/db/db.h>
-#include <object_recognition_core/db/db_parameters.h>
 #include <object_recognition_core/db/opencv.h>
 #include <object_recognition_core/db/prototypes/observations.hpp>
 

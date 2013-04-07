@@ -36,7 +36,7 @@
 #ifndef LOCAL_ORK_CORE_DB_DEFAULT_H_
 #define LOCAL_ORK_CORE_DB_DEFAULT_H_
 
-#include <object_recognition_core/db/db.h>
+#include <object_recognition_core/db/parameters.h>
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 

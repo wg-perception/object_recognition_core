@@ -5,7 +5,7 @@
 #include <boost/format.hpp>
 #include <string>
 
-#include <object_recognition_core/db/db.h>
+#include <object_recognition_core/db/document.h>
 #include <object_recognition_core/db/opencv.h>
 #include <object_recognition_core/db/prototypes/observations.hpp>
 

@@ -33,18 +33,12 @@
  *
  */
 
-#ifndef VIEW_TYPES_H_
-#define VIEW_TYPES_H_
-
-#include <boost/noncopyable.hpp>
-
-#ifdef CV_MAJOR_VERSION
-#include <opencv2/core/core.hpp>
-#endif
+#ifndef ORK_CORE_DB_VIEW_H_
+#define ORK_CORE_DB_VIEW_H_
 
 #include <object_recognition_core/common/json_spirit/json_spirit.h>
 #include <object_recognition_core/common/types.h>
-#include <object_recognition_core/db/db.h>
+#include <object_recognition_core/db/document.h>
 
 namespace object_recognition_core {
 namespace db {
@@ -234,4 +228,4 @@ private:
     };
   }
 }
-#endif /* VIEW_TYPES_H_ */
+#endif /* ORK_CORE_DB_VIEW_H_ */

@@ -36,9 +36,8 @@
 #include <string>
 
 #include <boost/python.hpp>
-#include <boost/shared_ptr.hpp>
 
-#include <object_recognition_core/db/db.h>
+#include <object_recognition_core/common/json.hpp>
 
 namespace bp = boost::python;
 

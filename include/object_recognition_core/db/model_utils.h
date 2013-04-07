@@ -36,7 +36,7 @@
 #ifndef ORK_CORE_DB_UTILS_H_
 #define ORK_CORE_DB_UTILS_H_
 
-#include <object_recognition_core/db/db.h>
+#include <object_recognition_core/db/document.h>
 
 namespace object_recognition_core
 {

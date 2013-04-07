@@ -33,8 +33,8 @@
  *
  */
 
-#ifndef DB_PARAMETERS_H_
-#define DB_PARAMETERS_H_
+#ifndef ORK_CORE_DB_PARAMETERS_H_
+#define ORK_CORE_DB_PARAMETERS_H_
 
 #include <object_recognition_core/common/json.hpp>
 
@@ -157,5 +157,5 @@ typedef or_json::mObject ObjectDbParametersRaw;
   }
 }
 
-#endif /* DB_PARAMETERS_H_ */
+#endif /* ORK_CORE_DB_PARAMETERS_H_ */
 

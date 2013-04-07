@@ -1,7 +1,7 @@
 /*
  * Software License Agreement (BSD License)
  *
- *  Copyright (c) 2011, Willow Garage, Inc.
+ *  Copyright (c) 2009, Willow Garage, Inc.
  *  All rights reserved.
  *
  *  Redistribution and use in source and binary forms, with or without
@@ -32,321 +32,204 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  *
  */
+/** This file defines a base to inherit from for creating a database
+ * The databases inheriting from this class will be able to 
+ * store/manage/retrieve Documents that are very generic: they are defined
+ * by a JSON string and several binary blobs
+ */
+ 
+#ifndef ORK_CORE_DB_DB_BASE_H_
+#define ORK_CORE_DB_DB_BASE_H_
 
-#ifndef ORK_CORE_DB_DB_H_
-#define ORK_CORE_DB_DB_H_
-
-#include <sstream>
+#include <algorithm>
+#include <iterator>
 #include <map>
+#include <vector>
 
-#include <boost/bind.hpp>
 #include <boost/foreach.hpp>
-#include <boost/function.hpp>
+#include <boost/shared_ptr.hpp>
 
 #include <object_recognition_core/common/types.h>
 #include <object_recognition_core/common/json_spirit/json_spirit.h>
 
-namespace object_recognition_core {
-namespace db {
-
-class ObjectDb;
-typedef boost::shared_ptr<ObjectDb> ObjectDbPtr;
-typedef boost::shared_ptr<const ObjectDb> ObjectDbConstPtr;
+#include <object_recognition_core/db/view.h>
+#include <object_recognition_core/db/parameters.h>
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    /** A dummy document just contains fields and attachments
+namespace object_recognition_core
+{
+  namespace db
+  {
+    /** The main class that interact with the db
+     * A collection is similar to the term used in CouchDB. It could be a schema/table in SQL
+     * Each inheriting class must have an extra static class with the following signature:
+     *   static object_recognition_core::db::ObjectDbParameters default_parameters()
+     * The databases that this interface handles are very generic: they store documents
+     * that are only defined by a JSON string and several binary blobs. That's it.
+     * All relationships between documents therefore have to happen in the JSON.
+     * This paradigm is common to non-relational databases (CouchDB, MongoDB)
+     * An object is defined by a unique id and a revision number (not all
+     * databases support this version number)
      */
-    class DummyDocument
+    class ObjectDb
     {
     public:
-      DummyDocument()
+      /** Default constructor
+       * Make your children classes have the default parameter: ObjectDbParameters(default_parameters())
+       */
+      ObjectDb()
       {
       }
 
       virtual
-      ~DummyDocument()
+      ~ObjectDb()
       {
       }
 
-      /**
-       * @param attachment_name the name of the attachment to check
-       * @return true if there is such an attachment stored
+      /** Get the parameters of the database
+       * @return an ObjectDbParameters object as stored internally
        */
-      bool
-      has_attachment(const AttachmentName &attachment_name)
+      const ObjectDbParameters &
+      parameters() const
       {
-        return attachments_.find(attachment_name) != attachments_.end();
+        return parameters_;
       }
 
-      /** Extract a specific attachment from a document in the DB
-       * @param attachment_name
-       * @param value
+      /** @return the raw parameters as a JSON object
        */
-      template<typename T>
-      void
-      get_attachment(const AttachmentName &attachment_name, T & value) const;
+      virtual ObjectDbParametersRaw
+      default_raw_parameters() const = 0;
 
-      /** Extract the stream of a specific attachment for a Document from the DB
-       * @param attachment_name the name of the attachment
-       * @param stream the string of data to write to
-       * @param mime_type the MIME type as stored in the DB
+      /** Set the parameters of a database: this can only be done from the ObjectDBParameters
+       * This is also where internals can be set. The parameter is not const as it can be modified to show what
+       * was actually used.
+       * @param parameters the parameters to impose to the database
        */
       virtual void
-      get_attachment_stream(const AttachmentName &attachment_name, std::ostream& stream, MimeType mime_type =
-          MIME_TYPE_DEFAULT) const;
+      set_parameters(ObjectDbParameters & parameters)
+      {
+        parameters_ = parameters;
+      }
 
-      /** Add a specific field to a Document (that has been pre-loaded or not)
-       * @param attachment_name the name of the attachment
-       * @param value the attachment itself, that needs to be boost serializable
+      /** Insert a document in the database
+       * @param fields the JSON description of the document to insert
+       * @param document_id the returned id of the document that was inserted
+       * @param revision_id the revision number of the inserted object (some 
+       * DB provide it)
        */
-      template<typename T>
-      void
-      set_attachment(const AttachmentName &attachment_name, const T & value);
+      virtual void
+      insert_object(const or_json::mObject &fields, DocumentId & document_id, RevisionId & revision_id) = 0;
 
-      /** Add a stream attachment to a a Document
-       * @param attachment_name the name of the stream
-       * @param stream the stream itself
-       * @param mime_type the MIME type of the stream
+      /** When a document already belongs to a database, its fields can be updated
+       * through this function
+       * @param document_id the id (unique identifier) of the document to update
+       * @param fields the new JSON description of the object to upload
+       * @param revision_id the resulting new revision of the object
        */
-      void
-      set_attachment_stream(const AttachmentName &attachment_name, const std::istream& stream,
-                            const MimeType& mime_type = MIME_TYPE_DEFAULT);
+      virtual void
+      persist_fields(const DocumentId & document_id, const or_json::mObject &fields, RevisionId & revision_id) = 0;
 
-      /**
-       * @param key the name of the field to check
-       * @return true if there is such a value stored
+      /** Load the JSON fields of an object from the database
+       * @param document_id the id (unique identifier) of the document to update
+       * @param fields the returned fields as a JSON object
        */
-      bool
-      has_field(const std::string& key) const
-      {
-        return fields_.find(key) != fields_.end();
-      }
+      virtual void
+      load_fields(const DocumentId & document_id, or_json::mObject &fields) = 0;
 
-      /** Get a specific value */
-      template<typename T>
-      T
-      get_field(const std::string& key) const
-      {
-        or_json::mObject::const_iterator iter = fields_.find(key);
-        if (iter != fields_.end())
-          return iter->second.get_value<T>();
-        else
-          throw std::runtime_error("\"" + key + "\" not a valid key for the JSON tree: " + or_json::write(fields_));
-      }
+      /** Delete a document of a given id in the database
+       * @param id the id of the document to delete
+       */
+      virtual void
+      Delete(const ObjectId & id) = 0;
 
-      /** Get a specific value */
-      or_json::mValue
-      get_field(const std::string& key) const
-      {
-        or_json::mObject::const_iterator iter = fields_.find(key);
-        if (iter != fields_.end())
-          return iter->second;
-        else
-          throw std::runtime_error("\"" + key + "\" not a valid key for the JSON tree: " + or_json::write(fields_));
-      }
-
-      /** Get a specific value */
-      const or_json::mObject &
-      fields() const
-      {
-        return fields_;
-      }
-
-      /** Set a specific value */
-      template<typename T>
+      /** Execute a given View on the database to find some documents
+       * @param view a view object defining a query
+       * @param limit_rows a maximum number of queries to return (0 for infinite)
+       * @param start_offset the offset at which to return the found documents
+       * @param total_rows the total number of elements found
+       * @param offset the offset at which the results start_offset
+       * @param view_elements a vector of the found elements
+       */
+      virtual
       void
-      set_field(const std::string& key, const T& val)
-      {
-        fields_[key] = or_json::mValue(val);
-      }
+      QueryView(const View & view, int limit_rows, int start_offset, int& total_rows, int& offset,
+                std::vector<ViewElement> & view_elements) = 0;
 
-      /** Set several values by inserting a property tree */
-      void
-      set_fields(const or_json::mObject & json_tree)
-      {
-        fields_.insert(json_tree.begin(), json_tree.end());
-      }
+      /** A generic function to make any query on the database
+       * @param queries a set of queries to perform. The strings can mean anything
+       * to the database and are therefore specific to a type of database
+       * @param limit_rows a maximum number of queries to return (0 for infinite)
+       * @param start_offset the offset at which to return the found documents
+       * @param total_rows the total number of elements found
+       * @param offset the offset at which the results start_offset
+       * @param view_elements a vector of the found elements
+       */
+      virtual void
+      QueryGeneric(const std::vector<std::string> & queries, int limit_rows, int start_offset, int& total_rows,
+                   int& offset, std::vector<ViewElement> & view_elements) = 0;
 
-      /** Set several values by inserting a property tree at a specific key*/
-      void
-      set_fields(const std::string& key, const or_json::mObject & json_tree)
-      {
-        or_json::mObject::const_iterator iter = fields_.find(key);
-        if (iter == fields_.end())
-          fields_.insert(std::make_pair(key, json_tree));
-        else
-          iter->second.get_value<or_json::mObject>().insert(json_tree.begin(), json_tree.end());
-      }
+      /** Given a Document, set a binary blobs
+       * @param document_id the id (unique identifier) of the document to update
+       * @param attachment_name the name/key of the binary blob to add
+       * @param mime_type the MIME type of the binary blob to add
+       * @param stream the binary blob itself
+       * @param revision_id the new revision id of the object after insertion/update
+       */
+      virtual void
+      set_attachment_stream(const DocumentId & document_id, const AttachmentName& attachment_name,
+                            const MimeType& mime_type, const std::istream& stream, RevisionId & revision_id)=0;
 
-      /** Clear all the fields, there are no fields left after */
-      void
-      ClearAllFields();
+      /** Given a Document, get one of its binary blobs
+       * @param document_id the id (unique identifier) of the document to update
+       * @param revision_id the revision id of the object
+       * @param attachment_name the name/key of the binary blob to add
+       * @param mime_type the MIME type of the binary blob to add
+       * @param stream the binary blob itself
+       */
+      virtual void
+      get_attachment_stream(const DocumentId & document_id, const RevisionId & revision_id,
+                            const AttachmentName& attachment_name,
+                            const MimeType& mime_type, std::ostream& stream)=0;
 
-      /** Remove a specific field */
-      void
-      ClearField(const std::string& key);
+      /** @return a string that defines the status of the database
+       */
+      virtual std::string
+      Status() const = 0;
+
+      /** @return a string that defines the status of the database for a given collection
+       */
+      virtual std::string
+      Status(const CollectionName& collection) const = 0;
+
+      /** Create a new collection in the database
+       * @param collection the name of the collection to create
+       */
+      virtual void
+      CreateCollection(const CollectionName &collection) = 0;
+
+      /** Delete a new collection in the database
+       * @param collection the name of the collection to delete
+       */
+      virtual void
+      DeleteCollection(const CollectionName &collection) = 0;
+
+      /** The type of the DB : e.g. 'CouchDB' ...
+       * @return one of the enum defining the possible types
+       */
+      virtual DbType
+      type() const = 0;
 
     protected:
-      /** contains the attachments: binary blobs */
-      struct StreamAttachment: boost::noncopyable
-      {
-        StreamAttachment()
-        {
-        }
-
-        StreamAttachment(const MimeType &type)
-            :
-              type_(type)
-        {
-        }
-
-        StreamAttachment(const MimeType &type, const std::istream &stream)
-            :
-              type_(type)
-        {
-          copy_from(stream);
-        }
-        void
-        copy_from(const std::istream& stream)
-        {
-          stream_ << stream.rdbuf();
-          stream_.seekg(0);
-        }
-        MimeType type_;
-        std::stringstream stream_;
-        typedef boost::shared_ptr<StreamAttachment> ptr;
-      };
-
-      typedef std::map<AttachmentName, StreamAttachment::ptr> AttachmentMap;
-
-      /** All the attachments */
-      AttachmentMap attachments_;
-
-      /** contains the fields: they are of integral types */
-      or_json::mObject fields_;
+      /** The parameters of the current DB */
+      ObjectDbParameters parameters_;
     };
 
-#ifdef CV_MAJOR_VERSION
-    // Specializations for cv::Mat
-    template<>
-    void
-    DummyDocument::get_attachment<cv::Mat>(const AttachmentName &attachment_name, cv::Mat & value) const;
-
-    template<>
-    void
-    DummyDocument::set_attachment<cv::Mat>(const AttachmentName &attachment_name, const cv::Mat & value);
-#endif
-
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    /** A Document holds fields (in the CouchDB sense) which are strings that are queryable, and attachments (that are
-     * un-queryable binary blobs)
-     */
-    class Document: public DummyDocument
-    {
-    public:
-      Document();
-      ~Document();
-
-      bool
-      operator==(const Document & document) const
-      {
-        return document_id_ == document.document_id_;
-      }
-
-      /**
-       * Update the db that this document should be associated with.
-       * @param db
-       */
-      void
-      set_db(const ObjectDbPtr& db);
-
-      /**
-       * Update the document_id that this document should be associated with.
-       * @param db
-       */
-      void
-      set_document_id(const DocumentId &document_id);
-
-      /** Fill the fields of the object
-       */
-      void
-      load_fields();
-
-      /** Persist your object to a given DB
-       */
-      void
-      Persist();
-
-      /** Set the id and the revision number */
-      void
-      SetIdRev(const std::string& id, const std::string& rev);
-
-      const std::string &
-      id() const
-      {
-        return document_id_;
-      }
-
-      const std::string &
-      rev() const
-      {
-        return revision_id_;
-      }
-
-      /** Extract a specific attachment from a document in the DB
-       * @param attachment_name
-       * @param value
-       */
-      template<typename T>
-      void
-      get_attachment_and_cache(const AttachmentName &attachment_name, T & value);
-
-      /** Extract the stream of a specific attachment for a Document from the DB
-       * @param attachment_name the name of the attachment
-       * @param stream the string of data to write to
-       * @param mime_type the MIME type as stored in the DB
-       */
-      virtual void
-      get_attachment_stream(const AttachmentName &attachment_name, std::ostream& stream, MimeType mime_type =
-          MIME_TYPE_DEFAULT) const;
-
-      /** Extract the stream of a specific attachment for a Document from the DB
-       * @param attachment_name the name of the attachment
-       * @param stream the string of data to write to
-       * @param mime_type the MIME type as stored in the DB
-       */
-      void
-      get_attachment_stream_and_cache(const AttachmentName &attachment_name, std::ostream& stream, MimeType mime_type =
-          MIME_TYPE_DEFAULT);
-    private:
-      ObjectDbPtr db_;
-      DocumentId document_id_;
-      RevisionId revision_id_;
-    };
-
-#ifdef CV_MAJOR_VERSION
-    // Specializations for cv::Mat
-    template<>
-    void
-    DummyDocument::get_attachment<cv::Mat>(const AttachmentName &attachment_name, cv::Mat & value) const;
-
-    template<>
-    void
-    DummyDocument::set_attachment<cv::Mat>(const AttachmentName &attachment_name, const cv::Mat & value);
-
-    template<>
-    void
-    Document::get_attachment_and_cache<cv::Mat>(const AttachmentName &attachment_name, cv::Mat & value);
-#endif
-
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-    typedef std::vector<Document> Documents;
-
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    typedef boost::shared_ptr<ObjectDb> ObjectDbPtr;
+    typedef boost::shared_ptr<const ObjectDb> ObjectDbConstPtr;
   }
 }
 
-#endif /* ORK_CORE_DB_DB_H_ */
+#endif // ORK_CORE_DB_DB_BASE_H_

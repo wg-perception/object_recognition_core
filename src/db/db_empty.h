@@ -37,7 +37,7 @@
 #define LOCAL_ORK_CORE_DB_DB_EMPTY_H_
 
 #include <object_recognition_core/common/types.h>
-#include <object_recognition_core/db/db_base.h>
+#include <object_recognition_core/db/db.h>
 
 #include "db_default.h"
 

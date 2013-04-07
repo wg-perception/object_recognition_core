@@ -37,7 +37,7 @@
 #define DB_COUCH_H_
 
 #include <object_recognition_core/common/types.h>
-#include <object_recognition_core/db/db_base.h>
+#include <object_recognition_core/db/db.h>
 
 #include "curl_interface.h"
 #include "db_default.h"

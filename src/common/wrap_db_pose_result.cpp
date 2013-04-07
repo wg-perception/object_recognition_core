@@ -41,7 +41,6 @@
 #include <boost/shared_ptr.hpp>
 
 #include <object_recognition_core/common/pose_result.h>
-#include <object_recognition_core/db/db_parameters.h>
 
 namespace bp = boost::python;
 

@@ -41,7 +41,6 @@
 #include <boost/shared_ptr.hpp>
 
 #include <object_recognition_core/db/db.h>
-#include <object_recognition_core/db/db_parameters.h>
 #include <object_recognition_core/db/model_utils.h>
 
 namespace bp = boost::python;

@@ -41,7 +41,7 @@
 #include <ecto/ecto.hpp>
 
 #include <object_recognition_core/common/pose_result.h>
-#include <object_recognition_core/db/db_parameters.h>
+#include <object_recognition_core/db/db.h>
 
 using ecto::tendrils;
 using ecto::spore;

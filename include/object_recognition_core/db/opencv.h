@@ -8,7 +8,7 @@
 #include <boost/serialization/binary_object.hpp>
 #include <boost/serialization/split_free.hpp>
 
-#include <object_recognition_core/db/db.h>
+#include <object_recognition_core/db/document.h>
 
 namespace object_recognition_core
 {
