@@ -56,7 +56,6 @@ namespace object_recognition_core
     typedef std::string Field;
     typedef std::string MimeType;
     typedef std::string RevisionId;
-    typedef or_json::mObject ObjectDbParametersRaw;
 
     const std::string MIME_TYPE_DEFAULT = "application/octet-stream";
 

@@ -40,6 +40,7 @@
 
 #include <object_recognition_core/common/dict_json_conversion.h>
 #include <object_recognition_core/db/db.h>
+#include <object_recognition_core/db/db_parameters.h>
 
 namespace bp = boost::python;
 

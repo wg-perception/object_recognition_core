@@ -38,10 +38,13 @@
 
 #include <object_recognition_core/common/json.hpp>
 
-namespace object_recognition_core
-{
-  namespace db
-  {
+namespace object_recognition_core {
+namespace db {
+
+typedef or_json::mObject ObjectDbParametersRaw;
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
     class ObjectDb;
 
     /** A class that stores the common parameters for the object DB

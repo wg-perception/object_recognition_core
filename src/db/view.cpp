@@ -33,6 +33,7 @@
  *
  */
 
+#include <object_recognition_core/db/db_base.h>
 #include <object_recognition_core/db/view.h>
 
 namespace object_recognition_core
@@ -63,8 +64,6 @@ namespace object_recognition_core
         return;
       }
     }
-
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     ViewElement::~ViewElement()
     {
@@ -121,5 +120,72 @@ namespace object_recognition_core
     {
       is_key_set_ = false;
     }
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+ViewIterator::ViewIterator(const View &view, const ObjectDbPtr& db) :
+    start_offset_(0), query_(
+        boost::bind(&ObjectDb::QueryView, db, view, _1, _2, _3, _4, _5)), db_(
+        db) {
+}
+
+const unsigned int ViewIterator::BATCH_SIZE = 100;
+
+ViewIterator::ViewIterator() :
+    start_offset_(0) {
+}
+
+/** Set the db on which to perform the Query
+ * @param db The db on which the query is performed
+ */
+void ViewIterator::set_db(const ObjectDbPtr & db) {
+  db_ = db;
+}
+
+/** Perform the query itself
+ * @return an Iterator that will iterate over each result
+ */
+ViewIterator &
+ViewIterator::begin() {
+  // Process the query and get the ids of several objects
+  query_(BATCH_SIZE, start_offset_, total_rows_, start_offset_, view_elements_);
+  return *this;
+}
+
+ViewIterator ViewIterator::end() {
+  return ViewIterator();
+}
+
+ViewIterator &
+ViewIterator::operator++() {
+  // If we have nothing else to pop, try to get more from the DB
+  if (view_elements_.empty()) {
+    // Figure out if we need to query for more document ids
+    if (start_offset_ < total_rows_)
+      query_(BATCH_SIZE, start_offset_, total_rows_, start_offset_,
+          view_elements_);
+  } else if (!view_elements_.empty())
+    view_elements_.pop_back();
+  return *this;
+}
+
+bool ViewIterator::operator==(const ViewIterator & document_view) const {
+  return !this->operator !=(document_view);
+}
+
+bool ViewIterator::operator!=(const ViewIterator & document_view) const {
+  if (document_view.view_elements_.empty())
+    return (!view_elements_.empty());
+  if (view_elements_.size() >= document_view.view_elements_.size())
+    return std::equal(view_elements_.begin(), view_elements_.end(),
+        document_view.view_elements_.begin());
+  else
+    return std::equal(document_view.view_elements_.begin(),
+        document_view.view_elements_.end(), view_elements_.begin());
+}
+
+ViewElement ViewIterator::operator*() const {
+  return view_elements_.back();
+}
   }
 }

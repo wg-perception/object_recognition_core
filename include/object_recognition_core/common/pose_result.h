@@ -47,8 +47,7 @@
 #include <Eigen/Eigen>
 #endif
 
-#include <object_recognition_core/db/db.h>
-#include <object_recognition_core/db/view.h>
+#include <object_recognition_core/db/db_base.h>
 #include "types.h"
 #include <sensor_msgs/PointCloud2.h>
 
