@@ -6,7 +6,7 @@ git_lastmod='${${PROJECT_NAME}_LAST_MODIFIED}'
 github_url='${${PROJECT_NAME}_GITHUB_URL}'
 
 breathe_default_project = '${PROJECT_NAME}'
-breathe_projects = dict(object_recognition_core='${CMAKE_CURRENT_BINARY_DIR}/../../object_recognition_core/api/xml')
+breathe_projects = dict(object_recognition_core='${CMAKE_CURRENT_BINARY_DIR}/../api/xml')
 
 # for release
 ork_module_url_root = 'http://wg-perception.github.com/'
