@@ -92,4 +92,14 @@ def create_plasm(ork_params):
             connect_cells(cell, cells[output_name], plasm)
             already_processed_connections.add(connection)
 
+    # make sure each cell is present in at least one connection
+    if len(cells.keys()) > 1:
+        for cell_name in cells.keys():
+            if not any([connection[0]==cell_name or connection[1]==cell_name
+                   for connection in already_processed_connections]):
+                raise OrkPlasmError('Cell "%s" is not connected to any other cell.' % cell_name)
+
+        if not already_processed_connections:
+            raise OrkPlasmError('There are no connections in your graph.')
+
     return plasm
