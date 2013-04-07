@@ -271,6 +271,7 @@ namespace object_recognition_core
      * VIEW_MODEL_WHERE_OBJECT_ID_AND_MODEL_TYPE: Initialize(std::string model_type)
      * VIEW_OBJECT_INFO_WHERE_OBJECT_ID: no need to initialize. Returns a document that contains the
      *                           following attributes: name (std:string), mesh_uri (std::string)
+     * VIEW_OBSERVATION_WHERE_OBJECT_ID: no need to initialize. Returns a view listing all the ovservations of an object
      */
     class View
     {
@@ -340,8 +341,10 @@ namespace object_recognition_core
       static std::vector<ViewType>
       AllViewTypes()
       {
-        View::ViewType all_views[] =
-        { View::VIEW_MODEL_WHERE_OBJECT_ID_AND_MODEL_TYPE, View::VIEW_OBJECT_INFO_WHERE_OBJECT_ID };
+        View::ViewType all_views[] = {
+        View::VIEW_MODEL_WHERE_OBJECT_ID_AND_MODEL_TYPE,
+        View::VIEW_OBJECT_INFO_WHERE_OBJECT_ID,
+        View::VIEW_OBSERVATION_WHERE_OBJECT_ID };
         return std::vector<View::ViewType>(all_views, all_views + 1);
       }
 
