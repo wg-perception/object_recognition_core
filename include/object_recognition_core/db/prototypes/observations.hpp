@@ -59,9 +59,9 @@ namespace object_recognition_core
     };
 
     void
-    operator>>(Observation& o, db::Document& doc);
+    operator>>(Observation& o, db::DummyDocument* doc);
     void
-    operator<<(Observation& o, db::Document& doc);
+    operator<<(Observation& o, const db::DummyDocument* doc);
     void
     operator>>(Observation& obs, const ecto::tendrils& o);
     void

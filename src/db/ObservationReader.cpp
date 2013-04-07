@@ -34,7 +34,7 @@ namespace object_recognition_core
       process(const tendrils& inputs, const tendrils& outputs)
       {
         Observation obs;
-        obs << *observation_;
+        obs << &(*observation_);
         obs >> outputs;
         return 0;
       }

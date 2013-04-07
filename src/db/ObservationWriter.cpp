@@ -73,7 +73,7 @@ namespace object_recognition_core
         obs.session_id = session_id;
         Document doc;
         doc.set_db(db);
-        obs >> doc;
+        obs >> &doc;
         doc.Persist();
         return ecto::OK;
       }

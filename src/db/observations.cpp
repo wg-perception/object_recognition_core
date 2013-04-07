@@ -27,7 +27,7 @@ namespace object_recognition_core
       t.declare<int>("frame_number", "The frame number");
     }
     void
-    operator>>(Observation& o, db::Document& doc)
+    operator>>(Observation& o, db::DummyDocument* doc)
     {
       std::map<std::string, cv::Mat> intrinsics, extrinsics;
       intrinsics["K"] = o.K;
@@ -37,29 +37,29 @@ namespace object_recognition_core
       object_recognition_core::db::mats2yaml(intrinsics, intr_ss);
       object_recognition_core::db::mats2yaml(extrinsics, extr_ss);
 
-      object_recognition_core::db::png_attach(o.image, doc, "image");
-      object_recognition_core::db::png_attach(o.depth, doc, "depth");
-      object_recognition_core::db::png_attach(o.mask, doc, "mask");
-      doc.set_attachment_stream("intrinsics.yml", intr_ss, "text/x-yaml");
-      doc.set_attachment_stream("extrinsics.yml", extr_ss, "text/x-yaml");
-      doc.set_field("Type", "Observation");
-      doc.set_field("object_id", o.object_id);
-      doc.set_field("session_id", o.session_id);
-      doc.set_field("frame_number", o.frame_number);
+      object_recognition_core::db::png_attach(o.image, *doc, "image");
+      object_recognition_core::db::png_attach(o.depth, *doc, "depth");
+      object_recognition_core::db::png_attach(o.mask, *doc, "mask");
+      doc->set_attachment_stream("intrinsics.yml", intr_ss, "text/x-yaml");
+      doc->set_attachment_stream("extrinsics.yml", extr_ss, "text/x-yaml");
+      doc->set_field("Type", "Observation");
+      doc->set_field("object_id", o.object_id);
+      doc->set_field("session_id", o.session_id);
+      doc->set_field("frame_number", o.frame_number);
     }
 
     void
-    operator<<(Observation& o, db::Document& doc)
+    operator<<(Observation& o, const db::DummyDocument* doc)
     {
-      o.object_id = doc.get_field<std::string>("object_id");
-      o.session_id = doc.get_field<std::string>("session_id");
-      o.frame_number = doc.get_field<int>("frame_number");
-      object_recognition_core::db::get_png_attachment(o.image, doc, "image");
-      object_recognition_core::db::get_png_attachment(o.depth, doc, "depth");
-      object_recognition_core::db::get_png_attachment(o.mask, doc, "mask");
+      o.object_id = doc->get_field<std::string>("object_id");
+      o.session_id = doc->get_field<std::string>("session_id");
+      o.frame_number = doc->get_field<int>("frame_number");
+      object_recognition_core::db::get_png_attachment(o.image, *doc, "image");
+      object_recognition_core::db::get_png_attachment(o.depth, *doc, "depth");
+      object_recognition_core::db::get_png_attachment(o.mask, *doc, "mask");
       std::stringstream intr_ss, extr_ss;
-      doc.get_attachment_stream_and_cache("intrinsics.yml", intr_ss);
-      doc.get_attachment_stream_and_cache("extrinsics.yml", extr_ss);
+      doc->get_attachment_stream("intrinsics.yml", intr_ss);
+      doc->get_attachment_stream("extrinsics.yml", extr_ss);
       std::map<std::string, cv::Mat> intrinsics, extrinsics;
       intrinsics["K"] = cv::Mat();
       extrinsics["R"] = cv::Mat();

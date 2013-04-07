@@ -24,10 +24,10 @@ namespace object_recognition_core
     yaml2mats(std::map<std::string, cv::Mat>& mm,std::istream& in, bool do_gzip = false);
 
     void
-    png_attach(cv::Mat image, db::Document& doc, const std::string& name);
+    png_attach(cv::Mat image, db::DummyDocument& doc, const std::string& name);
 
     void
-    get_png_attachment(cv::Mat& image, db::Document& doc, const std::string& name);
+    get_png_attachment(cv::Mat& image, const db::DummyDocument& doc, const std::string& name);
   }
 }
 
