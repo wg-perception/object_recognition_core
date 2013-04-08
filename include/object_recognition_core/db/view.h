@@ -44,37 +44,6 @@ namespace object_recognition_core {
 namespace db {
 // Forward declare classes
 class View;
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-    /** Contains the different values return when doing a query as mentioned here:
-     * http://wiki.apache.org/couchdb/Introduction_to_CouchDB_views
-     */
-    class ViewElement: public DummyDocument
-    {
-    public:
-      ViewElement(const std::string &id, const or_json::mValue & key)
-          :
-            id_(id),
-            key_(key)
-      {
-      }
-
-      ~ViewElement();
-
-      bool
-      operator==(const ViewElement & view_element) const
-      {
-        return id_ == view_element.id_;
-      }
-
-      virtual void
-      get_attachment_stream(const AttachmentName &attachment_name, std::ostream& stream, MimeType mime_type =
-          MIME_TYPE_DEFAULT) const;
-
-      /** contains the fields: they are of integral types */
-      std::string id_;
-      or_json::mValue key_;
-    };
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -112,16 +81,16 @@ public:
   bool
   operator!=(const ViewIterator & document_view) const;
 
-  ViewElement
+  Document
   operator*() const;
 private:
-  std::vector<ViewElement> view_elements_;
+  std::vector<Document> view_elements_;
   int start_offset_;
   int total_rows_;
   /** The strings to send to the db_ to perform the query */
   boost::function<
       void(int limit_rows, int start_offset, int& total_rows, int& offset,
-          std::vector<ViewElement> &)> query_;
+          std::vector<Document> &)> query_;
   ObjectDbPtr db_;
 };
 

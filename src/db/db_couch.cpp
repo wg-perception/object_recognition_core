@@ -200,7 +200,7 @@ ObjectDbCouch::Delete(const ObjectId & id)
 
 void
 ObjectDbCouch::QueryView(const object_recognition_core::db::View & view, int limit_rows, int start_offset, int& total_rows,
-                     int& offset, std::vector<ViewElement> & view_elements)
+                     int& offset, std::vector<Document> & view_elements)
 {
   json_reader_stream_.str("");
   or_json::mObject parameters = view.parameters();
@@ -236,7 +236,7 @@ ObjectDbCouch::QueryView(const object_recognition_core::db::View & view, int lim
 
 void
 ObjectDbCouch::QueryGeneric(const std::vector<std::string> & queries, int limit_rows, int start_offset, int& total_rows,
-                     int& offset, std::vector<ViewElement> & view_elements)
+                     int& offset, std::vector<Document> & view_elements)
 {
   {
     or_json::mObject fields;
@@ -257,7 +257,7 @@ ObjectDbCouch::QueryGeneric(const std::vector<std::string> & queries, int limit_
  */
 void
 ObjectDbCouch::QueryView(const std::string & in_url, int limit_rows, int start_offset, const std::string &options,
-                         int& total_rows, int& offset, std::vector<ViewElement> & view_elements, bool do_throw)
+                         int& total_rows, int& offset, std::vector<Document> & view_elements, bool do_throw)
 {
   if (limit_rows <= 0)
     limit_rows = std::numeric_limits<int>::max();
@@ -298,7 +298,9 @@ ObjectDbCouch::QueryView(const std::string & in_url, int limit_rows, int start_o
   {
     // values are: id, key, value
     const or_json::mObject & object = v.get_obj();
-    view_elements.push_back(ViewElement(object.find("id")->second.get_str(), object.find("key")->second));
+    Document doc;
+    doc.SetIdRev(object.find("id")->second.get_str(), object.find("key")->second.get_str());
+    view_elements.push_back(doc);
     view_elements.back().set_fields(object.find("value")->second.get_obj());
   }
   offset = fields["offset"].get_int() + view_elements.size();

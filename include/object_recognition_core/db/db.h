@@ -154,7 +154,7 @@ namespace object_recognition_core
       virtual
       void
       QueryView(const View & view, int limit_rows, int start_offset, int& total_rows, int& offset,
-                std::vector<ViewElement> & view_elements) = 0;
+                std::vector<Document> & view_elements) = 0;
 
       /** A generic function to make any query on the database
        * @param queries a set of queries to perform. The strings can mean anything
@@ -167,7 +167,7 @@ namespace object_recognition_core
        */
       virtual void
       QueryGeneric(const std::vector<std::string> & queries, int limit_rows, int start_offset, int& total_rows,
-                   int& offset, std::vector<ViewElement> & view_elements) = 0;
+                   int& offset, std::vector<Document> & view_elements) = 0;
 
       /** Given a Document, set a binary blobs
        * @param document_id the id (unique identifier) of the document to update

@@ -112,7 +112,7 @@ namespace object_recognition_core
           // If they are the same, delete the current model in the database
           if ((CompareJsonIntersection(in_submethod, db_submethod)) || is_incomplete_model_type)
           {
-            DocumentId model_id = (*iter).id_;
+            DocumentId model_id = (*iter).id();
             std::cout << "Deleting the previous model " << model_id << " of object " << *object_id_ << std::endl;
             db_->Delete(model_id);
           }
