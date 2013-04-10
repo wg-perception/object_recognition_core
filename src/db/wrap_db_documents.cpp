@@ -123,7 +123,7 @@ namespace object_recognition_core
 
     DocumentsPtr
     ModelDocumentsFromPython(object_recognition_core::db::ObjectDbPtr & db, const bp::object & bp_object_ids,
-                             const std::string & method, const std::string & json_submethod)
+                             const std::string & method)
     {
       DocumentsPtr p(new Documents());
 
@@ -135,7 +135,7 @@ namespace object_recognition_core
 
       if (!object_ids.empty())
       {
-        *p = ModelDocuments(db, object_ids, method, json_submethod);
+        *p = ModelDocuments(db, object_ids, method);
       }
       return p;
     }

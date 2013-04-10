@@ -109,7 +109,6 @@ class Model(Document):
     model_params = TextField()
     Type = TextField(default="Model")
     method = TextField()
-    submethod = TextField()
 
     # this dictionary will include several views: the key will be the type of objectmodel
     by_object_id_and = {}

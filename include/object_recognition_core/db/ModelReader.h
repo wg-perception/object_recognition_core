@@ -85,29 +85,12 @@ namespace object_recognition_core
         void
         configure_impl()
         {
-          method_.set_callback(boost::bind(&ModelReaderBase::parameterCallbackMethod, this, _1));
+          if (method_.required())
+            method_.set_callback(boost::bind(&ModelReaderBase::parameterCallbackMethod, this, _1));
 
           // Make sure that whenever parameters related to the models or objects changes, the list of models is regenerated
           json_db_.set_callback(boost::bind(&ModelReaderBase::parameterCallbackJsonDb, this, _1));
           json_object_ids_.set_callback(boost::bind(&ModelReaderBase::parameterCallbackJsonObjectIds, this, _1));
-          json_submethod_.set_callback(boost::bind(&ModelReaderBase::parameterCallbackJsonSubMethod, this, _1));
-          json_object_ids_.dirty(true);
-        }
-
-        /** This function must be called from the child in the configure() function to set some default parameters
-         * and their callbacks. It will not allow  the cell to have a method parameter as it will be set to the input
-         * parameter (this function is useful if your cell will always read the same models)
-         * @param method the method
-         */
-        void
-        configure_impl(const std::string &method)
-        {
-          *method_ = method;
-
-          // Make sure that whenever parameters related to the models or objects changes, the list of models is regenerated
-          json_db_.set_callback(boost::bind(&ModelReaderBase::parameterCallbackJsonDb, this, _1));
-          json_object_ids_.set_callback(boost::bind(&ModelReaderBase::parameterCallbackJsonObjectIds, this, _1));
-          json_submethod_.set_callback(boost::bind(&ModelReaderBase::parameterCallbackJsonSubMethod, this, _1));
           json_object_ids_.dirty(true);
         }
 
@@ -119,7 +102,7 @@ namespace object_recognition_core
         Documents documents_;
 
         friend void
-        declare_params_impl(ecto::tendrils& params);
+        declare_params_impl(ecto::tendrils& params, const std::string &method);
       private:
         void
         parameterCallbackCommon()
@@ -129,9 +112,9 @@ namespace object_recognition_core
 
           // define the documents from the database
           if (object_id_is_all_)
-            documents_ = ModelDocuments(db_, *method_, *json_submethod_);
+            documents_ = ModelDocuments(db_, *method_);
           else
-            documents_ = ModelDocuments(db_, object_ids_, *method_, *json_submethod_);
+            documents_ = ModelDocuments(db_, object_ids_, *method_);
 
           parameter_callback(documents_);
         }
@@ -156,9 +139,15 @@ namespace object_recognition_core
           object_id_is_all_ = ((json_object_ids == "all")
               || (json_object_ids == "\"all\"") || (json_object_ids == "'all'"));
           if (!object_id_is_all_) {
+            or_json::mValue val;
+            try {
+              or_json::read(json_object_ids, val);
+            } catch(...) {
+              throw std::runtime_error("object_ids is not valid JSON");
+            }
             or_json::mArray array;
             try {
-              array = or_json::mValue(json_object_ids).get_array();
+              array = val.get_array();
             } catch(...) {
               throw std::runtime_error("object_ids needs to be the string \"all\" or an array of object ids as strings");
             }
@@ -177,17 +166,8 @@ namespace object_recognition_core
           parameterCallbackCommon();
         }
 
-        void
-        parameterCallbackJsonSubMethod(const std::string& json_submethod)
-        {
-          *json_submethod_ = json_submethod;
-          parameterCallbackCommon();
-        }
-
         /** The method used to compute the models */
         ecto::spore<std::string> method_;
-        /** The sub-method used to compute the models */
-        ecto::spore<std::string> json_submethod_;
         /** The DB parameter stored as a JSON string */
         ecto::spore<std::string> json_db_;
         /** The DB documents for the models stored as a JSON string*/
@@ -197,14 +177,15 @@ namespace object_recognition_core
       };
 
       void
-      declare_params_impl(ecto::tendrils& params)
+      declare_params_impl(ecto::tendrils& params, const std::string &method)
       {
-        params.declare(&ModelReaderBase::json_db_, "json_db", "The DB configuration parameters as a JSON string").required();
+        params.declare(&ModelReaderBase::json_db_, "json_db", "The DB configuration parameters as a JSON string").required(true);
         params.declare(&ModelReaderBase::json_object_ids_, "json_object_ids",
-                       "A set of object ids as a JSON string: '[\"erwere\"]'", "all");
-        params.declare(&ModelReaderBase::method_, "method", "The method the models were computed with").required();
-        params.declare(&ModelReaderBase::json_submethod_, "json_submethod", "The submethod used to compute the models.",
-                       "");
+                      "A set of object ids as a JSON string: '[\"1576f162347dbe1f95bd675d3c00ec6a\"]' or 'all'", "all");
+        if (method.empty())
+          params.declare(&ModelReaderBase::method_, "method", "The method the models were computed with").required(true);
+        else
+          params.declare(&ModelReaderBase::method_, "method", "The method the models were computed with", method);
       }
     }
   }

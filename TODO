@@ -67,6 +67,3 @@ Test:
 more unittests on config file/command line arguments
 the automatic docs should use the parameters from the cell only, and have a function to overload
 doc_config belongs to python_or_core
-
-
-document what a submethod is in ORK

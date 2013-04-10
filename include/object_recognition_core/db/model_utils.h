@@ -54,35 +54,30 @@ namespace object_recognition_core
      * @param db the DB where the model will be saved
      * @param object_id the id of the object for that model
      * @param method the method used to compute the models (e.g. 'TOD')
-     * @param submethod_str a JSON string detailing the discriminative parameters used in the method (e.g.
-     * "{"descriptor":"ORB"}" in TOD)
      * @param parameters_str a JSON string detailing the non-discriminative parameters used in the method
      * @return the Document to update
      */
     void
     PopulateModel(const ObjectDbPtr& db, const ObjectId& object_id, const std::string& method,
-                    const std::string& submethod_str, const std::string& parameters_str, Document& doc);
+                    const std::string& parameters_str, Document& doc);
 
     /** Given some parameters, retrieve Documents that are models with an object_id
      * that is in object_ids and with parameters matching model_json_params
      * @param db
      * @param object_ids
      * @param method
-     * @param json_submethod
      * @return
      */
     Documents
-    ModelDocuments(ObjectDbPtr &db, const std::vector<ObjectId> & object_ids, const std::string & method,
-                   const std::string & json_submethod);
+    ModelDocuments(ObjectDbPtr &db, const std::vector<ObjectId> & object_ids, const std::string & method);
 
     /** Given some parameters, retrieve Documents that are models with parameters matching model_json_params
      * @param db
      * @param method
-     * @param json_submethod
      * @return
      */
     Documents
-    ModelDocuments(ObjectDbPtr &db, const std::string & method, const std::string & json_submethod);
+    ModelDocuments(ObjectDbPtr &db, const std::string & method);
 }
 }
 

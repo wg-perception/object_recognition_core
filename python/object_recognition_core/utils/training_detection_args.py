@@ -51,6 +51,7 @@ def read_arguments_from_string(parameter_str):
                                     'val is the dictionary or its parameters')
 
     # Go over the different cells
+    allowed_keys = set(['type', 'module', 'parameters', 'inputs', 'outputs'])
     for cell_name, cell_params in params.items():
         # Make sure we can find the cell:
         if 'type' not in cell_params or 'module' not in cell_params:
@@ -64,7 +65,7 @@ def read_arguments_from_string(parameter_str):
                     if isinstance(val_level2, (list, dict)):
                         val_level1[key_level2] = json.dumps(val_level2)
                     # for standard parameters, force a renaming to emphasize the change
-                    if key_level2 in ['db', 'object_ids', 'submethod']:
+                    if key_level2 in ['db', 'object_ids']:
                         val_level1['json_' + key_level2] = json.dumps(val_level2)
                         val_level1.pop(key_level2)
             elif key_level1 in ['inputs', 'outputs']:
@@ -72,8 +73,8 @@ def read_arguments_from_string(parameter_str):
                     raise OrkConfigurationError('The inputs/outputs need to be a list, got %s instead' % 
                                                     val_level2)
                 continue
-            elif isinstance(val_level1, (list, dict)):
-                cell_params[key_level1] = json.dumps(val_level1)
+            elif key_level1 not in allowed_keys:
+                raise OrkConfigurationError('First level key "%s" must be in ' %key_level1 + ', '.join(allowed_keys))
 
     return params
 
