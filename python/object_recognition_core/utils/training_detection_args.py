@@ -21,6 +21,8 @@ def create_parser(do_training=False):
     """
     parser = ObjectRecognitionParser()
     parser.add_argument('-c', '--config_file', help='Config file')
+    parser.add_argument('--visualize', help='If set and the pipeline supports it, it will display some windows '
+                        'with temporary results', default=False, action='store_true')
 
     if do_training:
         parser.add_argument('--commit', dest='commit', action='store_true',
