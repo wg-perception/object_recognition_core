@@ -4,7 +4,7 @@
   <description>object_recognition_core contains tools to launch several recognition pipelines, train objects, store models ...</description>
   <author email="erublee@willowgarage.com">Ethan Rublee</author>
   <author email="vrabaud@willowgarage.com">Vincent Rabaud</author>
-  <maintainer email="vrabaud@willowgarage.com">Vincent Rabaud</maintainer>
+  <maintainer email="vincent.rabaud@gmail.com">Vincent Rabaud</maintainer>
   <license>BSD</license>
   <copyright>Willow Garage</copyright>
 
