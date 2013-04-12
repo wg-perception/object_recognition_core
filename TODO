@@ -8,7 +8,6 @@ sse optimization of perspectiveTransform
 Build:
 - no default build of tutorials
 - split the tests (db tests should at least be separated)
-- make Factories depend on an ABC
 
 Interface:
 - --all should also have a --missing. Fix missing, object_names
@@ -20,7 +19,7 @@ Performance:
 - Mike's stuff
 
 DB:
-- move to a system dependency with python-couchdb after Electric (dropping Lucid support)
+- move to a system dependency with python-couchdb after Fuerte (dropping Oneiric support)
 - delete things from the DB, find orphans, find missing components (models ...), find duplicates
 - better object representation (model, inline images, 3d models ...)
   - HTML - see the model_viewer under apps. Its a couch app, we can make it do whatever.
@@ -28,7 +27,7 @@ DB:
 - be able to only replicate models in a DB (to put on the PR2)
 - add meta data that is missing (meet with everybody). We want: timestamp of the session, the sensor id
 - use a single view for all model types
-- is models.py obsolete?
+- is models.py obsolete? Soonish with the view to find observations
 - make more db manipulation scripts apps/dbscripts ... FIXME don't break these.
 
 Capture:
