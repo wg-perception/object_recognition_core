@@ -142,12 +142,14 @@ $(document).ready(function() {
 <div class="section" id="install">
 <h2>Install<a class="headerlink" href="#install" title="Permalink to this headline">¶</a></h2>
 <p>Install <tt class="docutils literal"><span class="pre">ORK</span></tt> as detailed on the <a class="reference internal" href="install.html#install"><em>Install</em></a> page.</p>
-<p>If you want to visualize data in the database, you also need to run:</p>
-<div class="container">
-<div class="toggleable_div label_FromSource"><div class="highlight-bash"><div class="highlight"><pre><span class="nb">cd </span>object_recognition_core/web_ui <span class="o">&amp;&amp;</span> ./push.sh
+<p>If you want to visualize data in the database, you also need to run (be sure to have installed couchapp sudo pip install -U couchapp):</p>
+<div class="highlight-python"><pre>.. toggle:: From Source</pre>
+</div>
+<blockquote>
+<div><div class="highlight-bash"><div class="highlight"><pre><span class="nb">cd </span>object_recognition_core/web_ui <span class="o">&amp;&amp;</span> ./push.sh
 </pre></div>
 </div>
-</div></div>
+</div></blockquote>
 <div class="container">
 <div class="toggleable_div label_FromROSpackages"><div class="highlight-bash"><div class="highlight"><pre>rosrun object_recognition_core push.sh
 </pre></div>
