@@ -1,17 +1,11 @@
 ecto:
 update the docs to say devel is done but still maintained
 
-OpenCV:
-why is there no affienTransform
-sse optimization of perspectiveTransform
-
 Build:
 - no default build of tutorials
 - split the tests (db tests should at least be separated)
 
 Interface:
-- --all should also have a --missing. Fix missing, object_names
-- meshing should support --all, --missing, --object_ids
 - create a simple graph plasm viewer for ORK
 - get the ecto_gooey to work with ORK
 
