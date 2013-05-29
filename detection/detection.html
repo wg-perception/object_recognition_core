@@ -324,7 +324,7 @@ source_2:
    module: object_recognition_ros.io.sink.publisher
    parameters:
       #  The DB parameters
-      db_params: &lt;object_recognition_core.boost.interface.ObjectDbParameters object at 0x2954260&gt;
+      db_params: &lt;object_recognition_core.boost.interface.ObjectDbParameters object at 0x328dc58&gt;
       #  If True some markers are displayed for visualization. For RSO Groovy and above, use the
       # RViz plugin instead.
       do_visualize: False
@@ -342,15 +342,6 @@ source_2:
       recognized_object_array_topic: recognized_object_array
 
 sink_1:
-   type: GuessCsvWriter
-   module: object_recognition_core.io.sink
-   parameters:
-      #  The run number
-      run_number: 0
-      #  The name of the team to consider
-      team_name: 
-
-sink_2:
    type: TablePublisher
    module: object_recognition_tabletop.table_publisher
    parameters:
@@ -366,10 +357,55 @@ sink_2:
       marker_table_topic: marker_tables
       #  The array of found tables.
       table_array: table_array
+
+sink_2:
+   type: GuessCsvWriter
+   module: object_recognition_core.io.sink
+   parameters:
+      #  The run number
+      run_number: 0
+      #  The name of the team to consider
+      team_name:
 </pre></div>
 </div>
 <p>or the following pipelines:</p>
 <div class="highlight-text"><div class="highlight"><pre>detection_pipeline_0:
+   type: PartsBasedDetector
+   module: object_recognition_by_parts.detector
+   parameters:
+      #  The DB configuration parameters as a JSON string
+      json_db: 
+      #  A set of object ids as a JSON string: &#39;[&quot;1576f162347dbe1f95bd675d3c00ec6a&quot;]&#39; or &#39;all&#39;
+      json_object_ids: all
+      #  The maximum overlap allowed between object detections
+      max_overlap: 0.10000000149
+      #  The method the models were computed with
+      method: PartsBased
+      #  The path to the model file
+      model_file: 
+      #  The cell should remove planes from the scene before the cluster extraction
+      remove_planes: False
+      #  Visualize results
+      visualize: False
+
+detection_pipeline_1:
+   type: TransparentObjectsDetector
+   module: object_recognition_transparent_objects.detector
+   parameters:
+      #  The DB configuration parameters as a JSON string
+      json_db: 
+      #  A set of object ids as a JSON string: &#39;[&quot;1576f162347dbe1f95bd675d3c00ec6a&quot;]&#39; or &#39;all&#39;
+      json_object_ids: all
+      #  The method the models were computed with
+      method: TransparentObjects
+      #  The DB parameters
+      object_db: None
+      #  The filename of the registration mask.
+      registrationMaskFilename: 
+      #  Visualize results
+      visualize: False
+
+detection_pipeline_2:
    type: TodDetector
    module: object_recognition_tod.detector
    parameters:
@@ -394,22 +430,7 @@ sink_2:
       #  If true, some windows pop up to see the progress
       visualize: False
 
-detection_pipeline_1:
-   type: LinemodDetector
-   module: object_recognition_linemod.detector
-   parameters:
-      #  The DB configuration parameters as a JSON string
-      json_db: 
-      #  A set of object ids as a JSON string: &#39;[&quot;1576f162347dbe1f95bd675d3c00ec6a&quot;]&#39; or &#39;all&#39;
-      json_object_ids: all
-      #  The method the models were computed with
-      method: LINEMOD
-      #  Matching threshold, as a percentage
-      threshold: 90.0
-      #  If True, visualize the output.
-      visualize: False
-
-detection_pipeline_2:
+detection_pipeline_3:
    type: TabletopTableDetector
    module: object_recognition_tabletop.detector
    parameters:
@@ -431,23 +452,6 @@ detection_pipeline_2:
       #  The amount to crop above the plane, in meters.
       z_min: 0.00749999983236
 
-detection_pipeline_3:
-   type: TransparentObjectsDetector
-   module: object_recognition_transparent_objects.detector
-   parameters:
-      #  The DB configuration parameters as a JSON string
-      json_db: 
-      #  A set of object ids as a JSON string: &#39;[&quot;1576f162347dbe1f95bd675d3c00ec6a&quot;]&#39; or &#39;all&#39;
-      json_object_ids: all
-      #  The method the models were computed with
-      method: TransparentObjects
-      #  The DB parameters
-      object_db: None
-      #  The filename of the registration mask.
-      registrationMaskFilename: 
-      #  Visualize results
-      visualize: False
-
 detection_pipeline_4:
    type: TabletopObjectDetector
    module: object_recognition_tabletop.detector
@@ -460,22 +464,18 @@ detection_pipeline_4:
       tabletop_object_ids: REDUCED_MODEL_SET
 
 detection_pipeline_5:
-   type: PartsBasedDetector
-   module: object_recognition_by_parts.detector
+   type: LinemodDetector
+   module: object_recognition_linemod.detector
    parameters:
       #  The DB configuration parameters as a JSON string
       json_db: 
       #  A set of object ids as a JSON string: &#39;[&quot;1576f162347dbe1f95bd675d3c00ec6a&quot;]&#39; or &#39;all&#39;
       json_object_ids: all
-      #  The maximum overlap allowed between object detections
-      max_overlap: 0.10000000149
       #  The method the models were computed with
-      method: PartsBased
-      #  The path to the model file
-      model_file: 
-      #  The cell should remove planes from the scene before the cluster extraction
-      remove_planes: False
-      #  Visualize results
+      method: LINEMOD
+      #  Matching threshold, as a percentage
+      threshold: 90.0
+      #  If True, visualize the output.
       visualize: False
 </pre></div>
 </div>
