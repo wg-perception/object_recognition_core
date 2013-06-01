@@ -56,6 +56,5 @@ Test:
 
 
 (ROS) logging everything happening between the Python launch and when the plasm starts
-more unittests on config file/command line arguments
 the automatic docs should use the parameters from the cell only, and have a function to overload
 doc_config belongs to python_or_core
