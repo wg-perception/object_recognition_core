@@ -16,7 +16,7 @@ Install
 
 Install ``ORK`` as detailed on the :ref:`Install <install>` page.
 
-If you want to visualize data in the database, you also need to run (be sure to have installed couchapp sudo pip install -U couchapp):
+If you want to visualize data in the database, you also need to run (be sure to have installed couchapp sudo pip install -U couchapp)::
 
 .. toggle:: From Source
 
@@ -74,7 +74,7 @@ First capture an ORB template of your capture workspace. It  should be take from
 
    .. code-block:: sh
 
-      ./object_recognition_capture/apps/orb_template.py -o my_textured_plane
+      ./object_recognition_capture/apps/orb_template -o my_textured_plane
 
 .. toggle:: From ROS packages
 
@@ -82,13 +82,13 @@ First capture an ORB template of your capture workspace. It  should be take from
 
    .. code-block:: sh
 
-      rosrun object_recognition_capture orb_template.py -o my_textured_plane
+      rosrun object_recognition_capture orb_template -o my_textured_plane
 
    Try out tracking to see if you got a good template. Press 'q' to quit.
 
    .. code-block:: sh
 
-      rosrun object_recognition_capture orb_track.py --track_directory my_textured_plane
+      rosrun object_recognition_capture orb_track --track_directory my_textured_plane
 
    Uuse the SXGA (roughly 1 megapixel) mode of your openni device if possible.
 
