@@ -16,12 +16,12 @@ Install
 
 Install ``ORK`` as detailed on the :ref:`Install <install>` page.
 
-If you want to visualize data in the database, you also need to run (be sure to have installed couchapp sudo pip install -U couchapp)::
+If you want to visualize data in the database, you also need to run (be sure to have installed couchapp sudo pip install -U couchapp):
 
 .. toggle:: From Source
 
    .. code-block:: bash
-   
+
       cd object_recognition_core/web_ui && ./push.sh
 
 .. toggle:: From ROS packages
@@ -38,13 +38,13 @@ You need to setup your environment:
 .. toggle:: From Source
 
    .. code-block:: bash
-   
+
       source devel/setup.sh
 
 .. toggle:: From ROS packages
 
    .. code-block:: bash
-   
+
       source /opt/ros/DISTRO_NAME/setup.sh
 
 This will add all the necessary packages to your ``PATH``, ``LD_LIBRARY_PATH`` and ``PYTHONPATH``.
@@ -52,17 +52,17 @@ This will add all the necessary packages to your ``PATH``, ``LD_LIBRARY_PATH`` a
 .. toggle:: From ROS packages
 
    .. rubric:: Setup ROS
-   
+
    Terminal 1:
-   
+
    .. code-block:: sh
-   
+
       roscore
-   
+
    Terminal 2:
-   
+
    .. code-block:: sh
-   
+
       roslaunch openni_launch openni.launch
 
 Setup the capture workspace
@@ -73,27 +73,27 @@ First capture an ORB template of your capture workspace. It  should be take from
 .. toggle:: From Source
 
    .. code-block:: sh
-   
+
       ./object_recognition_capture/apps/orb_template.py -o my_textured_plane
 
 .. toggle:: From ROS packages
 
    Terminal 3:
-   
+
    .. code-block:: sh
-   
+
       rosrun object_recognition_capture orb_template.py -o my_textured_plane
-   
+
    Try out tracking to see if you got a good template. Press 'q' to quit.
-   
+
    .. code-block:: sh
-   
+
       rosrun object_recognition_capture orb_track.py --track_directory my_textured_plane
-   
+
    Uuse the SXGA (roughly 1 megapixel) mode of your openni device if possible.
-   
+
    .. code-block:: sh
-   
+
       rosrun dynamic_reconfigure dynparam set /camera/driver image_mode 1
       rosrun dynamic_reconfigure dynparam set /camera/driver depth_registration True
 
@@ -105,13 +105,13 @@ Once you are happy with the workspace tracking, its time to capure an object. Pl
 .. toggle:: From Source
 
    .. code-block:: sh
-   
+
       ./object_recognition_capture/apps/capture -i my_textured_plane --seg_z_min 0.01 -o silk.bag --preview
 
 .. toggle:: From ROS packages
 
    .. code-block:: sh
-   
+
       rosrun object_recognition_capture capture -i my_textured_plane --seg_z_min 0.01 -o silk.bag --preview
 
 When satisified by the preview mode, run it for real.  The following will capture a bag of 60 views where each view is normally distributed on the view sphere. The mask and pose displays should only refresh when a novel view is captured. The program will finish when 35 (-n) views are captured. Press 'q' to quit early.
@@ -119,13 +119,13 @@ When satisified by the preview mode, run it for real.  The following will captur
 .. toggle:: From Source
 
    .. code-block:: sh
-   
+
       ./object_recognition_capture/apps/capture -i my_textured_plane --seg_z_min 0.01 -o silk.bag
 
 .. toggle:: From ROS packages
 
    .. code-block:: sh
-   
+
       rosrun object_recognition_capture capture -i my_textured_plane --seg_z_min 0.01 -o silk.bag
 
 Now time for upload. Make sure you install couch db on your machien. Give the object a name and useful tags seperated by a space, e.g. milk soy silk.
@@ -133,13 +133,13 @@ Now time for upload. Make sure you install couch db on your machien. Give the ob
 .. toggle:: From Source
 
    .. code-block:: sh
-   
+
       ./object_recognition_capture/apps/upload -i silk.bag -n 'Silk' milk soy silk --commit
 
 .. toggle:: From ROS packages
 
    .. code-block:: sh
-   
+
       rosrun object_recognition_capture upload -i silk.bag -n 'Silk' milk soy silk --commit
 
 Train objects
@@ -153,7 +153,7 @@ Meshing objects can be done in a batch mode, assuming you are in the binary dire
 .. toggle:: From Source
 
    .. code-block:: sh
-   
+
       ./object_recognition_reconstruction/apps/mesh_object --all --visualize --commit
 
 .. toggle:: From ROS packages
@@ -169,7 +169,7 @@ Next objects should be trained. It may take some time between objects, this is n
 .. toggle:: From Source
 
    .. code-block:: sh
-   
+
       ./object_recognition_core/apps/training \
       -c object_recognition_tod/conf/config_training.tod \
       --visualize
@@ -190,7 +190,7 @@ Now we're ready for detection. First launch rviz, it should be subscribed to the
 .. toggle:: From Source
 
    .. code-block:: sh
-   
+
       ./rosrun object_recognition_core/apps/detection \
       -c object_recognition_tod/conf/config_detection.tod \
       --visualize
@@ -198,7 +198,7 @@ Now we're ready for detection. First launch rviz, it should be subscribed to the
 .. toggle:: From ROS packages
 
    .. code-block:: sh
-   
+
       rosrun object_recognition_core detection \
       -c `rospack find object_recognition_tod`/conf/config_detection.tod \
       --visualize
