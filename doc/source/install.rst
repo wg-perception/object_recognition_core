@@ -52,15 +52,14 @@ Download & Build from Source
    
    .. code-block:: sh
    
-      sudo apt-get install libopenni-dev ros-fuerte-catkin ros-fuerte-ecto* ros-fuerte-opencv-candidate ros-fuerte-moveit-msgs
+      sudo apt-get install libopenni-dev ros-fuerte-catkin ros-fuerte-ecto* ros-fuerte-opencv-candidate
       source /opt/ros/fuerte/setup.sh
    
    Install the catkin package from source as the package does not have the toplevel.cmake file:
    
    .. code-block:: sh
    
-      git clone http://github.com/ros/catkin.git && git checkout fuerte-devel
-      ln -s catkin/toplevel.cmake CMakeLists.txt
+      ln -s /opt/ros/fuerte/share/catkin/cmake/toplevel.cmake CMakeLists.txt
 
 
 .. toggle:: Groovy
@@ -103,7 +102,7 @@ any ROS stuff:
    .. code-block:: sh
    
       git clone http://github.com/wg-perception/object_recognition_msgs
-      git clone http://github.com/wg-perception/object_recognition_ros
+      git clone http://github.com/wg-perception/object_recognition_ros && git checkout fuerte-devel
 
 .. toggle:: Groovy
 
