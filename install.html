@@ -88,6 +88,10 @@
 </div>
 <div class="section" id="download-build-from-source">
 <h2>Download &amp; Build from Source<a class="headerlink" href="#download-build-from-source" title="Permalink to this headline">¶</a></h2>
+<p>First, build your workspace:</p>
+<div class="highlight-sh"><div class="highlight"><pre>mkdir -p ork/src <span class="o">&amp;&amp;</span> <span class="nb">cd </span>ork/src
+</pre></div>
+</div>
 <div class="container">
 <button class="toggleable_button label_Non-ROS" onclick="
 function toggle(label) {
@@ -170,10 +174,11 @@ $(document).ready(function() {
 </div>
 <div class="container">
 <div class="toggleable_div label_Non-ROS"><p>If you want to install from source without ROS, you need to have common dependencies (OpenCV, PCL) on your path. You also need to execute the following:</p>
-<div class="highlight-bash"><div class="highlight"><pre>mkdir src <span class="o">&amp;&amp;</span> <span class="nb">cd </span>src
-git clone http://github.com/ros/catkin.git
-git clone http://github.com/ros-infrastructure/catkin_pkg.git
+<div class="highlight-bash"><div class="highlight"><pre>git clone http://github.com/ros/catkin.git
 ln -s catkin/cmake/toplevel.cmake CMakeLists.txt
+<span class="nb">cd</span> ../ <span class="o">&amp;&amp;</span> git clone http://github.com/ros-infrastructure/catkin_pkg.git
+<span class="nb">export </span><span class="nv">PYTHONPATH</span><span class="o">=</span><span class="sb">`</span><span class="nb">pwd</span><span class="sb">`</span>/catkin_pkg/src:<span class="nv">$PYTHONPATH</span>
+<span class="nb">cd </span>src
 </pre></div>
 </div>
 <p><tt class="docutils literal"><span class="pre">catkin</span></tt> is a set of CMake macros that simplify build and maintenance.</p>
@@ -190,12 +195,13 @@ git clone http://github.com/wg-perception/opencv_candidate
 </div></div>
 <div class="container">
 <div class="toggleable_div label_Fuerte"><p>First install catkin and source your ROS setup file:</p>
-<div class="highlight-sh"><div class="highlight"><pre>sudo apt-get install libopenni-dev ros-fuerte-catkin ros-fuerte-ecto* ros-fuerte-opencv-candidate
+<div class="highlight-sh"><div class="highlight"><pre>sudo apt-get install libopenni-dev ros-fuerte-catkin ros-fuerte-ecto* ros-fuerte-opencv-candidate ros-fuerte-moveit-msgs
 <span class="nb">source</span> /opt/ros/fuerte/setup.sh
 </pre></div>
 </div>
 <p>Install the catkin package from source as the package does not have the toplevel.cmake file:</p>
-<div class="highlight-sh"><div class="highlight"><pre>ln -s /opt/ros/fuerte/share/catkin/cmake/toplevel.cmake CMakeLists.txt
+<div class="highlight-sh"><div class="highlight"><pre>git clone http://github.com/ros/catkin.git <span class="o">&amp;&amp;</span> <span class="nb">cd </span>catkin <span class="o">&amp;&amp;</span> git checkout fuerte-devel <span class="o">&amp;&amp;</span> <span class="nb">cd</span> ..
+ln -s catkin/toplevel.cmake CMakeLists.txt
 </pre></div>
 </div>
 </div></div>
@@ -303,7 +309,7 @@ $(document).ready(function() {
 </div></div>
 <div class="container">
 <div class="toggleable_div label_Fuerte"><div class="highlight-sh"><div class="highlight"><pre>git clone http://github.com/wg-perception/object_recognition_msgs
-git clone http://github.com/wg-perception/object_recognition_ros <span class="o">&amp;&amp;</span> git checkout fuerte-devel
+git clone http://github.com/wg-perception/object_recognition_ros
 </pre></div>
 </div>
 </div></div>

@@ -129,9 +129,9 @@ the model when persisted:</p>
 27
 28
 29
-30</pre></div></td><td class="code"><div class="highlight"><pre><span class="k">struct</span> <span class="nl">MyAwesomeModelWriterImpl:</span> <span class="k">public</span> <span class="n">db</span><span class="o">::</span><span class="n">bases</span><span class="o">::</span><span class="n">ModelWriterImpl</span>
+30</pre></div></td><td class="code"><div class="highlight"><pre><span class="k">struct</span> <span class="n">MyAwesomeModelWriterImpl</span><span class="o">:</span> <span class="k">public</span> <span class="n">db</span><span class="o">::</span><span class="n">bases</span><span class="o">::</span><span class="n">ModelWriterImpl</span>
 <span class="p">{</span>
-<span class="k">public</span><span class="o">:</span>
+<span class="nl">public:</span>
   <span class="c1">// You can define the declare_params and configure functions if needed</span>
 
   <span class="c1">// This is the standard ecto cell declare_io</span>
@@ -156,7 +156,7 @@ the model when persisted:</p>
     <span class="k">return</span> <span class="s">&quot;My awesome model&quot;</span><span class="p">;</span>
   <span class="p">}</span>
 
-<span class="k">private</span><span class="o">:</span>
+<span class="nl">private:</span>
   <span class="n">ecto</span><span class="o">::</span><span class="n">spore</span><span class="o">&lt;</span><span class="n">ModelPartType</span><span class="o">&gt;</span> <span class="n">model_part_</span><span class="p">;</span>
 <span class="p">};</span>
 </pre></div>

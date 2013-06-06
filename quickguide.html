@@ -186,17 +186,17 @@ $(document).ready(function() {
 <h2>Setup the capture workspace<a class="headerlink" href="#setup-the-capture-workspace" title="Permalink to this headline">¶</a></h2>
 <p>First capture an ORB template of your capture workspace. It  should be take from an planar frontal view, and the center of the image should be filled by the plane. Press &#8216;s&#8217; to save an image. The result will be placed in the directory given, e.g. my_textured_plane. Press &#8216;q&#8217; to quit the template capture program.</p>
 <div class="container">
-<div class="toggleable_div label_FromSource"><div class="highlight-sh"><div class="highlight"><pre>./object_recognition_capture/apps/orb_template -o my_textured_plane
+<div class="toggleable_div label_FromSource"><div class="highlight-sh"><div class="highlight"><pre>./object_recognition_capture/apps/orb_template.py -o my_textured_plane
 </pre></div>
 </div>
 </div></div>
 <div class="container">
 <div class="toggleable_div label_FromROSpackages"><p>Terminal 3:</p>
-<div class="highlight-sh"><div class="highlight"><pre>rosrun object_recognition_capture orb_template -o my_textured_plane
+<div class="highlight-sh"><div class="highlight"><pre>rosrun object_recognition_capture orb_template.py -o my_textured_plane
 </pre></div>
 </div>
 <p>Try out tracking to see if you got a good template. Press &#8216;q&#8217; to quit.</p>
-<div class="highlight-sh"><div class="highlight"><pre>rosrun object_recognition_capture orb_track --track_directory my_textured_plane
+<div class="highlight-sh"><div class="highlight"><pre>rosrun object_recognition_capture orb_track.py --track_directory my_textured_plane
 </pre></div>
 </div>
 <p>Uuse the SXGA (roughly 1 megapixel) mode of your openni device if possible.</p>
