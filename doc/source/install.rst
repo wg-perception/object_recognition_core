@@ -14,6 +14,13 @@ Install the
 Download & Build from Source
 ****************************
 
+First, build your workspace:
+
+.. code-block:: sh
+
+   mkdir -p ork/src && cd ork/src
+
+
 .. toggle_table::
    :arg1: Non-ROS
    :arg2: Fuerte
@@ -27,10 +34,12 @@ Download & Build from Source
    
    .. code-block:: bash
    
-      mkdir src && cd src
       git clone http://github.com/ros/catkin.git
-      git clone http://github.com/ros-infrastructure/catkin_pkg.git
       ln -s catkin/cmake/toplevel.cmake CMakeLists.txt
+      cd ../ && git clone http://github.com/ros-infrastructure/catkin_pkg.git
+      export PYTHONPATH=`pwd`/catkin_pkg/src:$PYTHONPATH
+      cd src
+      
    
    ``catkin`` is a set of CMake macros that simplify build and maintenance.
    
@@ -59,7 +68,12 @@ Download & Build from Source
    
    .. code-block:: sh
    
+<<<<<<< HEAD
       ln -s /opt/ros/fuerte/share/catkin/cmake/toplevel.cmake CMakeLists.txt
+=======
+      git clone http://github.com/ros/catkin.git && cd catkin && git checkout fuerte-devel && cd ..
+      ln -s catkin/toplevel.cmake CMakeLists.txt
+>>>>>>> update install instructions
 
 
 .. toggle:: Groovy
