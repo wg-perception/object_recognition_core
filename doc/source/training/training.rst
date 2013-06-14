@@ -22,7 +22,7 @@ Use
 
 .. toggle_table::
   :arg1: Non-ROS
-  :arg2: Fuerte/Groovy
+  :arg2: Fuerte Groovy
 
 .. toggle:: Non-ROS
 
@@ -34,7 +34,7 @@ Use
           options: if it is "all", then all models are recomputed; if it is "missing", only the missing models are computed.
 
 
-.. toggle:: Fuerte/Groovy
+.. toggle:: Fuerte Groovy
 
    The training script can be run as follow:
    
