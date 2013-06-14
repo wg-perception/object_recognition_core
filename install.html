@@ -195,16 +195,20 @@ git clone http://github.com/wg-perception/opencv_candidate
 </div></div>
 <div class="container">
 <div class="toggleable_div label_Fuerte"><p>First install catkin and source your ROS setup file:</p>
-<div class="highlight-sh"><div class="highlight"><pre>sudo apt-get install libopenni-dev ros-fuerte-catkin ros-fuerte-ecto* ros-fuerte-opencv-candidate ros-fuerte-moveit-msgs
+<div class="highlight-sh"><div class="highlight"><pre>sudo apt-get install libopenni-dev ros-fuerte-catkin ros-fuerte-ecto* ros-fuerte-opencv-candidate
 <span class="nb">source</span> /opt/ros/fuerte/setup.sh
 </pre></div>
 </div>
 <p>Install the catkin package from source as the package does not have the toplevel.cmake file:</p>
-<div class="highlight-sh"><div class="highlight"><pre>git clone http://github.com/ros/catkin.git <span class="o">&amp;&amp;</span> <span class="nb">cd </span>catkin <span class="o">&amp;&amp;</span> git checkout fuerte-devel <span class="o">&amp;&amp;</span> <span class="nb">cd</span> ..
-ln -s catkin/toplevel.cmake CMakeLists.txt
+<div class="highlight-sh"><div class="highlight"><pre>
 </pre></div>
 </div>
 </div></div>
+<dl class="docutils">
+<dt>&lt;&lt;&lt;&lt;&lt;&lt;&lt; HEAD</dt>
+<dd>ln -s /opt/ros/fuerte/share/catkin/cmake/toplevel.cmake CMakeLists.txt</dd>
+</dl>
+<p>&gt;&gt;&gt;&gt;&gt;&gt;&gt; update install instructions</p>
 <div class="container">
 <div class="toggleable_div label_Groovy"><p>First source your ROS setup file:</p>
 <div class="highlight-sh"><div class="highlight"><pre>sudo apt-get install libopenni-dev ros-groovy-catkin ros-groovy-ecto* ros-groovy-opencv-candidate ros-groovy-moveit-msgs
@@ -309,7 +313,7 @@ $(document).ready(function() {
 </div></div>
 <div class="container">
 <div class="toggleable_div label_Fuerte"><div class="highlight-sh"><div class="highlight"><pre>git clone http://github.com/wg-perception/object_recognition_msgs
-git clone http://github.com/wg-perception/object_recognition_ros
+git clone http://github.com/wg-perception/object_recognition_ros <span class="o">&amp;&amp;</span> git checkout fuerte-devel
 </pre></div>
 </div>
 </div></div>

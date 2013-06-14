@@ -146,9 +146,9 @@ You need to call the BlackBox constructor in your __init__ first and then this f
 31
 32
 33
-34</pre></div></td><td class="code"><div class="highlight"><pre><span class="k">struct</span> <span class="n">MyAwesomeModelReaderImpl</span><span class="o">:</span> <span class="k">public</span> <span class="n">db</span><span class="o">::</span><span class="n">bases</span><span class="o">::</span><span class="n">ModelReaderImpl</span>
+34</pre></div></td><td class="code"><div class="highlight"><pre><span class="k">struct</span> <span class="nl">MyAwesomeModelReaderImpl:</span> <span class="k">public</span> <span class="n">db</span><span class="o">::</span><span class="n">bases</span><span class="o">::</span><span class="n">ModelReaderImpl</span>
 <span class="p">{</span>
-<span class="nl">public:</span>
+<span class="k">public</span><span class="o">:</span>
   <span class="c1">// This function gives you db_documents for each model from which you can extract the information you want and</span>
   <span class="c1">// store it locally (maybe in a search structure)</span>
   <span class="kt">void</span>
