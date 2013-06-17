@@ -7,7 +7,7 @@
   <maintainer email="vincent.rabaud@gmail.com">Vincent Rabaud</maintainer>
   <license>BSD</license>
 
-  <url>http://ecto.willowgarage.com/recognition</url>
+  <url>http://wg-perception.github.io/object_recognition_core/</url>
 
   <build_depend>boost</build_depend>
   <build_depend>curl</build_depend>

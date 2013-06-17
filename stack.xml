@@ -8,7 +8,7 @@
   <license>BSD</license>
   <copyright>Willow Garage</copyright>
 
-  <url>http://ecto.willowgarage.com/recognition</url>
+  <url>http://wg-perception.github.io/object_recognition_core/</url>
   <build_depends>boost</build_depends>
   <build_depends>catkin</build_depends>
   <build_depends>curl</build_depends>
