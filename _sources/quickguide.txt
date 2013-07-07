@@ -16,7 +16,7 @@ Install
 
 Install ``ORK`` as detailed on the :ref:`Install <install>` page.
 
-If you want to visualize data in the database, you also need to run (be sure to have installed couchapp sudo pip install -U couchapp)::
+If you want to visualize data in the database, you also need to run (be sure to have installed couchapp sudo pip install -U couchapp):
 
 .. toggle:: From Source
 
