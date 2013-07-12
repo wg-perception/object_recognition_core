@@ -13,12 +13,14 @@
   <build_depend>curl</build_depend>
   <build_depend>ecto</build_depend>
   <build_depend>ecto_image_pipeline</build_depend>
+  <build_depend>sensor_msgs</build_depend>
 
   <run_depend>boost</run_depend>
   <run_depend>couchdb</run_depend>
   <run_depend>curl</run_depend>
   <run_depend>ecto</run_depend>
   <run_depend>ecto_image_pipeline</run_depend>
+  <run_depend>sensor_msgs</run_depend>
 
   <test_depend>visualization_msgs</test_depend>
 
