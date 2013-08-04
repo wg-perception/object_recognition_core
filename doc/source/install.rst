@@ -181,7 +181,7 @@ From root, just type:
 
    cd build
    make doxygen
-   make doc
+   make sphinx-doc
 
 You will find the generated documentation under ``build/doc/html``.
 
