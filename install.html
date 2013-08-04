@@ -200,15 +200,14 @@ git clone http://github.com/wg-perception/opencv_candidate
 </pre></div>
 </div>
 <p>Install the catkin package from source as the package does not have the toplevel.cmake file:</p>
-<div class="highlight-sh"><div class="highlight"><pre>
+<div class="highlight-bash"><div class="highlight"><pre>git clone http://github.com/ros/catkin.git
+ln -s catkin/cmake/toplevel.cmake CMakeLists.txt
+<span class="nb">cd</span> ../ <span class="o">&amp;&amp;</span> git clone http://github.com/ros-infrastructure/catkin_pkg.git
+<span class="nb">export </span><span class="nv">PYTHONPATH</span><span class="o">=</span><span class="sb">`</span><span class="nb">pwd</span><span class="sb">`</span>/catkin_pkg/src:<span class="nv">$PYTHONPATH</span>
+<span class="nb">cd </span>src
 </pre></div>
 </div>
 </div></div>
-<dl class="docutils">
-<dt>&lt;&lt;&lt;&lt;&lt;&lt;&lt; HEAD</dt>
-<dd>ln -s /opt/ros/fuerte/share/catkin/cmake/toplevel.cmake CMakeLists.txt</dd>
-</dl>
-<p>&gt;&gt;&gt;&gt;&gt;&gt;&gt; update install instructions</p>
 <div class="container">
 <div class="toggleable_div label_Groovy"><p>First source your ROS setup file:</p>
 <div class="highlight-sh"><div class="highlight"><pre>sudo apt-get install libopenni-dev ros-groovy-catkin ros-groovy-ecto* ros-groovy-opencv-candidate ros-groovy-moveit-msgs
@@ -434,7 +433,7 @@ instructions and have already successfully called <tt class="docutils literal"><
 <p>From root, just type:</p>
 <div class="highlight-sh"><div class="highlight"><pre><span class="nb">cd </span>build
 make doxygen
-make doc
+make sphinx-doc
 </pre></div>
 </div>
 <p>You will find the generated documentation under <tt class="docutils literal"><span class="pre">build/doc/html</span></tt>.</p>
