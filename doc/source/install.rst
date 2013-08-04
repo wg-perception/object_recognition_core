@@ -66,14 +66,13 @@ First, build your workspace:
    
    Install the catkin package from source as the package does not have the toplevel.cmake file:
    
-   .. code-block:: sh
+   .. code-block:: bash
    
-<<<<<<< HEAD
-      ln -s /opt/ros/fuerte/share/catkin/cmake/toplevel.cmake CMakeLists.txt
-=======
-      git clone http://github.com/ros/catkin.git && cd catkin && git checkout fuerte-devel && cd ..
-      ln -s catkin/toplevel.cmake CMakeLists.txt
->>>>>>> update install instructions
+      git clone http://github.com/ros/catkin.git
+      ln -s catkin/cmake/toplevel.cmake CMakeLists.txt
+      cd ../ && git clone http://github.com/ros-infrastructure/catkin_pkg.git
+      export PYTHONPATH=`pwd`/catkin_pkg/src:$PYTHONPATH
+      cd src
 
 
 .. toggle:: Groovy
