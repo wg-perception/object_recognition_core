@@ -165,34 +165,22 @@ To maintain your code, each folder is each own ``git`` repository and you can pu
 rosinstall file
 ***************
 
-Under ROS, you can alternatively use that `rosinstall <http://www.ros.org/wiki/rosinstall>`_ file:
+Under ROS, you can alternatively use that `rosinstall <http://www.ros.org/wiki/rosinstall>`_ file :download:`ork.rosinstall`:
 
-.. code-block:: json
 
-   - git: {local-name: ecto, uri: "http://github.com/plasmodic/ecto"}
-   - git: {local-name: ecto_image_pipeline, uri: "http://github.com/plasmodic/ecto_image_pipeline"}
-   - git: {local-name: ecto_openni, uri: "http://github.com/plasmodic/ecto_openni"}
-   - git: {local-name: ecto_opencv, uri: "http://github.com/plasmodic/ecto_opencv"}
-   - git: {local-name: ecto_pcl, uri: "http://github.com/plasmodic/ecto_pcl"}
-   - git: {local-name: ecto_ros, uri: "http://github.com/plasmodic/ecto_ros"}
-   - git: {local-name: opencv_candidate, uri: "http://github.com/wg-perception/opencv_candidate"}
-   - git: {local-name: ork_core, uri: "http://github.com/plasmodic/object_recognition_core"}
-   - git: {local-name: ork_capture, uri: "http://github.com/plasmodic/capture"}
-   - git: {local-name: ork_reconstruction, uri: "http://github.com/plasmodic/reconstruction"}
-   - git: {local-name: ork_linemod, uri: "http://github.com/plasmodic/linemod"}
-   - git: {local-name: ork_renderer, uri: "http://github.com/plasmodic/ork_renderer"}
-   - git: {local-name: ork_tabletop, uri: "http://github.com/plasmodic/tabletop"}
-   - git: {local-name: ork_tod, uri: "http://github.com/plasmodic/tod"}
-   - git: {local-name: ork_transparent_objects, uri: "http://github.com/plasmodic/transparent_objects"}
-   - setup-file:
-       local-name: /opt/ros/hydro/setup.sh
+.. literalinclude:: ork.rosinstall
+   :language: json
 
-To install it, just save it in an ork.rosinstall file and then just do:
+To install it, just follow those commands:
 
 .. code-block:: bash
 
-   rosinstall -c src ./ork.rosinstall
-   rosdep install --from-paths src -y -i
+   mkdir ws && cd ws
+   wstool init src https://raw.github.com/wg-perception/object_recognition_core/master/doc/source/ork.rosinstall
+   cd src && wstool update -j8
+   cd .. && rosdep install --from-paths src -i -y
+   catkin_make
+   source devel/setup.bash
 
 Building the documentation
 **************************
