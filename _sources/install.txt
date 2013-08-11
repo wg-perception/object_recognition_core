@@ -162,6 +162,26 @@ If you are a developer and have write access to the repositories, search and rep
 
 To maintain your code, each folder is each own ``git`` repository and you can pull/push from there.
 
+rosinstall file
+***************
+
+Under ROS, you can alternatively use that `rosinstall <http://www.ros.org/wiki/rosinstall>`_ file :download:`ork.rosinstall`:
+
+
+.. literalinclude:: ork.rosinstall
+   :language: json
+
+To install it, just follow those commands:
+
+.. code-block:: bash
+
+   mkdir ws && cd ws
+   wstool init src https://raw.github.com/wg-perception/object_recognition_core/master/doc/source/ork.rosinstall
+   cd src && wstool update -j8
+   cd .. && rosdep install --from-paths src -i -y
+   catkin_make
+   source devel/setup.bash
+
 Building the documentation
 **************************
 

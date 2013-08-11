@@ -48,6 +48,7 @@
 <li><a class="reference internal" href="#">Installation</a><ul>
 <li><a class="reference internal" href="#from-the-ros-repositories">From the ROS repositories</a></li>
 <li><a class="reference internal" href="#download-build-from-source">Download &amp; Build from Source</a></li>
+<li><a class="reference internal" href="#rosinstall-file">rosinstall file</a></li>
 <li><a class="reference internal" href="#building-the-documentation">Building the documentation</a></li>
 </ul>
 </li>
@@ -421,6 +422,36 @@ $(document).ready(function() {
 <p>If you are a developer and have write access to the repositories, search and replace <tt class="docutils literal"><span class="pre">http://</span></tt> above and replace by
 <tt class="docutils literal"><span class="pre">git&#64;github.com:</span></tt>.</p>
 <p>To maintain your code, each folder is each own <tt class="docutils literal"><span class="pre">git</span></tt> repository and you can pull/push from there.</p>
+</div>
+<div class="section" id="rosinstall-file">
+<h2>rosinstall file<a class="headerlink" href="#rosinstall-file" title="Permalink to this headline">¶</a></h2>
+<p>Under ROS, you can alternatively use that <a class="reference external" href="http://www.ros.org/wiki/rosinstall">rosinstall</a> file <a class="reference download internal" href="_downloads/ork.rosinstall"><tt class="xref download docutils literal"><span class="pre">ork.rosinstall</span></tt></a>:</p>
+<div class="highlight-json"><pre>- git: {local-name: ecto, uri: "https://github.com/plasmodic/ecto"}
+- git: {local-name: ecto_image_pipeline, uri: "https://github.com/plasmodic/ecto_image_pipeline"}
+- git: {local-name: ecto_openni, uri: "https://github.com/plasmodic/ecto_openni"}
+- git: {local-name: ecto_opencv, uri: "https://github.com/plasmodic/ecto_opencv"}
+- git: {local-name: ecto_pcl, uri: "https://github.com/plasmodic/ecto_pcl"}
+- git: {local-name: ecto_ros, uri: "https://github.com/plasmodic/ecto_ros"}
+- git: {local-name: opencv_candidate, uri: "https://github.com/wg-perception/opencv_candidate"}
+- git: {local-name: ork_core, uri: "https://github.com/wg-perception/object_recognition_core"}
+- git: {local-name: ork_capture, uri: "https://github.com/wg-perception/capture"}
+- git: {local-name: ork_reconstruction, uri: "https://github.com/wg-perception/reconstruction"}
+- git: {local-name: ork_linemod, uri: "https://github.com/wg-perception/linemod"}
+- git: {local-name: ork_renderer, uri: "https://github.com/wg-perception/ork_renderer"}
+- git: {local-name: ork_tabletop, uri: "https://github.com/wg-perception/tabletop"}
+- git: {local-name: ork_tod, uri: "https://github.com/wg-perception/tod"}
+- git: {local-name: ork_transparent_objects, uri: "https://github.com/wg-perception/transparent_objects"}
+</pre>
+</div>
+<p>To install it, just follow those commands:</p>
+<div class="highlight-bash"><div class="highlight"><pre>mkdir ws <span class="o">&amp;&amp;</span> <span class="nb">cd </span>ws
+wstool init src https://raw.github.com/wg-perception/object_recognition_core/master/doc/source/ork.rosinstall
+<span class="nb">cd </span>src <span class="o">&amp;&amp;</span> wstool update -j8
+<span class="nb">cd</span> .. <span class="o">&amp;&amp;</span> rosdep install --from-paths src -i -y
+catkin_make
+<span class="nb">source </span>devel/setup.bash
+</pre></div>
+</div>
 </div>
 <div class="section" id="building-the-documentation">
 <h2>Building the documentation<a class="headerlink" href="#building-the-documentation" title="Permalink to this headline">¶</a></h2>
