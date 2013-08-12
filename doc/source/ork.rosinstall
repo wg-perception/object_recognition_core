@@ -13,3 +13,4 @@
 - git: {local-name: ork_tabletop, uri: "https://github.com/wg-perception/tabletop"}
 - git: {local-name: ork_tod, uri: "https://github.com/wg-perception/tod"}
 - git: {local-name: ork_transparent_objects, uri: "https://github.com/wg-perception/transparent_objects"}
+- git: {local-name: ork_ros, uri: "https://github.com/wg-perception/object_recognition_ros"}
