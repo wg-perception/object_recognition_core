@@ -1,9 +1,3 @@
-if (ROS_FUERTE_FOUND)
-install(FILES ${PROJECT_SOURCE_DIR}/manifest.xml
-        DESTINATION share/${PROJECT_NAME}
-)
-endif()
-
 # install the include folder
 install(DIRECTORY ${PROJECT_SOURCE_DIR}/include/object_recognition_core/
         DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}

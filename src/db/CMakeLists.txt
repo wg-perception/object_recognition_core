@@ -50,19 +50,11 @@ target_link_libraries(db_interface
                       object_recognition_core_db
 )
 
-if (ROS_GROOVY_OR_ABOVE_FOUND)
 set_target_properties(db_interface PROPERTIES
                       LIBRARY_OUTPUT_DIRECTORY ${CATKIN_DEVEL_PREFIX}/${CATKIN_PACKAGE_PYTHON_DESTINATION}/boost
                       OUTPUT_NAME interface
                       PREFIX ""
 )
-else()
-set_target_properties(db_interface PROPERTIES
-                      LIBRARY_OUTPUT_DIRECTORY ${CATKIN_DEVEL_PREFIX}/${CATKIN_PACKAGE_PYTHON_BUILD_DESTINATION}/boost
-                      OUTPUT_NAME interface
-                      PREFIX ""
-)
-endif()
 
 install(TARGETS db_interface
         DESTINATION ${CATKIN_PACKAGE_PYTHON_DESTINATION}/boost
