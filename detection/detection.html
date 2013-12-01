@@ -235,6 +235,33 @@ Ecto runtime parameters:
 <h2><a class="toc-backref" href="#id5">Configuration File</a><a class="headerlink" href="#configuration-file" title="Permalink to this headline">¶</a></h2>
 <p>The configuration file is where you define your graph and with the current ORK, you can choose any of the following sources:</p>
 <div class="highlight-text"><div class="highlight"><pre>source_0:
+   type: RosKinect
+   module: object_recognition_ros.io.source.ros_kinect
+   parameters:
+      #  If the cropper cell is enabled
+      crop_enabled: True
+      #  The ROS topic for the depth camera info.
+      depth_camera_info: /camera/depth_registered/camera_info
+      #  The ROS topic for the depth image.
+      depth_image_topic: /camera/depth_registered/image_raw
+      #  The ROS topic for the RGB camera info.
+      rgb_camera_info: /camera/rgb/camera_info
+      #  The ROS topic for the RGB image.
+      rgb_image_topic: /camera/rgb/image_color
+      #  The maximum x value (in the camera reference frame)
+      x_max: 3.40282346639e+38
+      #  The minimum x value (in the camera reference frame)
+      x_min: -3.40282346639e+38
+      #  The maximum y value (in the camera reference frame)
+      y_max: 3.40282346639e+38
+      #  The minimum y value (in the camera reference frame)
+      y_min: -3.40282346639e+38
+      #  The maximum z value (in the camera reference frame)
+      z_max: 3.40282346639e+38
+      #  The minimum z value (in the camera reference frame)
+      z_min: -3.40282346639e+38
+
+source_1:
    type: BagReader
    module: object_recognition_ros.io.source.bag_reader
    parameters:
@@ -263,7 +290,7 @@ Ecto runtime parameters:
       #  The minimum z value (in the camera reference frame)
       z_min: -3.40282346639e+38
 
-source_1:
+source_2:
    type: OpenNI
    module: object_recognition_core.io.source
    parameters:
@@ -289,37 +316,24 @@ source_1:
       # ecto_openni.StreamMode.DEPTH_IR, ecto_openni.StreamMode.RGB,
       # ecto_openni.StreamMode.DEPTH_RGB]
       stream_mode: None
-
-source_2:
-   type: RosKinect
-   module: object_recognition_ros.io.source.ros_kinect
-   parameters:
-      #  If the cropper cell is enabled
-      crop_enabled: True
-      #  The ROS topic for the depth camera info.
-      depth_camera_info: /camera/depth_registered/camera_info
-      #  The ROS topic for the depth image.
-      depth_image_topic: /camera/depth_registered/image_raw
-      #  The ROS topic for the RGB camera info.
-      rgb_camera_info: /camera/rgb/camera_info
-      #  The ROS topic for the RGB image.
-      rgb_image_topic: /camera/rgb/image_color
-      #  The maximum x value (in the camera reference frame)
-      x_max: 3.40282346639e+38
-      #  The minimum x value (in the camera reference frame)
-      x_min: -3.40282346639e+38
-      #  The maximum y value (in the camera reference frame)
-      y_max: 3.40282346639e+38
-      #  The minimum y value (in the camera reference frame)
-      y_min: -3.40282346639e+38
-      #  The maximum z value (in the camera reference frame)
-      z_max: 3.40282346639e+38
-      #  The minimum z value (in the camera reference frame)
-      z_min: -3.40282346639e+38
 </pre></div>
 </div>
 <p>any of the following sinks:</p>
 <div class="highlight-text"><div class="highlight"><pre>sink_0:
+   type: GuessCsvWriter
+   module: object_recognition_core.io.sink
+   parameters:
+      #  The run number
+      run_number: 0
+      #  The name of the team to consider
+      team_name: 
+
+sink_1:
+   type: Publisher
+   module: object_recognition_by_parts.publisher
+   parameters:
+
+sink_2:
    type: TablePublisher
    module: object_recognition_tabletop.table_publisher
    parameters:
@@ -336,21 +350,12 @@ source_2:
       #  The array of found tables.
       table_array: table_array
 
-sink_1:
-   type: GuessCsvWriter
-   module: object_recognition_core.io.sink
-   parameters:
-      #  The run number
-      run_number: 0
-      #  The name of the team to consider
-      team_name: 
-
-sink_2:
+sink_3:
    type: Publisher
    module: object_recognition_ros.io.sink.publisher
    parameters:
       #  The DB parameters
-      db_params: &lt;object_recognition_core.boost.interface.ObjectDbParameters object at 0x2e8d050&gt;
+      db_params: &lt;object_recognition_core.boost.interface.ObjectDbParameters object at 0x3311f18&gt;
       #  Determines if the topics will be latched.
       latched: True
       #  The ROS topic to use for the marker array.
@@ -363,15 +368,72 @@ sink_2:
       publish_clusters: True
       #  The ROS topic to use for the recognized object
       recognized_object_array_topic: recognized_object_array
-
-sink_3:
-   type: Publisher
-   module: object_recognition_by_parts.publisher
-   parameters:
 </pre></div>
 </div>
 <p>or the following pipelines:</p>
 <div class="highlight-text"><div class="highlight"><pre>detection_pipeline_0:
+   type: LinemodDetector
+   module: object_recognition_linemod.detector
+   parameters:
+      #  The DB configuration parameters as a JSON string
+      json_db: 
+      #  A set of object ids as a JSON string: &#39;[&quot;1576f162347dbe1f95bd675d3c00ec6a&quot;]&#39; or &#39;all&#39;
+      json_object_ids: all
+      #  The method the models were computed with
+      method: LINEMOD
+      #  Matching threshold, as a percentage
+      threshold: 93.0
+      #  If True, visualize the output.
+      visualize: False
+
+detection_pipeline_1:
+   type: TabletopObjectDetector
+   module: object_recognition_tabletop.detector
+   parameters:
+      #  The DB parameters
+      json_db: 
+      #  The DB id of the objects to load in the household database.
+      json_object_ids: 
+      #  The object_ids set as defined by the household object database.
+      tabletop_object_ids: REDUCED_MODEL_SET
+
+detection_pipeline_2:
+   type: PartsBasedDetector
+   module: object_recognition_by_parts.detector
+   parameters:
+      #  The DB configuration parameters as a JSON string
+      json_db: 
+      #  A set of object ids as a JSON string: &#39;[&quot;1576f162347dbe1f95bd675d3c00ec6a&quot;]&#39; or &#39;all&#39;
+      json_object_ids: all
+      #  The maximum overlap allowed between object detections
+      max_overlap: 0.10000000149
+      #  The method the models were computed with
+      method: PartsBased
+      #  The path to the model file
+      model_file: 
+      #  The cell should remove planes from the scene before the cluster extraction
+      remove_planes: False
+      #  Visualize results
+      visualize: False
+
+detection_pipeline_3:
+   type: TransparentObjectsDetector
+   module: object_recognition_transparent_objects.detector
+   parameters:
+      #  The DB configuration parameters as a JSON string
+      json_db: 
+      #  A set of object ids as a JSON string: &#39;[&quot;1576f162347dbe1f95bd675d3c00ec6a&quot;]&#39; or &#39;all&#39;
+      json_object_ids: all
+      #  The method the models were computed with
+      method: TransparentObjects
+      #  The DB parameters
+      object_db: None
+      #  The filename of the registration mask.
+      registrationMaskFilename: 
+      #  Visualize results
+      visualize: False
+
+detection_pipeline_4:
    type: TabletopTableDetector
    module: object_recognition_tabletop.detector
    parameters:
@@ -393,33 +455,7 @@ sink_3:
       #  The amount to crop above the plane, in meters.
       z_min: 0.00749999983236
 
-detection_pipeline_1:
-   type: LinemodDetector
-   module: object_recognition_linemod.detector
-   parameters:
-      #  The DB configuration parameters as a JSON string
-      json_db: 
-      #  A set of object ids as a JSON string: &#39;[&quot;1576f162347dbe1f95bd675d3c00ec6a&quot;]&#39; or &#39;all&#39;
-      json_object_ids: all
-      #  The method the models were computed with
-      method: LINEMOD
-      #  Matching threshold, as a percentage
-      threshold: 93.0
-      #  If True, visualize the output.
-      visualize: False
-
-detection_pipeline_2:
-   type: TabletopObjectDetector
-   module: object_recognition_tabletop.detector
-   parameters:
-      #  The DB parameters
-      json_db: 
-      #  The DB id of the objects to load in the household database.
-      json_object_ids: 
-      #  The object_ids set as defined by the household object database.
-      tabletop_object_ids: REDUCED_MODEL_SET
-
-detection_pipeline_3:
+detection_pipeline_5:
    type: TodDetector
    module: object_recognition_tod.detector
    parameters:
@@ -442,42 +478,6 @@ detection_pipeline_3:
       #  The error (in meters) from the Kinect
       sensor_error: 0.00999999977648
       #  If true, some windows pop up to see the progress
-      visualize: False
-
-detection_pipeline_4:
-   type: PartsBasedDetector
-   module: object_recognition_by_parts.detector
-   parameters:
-      #  The DB configuration parameters as a JSON string
-      json_db: 
-      #  A set of object ids as a JSON string: &#39;[&quot;1576f162347dbe1f95bd675d3c00ec6a&quot;]&#39; or &#39;all&#39;
-      json_object_ids: all
-      #  The maximum overlap allowed between object detections
-      max_overlap: 0.10000000149
-      #  The method the models were computed with
-      method: PartsBased
-      #  The path to the model file
-      model_file: 
-      #  The cell should remove planes from the scene before the cluster extraction
-      remove_planes: False
-      #  Visualize results
-      visualize: False
-
-detection_pipeline_5:
-   type: TransparentObjectsDetector
-   module: object_recognition_transparent_objects.detector
-   parameters:
-      #  The DB configuration parameters as a JSON string
-      json_db: 
-      #  A set of object ids as a JSON string: &#39;[&quot;1576f162347dbe1f95bd675d3c00ec6a&quot;]&#39; or &#39;all&#39;
-      json_object_ids: all
-      #  The method the models were computed with
-      method: TransparentObjects
-      #  The DB parameters
-      object_db: None
-      #  The filename of the registration mask.
-      registrationMaskFilename: 
-      #  Visualize results
       visualize: False
 </pre></div>
 </div>
