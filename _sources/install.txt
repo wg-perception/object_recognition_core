@@ -23,8 +23,7 @@ First, build your workspace:
 
 .. toggle_table::
    :arg1: Non-ROS
-   :arg2: Fuerte
-   :arg3: Groovy
+   :arg2: ROS
 
 
 .. toggle:: Non-ROS
@@ -55,27 +54,8 @@ First, build your workspace:
       git clone http://github.com/plasmodic/ecto_ros
       git clone http://github.com/wg-perception/opencv_candidate
 
-.. toggle:: Fuerte
 
-   First install catkin and source your ROS setup file:
-   
-   .. code-block:: sh
-   
-      sudo apt-get install libopenni-dev ros-fuerte-catkin ros-fuerte-ecto* ros-fuerte-opencv-candidate
-      source /opt/ros/fuerte/setup.sh
-   
-   Install the catkin package from source as the package does not have the toplevel.cmake file:
-   
-   .. code-block:: bash
-   
-      git clone http://github.com/ros/catkin.git
-      ln -s catkin/cmake/toplevel.cmake CMakeLists.txt
-      cd ../ && git clone http://github.com/ros-infrastructure/catkin_pkg.git
-      export PYTHONPATH=`pwd`/catkin_pkg/src:$PYTHONPATH
-      cd src
-
-
-.. toggle:: Groovy
+.. toggle:: ROS
 
    First source your ROS setup file:
    
@@ -102,22 +82,14 @@ any ROS stuff:
 
 .. toggle_table::
    :arg1: Non-ROS
-   :arg2: Fuerte
-   :arg3: Groovy
+   :arg3: ROS
 
 .. toggle:: Non-ROS
 
    Nothing for non-ROS.
 
 
-.. toggle:: Fuerte
-
-   .. code-block:: sh
-   
-      git clone http://github.com/wg-perception/object_recognition_msgs
-      git clone http://github.com/wg-perception/object_recognition_ros && git checkout fuerte-devel
-
-.. toggle:: Groovy
+.. toggle:: ROS
 
    .. code-block:: sh
    
@@ -130,8 +102,7 @@ and then build your code:
 
 .. toggle_table::
    :arg1: Non-ROS
-   :arg2: Fuerte
-   :arg3: Groovy
+   :arg2: ROS
 
 
 .. toggle:: Non-ROS
@@ -141,14 +112,7 @@ and then build your code:
       cd ../ && mkdir build && cd build && cmake ../src && make
 
 
-.. toggle:: Fuerte
-
-   .. code-block:: sh
-   
-      cd ../ && mkdir build && cd build && cmake ../src && make
-
-
-.. toggle:: Groovy
+.. toggle:: ROS
 
    .. code-block:: sh
    

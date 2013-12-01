@@ -235,15 +235,17 @@ Ecto runtime parameters:
 <h2><a class="toc-backref" href="#id5">Configuration File</a><a class="headerlink" href="#configuration-file" title="Permalink to this headline">¶</a></h2>
 <p>The configuration file is where you define your graph and with the current ORK, you can choose any of the following sources:</p>
 <div class="highlight-text"><div class="highlight"><pre>source_0:
-   type: RosKinect
-   module: object_recognition_ros.io.source.ros_kinect
+   type: BagReader
+   module: object_recognition_ros.io.source.bag_reader
    parameters:
+      #  The bag file name.
+      bag: data.bag
       #  If the cropper cell is enabled
       crop_enabled: True
       #  The ROS topic for the depth camera info.
       depth_camera_info: /camera/depth_registered/camera_info
       #  The ROS topic for the depth image.
-      depth_image_topic: /camera/depth_registered/image
+      depth_image_topic: /camera/depth_registered/image_raw
       #  The ROS topic for the RGB camera info.
       rgb_camera_info: /camera/rgb/camera_info
       #  The ROS topic for the RGB image.
@@ -289,17 +291,15 @@ source_1:
       stream_mode: None
 
 source_2:
-   type: BagReader
-   module: object_recognition_ros.io.source.bag_reader
+   type: RosKinect
+   module: object_recognition_ros.io.source.ros_kinect
    parameters:
-      #  The bag file name.
-      bag: data.bag
       #  If the cropper cell is enabled
       crop_enabled: True
       #  The ROS topic for the depth camera info.
       depth_camera_info: /camera/depth_registered/camera_info
       #  The ROS topic for the depth image.
-      depth_image_topic: /camera/depth_registered/image
+      depth_image_topic: /camera/depth_registered/image_raw
       #  The ROS topic for the RGB camera info.
       rgb_camera_info: /camera/rgb/camera_info
       #  The ROS topic for the RGB image.
@@ -350,10 +350,7 @@ sink_2:
    module: object_recognition_ros.io.sink.publisher
    parameters:
       #  The DB parameters
-      db_params: &lt;object_recognition_core.boost.interface.ObjectDbParameters object at 0x1e01788&gt;
-      #  If True some markers are displayed for visualization. For RSO Groovy and above, use the
-      # RViz plugin instead.
-      do_visualize: False
+      db_params: &lt;object_recognition_core.boost.interface.ObjectDbParameters object at 0x2e8d050&gt;
       #  Determines if the topics will be latched.
       latched: True
       #  The ROS topic to use for the marker array.
@@ -366,42 +363,15 @@ sink_2:
       publish_clusters: True
       #  The ROS topic to use for the recognized object
       recognized_object_array_topic: recognized_object_array
+
+sink_3:
+   type: Publisher
+   module: object_recognition_by_parts.publisher
+   parameters:
 </pre></div>
 </div>
 <p>or the following pipelines:</p>
 <div class="highlight-text"><div class="highlight"><pre>detection_pipeline_0:
-   type: TransparentObjectsDetector
-   module: object_recognition_transparent_objects.detector
-   parameters:
-      #  The DB configuration parameters as a JSON string
-      json_db: 
-      #  A set of object ids as a JSON string: &#39;[&quot;1576f162347dbe1f95bd675d3c00ec6a&quot;]&#39; or &#39;all&#39;
-      json_object_ids: all
-      #  The method the models were computed with
-      method: TransparentObjects
-      #  The DB parameters
-      object_db: None
-      #  The filename of the registration mask.
-      registrationMaskFilename: 
-      #  Visualize results
-      visualize: False
-
-detection_pipeline_1:
-   type: LinemodDetector
-   module: object_recognition_linemod.detector
-   parameters:
-      #  The DB configuration parameters as a JSON string
-      json_db: 
-      #  A set of object ids as a JSON string: &#39;[&quot;1576f162347dbe1f95bd675d3c00ec6a&quot;]&#39; or &#39;all&#39;
-      json_object_ids: all
-      #  The method the models were computed with
-      method: LINEMOD
-      #  Matching threshold, as a percentage
-      threshold: 90.0
-      #  If True, visualize the output.
-      visualize: False
-
-detection_pipeline_2:
    type: TabletopTableDetector
    module: object_recognition_tabletop.detector
    parameters:
@@ -422,6 +392,32 @@ detection_pipeline_2:
       z_crop: 0.5
       #  The amount to crop above the plane, in meters.
       z_min: 0.00749999983236
+
+detection_pipeline_1:
+   type: LinemodDetector
+   module: object_recognition_linemod.detector
+   parameters:
+      #  The DB configuration parameters as a JSON string
+      json_db: 
+      #  A set of object ids as a JSON string: &#39;[&quot;1576f162347dbe1f95bd675d3c00ec6a&quot;]&#39; or &#39;all&#39;
+      json_object_ids: all
+      #  The method the models were computed with
+      method: LINEMOD
+      #  Matching threshold, as a percentage
+      threshold: 93.0
+      #  If True, visualize the output.
+      visualize: False
+
+detection_pipeline_2:
+   type: TabletopObjectDetector
+   module: object_recognition_tabletop.detector
+   parameters:
+      #  The DB parameters
+      json_db: 
+      #  The DB id of the objects to load in the household database.
+      json_object_ids: 
+      #  The object_ids set as defined by the household object database.
+      tabletop_object_ids: REDUCED_MODEL_SET
 
 detection_pipeline_3:
    type: TodDetector
@@ -449,15 +445,40 @@ detection_pipeline_3:
       visualize: False
 
 detection_pipeline_4:
-   type: TabletopObjectDetector
-   module: object_recognition_tabletop.detector
+   type: PartsBasedDetector
+   module: object_recognition_by_parts.detector
    parameters:
-      #  The DB parameters
+      #  The DB configuration parameters as a JSON string
       json_db: 
-      #  The DB id of the objects to load in the household database.
-      json_object_ids: 
-      #  The object_ids set as defined by the household object database.
-      tabletop_object_ids: REDUCED_MODEL_SET
+      #  A set of object ids as a JSON string: &#39;[&quot;1576f162347dbe1f95bd675d3c00ec6a&quot;]&#39; or &#39;all&#39;
+      json_object_ids: all
+      #  The maximum overlap allowed between object detections
+      max_overlap: 0.10000000149
+      #  The method the models were computed with
+      method: PartsBased
+      #  The path to the model file
+      model_file: 
+      #  The cell should remove planes from the scene before the cluster extraction
+      remove_planes: False
+      #  Visualize results
+      visualize: False
+
+detection_pipeline_5:
+   type: TransparentObjectsDetector
+   module: object_recognition_transparent_objects.detector
+   parameters:
+      #  The DB configuration parameters as a JSON string
+      json_db: 
+      #  A set of object ids as a JSON string: &#39;[&quot;1576f162347dbe1f95bd675d3c00ec6a&quot;]&#39; or &#39;all&#39;
+      json_object_ids: all
+      #  The method the models were computed with
+      method: TransparentObjects
+      #  The DB parameters
+      object_db: None
+      #  The filename of the registration mask.
+      registrationMaskFilename: 
+      #  Visualize results
+      visualize: False
 </pre></div>
 </div>
 <p>More of any of those can be added by the user obviously</p>

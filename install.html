@@ -120,40 +120,14 @@ $(document).ready(function() {
   });
 });
 </script>
-<button class="toggleable_button label_Fuerte" onclick="
+<button class="toggleable_button label_ROS" onclick="
 function toggle(label) {
   $('.toggleable_button').css({border: '2px outset', 'border-radius': '4px'});
   $('.toggleable_button.label_' + label).css({border: '2px inset', 'border-radius': '4px'});
   $('.toggleable_div').css('display', 'none');
   $('.toggleable_div.label_' + label).css('display', 'block');
 };
-toggle('Fuerte')">Fuerte</button>
-<script>
-
-function toggle(label) {
-  $('.toggleable_button').css({border: '2px outset', 'border-radius': '4px'});
-  $('.toggleable_button.label_' + label).css({border: '2px inset', 'border-radius': '4px'});
-  $('.toggleable_div').css('display', 'none');
-  $('.toggleable_div.label_' + label).css('display', 'block');
-};
-
-$(document).ready(function() {
-  var classList =$('.toggleable_button').attr('class').split(/\s+/);
-  $.each( classList, function(index, item){
-    if (item.substring(0, 5) === 'label') {
-      toggle(item.substring(6));
-    };
-  });
-});
-</script>
-<button class="toggleable_button label_Groovy" onclick="
-function toggle(label) {
-  $('.toggleable_button').css({border: '2px outset', 'border-radius': '4px'});
-  $('.toggleable_button.label_' + label).css({border: '2px inset', 'border-radius': '4px'});
-  $('.toggleable_div').css('display', 'none');
-  $('.toggleable_div.label_' + label).css('display', 'block');
-};
-toggle('Groovy')">Groovy</button>
+toggle('ROS')">ROS</button>
 <script>
 
 function toggle(label) {
@@ -195,22 +169,7 @@ git clone http://github.com/wg-perception/opencv_candidate
 </div>
 </div></div>
 <div class="container">
-<div class="toggleable_div label_Fuerte"><p>First install catkin and source your ROS setup file:</p>
-<div class="highlight-sh"><div class="highlight"><pre>sudo apt-get install libopenni-dev ros-fuerte-catkin ros-fuerte-ecto* ros-fuerte-opencv-candidate
-<span class="nb">source</span> /opt/ros/fuerte/setup.sh
-</pre></div>
-</div>
-<p>Install the catkin package from source as the package does not have the toplevel.cmake file:</p>
-<div class="highlight-bash"><div class="highlight"><pre>git clone http://github.com/ros/catkin.git
-ln -s catkin/cmake/toplevel.cmake CMakeLists.txt
-<span class="nb">cd</span> ../ <span class="o">&amp;&amp;</span> git clone http://github.com/ros-infrastructure/catkin_pkg.git
-<span class="nb">export </span><span class="nv">PYTHONPATH</span><span class="o">=</span><span class="sb">`</span><span class="nb">pwd</span><span class="sb">`</span>/catkin_pkg/src:<span class="nv">$PYTHONPATH</span>
-<span class="nb">cd </span>src
-</pre></div>
-</div>
-</div></div>
-<div class="container">
-<div class="toggleable_div label_Groovy"><p>First source your ROS setup file:</p>
+<div class="toggleable_div label_ROS"><p>First source your ROS setup file:</p>
 <div class="highlight-sh"><div class="highlight"><pre>sudo apt-get install libopenni-dev ros-groovy-catkin ros-groovy-ecto* ros-groovy-opencv-candidate ros-groovy-moveit-msgs
 <span class="nb">source</span> /opt/ros/groovy/setup.sh
 </pre></div>
@@ -255,40 +214,14 @@ $(document).ready(function() {
   });
 });
 </script>
-<button class="toggleable_button label_Fuerte" onclick="
+<button class="toggleable_button label_ROS" onclick="
 function toggle(label) {
   $('.toggleable_button').css({border: '2px outset', 'border-radius': '4px'});
   $('.toggleable_button.label_' + label).css({border: '2px inset', 'border-radius': '4px'});
   $('.toggleable_div').css('display', 'none');
   $('.toggleable_div.label_' + label).css('display', 'block');
 };
-toggle('Fuerte')">Fuerte</button>
-<script>
-
-function toggle(label) {
-  $('.toggleable_button').css({border: '2px outset', 'border-radius': '4px'});
-  $('.toggleable_button.label_' + label).css({border: '2px inset', 'border-radius': '4px'});
-  $('.toggleable_div').css('display', 'none');
-  $('.toggleable_div.label_' + label).css('display', 'block');
-};
-
-$(document).ready(function() {
-  var classList =$('.toggleable_button').attr('class').split(/\s+/);
-  $.each( classList, function(index, item){
-    if (item.substring(0, 5) === 'label') {
-      toggle(item.substring(6));
-    };
-  });
-});
-</script>
-<button class="toggleable_button label_Groovy" onclick="
-function toggle(label) {
-  $('.toggleable_button').css({border: '2px outset', 'border-radius': '4px'});
-  $('.toggleable_button.label_' + label).css({border: '2px inset', 'border-radius': '4px'});
-  $('.toggleable_div').css('display', 'none');
-  $('.toggleable_div.label_' + label).css('display', 'block');
-};
-toggle('Groovy')">Groovy</button>
+toggle('ROS')">ROS</button>
 <script>
 
 function toggle(label) {
@@ -312,13 +245,7 @@ $(document).ready(function() {
 <div class="toggleable_div label_Non-ROS"><p>Nothing for non-ROS.</p>
 </div></div>
 <div class="container">
-<div class="toggleable_div label_Fuerte"><div class="highlight-sh"><div class="highlight"><pre>git clone http://github.com/wg-perception/object_recognition_msgs
-git clone http://github.com/wg-perception/object_recognition_ros <span class="o">&amp;&amp;</span> git checkout fuerte-devel
-</pre></div>
-</div>
-</div></div>
-<div class="container">
-<div class="toggleable_div label_Groovy"><div class="highlight-sh"><div class="highlight"><pre>git clone http://github.com/wg-perception/object_recognition_msgs
+<div class="toggleable_div label_ROS"><div class="highlight-sh"><div class="highlight"><pre>git clone http://github.com/wg-perception/object_recognition_msgs
 git clone http://github.com/wg-perception/object_recognition_ros
 </pre></div>
 </div>
@@ -351,40 +278,14 @@ $(document).ready(function() {
   });
 });
 </script>
-<button class="toggleable_button label_Fuerte" onclick="
+<button class="toggleable_button label_ROS" onclick="
 function toggle(label) {
   $('.toggleable_button').css({border: '2px outset', 'border-radius': '4px'});
   $('.toggleable_button.label_' + label).css({border: '2px inset', 'border-radius': '4px'});
   $('.toggleable_div').css('display', 'none');
   $('.toggleable_div.label_' + label).css('display', 'block');
 };
-toggle('Fuerte')">Fuerte</button>
-<script>
-
-function toggle(label) {
-  $('.toggleable_button').css({border: '2px outset', 'border-radius': '4px'});
-  $('.toggleable_button.label_' + label).css({border: '2px inset', 'border-radius': '4px'});
-  $('.toggleable_div').css('display', 'none');
-  $('.toggleable_div.label_' + label).css('display', 'block');
-};
-
-$(document).ready(function() {
-  var classList =$('.toggleable_button').attr('class').split(/\s+/);
-  $.each( classList, function(index, item){
-    if (item.substring(0, 5) === 'label') {
-      toggle(item.substring(6));
-    };
-  });
-});
-</script>
-<button class="toggleable_button label_Groovy" onclick="
-function toggle(label) {
-  $('.toggleable_button').css({border: '2px outset', 'border-radius': '4px'});
-  $('.toggleable_button.label_' + label).css({border: '2px inset', 'border-radius': '4px'});
-  $('.toggleable_div').css('display', 'none');
-  $('.toggleable_div.label_' + label).css('display', 'block');
-};
-toggle('Groovy')">Groovy</button>
+toggle('ROS')">ROS</button>
 <script>
 
 function toggle(label) {
@@ -410,12 +311,7 @@ $(document).ready(function() {
 </div>
 </div></div>
 <div class="container">
-<div class="toggleable_div label_Fuerte"><div class="highlight-sh"><div class="highlight"><pre><span class="nb">cd</span> ../ <span class="o">&amp;&amp;</span> mkdir build <span class="o">&amp;&amp;</span> <span class="nb">cd </span>build <span class="o">&amp;&amp;</span> cmake ../src <span class="o">&amp;&amp;</span> make
-</pre></div>
-</div>
-</div></div>
-<div class="container">
-<div class="toggleable_div label_Groovy"><div class="highlight-sh"><div class="highlight"><pre><span class="nb">cd</span> ../ <span class="o">&amp;&amp;</span> catkin_make
+<div class="toggleable_div label_ROS"><div class="highlight-sh"><div class="highlight"><pre><span class="nb">cd</span> ../ <span class="o">&amp;&amp;</span> catkin_make
 </pre></div>
 </div>
 </div></div>
@@ -441,6 +337,7 @@ $(document).ready(function() {
 - git: {local-name: ork_tabletop, uri: "https://github.com/wg-perception/tabletop"}
 - git: {local-name: ork_tod, uri: "https://github.com/wg-perception/tod"}
 - git: {local-name: ork_transparent_objects, uri: "https://github.com/wg-perception/transparent_objects"}
+- git: {local-name: ork_ros, uri: "https://github.com/wg-perception/object_recognition_ros"}
 </pre>
 </div>
 <p>To install it, just follow those commands:</p>
