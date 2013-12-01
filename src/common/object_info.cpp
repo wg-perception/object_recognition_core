@@ -108,18 +108,28 @@ namespace object_recognition_core
   switch (db_->parameters().type()) {
     case db::ObjectDbParameters::COUCHDB:
       for (; iter != end; ++iter) {
-        if ((*iter).has_field("_id")) {
+        if (((*iter).has_field("_id")) && ((*iter).has_field("_attachments"))) {
           mesh_id = (*iter).get_field<std::string>("_id");
           break;
         }
       }
       // E.g. http://localhost:5984/object_recognition/_design/models/_view/by_object_id_and_mesh?key=%2212a1e6eb663a41f8a4fb9baa060f191c%22
-      if (!mesh_id.empty())
-        set_field(
-            "mesh_uri",
-            db_->parameters().at("root").get_str() + std::string("/")
+      if (!mesh_id.empty()) {
+        // Figure out the name of the mesh
+        std::vector<std::string> attachments_names = (*iter).attachment_names();
+        std::string mesh_name;
+        BOOST_FOREACH(const std::string& attachment_name, attachments_names) {
+          // Check that the end of the mesh is proper for display
+          if ((attachment_name.find(".stl") >= 0) || (attachment_name.find(".obj") >= 0)) {
+            mesh_name = attachment_name;
+            break;
+          }
+        }
+        if (!mesh_name.empty())
+          set_field("mesh_uri", db_->parameters().at("root").get_str() + std::string("/")
                 + db_->parameters().at("collection").get_str() + "/" + mesh_id
-                + "/mesh.stl");
+                + "/" + mesh_name);
+      }
       break;
     default:
       for (; iter != end; ++iter) {

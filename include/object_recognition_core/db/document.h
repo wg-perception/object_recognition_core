@@ -153,6 +153,20 @@ typedef boost::shared_ptr<const ObjectDb> ObjectDbConstPtr;
         return fields_;
       }
 
+      /** Get a specific value */
+      std::vector<std::string>
+      attachment_names() const
+      {
+        std::vector<std::string> attachment_names;
+        or_json::mObject::const_iterator attachment_field = fields_.find("_attachments");
+        if (attachment_field == fields_.end())
+          return attachment_names;
+        or_json::mObject attachments = attachment_field->second.get_obj();
+        for(or_json::mObject::const_iterator iter = attachments.begin(); iter != attachments.end(); ++iter)
+          attachment_names.push_back(iter->first);
+        return attachment_names;
+      }
+
       /** Set a specific value */
       template<typename T>
       void
