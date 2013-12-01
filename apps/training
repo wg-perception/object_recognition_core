@@ -3,6 +3,7 @@
 This script launches several training pipelines defined in a configuration file to train several models for several
 objects
 """
+from __future__ import print_function
 from object_recognition_core.db import ObjectDb, ObjectDbParameters, ObjectDbTypes, models
 from object_recognition_core.db.tools import interpret_object_ids, init_object_databases
 from object_recognition_core.utils.find_classes import find_class
@@ -24,25 +25,32 @@ if __name__ == '__main__':
         db_params_raw = pipeline_param['parameters'].get('json_db', {})
         db_params = db_params_raw
         object_ids = interpret_object_ids(db_params, pipeline_param.get('parameters', {}).get('json_object_ids', []))
-        print 'Training %d objects.' % len(object_ids)
+        print('Training %d objects.' % len(object_ids))
         object_db = ObjectDb(db_params)
         db_params = ObjectDbParameters(db_params)
         for object_id in object_ids:
-            print 'computing object_id: %s' % object_id
+            print('computing object_id: %s' % object_id)
             object_id = object_id.encode('ascii')
             session_ids = models.find_all_sessions_for_object(db_params, object_id)
 
-            for session_id in session_ids:
-                observation_ids = models.find_all_observations_for_session(db_params, session_id)
+            if session_ids:
+                for session_id in session_ids:
+                    observation_ids = models.find_all_observations_for_session(db_params, session_id)
 
-                if not observation_ids:
-                    print >> sys.stderr, 'No observations found for (object,session): (%s,%s)' % (object_id, session_id)
-                    continue
+                    if not observation_ids:
+                        print('No observations found for (object,session): (%s,%s)' % (object_id, session_id), file=sys.stderr)
+                        continue
 
-                pipeline = pipeline_class(object_id=object_id, observation_ids = observation_ids,
-                                           pipeline_params=pipeline_param.get('parameters', {}), object_db=object_db,
-                                           json_db=db_params_raw, json_db_dealer=db_params_raw, args=args)
+                    pipeline = pipeline_class(object_id=object_id, observation_ids = observation_ids,
+                                              pipeline_params=pipeline_param.get('parameters', {}), object_db=object_db,
+                                              json_db=db_params_raw, json_db_dealer=db_params_raw, args=args)
 
+                    pipeline.process()
+            else:
+                # cases where training does not happen on observations
+                print('No session found for object id : %s' % object_id)
+                pipeline = pipeline_class(object_id=object_id, pipeline_params=pipeline_param.get('parameters', {}),
+                                          object_db=object_db, json_db=db_params_raw, json_db_dealer=db_params_raw, args=args)
                 pipeline.process()
 
         # Make sure the views exist
