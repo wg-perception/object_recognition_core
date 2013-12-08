@@ -258,14 +258,14 @@ rosrun dynamic_reconfigure dynparam <span class="nb">set</span> /camera/driver d
 <p>Next objects should be trained. It may take some time between objects, this is normal. Also, this quickguide assumes that you are using <a class="reference external" href="http://wg-perception.github.com/tod/index.html#tod" title="(in object_recognition_tod v)"><em class="xref std std-ref">TOD</em></a> which only works for textured objects. Please refer to the documentation of other methods.</p>
 <div class="container">
 <div class="toggleable_div label_FromSource"><div class="highlight-sh"><div class="highlight"><pre>./object_recognition_core/apps/training <span class="se">\</span>
--c object_recognition_tod/conf/config_training.tod <span class="se">\</span>
+-c object_recognition_tod/conf/training.ork <span class="se">\</span>
 --visualize
 </pre></div>
 </div>
 </div></div>
 <div class="container">
 <div class="toggleable_div label_FromROSpackages"><div class="highlight-sh"><div class="highlight"><pre>rosrun object_recognition_core training <span class="se">\</span>
--c <span class="sb">`</span>rospack find object_recognition_tod<span class="sb">`</span>/conf/config_training.tod <span class="se">\</span>
+-c <span class="sb">`</span>rospack find object_recognition_tod<span class="sb">`</span>/conf/training.ork <span class="se">\</span>
 --visualize
 </pre></div>
 </div>
@@ -276,14 +276,14 @@ rosrun dynamic_reconfigure dynparam <span class="nb">set</span> /camera/driver d
 <p>Now we&#8217;re ready for detection. First launch rviz, it should be subscribed to the right markers for recognition results. /markers is used for the results, and it is a marker array.</p>
 <div class="container">
 <div class="toggleable_div label_FromSource"><div class="highlight-sh"><div class="highlight"><pre>./rosrun object_recognition_core/apps/detection <span class="se">\</span>
--c object_recognition_tod/conf/config_detection.tod <span class="se">\</span>
+-c object_recognition_tod/conf/detection.ork <span class="se">\</span>
 --visualize
 </pre></div>
 </div>
 </div></div>
 <div class="container">
 <div class="toggleable_div label_FromROSpackages"><div class="highlight-sh"><div class="highlight"><pre>rosrun object_recognition_core detection <span class="se">\</span>
--c <span class="sb">`</span>rospack find object_recognition_tod<span class="sb">`</span>/conf/config_detection.tod <span class="se">\</span>
+-c <span class="sb">`</span>rospack find object_recognition_tod<span class="sb">`</span>/conf/detection.ros.ork <span class="se">\</span>
 --visualize
 </pre></div>
 </div>

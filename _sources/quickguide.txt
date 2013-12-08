@@ -171,7 +171,7 @@ Next objects should be trained. It may take some time between objects, this is n
    .. code-block:: sh
 
       ./object_recognition_core/apps/training \
-      -c object_recognition_tod/conf/config_training.tod \
+      -c object_recognition_tod/conf/training.ork \
       --visualize
 
 .. toggle:: From ROS packages
@@ -179,7 +179,7 @@ Next objects should be trained. It may take some time between objects, this is n
    .. code-block:: sh
 
       rosrun object_recognition_core training \
-      -c `rospack find object_recognition_tod`/conf/config_training.tod \
+      -c `rospack find object_recognition_tod`/conf/training.ork \
       --visualize
 
 Detect objects
@@ -192,7 +192,7 @@ Now we're ready for detection. First launch rviz, it should be subscribed to the
    .. code-block:: sh
 
       ./rosrun object_recognition_core/apps/detection \
-      -c object_recognition_tod/conf/config_detection.tod \
+      -c object_recognition_tod/conf/detection.ork \
       --visualize
 
 .. toggle:: From ROS packages
@@ -200,5 +200,5 @@ Now we're ready for detection. First launch rviz, it should be subscribed to the
    .. code-block:: sh
 
       rosrun object_recognition_core detection \
-      -c `rospack find object_recognition_tod`/conf/config_detection.tod \
+      -c `rospack find object_recognition_tod`/conf/detection.ros.ork \
       --visualize

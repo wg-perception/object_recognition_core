@@ -235,31 +235,31 @@ Ecto runtime parameters:
 <h2><a class="toc-backref" href="#id5">Configuration File</a><a class="headerlink" href="#configuration-file" title="Permalink to this headline">¶</a></h2>
 <p>The configuration file is where you define your graph and with the current ORK, you can choose any of the following sources:</p>
 <div class="highlight-text"><div class="highlight"><pre>source_0:
-   type: RosKinect
-   module: object_recognition_ros.io.source.ros_kinect
+   type: OpenNI
+   module: object_recognition_core.io.source
    parameters:
-      #  If the cropper cell is enabled
-      crop_enabled: True
-      #  The ROS topic for the depth camera info.
-      depth_camera_info: /camera/depth_registered/camera_info
-      #  The ROS topic for the depth image.
-      depth_image_topic: /camera/depth_registered/image_raw
-      #  The ROS topic for the RGB camera info.
-      rgb_camera_info: /camera/rgb/camera_info
-      #  The ROS topic for the RGB image.
-      rgb_image_topic: /camera/rgb/image_color
-      #  The maximum x value (in the camera reference frame)
-      x_max: 3.40282346639e+38
-      #  The minimum x value (in the camera reference frame)
-      x_min: -3.40282346639e+38
-      #  The maximum y value (in the camera reference frame)
-      y_max: 3.40282346639e+38
-      #  The minimum y value (in the camera reference frame)
-      y_min: -3.40282346639e+38
-      #  The maximum z value (in the camera reference frame)
-      z_max: 3.40282346639e+38
-      #  The minimum z value (in the camera reference frame)
-      z_min: -3.40282346639e+38
+      #  The number of frames per second for the depth image: [ecto_openni.FpsMode.FPS_60,
+      # ecto_openni.FpsMode.FPS_30, ecto_openni.FpsMode.FPS_15]
+      depth_fps: None
+      #  The resolution for the depth image: [ecto_openni.ResolutionMode.QQVGA_RES,
+      # ecto_openni.ResolutionMode.CGA_RES, ecto_openni.ResolutionMode.QVGA_RES,
+      # ecto_openni.ResolutionMode.VGA_RES, ecto_openni.ResolutionMode.XGA_RES,
+      # ecto_openni.ResolutionMode.HD720P_RES, ecto_openni.ResolutionMode.SXGA_RES,
+      # ecto_openni.ResolutionMode.UXGA_RES, ecto_openni.ResolutionMode.HD1080P_RES]
+      depth_mode: None
+      #  The number of frames per second for the RGB image: [ecto_openni.FpsMode.FPS_60,
+      # ecto_openni.FpsMode.FPS_30, ecto_openni.FpsMode.FPS_15]
+      image_fps: None
+      #  The resolution for the RGB image: [ecto_openni.ResolutionMode.QQVGA_RES,
+      # ecto_openni.ResolutionMode.CGA_RES, ecto_openni.ResolutionMode.QVGA_RES,
+      # ecto_openni.ResolutionMode.VGA_RES, ecto_openni.ResolutionMode.XGA_RES,
+      # ecto_openni.ResolutionMode.HD720P_RES, ecto_openni.ResolutionMode.SXGA_RES,
+      # ecto_openni.ResolutionMode.UXGA_RES, ecto_openni.ResolutionMode.HD1080P_RES]
+      image_mode: None
+      #  The stream mode: [ecto_openni.StreamMode.IR, ecto_openni.StreamMode.DEPTH,
+      # ecto_openni.StreamMode.DEPTH_IR, ecto_openni.StreamMode.RGB,
+      # ecto_openni.StreamMode.DEPTH_RGB]
+      stream_mode: None
 
 source_1:
    type: BagReader
@@ -291,31 +291,31 @@ source_1:
       z_min: -3.40282346639e+38
 
 source_2:
-   type: OpenNI
-   module: object_recognition_core.io.source
+   type: RosKinect
+   module: object_recognition_ros.io.source.ros_kinect
    parameters:
-      #  The number of frames per second for the depth image: [ecto_openni.FpsMode.FPS_60,
-      # ecto_openni.FpsMode.FPS_30, ecto_openni.FpsMode.FPS_15]
-      depth_fps: None
-      #  The resolution for the depth image: [ecto_openni.ResolutionMode.QQVGA_RES,
-      # ecto_openni.ResolutionMode.CGA_RES, ecto_openni.ResolutionMode.QVGA_RES,
-      # ecto_openni.ResolutionMode.VGA_RES, ecto_openni.ResolutionMode.XGA_RES,
-      # ecto_openni.ResolutionMode.HD720P_RES, ecto_openni.ResolutionMode.SXGA_RES,
-      # ecto_openni.ResolutionMode.UXGA_RES, ecto_openni.ResolutionMode.HD1080P_RES]
-      depth_mode: None
-      #  The number of frames per second for the RGB image: [ecto_openni.FpsMode.FPS_60,
-      # ecto_openni.FpsMode.FPS_30, ecto_openni.FpsMode.FPS_15]
-      image_fps: None
-      #  The resolution for the RGB image: [ecto_openni.ResolutionMode.QQVGA_RES,
-      # ecto_openni.ResolutionMode.CGA_RES, ecto_openni.ResolutionMode.QVGA_RES,
-      # ecto_openni.ResolutionMode.VGA_RES, ecto_openni.ResolutionMode.XGA_RES,
-      # ecto_openni.ResolutionMode.HD720P_RES, ecto_openni.ResolutionMode.SXGA_RES,
-      # ecto_openni.ResolutionMode.UXGA_RES, ecto_openni.ResolutionMode.HD1080P_RES]
-      image_mode: None
-      #  The stream mode: [ecto_openni.StreamMode.IR, ecto_openni.StreamMode.DEPTH,
-      # ecto_openni.StreamMode.DEPTH_IR, ecto_openni.StreamMode.RGB,
-      # ecto_openni.StreamMode.DEPTH_RGB]
-      stream_mode: None
+      #  If the cropper cell is enabled
+      crop_enabled: True
+      #  The ROS topic for the depth camera info.
+      depth_camera_info: /camera/depth_registered/camera_info
+      #  The ROS topic for the depth image.
+      depth_image_topic: /camera/depth_registered/image_raw
+      #  The ROS topic for the RGB camera info.
+      rgb_camera_info: /camera/rgb/camera_info
+      #  The ROS topic for the RGB image.
+      rgb_image_topic: /camera/rgb/image_color
+      #  The maximum x value (in the camera reference frame)
+      x_max: 3.40282346639e+38
+      #  The minimum x value (in the camera reference frame)
+      x_min: -3.40282346639e+38
+      #  The maximum y value (in the camera reference frame)
+      y_max: 3.40282346639e+38
+      #  The minimum y value (in the camera reference frame)
+      y_min: -3.40282346639e+38
+      #  The maximum z value (in the camera reference frame)
+      z_max: 3.40282346639e+38
+      #  The minimum z value (in the camera reference frame)
+      z_min: -3.40282346639e+38
 </pre></div>
 </div>
 <p>any of the following sinks:</p>
@@ -329,11 +329,6 @@ source_2:
       team_name: 
 
 sink_1:
-   type: Publisher
-   module: object_recognition_by_parts.publisher
-   parameters:
-
-sink_2:
    type: TablePublisher
    module: object_recognition_tabletop.table_publisher
    parameters:
@@ -341,21 +336,20 @@ sink_2:
       latched: True
       #  The ROS topic to use for the markers of the clusters.
       marker_array_clusters: marker_array_clusters
-      #  The ROS topic to use for the table message.
-      marker_hull_topic: marker_table_hulls
-      #  The ROS topic to use for the table message.
-      marker_origin_topic: marker_table_origins
-      #  The ROS topic to use for the table message.
-      marker_table_topic: marker_tables
       #  The array of found tables.
       table_array: table_array
+
+sink_2:
+   type: Publisher
+   module: object_recognition_by_parts.publisher
+   parameters:
 
 sink_3:
    type: Publisher
    module: object_recognition_ros.io.sink.publisher
    parameters:
       #  The DB parameters
-      db_params: &lt;object_recognition_core.boost.interface.ObjectDbParameters object at 0x3311f18&gt;
+      db_params: &lt;object_recognition_core.boost.interface.ObjectDbParameters object at 0x2419fc8&gt;
       #  Determines if the topics will be latched.
       latched: True
       #  The ROS topic to use for the marker array.
@@ -387,17 +381,6 @@ sink_3:
       visualize: False
 
 detection_pipeline_1:
-   type: TabletopObjectDetector
-   module: object_recognition_tabletop.detector
-   parameters:
-      #  The DB parameters
-      json_db: 
-      #  The DB id of the objects to load in the household database.
-      json_object_ids: 
-      #  The object_ids set as defined by the household object database.
-      tabletop_object_ids: REDUCED_MODEL_SET
-
-detection_pipeline_2:
    type: PartsBasedDetector
    module: object_recognition_by_parts.detector
    parameters:
@@ -416,46 +399,18 @@ detection_pipeline_2:
       #  Visualize results
       visualize: False
 
-detection_pipeline_3:
-   type: TransparentObjectsDetector
-   module: object_recognition_transparent_objects.detector
-   parameters:
-      #  The DB configuration parameters as a JSON string
-      json_db: 
-      #  A set of object ids as a JSON string: &#39;[&quot;1576f162347dbe1f95bd675d3c00ec6a&quot;]&#39; or &#39;all&#39;
-      json_object_ids: all
-      #  The method the models were computed with
-      method: TransparentObjects
-      #  The DB parameters
-      object_db: None
-      #  The filename of the registration mask.
-      registrationMaskFilename: 
-      #  Visualize results
-      visualize: False
-
-detection_pipeline_4:
-   type: TabletopTableDetector
+detection_pipeline_2:
+   type: TabletopObjectDetector
    module: object_recognition_tabletop.detector
    parameters:
-      #  The maximum distance between a point and the cluster it belongs to.
-      cluster_distance: 0.019999999553
-      #  Min number of points for a cluster
-      min_cluster_size: 300
-      #  The minimum number of points deemed necessary to find a table.
-      min_table_size: 10000
-      #  The distance used as a threshold when finding a plane
-      plane_threshold: 0.019999999553
-      #  The distance used when clustering a plane
-      table_cluster_tolerance: 0.20000000298
-      #  The vertical frame id
-      vertical_frame_id: /map
-      #  The amount to keep in the z direction (meters) relative to the coordinate frame defined by
-      # the pose.
-      z_crop: 0.5
-      #  The amount to crop above the plane, in meters.
-      z_min: 0.00749999983236
+      #  The DB parameters
+      json_db: 
+      #  The DB id of the objects to load in the household database.
+      json_object_ids: 
+      #  The object_ids set as defined by the household object database.
+      tabletop_object_ids: REDUCED_MODEL_SET
 
-detection_pipeline_5:
+detection_pipeline_3:
    type: TodDetector
    module: object_recognition_tod.detector
    parameters:
@@ -479,6 +434,45 @@ detection_pipeline_5:
       sensor_error: 0.00999999977648
       #  If true, some windows pop up to see the progress
       visualize: False
+
+detection_pipeline_4:
+   type: TransparentObjectsDetector
+   module: object_recognition_transparent_objects.detector
+   parameters:
+      #  The DB configuration parameters as a JSON string
+      json_db: 
+      #  A set of object ids as a JSON string: &#39;[&quot;1576f162347dbe1f95bd675d3c00ec6a&quot;]&#39; or &#39;all&#39;
+      json_object_ids: all
+      #  The method the models were computed with
+      method: TransparentObjects
+      #  The DB parameters
+      object_db: None
+      #  The filename of the registration mask.
+      registrationMaskFilename: 
+      #  Visualize results
+      visualize: False
+
+detection_pipeline_5:
+   type: TabletopTableDetector
+   module: object_recognition_tabletop.detector
+   parameters:
+      #  The maximum distance between a point and the cluster it belongs to.
+      cluster_distance: 0.019999999553
+      #  Min number of points for a cluster
+      min_cluster_size: 300
+      #  The minimum number of points deemed necessary to find a table.
+      min_table_size: 10000
+      #  The distance used as a threshold when finding a plane
+      plane_threshold: 0.019999999553
+      #  The distance used when clustering a plane
+      table_cluster_tolerance: 0.20000000298
+      #  The vertical frame id
+      vertical_frame_id: /map
+      #  The amount to keep in the z direction (meters) relative to the coordinate frame defined by
+      # the pose.
+      z_crop: 0.5
+      #  The amount to crop above the plane, in meters.
+      z_min: 0.00749999983236
 </pre></div>
 </div>
 <p>More of any of those can be added by the user obviously</p>

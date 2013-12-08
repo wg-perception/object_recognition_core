@@ -41,7 +41,7 @@ Use
    .. code-block:: sh
    
       rosrun object_recognition_core training \
-      -c `rospack find object_recognition_tod`/conf/config_training.tod \
+      -c `rospack find object_recognition_tod`/conf/training.ork \
       --visualize
 
   You can choose whatever configuration file; a few are provided in ``object_recognition_server/conf``.
