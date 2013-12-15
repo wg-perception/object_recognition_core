@@ -162,14 +162,14 @@ namespace object_recognition_core
       Type
       T() const;
 
-      inline const std::vector<sensor_msgs::PointCloud2ConstPtr>&
+      inline const std::vector<sensor_msgs::PointCloud2Ptr>&
       clouds() const
       {
     	  return clouds_;
       }
 
       inline void
-      set_clouds(const std::vector<sensor_msgs::PointCloud2ConstPtr>& clouds)
+      set_clouds(const std::vector<sensor_msgs::PointCloud2Ptr>& clouds)
       {
     	clouds_ = clouds;
       }
@@ -186,7 +186,7 @@ namespace object_recognition_core
       /** The db in which the object_id is */
       db::ObjectDbPtr db_;
       /** The recognized object's cloud. A vector since it can contain views from different sensors. */
-      std::vector<sensor_msgs::PointCloud2ConstPtr> clouds_;
+      std::vector<sensor_msgs::PointCloud2Ptr> clouds_;
 
     };
 
