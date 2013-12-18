@@ -23,7 +23,7 @@ Use
 
    .. code-block:: sh
 
-      ./apps/detection -c config_detection.sample
+      ./apps/detection -c detection.ork
 
    The server requires a configuration file through the ``-c`` option.
 
@@ -33,13 +33,13 @@ Use
 
    .. code-block:: sh
 
-      rosrun object_recognition_core detection -c config_detection.sample
+      rosrun object_recognition_core detection -c `rospack find object_recognition_tod`/conf/detection.ros.ork
 
    Then again, there is also an actionlib server as detailed on :ref:`actionlib server <orkros:actionlib>`:
 
    .. code-block:: sh
 
-      rosrun object_recognition_ros server -c config_detection.sample
+      rosrun object_recognition_ros server -c `rospack find object_recognition_tod`/conf/detection.ros.ork
 
    This will start a server with a given configuration file.
    If you want to test the server, just execute the client once:
@@ -57,7 +57,7 @@ Use
 
 A typical command line session might look like::
 
-   % apps/detection -c config_detection.sample
+   % apps/detection -c `rospack find object_recognition_tod`/conf/detection.ros.ork
    [ INFO] [1317692023.717854617]: Initialized ros. node_name: /ecto_node_1317692023710501315
    Threadpool executing [unlimited] ticks in 5 threads.
    [ INFO] [1317692024.254588151]: Subscribed to topic:/camera/rgb/camera_info with queue size of 0
