@@ -278,7 +278,7 @@ typedef boost::shared_ptr<const ObjectDb> ObjectDbConstPtr;
 
       /**
        * Update the document_id that this document should be associated with.
-       * @param db
+       * @param document_id
        */
       void
       set_document_id(const DocumentId &document_id);
