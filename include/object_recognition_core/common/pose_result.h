@@ -162,7 +162,7 @@ namespace object_recognition_core
       Type
       T() const;
 
-      inline const std::vector<sensor_msgs::PointCloud2Ptr>&
+      inline const std::vector<sensor_msgs::PointCloud2>&
       clouds() const
       {
     	  return clouds_;
@@ -171,9 +171,18 @@ namespace object_recognition_core
       inline void
       set_clouds(const std::vector<sensor_msgs::PointCloud2Ptr>& clouds)
       {
-    	clouds_ = clouds;
+        clouds_.resize(clouds.size());
+        for(size_t i = 0; i < clouds_.size(); ++i)
+          clouds_[i] = *(clouds[i]);
       }
 
+      inline void
+      set_clouds(const std::vector<sensor_msgs::PointCloud2ConstPtr>& clouds)
+      {
+        clouds_.resize(clouds.size());
+        for(size_t i = 0; i < clouds_.size(); ++i)
+          clouds_[i] = *(clouds[i]);
+      }
     private:
       /** The rotation matrix of the estimated pose, stored row by row */
       std::vector<float> R_;
@@ -186,7 +195,7 @@ namespace object_recognition_core
       /** The db in which the object_id is */
       db::ObjectDbPtr db_;
       /** The recognized object's cloud. A vector since it can contain views from different sensors. */
-      std::vector<sensor_msgs::PointCloud2Ptr> clouds_;
+      std::vector<sensor_msgs::PointCloud2> clouds_;
 
     };
 
