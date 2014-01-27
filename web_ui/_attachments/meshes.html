@@ -1,23 +1,20 @@
 <!doctype html>
 <html>
 <head>
-<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.0/jquery.min.js"></script>
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
 <script type="text/javascript" src="js/jsc3d.js"></script>
 
 <script>
-  function image_for_object(object_id, mesh_id) {
-    // Get the name of the object
-    var object_name = '';
-    $.getJSON("/object_recognition/" + object_id, function(data) {
-      object_name = data.object_name;
-    });
-
+  // Creates the icon of an object
+  function iconForObject(object_id, mesh_id) {
     $.getJSON("/object_recognition/_design/observations/_view/by_object_id?key=\""
 	         + object_id + "\"&limit=1",
               function(data) {
                 if (data.rows.length == 0) {
-                  $("<a>").attr("href", "?mesh=" + mesh_id).text(
-                            object_name + ' (' + object_id + ')').appendTo("#links");
+                  $.getJSON("/object_recognition/" + object_id, function(data) {
+                    $("<a>").attr("href", "?mesh=" + mesh_id).text(
+                            data.object_name + ' (' + object_id + ')').appendTo("#links");
+                  });
                 } else {
                   var observation_id = data.rows[0].id
                   var a = $("<a>").attr("href", "?mesh=" + mesh_id).appendTo("#links");
@@ -26,15 +23,28 @@
                 }
             });
   }
-  function get_list_of_urls() {
+
+  // Create the icons for the objects
+  function createObjectIcons() {
     $.getJSON("/object_recognition/_design/models/_view/by_object_id_and_mesh",
             function(data) {
+              var is_first = false;
+              var vars = getUrlVars();
+              if (!(vars.hasOwnProperty("mesh")))
+                is_first = true;
+
               $.each(data.rows, function(key, val) {
-              image_for_object(val.value.object_id, val.id);
+                  if (is_first) {
+                    is_first = false;
+                    createViewer(val.id);
+                  }
+                  iconForObject(val.value.object_id, val.id);
+                }
+              );
             });
-          });
   }
 
+  // Get the information embedded in the url
   function getUrlVars() {
     var vars = {}, hash;
 	var hashes = window.location.href.slice(window.location.href.indexOf('?') + 1).split('&');
@@ -44,12 +54,10 @@
     }
     return vars;
   }
-  window.onload = function() {
-    get_list_of_urls();
-    var vars = getUrlVars();
 
-    // Load the mesh
-    $.getJSON("/object_recognition/" + vars.mesh, function(data) {
+  // Create a 3d viewer for a given mesh_id
+  function createViewer(mesh_id) {
+    $.getJSON("/object_recognition/" + mesh_id, function(data) {
       if (!("_attachments" in data))
         return;
       // Find interesting names of the meshes
@@ -67,13 +75,13 @@
           str_stl = name;
       }
 
-	  var viewer = new JSC3D.Viewer(document.getElementById('mesh'));
+      var viewer = new JSC3D.Viewer(document.getElementById('mesh'));
       if (str_original)
-        viewer.setParameter('SceneUrl',  "/object_recognition/" + vars.mesh + "/" + str_original);
-      else if (str_original)
-        viewer.setParameter('SceneUrl',  "/object_recognition/" + vars.mesh + "/" + str_obj);
-      else if (str_original)
-        viewer.setParameter('SceneUrl', "/object_recognition/" + vars.mesh + "/" + str_stl);
+        viewer.setParameter('SceneUrl',  "/object_recognition/" + mesh_id + "/" + str_original);
+      else if (str_obj)
+        viewer.setParameter('SceneUrl',  "/object_recognition/" + mesh_id + "/" + str_obj);
+      else if (str_stl)
+        viewer.setParameter('SceneUrl', "/object_recognition/" + mesh_id + "/" + str_stl);
 
       viewer.setParameter('BackgroundColor1', '#E5D7BA');
       viewer.setParameter('BackgroundColor2', '#383840');
@@ -84,6 +92,15 @@
       viewer.init();
       viewer.update();
     });
+  }
+
+  window.onload = function() {
+    createObjectIcons();
+    var vars = getUrlVars();
+
+    // Load the mesh
+    if (vars.hasOwnProperty("mesh"))
+      createViewer(vars.mesh);
   }
 </script>
 </head>
