@@ -12,9 +12,10 @@ class ObjectRecognitionParser(argparse.ArgumentParser):
 
     # copied and tweaked from http://bugs.python.org/issue10523
     def _read_args_from_files(self, arg_strings):
+        filtered_arg_strings = self.remove_launchfile_generated_args(arg_strings)
         # expand arguments referencing files
         new_arg_strings = []
-        for arg_string in arg_strings:
+        for arg_string in filtered_arg_strings:
 
             # for regular arguments, just add them back into the list
             if not arg_string or arg_string[0] not in self.fromfile_prefix_chars:
@@ -43,6 +44,14 @@ class ObjectRecognitionParser(argparse.ArgumentParser):
 
         # return the modified argument list
         return new_arg_strings
+
+    def remove_launchfile_generated_args(self, arg_strings):
+        new_arg_strings = []
+        for arg_string in arg_strings:
+            if not arg_string.startswith('__name:=') and not arg_string.startswith('__log:='):
+                new_arg_strings.append(arg_string)
+        return new_arg_strings
+
 
     # The following function should be the only one needed but the implementation is now broken in Python
     """
