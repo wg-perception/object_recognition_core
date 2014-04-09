@@ -3,7 +3,7 @@ project(object_recognition_core)
 
 find_package(catkin)
 
-find_package(catkin REQUIRED ecto)
+find_package(catkin REQUIRED cmake_modules ecto)
 catkin_package(DEPENDS ecto
                INCLUDE_DIRS include
                LIBRARIES object_recognition_core_db object_recognition_core_common
