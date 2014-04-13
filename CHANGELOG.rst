@@ -1,5 +1,5 @@
-Forthcoming
------------
+0.6.1 (2014-04-13)
+------------------
 * get code to compile on Indigo
 * allow flexibility in the inputs for the cloud
 * improve the viewer for the first load
