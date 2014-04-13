@@ -1,5 +1,3 @@
-
-
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
@@ -82,22 +80,22 @@
 <h1>DB API<a class="headerlink" href="#db-api" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="core-types">
 <h2>Core Types<a class="headerlink" href="#core-types" title="Permalink to this headline">¶</a></h2>
-<div class="line-block">
+<div class="line-block" id="object_recognition_coreclassobject__recognition__core_1_1db_1_1ObjectDb">
 <div class="line"><em>class</em> <strong>object_recognition_core::db::ObjectDb</strong></div>
 </div>
 <blockquote>
 <div><p></p>
 <p>The main class that interact with the db A collection is similar to the term used in CouchDB. It could be a schema/table in SQL Each inheriting class must have an extra static class with the following signature: static <a class="reference internal" href="#object_recognition_coreclassobject__recognition__core_1_1db_1_1ObjectDbParameters"><em>object_recognition_core::db::ObjectDbParameters</em></a> default_parameters() The databases that this interface handles are very generic: they store documents that are only defined by a JSON string and several binary blobs. That&#8217;s it. All relationships between documents therefore have to happen in the JSON. This paradigm is common to non-relational databases (CouchDB, MongoDB) An object is defined by a unique id and a revision number (not all databases support this version number) </p>
 <em>Public Functions</em><blockquote>
-<div><p id=""><span id="object_recognition_coreclassobject__recognition__core_1_1db_1_1ObjectDb_1a54ce8c8a4c974514de765f41c16cb2d2"></span><div class="line-block">
+<div><p><span class="target" id="object_recognition_coreclassobject__recognition__core_1_1db_1_1ObjectDb_1a54ce8c8a4c974514de765f41c16cb2d2"></span><div class="line-block">
 <div class="line"> <strong>ObjectDb</strong>()</div>
 </div>
 </p>
 <blockquote>
 <div><p></p>
-<p>Default constructor Make your children classes have the default parameter: <a class="reference internal" href="#object_recognition_coreclassobject__recognition__core_1_1db_1_1ObjectDbParameters"><em>ObjectDbParameters</em></a>(default_parameters()) </p>
+<p>Default constructor Make your children classes have the default parameter: ObjectDbParameters(default_parameters()) </p>
 </div></blockquote>
-<p id=""><span id="object_recognition_coreclassobject__recognition__core_1_1db_1_1ObjectDb_1af78200d180a469d7ccb7877e109bde75"></span><div class="line-block">
+<p><span class="target" id="object_recognition_coreclassobject__recognition__core_1_1db_1_1ObjectDb_1af78200d180a469d7ccb7877e109bde75"></span><div class="line-block">
 <div class="line"> <strong>~ObjectDb</strong>()</div>
 </div>
 </p>
@@ -105,69 +103,55 @@
 <div><p></p>
 <p></p>
 </div></blockquote>
-<p id=""><span id="object_recognition_coreclassobject__recognition__core_1_1db_1_1ObjectDb_1a7cd8542fc745baa69de32499f62f5dca"></span><div class="line-block">
+<p><span class="target" id="object_recognition_coreclassobject__recognition__core_1_1db_1_1ObjectDb_1a7cd8542fc745baa69de32499f62f5dca"></span><div class="line-block">
 <div class="line">const  <a class="reference internal" href="#object_recognition_coreclassobject__recognition__core_1_1db_1_1ObjectDbParameters"><em>ObjectDbParameters</em></a>  &amp; <strong>parameters</strong>()</div>
 </div>
 </p>
 <blockquote>
 <div><p></p>
-<p>Get the parameters of the database <table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Return:</th><td class="field-body">an <a class="reference internal" href="#object_recognition_coreclassobject__recognition__core_1_1db_1_1ObjectDbParameters"><em>ObjectDbParameters</em></a> object as stored internally </td>
-</tr>
-</tbody>
-</table>
+<p>Get the parameters of the database <dl class="docutils">
+<dt><strong>Return</strong></dt>
+<dd>an <a class="reference internal" href="#object_recognition_coreclassobject__recognition__core_1_1db_1_1ObjectDbParameters"><em>ObjectDbParameters</em></a> object as stored internally </dd>
+</dl>
 </p>
 </div></blockquote>
-<p id=""><span id="object_recognition_coreclassobject__recognition__core_1_1db_1_1ObjectDb_1afb994bf815c7f34d17aa5595e80c52c5"></span><div class="line-block">
+<p><span class="target" id="object_recognition_coreclassobject__recognition__core_1_1db_1_1ObjectDb_1afb994bf815c7f34d17aa5595e80c52c5"></span><div class="line-block">
 <div class="line">ObjectDbParametersRaw <strong>default_raw_parameters</strong>()</div>
 </div>
 </p>
 <blockquote>
 <div><p></p>
-<p><table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Return:</th><td class="field-body">the raw parameters as a JSON object </td>
-</tr>
-</tbody>
-</table>
+<p><dl class="docutils">
+<dt><strong>Return</strong></dt>
+<dd>the raw parameters as a JSON object </dd>
+</dl>
 </p>
 </div></blockquote>
-<p id=""><span id="object_recognition_coreclassobject__recognition__core_1_1db_1_1ObjectDb_1a09beeb44f1c708a6de65d8c0cd91a1a1"></span><div class="line-block">
+<p><span class="target" id="object_recognition_coreclassobject__recognition__core_1_1db_1_1ObjectDb_1a09beeb44f1c708a6de65d8c0cd91a1a1"></span><div class="line-block">
 <div class="line">void <strong>set_parameters</strong>(<a class="reference internal" href="#object_recognition_coreclassobject__recognition__core_1_1db_1_1ObjectDbParameters"><em>ObjectDbParameters</em></a>  &amp; parameters)</div>
 </div>
 </p>
 <blockquote>
 <div><p></p>
-<p>Set the parameters of a database: this can only be done from the ObjectDBParameters This is also where internals can be set. The parameter is not const as it can be modified to show what was actually used. <table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="breatheparameterlist first last">
+<p>Set the parameters of a database: this can only be done from the ObjectDBParameters This is also where internals can be set. The parameter is not const as it can be modified to show what was actually used. <dl class="docutils">
+<dt><strong>Parameters</strong></dt>
+<dd><ul class="breatheparameterlist first last">
 <li><tt class="first docutils literal"><span class="pre">parameters</span></tt> - <p>the parameters to impose to the database </p>
 </li>
 </ul>
-</td>
-</tr>
-</tbody>
-</table>
+</dd>
+</dl>
 </p>
 </div></blockquote>
-<p id=""><span id="object_recognition_coreclassobject__recognition__core_1_1db_1_1ObjectDb_1a1a4a30312b8c5a167c67c803ad2391c0"></span><div class="line-block">
+<p><span class="target" id="object_recognition_coreclassobject__recognition__core_1_1db_1_1ObjectDb_1a1a4a30312b8c5a167c67c803ad2391c0"></span><div class="line-block">
 <div class="line">void <strong>insert_object</strong>(const  or_json::mObject  &amp; fields, DocumentId  &amp; document_id, RevisionId  &amp; revision_id)</div>
 </div>
 </p>
 <blockquote>
 <div><p></p>
-<p>Insert a document in the database <table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="breatheparameterlist first last">
+<p>Insert a document in the database <dl class="docutils">
+<dt><strong>Parameters</strong></dt>
+<dd><ul class="breatheparameterlist first last">
 <li><tt class="first docutils literal"><span class="pre">fields</span></tt> - <p>the JSON description of the document to insert </p>
 </li>
 <li><tt class="first docutils literal"><span class="pre">document_id</span></tt> - <p>the returned id of the document that was inserted </p>
@@ -175,23 +159,19 @@
 <li><tt class="first docutils literal"><span class="pre">revision_id</span></tt> - <p>the revision number of the inserted object (some DB provide it) </p>
 </li>
 </ul>
-</td>
-</tr>
-</tbody>
-</table>
+</dd>
+</dl>
 </p>
 </div></blockquote>
-<p id=""><span id="object_recognition_coreclassobject__recognition__core_1_1db_1_1ObjectDb_1ab97d74b67ea049492fc6b3ffa4f4fa28"></span><div class="line-block">
+<p><span class="target" id="object_recognition_coreclassobject__recognition__core_1_1db_1_1ObjectDb_1ab97d74b67ea049492fc6b3ffa4f4fa28"></span><div class="line-block">
 <div class="line">void <strong>persist_fields</strong>(const  DocumentId  &amp; document_id, const  or_json::mObject  &amp; fields, RevisionId  &amp; revision_id)</div>
 </div>
 </p>
 <blockquote>
 <div><p></p>
-<p>When a document already belongs to a database, its fields can be updated through this function <table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="breatheparameterlist first last">
+<p>When a document already belongs to a database, its fields can be updated through this function <dl class="docutils">
+<dt><strong>Parameters</strong></dt>
+<dd><ul class="breatheparameterlist first last">
 <li><tt class="first docutils literal"><span class="pre">document_id</span></tt> - <p>the id (unique identifier) of the document to update </p>
 </li>
 <li><tt class="first docutils literal"><span class="pre">fields</span></tt> - <p>the new JSON description of the object to upload </p>
@@ -199,65 +179,53 @@
 <li><tt class="first docutils literal"><span class="pre">revision_id</span></tt> - <p>the resulting new revision of the object </p>
 </li>
 </ul>
-</td>
-</tr>
-</tbody>
-</table>
+</dd>
+</dl>
 </p>
 </div></blockquote>
-<p id=""><span id="object_recognition_coreclassobject__recognition__core_1_1db_1_1ObjectDb_1a3e074f006fdab05c65fbe86ab3e973ab"></span><div class="line-block">
+<p><span class="target" id="object_recognition_coreclassobject__recognition__core_1_1db_1_1ObjectDb_1a3e074f006fdab05c65fbe86ab3e973ab"></span><div class="line-block">
 <div class="line">void <strong>load_fields</strong>(const  DocumentId  &amp; document_id, or_json::mObject  &amp; fields)</div>
 </div>
 </p>
 <blockquote>
 <div><p></p>
-<p>Load the JSON fields of an object from the database <table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="breatheparameterlist first last">
+<p>Load the JSON fields of an object from the database <dl class="docutils">
+<dt><strong>Parameters</strong></dt>
+<dd><ul class="breatheparameterlist first last">
 <li><tt class="first docutils literal"><span class="pre">document_id</span></tt> - <p>the id (unique identifier) of the document to update </p>
 </li>
 <li><tt class="first docutils literal"><span class="pre">fields</span></tt> - <p>the returned fields as a JSON object </p>
 </li>
 </ul>
-</td>
-</tr>
-</tbody>
-</table>
+</dd>
+</dl>
 </p>
 </div></blockquote>
-<p id=""><span id="object_recognition_coreclassobject__recognition__core_1_1db_1_1ObjectDb_1aedeb7facb0cb911984b31c6d619af4a1"></span><div class="line-block">
+<p><span class="target" id="object_recognition_coreclassobject__recognition__core_1_1db_1_1ObjectDb_1aedeb7facb0cb911984b31c6d619af4a1"></span><div class="line-block">
 <div class="line">void <strong>Delete</strong>(const  ObjectId  &amp; id)</div>
 </div>
 </p>
 <blockquote>
 <div><p></p>
-<p>Delete a document of a given id in the database <table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="breatheparameterlist first last">
+<p>Delete a document of a given id in the database <dl class="docutils">
+<dt><strong>Parameters</strong></dt>
+<dd><ul class="breatheparameterlist first last">
 <li><tt class="first docutils literal"><span class="pre">id</span></tt> - <p>the id of the document to delete </p>
 </li>
 </ul>
-</td>
-</tr>
-</tbody>
-</table>
+</dd>
+</dl>
 </p>
 </div></blockquote>
-<p id=""><span id="object_recognition_coreclassobject__recognition__core_1_1db_1_1ObjectDb_1a0b5393773069dae8e31d54ff628a0b5a"></span><div class="line-block">
+<p><span class="target" id="object_recognition_coreclassobject__recognition__core_1_1db_1_1ObjectDb_1a0b5393773069dae8e31d54ff628a0b5a"></span><div class="line-block">
 <div class="line">void <strong>QueryView</strong>(const  View  &amp; view, int limit_rows, int start_offset, int &amp; total_rows, int &amp; offset, std::vector&lt;  <a class="reference internal" href="#object_recognition_coreclassobject__recognition__core_1_1db_1_1Document"><em>Document</em></a>  &gt; &amp; view_elements)</div>
 </div>
 </p>
 <blockquote>
 <div><p></p>
-<p>Execute a given View on the database to find some documents <table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="breatheparameterlist first last">
+<p>Execute a given View on the database to find some documents <dl class="docutils">
+<dt><strong>Parameters</strong></dt>
+<dd><ul class="breatheparameterlist first last">
 <li><tt class="first docutils literal"><span class="pre">view</span></tt> - <p>a view object defining a query </p>
 </li>
 <li><tt class="first docutils literal"><span class="pre">limit_rows</span></tt> - <p>a maximum number of queries to return (0 for infinite) </p>
@@ -271,23 +239,19 @@
 <li><tt class="first docutils literal"><span class="pre">view_elements</span></tt> - <p>a vector of the found elements </p>
 </li>
 </ul>
-</td>
-</tr>
-</tbody>
-</table>
+</dd>
+</dl>
 </p>
 </div></blockquote>
-<p id=""><span id="object_recognition_coreclassobject__recognition__core_1_1db_1_1ObjectDb_1a04475ab8769d23d204f03b8570841a67"></span><div class="line-block">
+<p><span class="target" id="object_recognition_coreclassobject__recognition__core_1_1db_1_1ObjectDb_1a04475ab8769d23d204f03b8570841a67"></span><div class="line-block">
 <div class="line">void <strong>QueryGeneric</strong>(const std::vector&lt; std::string &gt; &amp; queries, int limit_rows, int start_offset, int &amp; total_rows, int &amp; offset, std::vector&lt;  <a class="reference internal" href="#object_recognition_coreclassobject__recognition__core_1_1db_1_1Document"><em>Document</em></a>  &gt; &amp; view_elements)</div>
 </div>
 </p>
 <blockquote>
 <div><p></p>
-<p>A generic function to make any query on the database <table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="breatheparameterlist first last">
+<p>A generic function to make any query on the database <dl class="docutils">
+<dt><strong>Parameters</strong></dt>
+<dd><ul class="breatheparameterlist first last">
 <li><tt class="first docutils literal"><span class="pre">queries</span></tt> - <p>a set of queries to perform. The strings can mean anything to the database and are therefore specific to a type of database </p>
 </li>
 <li><tt class="first docutils literal"><span class="pre">limit_rows</span></tt> - <p>a maximum number of queries to return (0 for infinite) </p>
@@ -301,23 +265,19 @@
 <li><tt class="first docutils literal"><span class="pre">view_elements</span></tt> - <p>a vector of the found elements </p>
 </li>
 </ul>
-</td>
-</tr>
-</tbody>
-</table>
+</dd>
+</dl>
 </p>
 </div></blockquote>
-<p id=""><span id="object_recognition_coreclassobject__recognition__core_1_1db_1_1ObjectDb_1ace4cbdd0f041a1b82ab07ada0ae03b1b"></span><div class="line-block">
+<p><span class="target" id="object_recognition_coreclassobject__recognition__core_1_1db_1_1ObjectDb_1ace4cbdd0f041a1b82ab07ada0ae03b1b"></span><div class="line-block">
 <div class="line">void <strong>set_attachment_stream</strong>(const  DocumentId  &amp; document_id, const  AttachmentName  &amp; attachment_name, const  MimeType  &amp; mime_type, const std::istream &amp; stream, RevisionId  &amp; revision_id)</div>
 </div>
 </p>
 <blockquote>
 <div><p></p>
-<p>Given a <a class="reference internal" href="#object_recognition_coreclassobject__recognition__core_1_1db_1_1Document"><em>Document</em></a>, set a binary blobs <table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="breatheparameterlist first last">
+<p>Given a <a class="reference internal" href="#object_recognition_coreclassobject__recognition__core_1_1db_1_1Document"><em>Document</em></a>, set a binary blobs <dl class="docutils">
+<dt><strong>Parameters</strong></dt>
+<dd><ul class="breatheparameterlist first last">
 <li><tt class="first docutils literal"><span class="pre">document_id</span></tt> - <p>the id (unique identifier) of the document to update </p>
 </li>
 <li><tt class="first docutils literal"><span class="pre">attachment_name</span></tt> - <p>the name/key of the binary blob to add </p>
@@ -329,23 +289,19 @@
 <li><tt class="first docutils literal"><span class="pre">revision_id</span></tt> - <p>the new revision id of the object after insertion/update </p>
 </li>
 </ul>
-</td>
-</tr>
-</tbody>
-</table>
+</dd>
+</dl>
 </p>
 </div></blockquote>
-<p id=""><span id="object_recognition_coreclassobject__recognition__core_1_1db_1_1ObjectDb_1a7b9a3fe3f5522cbfce0be07d133e17ed"></span><div class="line-block">
+<p><span class="target" id="object_recognition_coreclassobject__recognition__core_1_1db_1_1ObjectDb_1a7b9a3fe3f5522cbfce0be07d133e17ed"></span><div class="line-block">
 <div class="line">void <strong>get_attachment_stream</strong>(const  DocumentId  &amp; document_id, const  RevisionId  &amp; revision_id, const  AttachmentName  &amp; attachment_name, const  MimeType  &amp; mime_type, std::ostream &amp; stream)</div>
 </div>
 </p>
 <blockquote>
 <div><p></p>
-<p>Given a <a class="reference internal" href="#object_recognition_coreclassobject__recognition__core_1_1db_1_1Document"><em>Document</em></a>, get one of its binary blobs <table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="breatheparameterlist first last">
+<p>Given a <a class="reference internal" href="#object_recognition_coreclassobject__recognition__core_1_1db_1_1Document"><em>Document</em></a>, get one of its binary blobs <dl class="docutils">
+<dt><strong>Parameters</strong></dt>
+<dd><ul class="breatheparameterlist first last">
 <li><tt class="first docutils literal"><span class="pre">document_id</span></tt> - <p>the id (unique identifier) of the document to update </p>
 </li>
 <li><tt class="first docutils literal"><span class="pre">revision_id</span></tt> - <p>the revision id of the object </p>
@@ -357,110 +313,88 @@
 <li><tt class="first docutils literal"><span class="pre">stream</span></tt> - <p>the binary blob itself </p>
 </li>
 </ul>
-</td>
-</tr>
-</tbody>
-</table>
+</dd>
+</dl>
 </p>
 </div></blockquote>
-<p id=""><span id="object_recognition_coreclassobject__recognition__core_1_1db_1_1ObjectDb_1a9685fe877e787480bf0fd79970192ca8"></span><div class="line-block">
+<p><span class="target" id="object_recognition_coreclassobject__recognition__core_1_1db_1_1ObjectDb_1a9685fe877e787480bf0fd79970192ca8"></span><div class="line-block">
 <div class="line">std::string <strong>Status</strong>()</div>
 </div>
 </p>
 <blockquote>
 <div><p></p>
-<p><table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Return:</th><td class="field-body">a string that defines the status of the database </td>
-</tr>
-</tbody>
-</table>
+<p><dl class="docutils">
+<dt><strong>Return</strong></dt>
+<dd>a string that defines the status of the database </dd>
+</dl>
 </p>
 </div></blockquote>
-<p id=""><span id="object_recognition_coreclassobject__recognition__core_1_1db_1_1ObjectDb_1a38ea31edeb1dc26e05d35bfee35fba00"></span><div class="line-block">
+<p><span class="target" id="object_recognition_coreclassobject__recognition__core_1_1db_1_1ObjectDb_1a38ea31edeb1dc26e05d35bfee35fba00"></span><div class="line-block">
 <div class="line">std::string <strong>Status</strong>(const  CollectionName  &amp; collection)</div>
 </div>
 </p>
 <blockquote>
 <div><p></p>
-<p><table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Return:</th><td class="field-body">a string that defines the status of the database for a given collection </td>
-</tr>
-</tbody>
-</table>
+<p><dl class="docutils">
+<dt><strong>Return</strong></dt>
+<dd>a string that defines the status of the database for a given collection </dd>
+</dl>
 </p>
 </div></blockquote>
-<p id=""><span id="object_recognition_coreclassobject__recognition__core_1_1db_1_1ObjectDb_1ad0ddc4d4a0adeda1f2e6a4dd83d810f1"></span><div class="line-block">
+<p><span class="target" id="object_recognition_coreclassobject__recognition__core_1_1db_1_1ObjectDb_1ad0ddc4d4a0adeda1f2e6a4dd83d810f1"></span><div class="line-block">
 <div class="line">void <strong>CreateCollection</strong>(const  CollectionName  &amp; collection)</div>
 </div>
 </p>
 <blockquote>
 <div><p></p>
-<p>Create a new collection in the database <table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="breatheparameterlist first last">
+<p>Create a new collection in the database <dl class="docutils">
+<dt><strong>Parameters</strong></dt>
+<dd><ul class="breatheparameterlist first last">
 <li><tt class="first docutils literal"><span class="pre">collection</span></tt> - <p>the name of the collection to create </p>
 </li>
 </ul>
-</td>
-</tr>
-</tbody>
-</table>
+</dd>
+</dl>
 </p>
 </div></blockquote>
-<p id=""><span id="object_recognition_coreclassobject__recognition__core_1_1db_1_1ObjectDb_1ad79596a12eede808a3b403f501bfe653"></span><div class="line-block">
+<p><span class="target" id="object_recognition_coreclassobject__recognition__core_1_1db_1_1ObjectDb_1ad79596a12eede808a3b403f501bfe653"></span><div class="line-block">
 <div class="line">void <strong>DeleteCollection</strong>(const  CollectionName  &amp; collection)</div>
 </div>
 </p>
 <blockquote>
 <div><p></p>
-<p>Delete a new collection in the database <table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="breatheparameterlist first last">
+<p>Delete a new collection in the database <dl class="docutils">
+<dt><strong>Parameters</strong></dt>
+<dd><ul class="breatheparameterlist first last">
 <li><tt class="first docutils literal"><span class="pre">collection</span></tt> - <p>the name of the collection to delete </p>
 </li>
 </ul>
-</td>
-</tr>
-</tbody>
-</table>
+</dd>
+</dl>
 </p>
 </div></blockquote>
-<p id=""><span id="object_recognition_coreclassobject__recognition__core_1_1db_1_1ObjectDb_1abbe2a2a318ae496f290e041bc1bb0c4a"></span><div class="line-block">
+<p><span class="target" id="object_recognition_coreclassobject__recognition__core_1_1db_1_1ObjectDb_1abbe2a2a318ae496f290e041bc1bb0c4a"></span><div class="line-block">
 <div class="line">DbType <strong>type</strong>()</div>
 </div>
 </p>
 <blockquote>
 <div><p></p>
-<p>The type of the DB : e.g. &#8216;CouchDB&#8217; ... <table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Return:</th><td class="field-body">one of the enum defining the possible types </td>
-</tr>
-</tbody>
-</table>
+<p>The type of the DB : e.g. &#8216;CouchDB&#8217; ... <dl class="docutils">
+<dt><strong>Return</strong></dt>
+<dd>one of the enum defining the possible types </dd>
+</dl>
 </p>
 </div></blockquote>
 </div></blockquote>
 </div></blockquote>
-<div class="line-block">
+<div class="line-block" id="object_recognition_coreclassobject__recognition__core_1_1db_1_1ObjectDbParameters">
 <div class="line"><em>class</em> <strong>object_recognition_core::db::ObjectDbParameters</strong></div>
 </div>
 <blockquote>
 <div><p></p>
 <p>A class that stores the common parameters for the object DB If it is not from a type provided by object_recognition_core, it is of type NONCORE </p>
 <em>Public Type</em><blockquote>
-<div><p id=""><span id="object_recognition_coreclassobject__recognition__core_1_1db_1_1ObjectDbParameters_1a86c92b744a0a525a9cb04aa8b4f3033d"></span><strong>ObjectDbType enum</strong></p>
+<div><p><span class="target" id="object_recognition_coreclassobject__recognition__core_1_1db_1_1ObjectDbParameters_1a86c92b744a0a525a9cb04aa8b4f3033d"></span><strong>ObjectDbType enum</strong></p>
 <blockquote>
 <div><p></p>
 <p></p>
@@ -474,7 +408,7 @@
 </div></blockquote>
 </div></blockquote>
 <em>Public Functions</em><blockquote>
-<div><p id=""><span id="object_recognition_coreclassobject__recognition__core_1_1db_1_1ObjectDbParameters_1a26c9fbd2ef1938e1025b2b5f98f6829f"></span><div class="line-block">
+<div><p><span class="target" id="object_recognition_coreclassobject__recognition__core_1_1db_1_1ObjectDbParameters_1a26c9fbd2ef1938e1025b2b5f98f6829f"></span><div class="line-block">
 <div class="line"> <strong>ObjectDbParameters</strong>()</div>
 </div>
 </p>
@@ -482,67 +416,55 @@
 <div><p></p>
 <p></p>
 </div></blockquote>
-<p id=""><span id="object_recognition_coreclassobject__recognition__core_1_1db_1_1ObjectDbParameters_1a99ba71f545501ac360fb37e8ad21e1b9"></span><div class="line-block">
+<p><span class="target" id="object_recognition_coreclassobject__recognition__core_1_1db_1_1ObjectDbParameters_1a99ba71f545501ac360fb37e8ad21e1b9"></span><div class="line-block">
 <div class="line"> <strong>ObjectDbParameters</strong>(const std::string &amp; type)</div>
 </div>
 </p>
 <blockquote>
 <div><p></p>
-<p>Default constructor for certain types <table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="breatheparameterlist first last">
+<p>Default constructor for certain types <dl class="docutils">
+<dt><strong>Parameters</strong></dt>
+<dd><ul class="breatheparameterlist first last">
 <li><tt class="first docutils literal"><span class="pre">type</span></tt> - <p>Default type </p>
 </li>
 </ul>
-</td>
-</tr>
-</tbody>
-</table>
+</dd>
+</dl>
 </p>
 </div></blockquote>
-<p id=""><span id="object_recognition_coreclassobject__recognition__core_1_1db_1_1ObjectDbParameters_1a972d4f78fd6b024519d94586d01d99e4"></span><div class="line-block">
+<p><span class="target" id="object_recognition_coreclassobject__recognition__core_1_1db_1_1ObjectDbParameters_1a972d4f78fd6b024519d94586d01d99e4"></span><div class="line-block">
 <div class="line"> <strong>ObjectDbParameters</strong>(<a class="reference internal" href="#object_recognition_coreclassobject__recognition__core_1_1db_1_1ObjectDbParameters_1a86c92b744a0a525a9cb04aa8b4f3033d"><em>ObjectDbType</em></a> type)</div>
 </div>
 </p>
 <blockquote>
 <div><p></p>
-<p>Default constructor for certain types <table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="breatheparameterlist first last">
+<p>Default constructor for certain types <dl class="docutils">
+<dt><strong>Parameters</strong></dt>
+<dd><ul class="breatheparameterlist first last">
 <li><tt class="first docutils literal"><span class="pre">type</span></tt> - <p>Default type </p>
 </li>
 </ul>
-</td>
-</tr>
-</tbody>
-</table>
+</dd>
+</dl>
 </p>
 </div></blockquote>
-<p id=""><span id="object_recognition_coreclassobject__recognition__core_1_1db_1_1ObjectDbParameters_1a5d31cdea72ee859a5203b9f237edb049"></span><div class="line-block">
+<p><span class="target" id="object_recognition_coreclassobject__recognition__core_1_1db_1_1ObjectDbParameters_1a5d31cdea72ee859a5203b9f237edb049"></span><div class="line-block">
 <div class="line"> <strong>ObjectDbParameters</strong>(const  ObjectDbParametersRaw  &amp; params)</div>
 </div>
 </p>
 <blockquote>
 <div><p></p>
-<p><table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="breatheparameterlist first last">
+<p><dl class="docutils">
+<dt><strong>Parameters</strong></dt>
+<dd><ul class="breatheparameterlist first last">
 <li><tt class="first docutils literal"><span class="pre">params</span></tt> - <p>A map between some db parameters and their value </p>
 </li>
 </ul>
-</td>
-</tr>
-</tbody>
-</table>
+</dd>
+</dl>
 </p>
 </div></blockquote>
-<p id=""><span id="object_recognition_coreclassobject__recognition__core_1_1db_1_1ObjectDbParameters_1a7124690a8374dac7b933bcb97b6f15c0"></span><div class="line-block">
+<p><span class="target" id="object_recognition_coreclassobject__recognition__core_1_1db_1_1ObjectDbParameters_1a7124690a8374dac7b933bcb97b6f15c0"></span><div class="line-block">
 <div class="line"><a class="reference internal" href="#object_recognition_coreclassobject__recognition__core_1_1db_1_1ObjectDbParameters_1a86c92b744a0a525a9cb04aa8b4f3033d"><em>ObjectDbType</em></a> <strong>type</strong>()</div>
 </div>
 </p>
@@ -550,7 +472,7 @@
 <div><p></p>
 <p></p>
 </div></blockquote>
-<p id=""><span id="object_recognition_coreclassobject__recognition__core_1_1db_1_1ObjectDbParameters_1a7041dad81a0af58ac0e0ef197e718f0f"></span><div class="line-block">
+<p><span class="target" id="object_recognition_coreclassobject__recognition__core_1_1db_1_1ObjectDbParameters_1a7041dad81a0af58ac0e0ef197e718f0f"></span><div class="line-block">
 <div class="line">template &lt; typename T &gt;</div>
 <div class="line">void <strong>set_parameter</strong>(const std::string &amp; key, const T &amp; value)</div>
 </div>
@@ -559,7 +481,7 @@
 <div><p></p>
 <p></p>
 </div></blockquote>
-<p id=""><span id="object_recognition_coreclassobject__recognition__core_1_1db_1_1ObjectDbParameters_1a612d5213142546d8eddf436d8e432eb7"></span><div class="line-block">
+<p><span class="target" id="object_recognition_coreclassobject__recognition__core_1_1db_1_1ObjectDbParameters_1a612d5213142546d8eddf436d8e432eb7"></span><div class="line-block">
 <div class="line">void <strong>set_parameter</strong>(const std::string &amp; key, const  or_json::mValue  &amp; value)</div>
 </div>
 </p>
@@ -567,7 +489,7 @@
 <div><p></p>
 <p></p>
 </div></blockquote>
-<p id=""><span id="object_recognition_coreclassobject__recognition__core_1_1db_1_1ObjectDbParameters_1a315d6ed1ef3bffd06ebfef51272f3263"></span><div class="line-block">
+<p><span class="target" id="object_recognition_coreclassobject__recognition__core_1_1db_1_1ObjectDbParameters_1a315d6ed1ef3bffd06ebfef51272f3263"></span><div class="line-block">
 <div class="line">void <strong>set_type</strong>(const std::string &amp; type)</div>
 </div>
 </p>
@@ -575,7 +497,7 @@
 <div><p></p>
 <p></p>
 </div></blockquote>
-<p id=""><span id="object_recognition_coreclassobject__recognition__core_1_1db_1_1ObjectDbParameters_1a30682518ad37deac40625e66cb24f9e0"></span><div class="line-block">
+<p><span class="target" id="object_recognition_coreclassobject__recognition__core_1_1db_1_1ObjectDbParameters_1a30682518ad37deac40625e66cb24f9e0"></span><div class="line-block">
 <div class="line">void <strong>set_type</strong>(const  <a class="reference internal" href="#object_recognition_coreclassobject__recognition__core_1_1db_1_1ObjectDbParameters_1a86c92b744a0a525a9cb04aa8b4f3033d"><em>ObjectDbType</em></a>  &amp; type)</div>
 </div>
 </p>
@@ -583,7 +505,7 @@
 <div><p></p>
 <p></p>
 </div></blockquote>
-<p id=""><span id="object_recognition_coreclassobject__recognition__core_1_1db_1_1ObjectDbParameters_1a2650a042e94aaefebc61d386c760bb73"></span><div class="line-block">
+<p><span class="target" id="object_recognition_coreclassobject__recognition__core_1_1db_1_1ObjectDbParameters_1a2650a042e94aaefebc61d386c760bb73"></span><div class="line-block">
 <div class="line">or_json::mValue <strong>at</strong>(const std::string &amp; key)</div>
 </div>
 </p>
@@ -591,7 +513,7 @@
 <div><p></p>
 <p></p>
 </div></blockquote>
-<p id=""><span id="object_recognition_coreclassobject__recognition__core_1_1db_1_1ObjectDbParameters_1ad7159bc5c3581d937715ea5e9a806c08"></span><div class="line-block">
+<p><span class="target" id="object_recognition_coreclassobject__recognition__core_1_1db_1_1ObjectDbParameters_1ad7159bc5c3581d937715ea5e9a806c08"></span><div class="line-block">
 <div class="line">const  or_json::mObject  &amp; <strong>raw</strong>()</div>
 </div>
 </p>
@@ -599,7 +521,7 @@
 <div><p></p>
 <p></p>
 </div></blockquote>
-<p id=""><span id="object_recognition_coreclassobject__recognition__core_1_1db_1_1ObjectDbParameters_1a52c9b60cec4247ef6def41e6928e9173"></span><div class="line-block">
+<p><span class="target" id="object_recognition_coreclassobject__recognition__core_1_1db_1_1ObjectDbParameters_1a52c9b60cec4247ef6def41e6928e9173"></span><div class="line-block">
 <div class="line">boost::shared_ptr&lt;  <a class="reference internal" href="#object_recognition_coreclassobject__recognition__core_1_1db_1_1ObjectDb"><em>ObjectDb</em></a>  &gt; <strong>generateDb</strong>()</div>
 </div>
 </p>
@@ -608,8 +530,8 @@
 <p></p>
 </div></blockquote>
 </div></blockquote>
-<em>Public Static Functons</em><blockquote>
-<div><p id=""><span id="object_recognition_coreclassobject__recognition__core_1_1db_1_1ObjectDbParameters_1aa23d8c88def541502fcf4a8afa976d7c"></span><div class="line-block">
+<em>Public Static Functions</em><blockquote>
+<div><p><span class="target" id="object_recognition_coreclassobject__recognition__core_1_1db_1_1ObjectDbParameters_1aa23d8c88def541502fcf4a8afa976d7c"></span><div class="line-block">
 <div class="line"><a class="reference internal" href="#object_recognition_coreclassobject__recognition__core_1_1db_1_1ObjectDbParameters_1a86c92b744a0a525a9cb04aa8b4f3033d"><em>ObjectDbType</em></a> <strong>StringToType</strong>(const std::string &amp; type)</div>
 </div>
 </p>
@@ -617,7 +539,7 @@
 <div><p></p>
 <p></p>
 </div></blockquote>
-<p id=""><span id="object_recognition_coreclassobject__recognition__core_1_1db_1_1ObjectDbParameters_1a4af1ba0d270e3335b5fb9dd80b1d0dfe"></span><div class="line-block">
+<p><span class="target" id="object_recognition_coreclassobject__recognition__core_1_1db_1_1ObjectDbParameters_1a4af1ba0d270e3335b5fb9dd80b1d0dfe"></span><div class="line-block">
 <div class="line">std::string <strong>TypeToString</strong>(const  <a class="reference internal" href="#object_recognition_coreclassobject__recognition__core_1_1db_1_1ObjectDbParameters_1a86c92b744a0a525a9cb04aa8b4f3033d"><em>ObjectDbParameters::ObjectDbType</em></a>  &amp; type)</div>
 </div>
 </p>
@@ -627,14 +549,14 @@
 </div></blockquote>
 </div></blockquote>
 </div></blockquote>
-<div class="line-block">
+<div class="line-block" id="object_recognition_coreclassobject__recognition__core_1_1db_1_1Document">
 <div class="line"><em>class</em> <strong>object_recognition_core::db::Document</strong></div>
 </div>
 <blockquote>
 <div><p></p>
 <p>A <a class="reference internal" href="#object_recognition_coreclassobject__recognition__core_1_1db_1_1Document"><em>Document</em></a> holds fields (in the CouchDB sense) which are strings that are queryable, and attachments (that are un-queryable binary blobs) </p>
 <em>Public Functions</em><blockquote>
-<div><p id=""><span id="object_recognition_coreclassobject__recognition__core_1_1db_1_1Document_1a47b08ac09e5017d57fc5735376d13cca"></span><div class="line-block">
+<div><p><span class="target" id="object_recognition_coreclassobject__recognition__core_1_1db_1_1Document_1a47b08ac09e5017d57fc5735376d13cca"></span><div class="line-block">
 <div class="line"> <strong>Document</strong>()</div>
 </div>
 </p>
@@ -642,7 +564,7 @@
 <div><p></p>
 <p></p>
 </div></blockquote>
-<p id=""><span id="object_recognition_coreclassobject__recognition__core_1_1db_1_1Document_1a300a3c4b17c20419348d79e81cefb508"></span><div class="line-block">
+<p><span class="target" id="object_recognition_coreclassobject__recognition__core_1_1db_1_1Document_1a300a3c4b17c20419348d79e81cefb508"></span><div class="line-block">
 <div class="line"> <strong>~Document</strong>()</div>
 </div>
 </p>
@@ -650,7 +572,7 @@
 <div><p></p>
 <p></p>
 </div></blockquote>
-<p id=""><span id="object_recognition_coreclassobject__recognition__core_1_1db_1_1Document_1ab68d911a09ad26ef7dfa1397ae6eb085"></span><div class="line-block">
+<p><span class="target" id="object_recognition_coreclassobject__recognition__core_1_1db_1_1Document_1ab68d911a09ad26ef7dfa1397ae6eb085"></span><div class="line-block">
 <div class="line">bool <strong>operator==</strong>(const  <a class="reference internal" href="#object_recognition_coreclassobject__recognition__core_1_1db_1_1Document"><em>Document</em></a>  &amp; document)</div>
 </div>
 </p>
@@ -658,47 +580,39 @@
 <div><p></p>
 <p></p>
 </div></blockquote>
-<p id=""><span id="object_recognition_coreclassobject__recognition__core_1_1db_1_1Document_1aa843ca7f44cc1d0f61bdd361444685b4"></span><div class="line-block">
+<p><span class="target" id="object_recognition_coreclassobject__recognition__core_1_1db_1_1Document_1aa843ca7f44cc1d0f61bdd361444685b4"></span><div class="line-block">
 <div class="line">void <strong>set_db</strong>(const  ObjectDbPtr  &amp; db)</div>
 </div>
 </p>
 <blockquote>
 <div><p></p>
-<p>Update the db that this document should be associated with. <table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="breatheparameterlist first last">
+<p>Update the db that this document should be associated with. <dl class="docutils">
+<dt><strong>Parameters</strong></dt>
+<dd><ul class="breatheparameterlist first last">
 <li><tt class="first docutils literal"><span class="pre">db</span></tt> - <p></p>
 </li>
 </ul>
-</td>
-</tr>
-</tbody>
-</table>
+</dd>
+</dl>
 </p>
 </div></blockquote>
-<p id=""><span id="object_recognition_coreclassobject__recognition__core_1_1db_1_1Document_1a37bb6683c009195be04d058a61ae9888"></span><div class="line-block">
+<p><span class="target" id="object_recognition_coreclassobject__recognition__core_1_1db_1_1Document_1a37bb6683c009195be04d058a61ae9888"></span><div class="line-block">
 <div class="line">void <strong>set_document_id</strong>(const  DocumentId  &amp; document_id)</div>
 </div>
 </p>
 <blockquote>
 <div><p></p>
-<p>Update the document_id that this document should be associated with. <table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="breatheparameterlist first last">
-<li><tt class="first docutils literal"><span class="pre">db</span></tt> - <p></p>
+<p>Update the document_id that this document should be associated with. <dl class="docutils">
+<dt><strong>Parameters</strong></dt>
+<dd><ul class="breatheparameterlist first last">
+<li><tt class="first docutils literal"><span class="pre">document_id</span></tt> - <p></p>
 </li>
 </ul>
-</td>
-</tr>
-</tbody>
-</table>
+</dd>
+</dl>
 </p>
 </div></blockquote>
-<p id=""><span id="object_recognition_coreclassobject__recognition__core_1_1db_1_1Document_1a658bd8489fa1c51097aff7a438178509"></span><div class="line-block">
+<p><span class="target" id="object_recognition_coreclassobject__recognition__core_1_1db_1_1Document_1a658bd8489fa1c51097aff7a438178509"></span><div class="line-block">
 <div class="line">void <strong>load_fields</strong>()</div>
 </div>
 </p>
@@ -706,7 +620,7 @@
 <div><p></p>
 <p>Fill the fields of the object </p>
 </div></blockquote>
-<p id=""><span id="object_recognition_coreclassobject__recognition__core_1_1db_1_1Document_1a940b7f0272fa0c189c44c675bf485dae"></span><div class="line-block">
+<p><span class="target" id="object_recognition_coreclassobject__recognition__core_1_1db_1_1Document_1a940b7f0272fa0c189c44c675bf485dae"></span><div class="line-block">
 <div class="line">void <strong>Persist</strong>()</div>
 </div>
 </p>
@@ -714,7 +628,7 @@
 <div><p></p>
 <p>Persist your object to a given DB </p>
 </div></blockquote>
-<p id=""><span id="object_recognition_coreclassobject__recognition__core_1_1db_1_1Document_1a1bee208a50a3cf02671ddc2aab91c2f0"></span><div class="line-block">
+<p><span class="target" id="object_recognition_coreclassobject__recognition__core_1_1db_1_1Document_1a1bee208a50a3cf02671ddc2aab91c2f0"></span><div class="line-block">
 <div class="line">void <strong>SetIdRev</strong>(const std::string &amp; id, const std::string &amp; rev)</div>
 </div>
 </p>
@@ -722,7 +636,7 @@
 <div><p></p>
 <p>Set the id and the revision number </p>
 </div></blockquote>
-<p id=""><span id="object_recognition_coreclassobject__recognition__core_1_1db_1_1Document_1ae0e92cec671d9ccee67f1b2a682b38dc"></span><div class="line-block">
+<p><span class="target" id="object_recognition_coreclassobject__recognition__core_1_1db_1_1Document_1ae0e92cec671d9ccee67f1b2a682b38dc"></span><div class="line-block">
 <div class="line">const std::string &amp; <strong>id</strong>()</div>
 </div>
 </p>
@@ -730,7 +644,7 @@
 <div><p></p>
 <p></p>
 </div></blockquote>
-<p id=""><span id="object_recognition_coreclassobject__recognition__core_1_1db_1_1Document_1a779a57b90ea1dcbbefd058175cc26181"></span><div class="line-block">
+<p><span class="target" id="object_recognition_coreclassobject__recognition__core_1_1db_1_1Document_1a779a57b90ea1dcbbefd058175cc26181"></span><div class="line-block">
 <div class="line">const std::string &amp; <strong>rev</strong>()</div>
 </div>
 </p>
@@ -738,40 +652,34 @@
 <div><p></p>
 <p></p>
 </div></blockquote>
-<p id=""><span id="object_recognition_coreclassobject__recognition__core_1_1db_1_1Document_1a76cbbbb3cd88ff4890aa115466658ecb"></span><div class="line-block">
+<p><span class="target" id="object_recognition_coreclassobject__recognition__core_1_1db_1_1Document_1a76cbbbb3cd88ff4890aa115466658ecb"></span><div class="line-block">
 <div class="line">template &lt; typename T &gt;</div>
 <div class="line">void <strong>get_attachment_and_cache</strong>(const  AttachmentName  &amp; attachment_name, T &amp; value)</div>
 </div>
 </p>
 <blockquote>
 <div><p></p>
-<p>Extract a specific attachment from a document in the DB <table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="breatheparameterlist first last">
+<p>Extract a specific attachment from a document in the DB <dl class="docutils">
+<dt><strong>Parameters</strong></dt>
+<dd><ul class="breatheparameterlist first last">
 <li><tt class="first docutils literal"><span class="pre">attachment_name</span></tt> - <p></p>
 </li>
 <li><tt class="first docutils literal"><span class="pre">value</span></tt> - <p></p>
 </li>
 </ul>
-</td>
-</tr>
-</tbody>
-</table>
+</dd>
+</dl>
 </p>
 </div></blockquote>
-<p id=""><span id="object_recognition_coreclassobject__recognition__core_1_1db_1_1Document_1a98fd2d2f076f93e84ae43f0062846bd7"></span><div class="line-block">
+<p><span class="target" id="object_recognition_coreclassobject__recognition__core_1_1db_1_1Document_1a98fd2d2f076f93e84ae43f0062846bd7"></span><div class="line-block">
 <div class="line">void <strong>get_attachment_stream</strong>(const  AttachmentName  &amp; attachment_name, std::ostream &amp; stream, MimeType mime_type = MIME_TYPE_DEFAULT)</div>
 </div>
 </p>
 <blockquote>
 <div><p></p>
-<p>Extract the stream of a specific attachment for a <a class="reference internal" href="#object_recognition_coreclassobject__recognition__core_1_1db_1_1Document"><em>Document</em></a> from the DB <table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="breatheparameterlist first last">
+<p>Extract the stream of a specific attachment for a <a class="reference internal" href="#object_recognition_coreclassobject__recognition__core_1_1db_1_1Document"><em>Document</em></a> from the DB <dl class="docutils">
+<dt><strong>Parameters</strong></dt>
+<dd><ul class="breatheparameterlist first last">
 <li><tt class="first docutils literal"><span class="pre">attachment_name</span></tt> - <p>the name of the attachment </p>
 </li>
 <li><tt class="first docutils literal"><span class="pre">stream</span></tt> - <p>the string of data to write to </p>
@@ -779,23 +687,19 @@
 <li><tt class="first docutils literal"><span class="pre">mime_type</span></tt> - <p>the MIME type as stored in the DB </p>
 </li>
 </ul>
-</td>
-</tr>
-</tbody>
-</table>
+</dd>
+</dl>
 </p>
 </div></blockquote>
-<p id=""><span id="object_recognition_coreclassobject__recognition__core_1_1db_1_1Document_1a1e89a17800fa03caa85538a4d17b0ca5"></span><div class="line-block">
+<p><span class="target" id="object_recognition_coreclassobject__recognition__core_1_1db_1_1Document_1a1e89a17800fa03caa85538a4d17b0ca5"></span><div class="line-block">
 <div class="line">void <strong>get_attachment_stream_and_cache</strong>(const  AttachmentName  &amp; attachment_name, std::ostream &amp; stream, MimeType mime_type = MIME_TYPE_DEFAULT)</div>
 </div>
 </p>
 <blockquote>
 <div><p></p>
-<p>Extract the stream of a specific attachment for a <a class="reference internal" href="#object_recognition_coreclassobject__recognition__core_1_1db_1_1Document"><em>Document</em></a> from the DB <table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="breatheparameterlist first last">
+<p>Extract the stream of a specific attachment for a <a class="reference internal" href="#object_recognition_coreclassobject__recognition__core_1_1db_1_1Document"><em>Document</em></a> from the DB <dl class="docutils">
+<dt><strong>Parameters</strong></dt>
+<dd><ul class="breatheparameterlist first last">
 <li><tt class="first docutils literal"><span class="pre">attachment_name</span></tt> - <p>the name of the attachment </p>
 </li>
 <li><tt class="first docutils literal"><span class="pre">stream</span></tt> - <p>the string of data to write to </p>
@@ -803,10 +707,8 @@
 <li><tt class="first docutils literal"><span class="pre">mime_type</span></tt> - <p>the MIME type as stored in the DB </p>
 </li>
 </ul>
-</td>
-</tr>
-</tbody>
-</table>
+</dd>
+</dl>
 </p>
 </div></blockquote>
 </div></blockquote>
@@ -836,7 +738,7 @@ You just have to inherit from <tt class="docutils literal"><span class="pre">Obj
     </div>
     <div class="footer">
         &copy; Copyright 2013,  Willow Garage, Inc.
-      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
     </div>
   </body>
 </html>

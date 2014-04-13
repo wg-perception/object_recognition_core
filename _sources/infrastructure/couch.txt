@@ -97,7 +97,7 @@ First make sure you have ``couchapp``:
 
 .. toggle:: From ROS packages
 
-   We provide a utility that automatically installa the visualizer on the DB.
+   We provide a utility that automatically installs the visualizer on the DB.
 
    .. code-block:: bash
 
