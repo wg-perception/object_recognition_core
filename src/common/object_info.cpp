@@ -109,7 +109,7 @@ namespace object_recognition_core
         std::string mesh_name;
         BOOST_FOREACH(const std::string& attachment_name, attachments_names) {
           // Check that the end of the mesh is proper for display
-          if ((attachment_name.find(".stl") >= 0) || (attachment_name.find(".obj") >= 0)) {
+          if ((attachment_name.find(".stl") != std::string::npos) || (attachment_name.find(".obj") != std::string::npos)) {
             mesh_name = attachment_name;
             break;
           }
