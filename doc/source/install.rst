@@ -156,7 +156,7 @@ You then need some up to date packages:
 
 .. code-block:: sh
 
-   sudo pip install -U breathe sphinxcontrib-programoutput
+   sudo pip install -U breathe catkin-sphinx sphinxcontrib-programoutput
 
 From root, just type:
 
