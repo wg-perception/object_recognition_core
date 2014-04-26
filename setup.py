@@ -1,38 +1,15 @@
 #!/usr/bin/env python
-
 from distutils.core import setup
-try:
-    # Groovy and above
-    from catkin_pkg.python_setup import generate_distutils_setup
+from catkin_pkg.python_setup import generate_distutils_setup
 
-    d = generate_distutils_setup()
-except:
-    # For Fuerte
-    def getText(nodelist):
-        rc = []
-        for node in nodelist:
-            if node.nodeType == node.TEXT_NODE:
-                rc.append(node.data)
-        return ''.join(rc)
-
-    import xml.dom.minidom
-    file = open('stack.xml', 'r')
-    dom = xml.dom.minidom.parseString(file.read())
-    d = {}
-    for tag_type in ['author', 'maintainer']:
-        d[tag_type] = []
-        for element in dom.getElementsByTagName(tag_type):
-            d[tag_type].append(getText(element.childNodes))
-        d[tag_type] = ', '.join(d[tag_type])
-    for tag_type in ['name', 'license', 'url', 'version', 'description']:
-        d[tag_type] = getText(dom.getElementsByTagName(tag_type)[0].childNodes)
-    d['maintainer_email'] = 'vrabaud@willowgarage.com'
-    d['keywords'] = ['ROS']
-
-d['packages'] = ['object_recognition_core', 'object_recognition_core.db', 'object_recognition_core.filters',
+d = generate_distutils_setup(
+    packages=['object_recognition_core', 'object_recognition_core.db', 'object_recognition_core.filters',
                 'object_recognition_core.io', 'object_recognition_core.pipelines',
-                'object_recognition_core.utils', 'couchdb']
-d['package_dir'] = {'': 'python'}
-d['install_requires'] = []
+                'object_recognition_core.utils', 'couchdb'],
+    package_dir={'': 'python'},
+    scripts=['apps/detection', 'apps/training', 'apps/dbscripts/copy_db.py',
+             'apps/dbscripts/mesh_add.py', 'apps/dbscripts/object_add.py',
+             'apps/dbscripts/object_delete.py', 'apps/dbscripts/object_search.py']
+)
 
 setup(**d)

@@ -1,65 +1,114 @@
 <!doctype html>
+<html>
 <head>
-<script src="js/Three.js"></script>
-<script src="js/plane.js"></script>
-<script src="js/thingiview.js"></script>
-<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.6.4/jquery.min.js"></script>
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+<script type="text/javascript" src="js/jsc3d.js"></script>
 
 <script>
-	function image_for_object(object_id, mesh_id) {
-		var observation_id = 0;
-		$.getJSON(
-				"/object_recognition/_design/observations/_view/by_object_id?key=\""
-						+ object_id + "\"&limit=1", function(data) {
-					observation_id = data.rows[0].id
-					var a = $("<a>").attr("href", "?mesh=" + mesh_id).appendTo(
-							"#links");
-					$("<img/>").attr("src",
-							"/object_recognition/" + observation_id + "/image")
-							.attr("width", 200).appendTo(a);
-				});
-		return observation_id;
-	}
-	function get_list_of_urls() {
-		$
-				.getJSON(
-						"/object_recognition/_design/models/_view/by_object_id_and_mesh",
-						function(data) {
-							$.each(data.rows, function(key, val) {
-								image_for_object(val.value.object_id, val.id);
-							});
-						});
-	}
+  // Creates the icon of an object
+  function iconForObject(object_id, mesh_id) {
+    $.getJSON("/object_recognition/_design/observations/_view/by_object_id?key=\""
+	         + object_id + "\"&limit=1",
+              function(data) {
+                if (data.rows.length == 0) {
+                  $.getJSON("/object_recognition/" + object_id, function(data) {
+                    $("<a>").attr("href", "?mesh=" + mesh_id).text(
+                            data.object_name + ' (' + object_id + ')').appendTo("#links");
+                  });
+                } else {
+                  var observation_id = data.rows[0].id
+                  var a = $("<a>").attr("href", "?mesh=" + mesh_id).appendTo("#links");
+                  $("<img/>").attr("src", "/object_recognition/" + observation_id + "/image")
+	                     .attr("width", 200).appendTo(a);
+                }
+            });
+  }
 
-	function getUrlVars() {
-		var vars = {}, hash;
-		var hashes = window.location.href.slice(
-				window.location.href.indexOf('?') + 1).split('&');
-		for ( var i = 0; i < hashes.length; i++) {
-			hash = hashes[i].split('=');
-			vars[hash[0]] = hash[1];
-		}
-		return vars;
-	}
-	window.onload = function() {
-		get_list_of_urls();
-		var vars = getUrlVars();
-		thingiurlbase = "js";
-		thingiview = new Thingiview("viewer");
-		thingiview.setObjectColor('#C0D8F0');
-		thingiview.initScene();
-		thingiview.loadSTL("/object_recognition/" + vars.mesh + "/mesh.stl");
-		thingiview.setCameraView('diagonal');
-		thingiview.setRotation(true);
-		thingiview.setObjectMaterial('solid');
-	}
+  // Create the icons for the objects
+  function createObjectIcons() {
+    $.getJSON("/object_recognition/_design/models/_view/by_object_id_and_mesh",
+            function(data) {
+              var is_first = false;
+              var vars = getUrlVars();
+              if (!(vars.hasOwnProperty("mesh")))
+                is_first = true;
+
+              $.each(data.rows, function(key, val) {
+                  if (is_first) {
+                    is_first = false;
+                    createViewer(val.id);
+                  }
+                  iconForObject(val.value.object_id, val.id);
+                }
+              );
+            });
+  }
+
+  // Get the information embedded in the url
+  function getUrlVars() {
+    var vars = {}, hash;
+	var hashes = window.location.href.slice(window.location.href.indexOf('?') + 1).split('&');
+    for ( var i = 0; i < hashes.length; i++) {
+      hash = hashes[i].split('=');
+      vars[hash[0]] = hash[1];
+    }
+    return vars;
+  }
+
+  // Create a 3d viewer for a given mesh_id
+  function createViewer(mesh_id) {
+    $.getJSON("/object_recognition/" + mesh_id, function(data) {
+      if (!("_attachments" in data))
+        return;
+      // Find interesting names of the meshes
+      var str_original = "";
+      var str_obj = "";
+      var str_stl = "";
+      for(var name in data._attachments) {
+        if (!data._attachments.hasOwnProperty(name))
+          continue;
+        if ((name == "original.stl") || (name == "original.obj"))
+          str_original = name;
+        if (name.indexOf(".obj", name.length - 4) !== -1)
+          str_obj = name;
+        if (name.indexOf(".stl", name.length - 4) !== -1)
+          str_stl = name;
+      }
+
+      var viewer = new JSC3D.Viewer(document.getElementById('mesh'));
+      if (str_original)
+        viewer.setParameter('SceneUrl',  "/object_recognition/" + mesh_id + "/" + str_original);
+      else if (str_obj)
+        viewer.setParameter('SceneUrl',  "/object_recognition/" + mesh_id + "/" + str_obj);
+      else if (str_stl)
+        viewer.setParameter('SceneUrl', "/object_recognition/" + mesh_id + "/" + str_stl);
+
+      viewer.setParameter('BackgroundColor1', '#E5D7BA');
+      viewer.setParameter('BackgroundColor2', '#383840');
+      viewer.setParameter('RenderMode', 'flat');
+      viewer.setParameter('Renderer', 'webgl');
+      viewer.setParameter('InitRotationX', -90);
+
+      viewer.init();
+      viewer.update();
+    });
+  }
+
+  window.onload = function() {
+    createObjectIcons();
+    var vars = getUrlVars();
+
+    // Load the mesh
+    if (vars.hasOwnProperty("mesh"))
+      createViewer(vars.mesh);
+  }
 </script>
 </head>
 <body>
   <h1>Object Meshes</h1>
-  <p>Best viewed in Google Chrome with webgl support.</p>
-  <div id="viewer" style="width: 50%; height: 400px"></div>
-  <div id="links" style="width: 50%; height: 400px"></div>
+  <canvas id="mesh" width=640 height=480>
+    It seems you are using an outdated browser that does not support canvas :-(
+  </canvas>
+  <div id="links"></div>
 </body>
 </html>
-

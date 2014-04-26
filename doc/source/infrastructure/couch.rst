@@ -97,7 +97,7 @@ First make sure you have ``couchapp``:
 
 .. toggle:: From ROS packages
 
-   We provide a utility that automatically installa the visualizer on the DB.
+   We provide a utility that automatically installs the visualizer on the DB.
 
    .. code-block:: bash
 
@@ -107,4 +107,7 @@ This will upload the contents of the directory to collection in your couchdb ins
 
 Library
 =======
+
 Object Recognition tools manipulate the database either using libCURL or python-couchdb. You may find it helpful to browse the default db HTML interface at http://localhost:5984/_utils
+
+We also provide scripts located for maintenance located in the db_scripts folder.

@@ -213,11 +213,6 @@ ObjectDbCouch::QueryView(const object_recognition_core::db::View & view, int lim
       url = root_ + "/" + collection_ + "/_design/models/_view/by_object_id_and_" + parameters["model_type"].get_str();
       break;
     }
-    case object_recognition_core::db::View::VIEW_OBJECT_INFO_WHERE_OBJECT_ID:
-    {
-      url = root_ + "/" + collection_ + "/_design/models/_view/by_object_id";
-      break;
-    }
     case object_recognition_core::db::View::VIEW_OBSERVATION_WHERE_OBJECT_ID:
     {
       url = root_ + "/" + collection_ + "/_design/observations/_view/by_object_id";

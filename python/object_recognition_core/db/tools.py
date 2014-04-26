@@ -1,6 +1,7 @@
 """
 Module defining several DB utility function for other scripts
 """
+import os
 from object_recognition_core.boost.interface import ObjectDbParameters, ObjectDbTypes
 from object_recognition_core.db.object_db import core_db_types
 import tools as dbtools
@@ -77,6 +78,31 @@ def db_params_to_db(db_params):
     if db_params.type == ObjectDbTypes.COUCHDB:
         import couchdb
         return init_object_databases(couchdb.Server(db_params.raw['root']))
+
+########################################################################################################################
+
+def upload_mesh(db, object_id, original_path, cloud_path=None, mesh_path=None):
+    import models
+    r = models.find_model_for_object(db, object_id, 'mesh')
+    m = None
+    for model in r:
+        m = models.Model.load(db, model)
+        print "updating model:", model
+        break
+    if not m:
+        m = models.Model(object_id=object_id, method='mesh')
+        print "creating new model."
+    m.store(db)
+    with open(original_path, 'r') as mesh:
+        db.put_attachment(m, mesh, filename='original' + os.path.splitext(original_path)[1])
+    if cloud_path:
+        with open(cloud_path, 'r') as mesh:
+            db.put_attachment(m, mesh, filename='cloud.ply', content_type='application/octet-stream')
+    #else:
+    # TODO: convert the original to mesh/cloud if not given
+    if mesh_path:
+        with open(mesh_path, 'r') as mesh:
+            db.put_attachment(m, mesh, filename='mesh.stl', content_type='application/octet-stream')
 
 ########################################################################################################################
 

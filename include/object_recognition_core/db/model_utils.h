@@ -55,6 +55,7 @@ namespace object_recognition_core
      * @param object_id the id of the object for that model
      * @param method the method used to compute the models (e.g. 'TOD')
      * @param parameters_str a JSON string detailing the non-discriminative parameters used in the method
+     * @param doc the document to fill
      * @return the Document to update
      */
     void

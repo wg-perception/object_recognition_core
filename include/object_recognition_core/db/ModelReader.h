@@ -90,6 +90,7 @@ namespace object_recognition_core
 
           // Make sure that whenever parameters related to the models or objects changes, the list of models is regenerated
           json_db_.set_callback(boost::bind(&ModelReaderBase::parameterCallbackJsonDb, this, _1));
+          json_db_.dirty(true);
           json_object_ids_.set_callback(boost::bind(&ModelReaderBase::parameterCallbackJsonObjectIds, this, _1));
           json_object_ids_.dirty(true);
         }
@@ -103,8 +104,8 @@ namespace object_recognition_core
 
         friend void
         declare_params_impl(ecto::tendrils& params, const std::string &method);
-      private:
-        void
+      protected:
+        virtual void
         parameterCallbackCommon()
         {
           if ((!db_) || (method_->empty()))
@@ -119,7 +120,7 @@ namespace object_recognition_core
           parameter_callback(documents_);
         }
 
-        void
+        virtual void
         parameterCallbackJsonDb(const std::string& json_db)
         {
           *json_db_ = json_db;
@@ -131,7 +132,7 @@ namespace object_recognition_core
           parameterCallbackCommon();
         }
 
-        void
+        virtual void
         parameterCallbackJsonObjectIds(const std::string& json_object_ids)
         {
           // read the object ids from the JSON string
@@ -159,7 +160,7 @@ namespace object_recognition_core
           parameterCallbackCommon();
         }
 
-        void
+        virtual void
         parameterCallbackMethod(const std::string& method)
         {
           *method_ = method;

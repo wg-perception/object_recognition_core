@@ -61,65 +61,64 @@ namespace object_recognition_core
         }
       }
 
-      // Find all the models of that type for that object
-      db::View view(db::View::VIEW_OBJECT_INFO_WHERE_OBJECT_ID);
-      view.set_key(object_id_);
-
       // Make sure the db_ is valid
       if (db_->parameters().type() == db::ObjectDbParameters::EMPTY)
         throw std::runtime_error("Db not set in the ObjectInfo");
 
-      // Get information about the object
-      db::ViewIterator view_iterator(view, db_);
+  // Get information about the object
+  or_json::mObject fields;
+  db_->load_fields(object_id_, fields);
 
-      db::ViewIterator iter = view_iterator.begin(), end = view_iterator.end();
-      for (; iter != end; ++iter)
-      {
-        const or_json::mObject &fields = (*iter).fields();
+  // Get the object name
+  std::string name;
+  if (fields.find("object_name") != fields.end())
+    name = fields.find("object_name")->second.get_str();
 
-        // Get the object name
-        if (fields.find("object_name") == fields.end())
-          set_field("name", "");
-        else
-          set_field("name", fields.find("name")->second.get_str());
+  // If no name, set one
+  if (name.empty())
+    set_field("name", object_id_);
+  else
+    set_field("name", name);
 
-        // If no name, set one
-        if (get_field("name").get_str().empty())
-          set_field("name", object_id_);
+  // Get the mesh_id
+  if (fields.find("mesh_uri") != fields.end())
+    set_field("mesh_uri", fields.find("mesh_uri")->second.get_str());
 
-        // Get the mesh_id
-        if (fields.find("mesh_uri") != fields.end())
-          set_field("mesh_uri", fields.find("mesh_uri")->second.get_str());
-
-        // The view should return only one element
-        break;
-      }
-
-      // Get the mesh id
-      std::string mesh_id;
-      view = db::View(db::View::VIEW_MODEL_WHERE_OBJECT_ID_AND_MODEL_TYPE);
-      view.Initialize("mesh");
-      view.set_key(object_id_);
-      view_iterator = db::ViewIterator(view, db_);
-      iter = view_iterator.begin();
-      end = view_iterator.end();
+  // Get the mesh id
+  std::string mesh_id;
+  db::View view = db::View(db::View::VIEW_MODEL_WHERE_OBJECT_ID_AND_MODEL_TYPE);
+  db::ViewIterator view_iterator(view, db_);
+  view.Initialize("mesh");
+  view.set_key(object_id_);
+  view_iterator = db::ViewIterator(view, db_);
+  db::ViewIterator iter = view_iterator.begin(), end = view_iterator.end();
 
   // Get the mesh_URI if not set
   switch (db_->parameters().type()) {
     case db::ObjectDbParameters::COUCHDB:
       for (; iter != end; ++iter) {
-        if ((*iter).has_field("_id")) {
+        if (((*iter).has_field("_id")) && ((*iter).has_field("_attachments"))) {
           mesh_id = (*iter).get_field<std::string>("_id");
           break;
         }
       }
       // E.g. http://localhost:5984/object_recognition/_design/models/_view/by_object_id_and_mesh?key=%2212a1e6eb663a41f8a4fb9baa060f191c%22
-      if (!mesh_id.empty())
-        set_field(
-            "mesh_uri",
-            db_->parameters().at("root").get_str() + std::string("/")
+      if (!mesh_id.empty()) {
+        // Figure out the name of the mesh
+        std::vector<std::string> attachments_names = (*iter).attachment_names();
+        std::string mesh_name;
+        BOOST_FOREACH(const std::string& attachment_name, attachments_names) {
+          // Check that the end of the mesh is proper for display
+          if ((attachment_name.find(".stl") != std::string::npos) || (attachment_name.find(".obj") != std::string::npos)) {
+            mesh_name = attachment_name;
+            break;
+          }
+        }
+        if (!mesh_name.empty())
+          set_field("mesh_uri", db_->parameters().at("root").get_str() + std::string("/")
                 + db_->parameters().at("collection").get_str() + "/" + mesh_id
-                + "/mesh.stl");
+                + "/" + mesh_name);
+      }
       break;
     default:
       for (; iter != end; ++iter) {

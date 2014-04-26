@@ -1,9 +1,3 @@
-if (ROS_FUERTE_FOUND)
-install(FILES ${PROJECT_SOURCE_DIR}/manifest.xml
-        DESTINATION share/${PROJECT_NAME}
-)
-endif()
-
 # install the include folder
 install(DIRECTORY ${PROJECT_SOURCE_DIR}/include/object_recognition_core/
         DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
@@ -21,4 +15,11 @@ install(DIRECTORY ${CATKIN_DEVEL_PREFIX}/${CATKIN_PACKAGE_SHARE_DESTINATION}/tes
 install(PROGRAMS ${PROJECT_SOURCE_DIR}/apps/detection
                  ${PROJECT_SOURCE_DIR}/apps/training
         DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+)
+
+# install the DB scripts
+install(DIRECTORY ${PROJECT_SOURCE_DIR}/apps/dbscripts
+        DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+        COMPONENT main
+        USE_SOURCE_PERMISSIONS
 )
