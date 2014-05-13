@@ -1,5 +1,5 @@
-Forthcoming
------------
+0.6.2 (2014-05-13)
+------------------
 * add catkin-sphinx to the docs
 * Fixes https://github.com/wg-perception/object_recognition_ros/issues/15
 * Fix detection: error: unrecognized arguments:
