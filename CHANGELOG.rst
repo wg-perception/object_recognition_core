@@ -1,3 +1,12 @@
+Forthcoming
+-----------
+* add catkin-sphinx to the docs
+* Fixes https://github.com/wg-perception/object_recognition_ros/issues/15
+* Fix detection: error: unrecognized arguments:
+* Merge pull request `#19 <https://github.com/wg-perception/object_recognition_core/issues/19>`_ from bit-pirate/master
+  adds ork_ros to ork.rosinstall
+* Contributors: Sammy Pfeiffer, Vincent Rabaud, hdang
+
 0.6.1 (2014-04-13)
 ------------------
 * get code to compile on Indigo
