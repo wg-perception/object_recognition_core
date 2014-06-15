@@ -2,14 +2,18 @@
 
 .. _install:
 
+To use ORK, you will need a compiled ORK and couchDB (for object management). Following instructions in this page will help you to:
+ - Install ORK either from precompiled ROS packages or from source code
+ - Install couchDB and setup the database for ORK
+ - Compile the documentation so that you can consult it locally (useful when no internet connection is around)
+
 Installation
 ############
 
 From the ROS repositories
 *************************
 
-Install the
-``ros-*-object-recognition-core`` package from the official ROS repositories and the different pipelines (packages starting with ``ros-*-object-recognition-``).
+Install the ``ros-*-object-recognition-core`` package from the official ROS repositories and the different pipelines (packages starting with ``ros-*-object-recognition-``).
 
 Download & Build from Source
 ****************************
@@ -120,8 +124,7 @@ and then build your code:
 
 
 
-If you are a developer and have write access to the repositories, search and replace ``http://`` above and replace by
-``git@github.com:``.
+If you are a developer and have write access to the repositories, search and replace ``http://`` above and replace by ``git@github.com:``.
 
 
 To maintain your code, each folder is each own ``git`` repository and you can pull/push from there.
@@ -146,11 +149,16 @@ To install it, just follow those commands:
    catkin_make
    source devel/setup.bash
 
-Building the documentation
-**************************
+Configuring the database
+########################
 
-Before you can build the documentation (which you are reading right now), you need to have followed the installation
-instructions and have already successfully called ``make`` in the ``build`` folder.
+For that, just refer to the :ref:`DB Page <object_recognition_core_db>`.
+
+
+Building the documentation
+##########################
+
+Before you can build the documentation (which you are reading right now), you need to have followed the installation instructions and have already successfully called ``make`` in the ``build`` folder.
 
 You then need some up to date packages:
 
@@ -168,5 +176,4 @@ From root, just type:
 
 You will find the generated documentation under ``build/doc/html``.
 
-Once the documentation is built, you can simply copy it (except for the ``.doctree`` folder) to the ``gh-pages`` branch
-on GitHub.
+Once the documentation is built, you can simply copy it (except for the ``.doctree`` folder) to the ``gh-pages`` branch on GitHub.
