@@ -47,9 +47,10 @@
 <li><a class="reference internal" href="#from-the-ros-repositories">From the ROS repositories</a></li>
 <li><a class="reference internal" href="#download-build-from-source">Download &amp; Build from Source</a></li>
 <li><a class="reference internal" href="#rosinstall-file">rosinstall file</a></li>
-<li><a class="reference internal" href="#building-the-documentation">Building the documentation</a></li>
 </ul>
 </li>
+<li><a class="reference internal" href="#configuring-the-database">Configuring the database</a></li>
+<li><a class="reference internal" href="#building-the-documentation">Building the documentation</a></li>
 </ul>
 
   <h3>This Page</h3>
@@ -78,12 +79,20 @@
         <div class="bodywrapper">
           <div class="body">
             
-  <div class="section" id="installation">
-<span id="install"></span><h1>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h1>
+  <dl class="docutils" id="install">
+<dt>To use ORK, you will need a compiled ORK and couchDB (for object management). Following instructions in this page will help you to:</dt>
+<dd><ul class="first last simple">
+<li>Install ORK either from precompiled ROS packages or from source code</li>
+<li>Install couchDB and setup the database for ORK</li>
+<li>Compile the documentation so that you can consult it locally (useful when no internet connection is around)</li>
+</ul>
+</dd>
+</dl>
+<div class="section" id="installation">
+<h1>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="from-the-ros-repositories">
 <h2>From the ROS repositories<a class="headerlink" href="#from-the-ros-repositories" title="Permalink to this headline">¶</a></h2>
-<p>Install the
-<tt class="docutils literal"><span class="pre">ros-*-object-recognition-core</span></tt> package from the official ROS repositories and the different pipelines (packages starting with <tt class="docutils literal"><span class="pre">ros-*-object-recognition-</span></tt>).</p>
+<p>Install the <tt class="docutils literal"><span class="pre">ros-*-object-recognition-core</span></tt> package from the official ROS repositories and the different pipelines (packages starting with <tt class="docutils literal"><span class="pre">ros-*-object-recognition-</span></tt>).</p>
 </div>
 <div class="section" id="download-build-from-source">
 <h2>Download &amp; Build from Source<a class="headerlink" href="#download-build-from-source" title="Permalink to this headline">¶</a></h2>
@@ -313,8 +322,7 @@ $(document).ready(function() {
 </pre></div>
 </div>
 </div></div>
-<p>If you are a developer and have write access to the repositories, search and replace <tt class="docutils literal"><span class="pre">http://</span></tt> above and replace by
-<tt class="docutils literal"><span class="pre">git&#64;github.com:</span></tt>.</p>
+<p>If you are a developer and have write access to the repositories, search and replace <tt class="docutils literal"><span class="pre">http://</span></tt> above and replace by <tt class="docutils literal"><span class="pre">git&#64;github.com:</span></tt>.</p>
 <p>To maintain your code, each folder is each own <tt class="docutils literal"><span class="pre">git</span></tt> repository and you can pull/push from there.</p>
 </div>
 <div class="section" id="rosinstall-file">
@@ -348,12 +356,16 @@ catkin_make
 </pre></div>
 </div>
 </div>
+</div>
+<div class="section" id="configuring-the-database">
+<h1>Configuring the database<a class="headerlink" href="#configuring-the-database" title="Permalink to this headline">¶</a></h1>
+<p>For that, just refer to the <a class="reference internal" href="infrastructure/couch.html#object-recognition-core-db"><em>DB Page</em></a>.</p>
+</div>
 <div class="section" id="building-the-documentation">
-<h2>Building the documentation<a class="headerlink" href="#building-the-documentation" title="Permalink to this headline">¶</a></h2>
-<p>Before you can build the documentation (which you are reading right now), you need to have followed the installation
-instructions and have already successfully called <tt class="docutils literal"><span class="pre">make</span></tt> in the <tt class="docutils literal"><span class="pre">build</span></tt> folder.</p>
+<h1>Building the documentation<a class="headerlink" href="#building-the-documentation" title="Permalink to this headline">¶</a></h1>
+<p>Before you can build the documentation (which you are reading right now), you need to have followed the installation instructions and have already successfully called <tt class="docutils literal"><span class="pre">make</span></tt> in the <tt class="docutils literal"><span class="pre">build</span></tt> folder.</p>
 <p>You then need some up to date packages:</p>
-<div class="highlight-sh"><div class="highlight"><pre>sudo pip install -U breathe sphinxcontrib-programoutput
+<div class="highlight-sh"><div class="highlight"><pre>sudo pip install -U breathe catkin-sphinx sphinxcontrib-programoutput
 </pre></div>
 </div>
 <p>From root, just type:</p>
@@ -363,9 +375,7 @@ make sphinx-doc
 </pre></div>
 </div>
 <p>You will find the generated documentation under <tt class="docutils literal"><span class="pre">build/doc/html</span></tt>.</p>
-<p>Once the documentation is built, you can simply copy it (except for the <tt class="docutils literal"><span class="pre">.doctree</span></tt> folder) to the <tt class="docutils literal"><span class="pre">gh-pages</span></tt> branch
-on GitHub.</p>
-</div>
+<p>Once the documentation is built, you can simply copy it (except for the <tt class="docutils literal"><span class="pre">.doctree</span></tt> folder) to the <tt class="docutils literal"><span class="pre">gh-pages</span></tt> branch on GitHub.</p>
 </div>
 
 
