@@ -61,12 +61,13 @@ First, build your workspace:
 
 .. toggle:: ROS
 
-   First source your ROS setup file:
+   First source your ROS setup file (adapt ``DISTRO`` to the ROS distribution you are using):
    
    .. code-block:: sh
    
-      sudo apt-get install libopenni-dev ros-groovy-catkin ros-groovy-ecto* ros-groovy-opencv-candidate ros-groovy-moveit-msgs
-      source /opt/ros/groovy/setup.sh
+      export DISTRO=indigo
+      sudo apt-get install libopenni-dev ros-${DISTRO}-catkin ros-${DISTRO}-ecto* ros-${DISTRO}-opencv-candidate ros-${DISTRO}-moveit-msgs
+      source /opt/ros/${DISTRO}/setup.sh
 
 
 Then install any pipeline you need:

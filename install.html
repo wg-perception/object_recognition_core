@@ -176,9 +176,10 @@ git clone http://github.com/wg-perception/opencv_candidate
 </div>
 </div></div>
 <div class="container">
-<div class="toggleable_div label_ROS"><p>First source your ROS setup file:</p>
-<div class="highlight-sh"><div class="highlight"><pre>sudo apt-get install libopenni-dev ros-groovy-catkin ros-groovy-ecto* ros-groovy-opencv-candidate ros-groovy-moveit-msgs
-<span class="nb">source</span> /opt/ros/groovy/setup.sh
+<div class="toggleable_div label_ROS"><p>First source your ROS setup file (adapt <tt class="docutils literal"><span class="pre">DISTRO</span></tt> to the ROS distribution you are using):</p>
+<div class="highlight-sh"><div class="highlight"><pre><span class="nb">export </span><span class="nv">DISTRO</span><span class="o">=</span>indigo
+sudo apt-get install libopenni-dev ros-<span class="k">${</span><span class="nv">DISTRO</span><span class="k">}</span>-catkin ros-<span class="k">${</span><span class="nv">DISTRO</span><span class="k">}</span>-ecto* ros-<span class="k">${</span><span class="nv">DISTRO</span><span class="k">}</span>-opencv-candidate ros-<span class="k">${</span><span class="nv">DISTRO</span><span class="k">}</span>-moveit-msgs
+<span class="nb">source</span> /opt/ros/<span class="k">${</span><span class="nv">DISTRO</span><span class="k">}</span>/setup.sh
 </pre></div>
 </div>
 </div></div>
