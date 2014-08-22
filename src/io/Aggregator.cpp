@@ -33,11 +33,11 @@
  *
  */
 
+#include <ecto/ecto.hpp>
+
 #include <boost/format.hpp>
 
 #include <opencv2/core/core.hpp>
-
-#include <ecto/ecto.hpp>
 
 #include <object_recognition_core/common/types.h>
 #include <object_recognition_core/common/pose_result.h>
