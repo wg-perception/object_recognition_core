@@ -1,5 +1,5 @@
-Forthcoming
------------
+0.6.3 (2014-09-06)
+------------------
 * Merge pull request `#27 <https://github.com/wg-perception/object_recognition_core/issues/27>`_ from cottsay/master
   Always include ecto.hpp first
 * Always include ecto.hpp first
