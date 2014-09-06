@@ -1,3 +1,14 @@
+Forthcoming
+-----------
+* Merge pull request `#27 <https://github.com/wg-perception/object_recognition_core/issues/27>`_ from cottsay/master
+  Always include ecto.hpp first
+* Always include ecto.hpp first
+  ecto.hpp includes Python.hpp, which must always come before system includes
+* adapt docs for ROS distribution
+* improve install instructions
+  This fixes `#25 <https://github.com/wg-perception/object_recognition_core/issues/25>`_ by only taking non-redundant information
+* Contributors: Scott K Logan, Vincent Rabaud
+
 0.6.2 (2014-05-13)
 ------------------
 * add catkin-sphinx to the docs
