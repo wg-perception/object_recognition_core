@@ -5,9 +5,9 @@
  *      Author: vrabaud
  */
 
-#include <iostream>
-
 #include <ecto/ecto.hpp>
+
+#include <iostream>
 
 #include <object_recognition_core/common/json.hpp>
 

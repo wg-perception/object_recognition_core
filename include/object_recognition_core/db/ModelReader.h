@@ -41,9 +41,9 @@
 #ifndef ork_db_model_reader
 #define ork_db_model_reader
 
-#include <boost/bind.hpp>
-
 #include <ecto/ecto.hpp>
+
+#include <boost/bind.hpp>
 
 #include <object_recognition_core/common/json_spirit/json_spirit_reader_template.h>
 #include <object_recognition_core/common/types.h>

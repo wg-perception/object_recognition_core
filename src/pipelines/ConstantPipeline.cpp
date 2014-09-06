@@ -33,12 +33,12 @@
  *
  */
 
+#include <ecto/ecto.hpp>
+
 #include <stdlib.h>
 #include <string>
 
 #include <Eigen/Core>
-
-#include <ecto/ecto.hpp>
 
 #include <object_recognition_core/common/pose_result.h>
 #include <object_recognition_core/db/db.h>

@@ -33,9 +33,9 @@
  *
  */
 
-#include <limits>
-
 #include <ecto/ecto.hpp>
+
+#include <limits>
 
 #include <opencv2/core/core.hpp>
 

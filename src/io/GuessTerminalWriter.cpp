@@ -33,11 +33,11 @@
  *
  */
 
+#include <ecto/ecto.hpp>
+
 #include <iostream>
 
 #include <boost/foreach.hpp>
-
-#include <ecto/ecto.hpp>
 
 #include <opencv2/core/core.hpp>
 

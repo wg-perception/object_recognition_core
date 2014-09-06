@@ -32,10 +32,10 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <ecto/ecto.hpp>
+
 #include <boost/filesystem.hpp>
 #include <boost/foreach.hpp>
-
-#include <ecto/ecto.hpp>
 
 #include <opencv2/core/core.hpp>
 
