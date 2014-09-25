@@ -89,7 +89,11 @@ namespace object_recognition_core
       std::streampos length = ss.tellp();
       std::vector<uint8_t> buffer(length);
       ss.read((char*) buffer.data(), length);
+#if OPENCV3
+      image = cv::imdecode(buffer, cv::IMREAD_ANYDEPTH | cv::IMREAD_ANYCOLOR);
+#else
       image = cv::imdecode(buffer, CV_LOAD_IMAGE_ANYDEPTH | CV_LOAD_IMAGE_ANYCOLOR);
+#endif
     }
   }
 
