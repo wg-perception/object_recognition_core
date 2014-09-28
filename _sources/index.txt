@@ -19,6 +19,10 @@ Well, all good things must start so check out the :ref:`Install <install>`.
 
 We know you can't wait; if you don't care about the intricacies and want to have a quick overview, follow the :ref:`Quick Guide <quickguide>`
 
+.. rubric:: Tutorials
+
+Ok, now that you know a little, you can follow the :ref:`Tutorials <orktutorials:object_recognition_tutorials>`.
+
 .. rubric:: General Usage
 
 Now that you have a bit more time, we suggest you read about the :ref:`Infrastructure <infrastructure>` to understand how to interact with ``ORK``. You can then go through the different steps of object recognition:

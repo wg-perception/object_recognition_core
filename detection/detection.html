@@ -233,9 +233,11 @@ Ecto runtime parameters:
 <h2><a class="toc-backref" href="#id5">Configuration File</a><a class="headerlink" href="#configuration-file" title="Permalink to this headline">¶</a></h2>
 <p>The configuration file is where you define your graph and with the current ORK, you can choose any of the following sources:</p>
 <div class="highlight-text"><div class="highlight"><pre>source_0:
-   type: RosKinect
-   module: object_recognition_ros.io.source.ros_kinect
+   type: BagReader
+   module: object_recognition_ros.io.source.bag_reader
    parameters:
+      #  The bag file name.
+      bag: data.bag
       #  If the cropper cell is enabled
       crop_enabled: True
       #  The ROS topic for the depth camera info.
@@ -287,11 +289,9 @@ source_1:
       stream_mode: None
 
 source_2:
-   type: BagReader
-   module: object_recognition_ros.io.source.bag_reader
+   type: RosKinect
+   module: object_recognition_ros.io.source.ros_kinect
    parameters:
-      #  The bag file name.
-      bag: data.bag
       #  If the cropper cell is enabled
       crop_enabled: True
       #  The ROS topic for the depth camera info.
@@ -318,15 +318,6 @@ source_2:
 </div>
 <p>any of the following sinks:</p>
 <div class="highlight-text"><div class="highlight"><pre>sink_0:
-   type: GuessCsvWriter
-   module: object_recognition_core.io.sink
-   parameters:
-      #  The run number
-      run_number: 0
-      #  The name of the team to consider
-      team_name: 
-
-sink_1:
    type: TablePublisher
    module: object_recognition_tabletop.table_publisher
    parameters:
@@ -337,12 +328,21 @@ sink_1:
       #  The array of found tables.
       table_array: table_array
 
+sink_1:
+   type: GuessCsvWriter
+   module: object_recognition_core.io.sink
+   parameters:
+      #  The run number
+      run_number: 0
+      #  The name of the team to consider
+      team_name: 
+
 sink_2:
    type: Publisher
    module: object_recognition_ros.io.sink.publisher
    parameters:
       #  The DB parameters
-      db_params: &lt;object_recognition_core.boost.interface.ObjectDbParameters object at 0x2ac7e3dca788&gt;
+      db_params: &lt;object_recognition_core.boost.interface.ObjectDbParameters object at 0x2b6039cdd730&gt;
       #  Determines if the topics will be latched.
       latched: True
       #  The ROS topic to use for the marker array.
@@ -359,6 +359,28 @@ sink_2:
 </div>
 <p>or the following pipelines:</p>
 <div class="highlight-text"><div class="highlight"><pre>detection_pipeline_0:
+   type: TabletopTableDetector
+   module: object_recognition_tabletop.detector
+   parameters:
+      #  The maximum distance between a point and the cluster it belongs to.
+      cluster_distance: 0.019999999553
+      #  Min number of points for a cluster
+      min_cluster_size: 300
+      #  The minimum number of points deemed necessary to find a table.
+      min_table_size: 10000
+      #  The distance used as a threshold when finding a plane
+      plane_threshold: 0.019999999553
+      #  The distance used when clustering a plane
+      table_cluster_tolerance: 0.20000000298
+      #  The vertical frame id
+      vertical_frame_id: /map
+      #  The amount to keep in the z direction (meters) relative to the coordinate frame defined by
+      # the pose.
+      z_crop: 0.5
+      #  The amount to crop above the plane, in meters.
+      z_min: 0.00749999983236
+
+detection_pipeline_1:
    type: TodDetector
    module: object_recognition_tod.detector
    parameters:
@@ -383,23 +405,6 @@ sink_2:
       #  If true, some windows pop up to see the progress
       visualize: False
 
-detection_pipeline_1:
-   type: TransparentObjectsDetector
-   module: object_recognition_transparent_objects.detector
-   parameters:
-      #  The DB configuration parameters as a JSON string
-      json_db: 
-      #  A set of object ids as a JSON string: &#39;[&quot;1576f162347dbe1f95bd675d3c00ec6a&quot;]&#39; or &#39;all&#39;
-      json_object_ids: all
-      #  The method the models were computed with
-      method: TransparentObjects
-      #  The DB parameters
-      object_db: None
-      #  The filename of the registration mask.
-      registrationMaskFilename: 
-      #  Visualize results
-      visualize: False
-
 detection_pipeline_2:
    type: TabletopObjectDetector
    module: object_recognition_tabletop.detector
@@ -414,28 +419,6 @@ detection_pipeline_2:
       tabletop_object_ids: REDUCED_MODEL_SET
 
 detection_pipeline_3:
-   type: TabletopTableDetector
-   module: object_recognition_tabletop.detector
-   parameters:
-      #  The maximum distance between a point and the cluster it belongs to.
-      cluster_distance: 0.019999999553
-      #  Min number of points for a cluster
-      min_cluster_size: 300
-      #  The minimum number of points deemed necessary to find a table.
-      min_table_size: 10000
-      #  The distance used as a threshold when finding a plane
-      plane_threshold: 0.019999999553
-      #  The distance used when clustering a plane
-      table_cluster_tolerance: 0.20000000298
-      #  The vertical frame id
-      vertical_frame_id: /map
-      #  The amount to keep in the z direction (meters) relative to the coordinate frame defined by
-      # the pose.
-      z_crop: 0.5
-      #  The amount to crop above the plane, in meters.
-      z_min: 0.00749999983236
-
-detection_pipeline_4:
    type: LinemodDetector
    module: object_recognition_linemod.detector
    parameters:
@@ -448,6 +431,23 @@ detection_pipeline_4:
       #  Matching threshold, as a percentage
       threshold: 93.0
       #  If True, visualize the output.
+      visualize: False
+
+detection_pipeline_4:
+   type: TransparentObjectsDetector
+   module: object_recognition_transparent_objects.detector
+   parameters:
+      #  The DB configuration parameters as a JSON string
+      json_db: 
+      #  A set of object ids as a JSON string: &#39;[&quot;1576f162347dbe1f95bd675d3c00ec6a&quot;]&#39; or &#39;all&#39;
+      json_object_ids: all
+      #  The method the models were computed with
+      method: TransparentObjects
+      #  The DB parameters
+      object_db: None
+      #  The filename of the registration mask.
+      registrationMaskFilename: 
+      #  Visualize results
       visualize: False
 </pre></div>
 </div>
