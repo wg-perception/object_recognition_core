@@ -18,6 +18,7 @@ intersphinx_mapping = {'orkcapture': (ork_module_url_root + 'capture', None),
                        'orktabletop': (ork_module_url_root + 'tabletop', None),
                        'orktod': (ork_module_url_root + 'tod', None),
                        'orktransparentobjects': (ork_module_url_root + 'transparent_objects', None),
+                       'orktutorials': (ork_module_url_root + 'ork_tutorials', None),
                        }
 
 programoutput_path = '${DOC_SOURCE_DIRS}'.split(';')
