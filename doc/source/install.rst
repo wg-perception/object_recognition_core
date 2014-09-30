@@ -99,7 +99,8 @@ any ROS stuff:
    .. code-block:: sh
    
       git clone http://github.com/wg-perception/object_recognition_msgs
-      git clone http://github.com/wg-perception/object_recognition_ros 
+      git clone http://github.com/wg-perception/object_recognition_ros
+      git clone http://github.com/wg-perception/object_recognition_ros_visualization
 
 
 and then build your code:
