@@ -60,23 +60,27 @@ namespace object_recognition_core
     DocumentsPtr
     DocumentsConstructor(object_recognition_core::db::ObjectDbPtr & db, const bp::object & python_document_ids)
     {
-      // Read the document ids from the input
-      std::vector<DocumentId> document_ids;
-      boost::python::stl_input_iterator<std::string> begin(python_document_ids), end;
-      std::copy(begin, end, std::back_inserter(document_ids));
+      bp::list ids_list = bp::extract<bp::list>(python_document_ids);
+      size_t ids_nbr = bp::len(ids_list);
 
       // Create the Documents from the ids
       DocumentsPtr p(new Documents());
-      p->reserve(document_ids.size());
+      p->reserve(ids_nbr);
 
-      BOOST_FOREACH(const DocumentId & document_id, document_ids)
-          {
-            Document doc;
-            doc.set_db(db);
-            doc.set_document_id(document_id);
-            doc.load_fields();
-            p->push_back(doc);
-          }
+      for(size_t i = 0; i < ids_nbr; ++i) {
+        std::string object_classname = boost::python::extract<std::string>(ids_list[i].attr("__class__").attr("__name__"));
+        DocumentId document_id;
+        if (object_classname == "str")
+          document_id = bp::extract<std::string>(ids_list[i]);
+        else
+          document_id = bp::extract<std::string>(bp::str(ids_list[i]).encode("utf-8"));
+
+        Document doc;
+        doc.set_db(db);
+        doc.set_document_id(document_id);
+        doc.load_fields();
+        p->push_back(doc);
+      }
 
       return p;
     }
