@@ -1,5 +1,5 @@
-Forthcoming
------------
+0.6.4 (2015-01-20)
+------------------
 * fix training pipeline creation
 * allow unicode strings
   this should fix https://github.com/wg-perception/reconstruction/issues/1
