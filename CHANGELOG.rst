@@ -1,3 +1,14 @@
+Forthcoming
+-----------
+* fix training pipeline creation
+* allow unicode strings
+  this should fix https://github.com/wg-perception/reconstruction/issues/1
+* Update installation instruction to add ork_visualization
+* add the tutorials on the front page
+* get code to work with OpenCV3
+* OpenCV 3.0 adaptation
+* Contributors: Ha Dang, Vincent Rabaud, edgarriba, nlyubova
+
 0.6.3 (2014-09-06)
 ------------------
 * Merge pull request `#27 <https://github.com/wg-perception/object_recognition_core/issues/27>`_ from cottsay/master
