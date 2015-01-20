@@ -69,6 +69,7 @@ def create_plasm(ork_params):
     plasm = ecto.Plasm()
     already_processed_connections = set()
     for cell_name, cell in cells.items():
+        plasm.insert(cell)
         # link to inputs ...
         for input_name in ork_params[cell_name].get('inputs', []):
             connection = (input_name, cell_name)

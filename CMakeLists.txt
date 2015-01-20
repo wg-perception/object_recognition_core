@@ -1,8 +1,6 @@
 cmake_minimum_required(VERSION 2.8)
 project(object_recognition_core)
 
-find_package(catkin)
-
 find_package(catkin REQUIRED cmake_modules ecto)
 catkin_package(DEPENDS ecto
                INCLUDE_DIRS include
