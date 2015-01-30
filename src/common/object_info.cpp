@@ -61,9 +61,9 @@ namespace object_recognition_core
         }
       }
 
-      // Make sure the db_ is valid
       if (db_->parameters().type() == db::ObjectDbParameters::EMPTY)
-        throw std::runtime_error("Db not set in the ObjectInfo");
+        // nothing to do
+        return;
 
   // Get information about the object
   or_json::mObject fields;
