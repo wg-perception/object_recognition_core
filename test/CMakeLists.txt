@@ -2,7 +2,6 @@ include(${CATKIN_DEVEL_PREFIX}/${CATKIN_PACKAGE_SHARE_DESTINATION}/cmake/test.cm
 
 # deal with the subdirectories as they contain macros
 add_subdirectory(db)
-add_subdirectory(share)
 
 object_recognition_core_pytest(test_import)
 object_recognition_core_pytest(test_config)

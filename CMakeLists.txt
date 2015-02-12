@@ -33,6 +33,7 @@ add_subdirectory(web_ui)
 include(cmake/install.cmake)
 
 # add tests
+add_subdirectory(share)
 if(CATKIN_ENABLE_TESTING)
   add_subdirectory(test)
 endif()
