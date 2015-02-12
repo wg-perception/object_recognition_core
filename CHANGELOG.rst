@@ -1,5 +1,5 @@
-Forthcoming
------------
+0.6.5 (2015-02-12)
+------------------
 * Properly install test macros
   This fixes `#33 <https://github.com/wg-perception/object_recognition_core/issues/33>`_
 * Don't throw when database is empty
