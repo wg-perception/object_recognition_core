@@ -1,3 +1,16 @@
+Forthcoming
+-----------
+* Properly install test macros
+  This fixes `#33 <https://github.com/wg-perception/object_recognition_core/issues/33>`_
+* Don't throw when database is empty
+  There is no need to throw here.
+  The function load_fields_and_attachments works quite nicely
+  for an empty database. The only thing it has to do is return...
+  This makes it possible to use the rviz plugin OrkObject without
+  a valid database (This obviously doesn't show meshes or the name then,
+  but it's still useful as it prints confidence values and the object's key.
+* Contributors: Michael Görner, Vincent Rabaud
+
 0.6.4 (2015-01-20)
 ------------------
 * fix training pipeline creation
