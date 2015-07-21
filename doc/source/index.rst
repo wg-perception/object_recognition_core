@@ -71,3 +71,13 @@ Contacts
 
 For bug reports and comments, please use the `GitHub infrastructure <https://github.com/wg-perception/>`_ or
 join us on the `Google Group <https://groups.google.com/forum/#!forum/object-recognition-kitchen>`_.
+
+If you want to cite this work, please use the BibTeX reference:
+
+.. code-block:: latex
+
+   @misc{ork_ros,
+      Author = {Willow Garage, ROS community},
+      Title = "{ORK}: {O}bject {R}ecognition {K}itchen},
+      howpublished = {\url{https://github.com/wg-perception/object_recognition_core}}
+   }
