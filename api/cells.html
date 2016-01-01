@@ -332,6 +332,9 @@
 <li><p class="first"><strong>queue_size</strong><tt class="docutils literal">&nbsp;&nbsp; </tt><em>   type: </em><tt class="docutils literal"><span class="pre">int</span> </tt><tt class="docutils literal">&nbsp;&nbsp; </tt><em> not </em><em>required</em><tt class="docutils literal">&nbsp;&nbsp; </tt><em> default: </em><tt class="docutils literal"><span class="pre">2</span></tt></p>
 <p>The amount to buffer incoming messages.</p>
 </li>
+<li><p class="first"><strong>tcp_nodelay</strong><tt class="docutils literal">&nbsp;&nbsp; </tt><em>   type: </em><tt class="docutils literal"><span class="pre">bool</span> </tt><tt class="docutils literal">&nbsp;&nbsp; </tt><em> not </em><em>required</em><tt class="docutils literal">&nbsp;&nbsp; </tt><em> default: </em><tt class="docutils literal"><span class="pre">False</span></tt></p>
+<p>Enable/disable nagle&#8217;s algorithm on bundling small packets together.</p>
+</li>
 <li><p class="first"><strong>topic_name</strong><tt class="docutils literal">&nbsp;&nbsp; </tt><em>   type: </em><tt class="docutils literal"><span class="pre">std::string</span> </tt><tt class="docutils literal">&nbsp;&nbsp; </tt><em>required</em><tt class="docutils literal">&nbsp;&nbsp; </tt><em> default: </em><tt class="docutils literal"><span class="pre">/ros/topic/name</span></tt></p>
 <p>The topic name to subscribe to.</p>
 </li>
@@ -355,6 +358,9 @@
 <p class="topic-title first">Parameters<ul>
 <li><p class="first"><strong>queue_size</strong><tt class="docutils literal">&nbsp;&nbsp; </tt><em>   type: </em><tt class="docutils literal"><span class="pre">int</span> </tt><tt class="docutils literal">&nbsp;&nbsp; </tt><em> not </em><em>required</em><tt class="docutils literal">&nbsp;&nbsp; </tt><em> default: </em><tt class="docutils literal"><span class="pre">2</span></tt></p>
 <p>The amount to buffer incoming messages.</p>
+</li>
+<li><p class="first"><strong>tcp_nodelay</strong><tt class="docutils literal">&nbsp;&nbsp; </tt><em>   type: </em><tt class="docutils literal"><span class="pre">bool</span> </tt><tt class="docutils literal">&nbsp;&nbsp; </tt><em> not </em><em>required</em><tt class="docutils literal">&nbsp;&nbsp; </tt><em> default: </em><tt class="docutils literal"><span class="pre">False</span></tt></p>
+<p>Enable/disable nagle&#8217;s algorithm on bundling small packets together.</p>
 </li>
 <li><p class="first"><strong>topic_name</strong><tt class="docutils literal">&nbsp;&nbsp; </tt><em>   type: </em><tt class="docutils literal"><span class="pre">std::string</span> </tt><tt class="docutils literal">&nbsp;&nbsp; </tt><em>required</em><tt class="docutils literal">&nbsp;&nbsp; </tt><em> default: </em><tt class="docutils literal"><span class="pre">/ros/topic/name</span></tt></p>
 <p>The topic name to subscribe to.</p>
@@ -511,7 +517,7 @@
     </div>
     <div class="footer">
         &copy; Copyright 2013,  Willow Garage, Inc.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
     </div>
   </body>
 </html>

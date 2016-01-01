@@ -226,7 +226,7 @@ rosrun dynamic_reconfigure dynparam <span class="nb">set</span> /camera/driver d
 </pre></div>
 </div>
 </div></div>
-<p>Now time for upload. Make sure you install couch db on your machien. Give the object a name and useful tags seperated by a space, e.g. milk soy silk.</p>
+<p>Now time for upload. Make sure you install couch db on your machine. Give the object a name and useful tags seperated by a space, e.g. milk soy silk.</p>
 <div class="container">
 <div class="toggleable_div label_FromSource"><div class="highlight-sh"><div class="highlight"><pre>./object_recognition_capture/apps/upload -i silk.bag -n <span class="s1">&#39;Silk&#39;</span> milk soy silk --commit
 </pre></div>
@@ -241,7 +241,7 @@ rosrun dynamic_reconfigure dynparam <span class="nb">set</span> /camera/driver d
 <div class="section" id="train-objects">
 <h2>Train objects<a class="headerlink" href="#train-objects" title="Permalink to this headline">¶</a></h2>
 <p>Repeat the steps above for the objects you would like to recognize. Once you have captured and uploaded all of the data, it time to mesh and train object recognition.</p>
-<p>Meshing objects can be done in a batch mode, assuming you are in the binary directory.</p>
+<p>Meshing objects can be done in a batch mode as follows:</p>
 <div class="container">
 <div class="toggleable_div label_FromSource"><div class="highlight-sh"><div class="highlight"><pre>./object_recognition_reconstruction/apps/mesh_object --all --visualize --commit
 </pre></div>
@@ -306,7 +306,7 @@ rosrun dynamic_reconfigure dynparam <span class="nb">set</span> /camera/driver d
     </div>
     <div class="footer">
         &copy; Copyright 2013,  Willow Garage, Inc.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
     </div>
   </body>
 </html>
