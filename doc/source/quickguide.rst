@@ -128,7 +128,7 @@ When satisified by the preview mode, run it for real.  The following will captur
 
       rosrun object_recognition_capture capture -i my_textured_plane --seg_z_min 0.01 -o silk.bag
 
-Now time for upload. Make sure you install couch db on your machien. Give the object a name and useful tags seperated by a space, e.g. milk soy silk.
+Now time for upload. Make sure you install couch db on your machine. Give the object a name and useful tags seperated by a space, e.g. milk soy silk.
 
 .. toggle:: From Source
 
@@ -147,7 +147,7 @@ Train objects
 
 Repeat the steps above for the objects you would like to recognize. Once you have captured and uploaded all of the data, it time to mesh and train object recognition.
 
-Meshing objects can be done in a batch mode, assuming you are in the binary directory.
+Meshing objects can be done in a batch mode as follows:
 
 
 .. toggle:: From Source
