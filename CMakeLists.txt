@@ -1,8 +1,9 @@
 cmake_minimum_required(VERSION 2.8)
 project(object_recognition_core)
 
-find_package(catkin REQUIRED cmake_modules ecto)
+find_package(catkin REQUIRED cmake_modules ecto sensor_msgs)
 catkin_package(DEPENDS ecto
+               CATKIN_DEPENDS sensor_msgs
                INCLUDE_DIRS include
                LIBRARIES object_recognition_core_db object_recognition_core_common
                CFG_EXTRAS test.cmake
@@ -21,7 +22,7 @@ find_package(OpenCV REQUIRED)
 include_directories(SYSTEM ${Boost_INCLUDE_DIRS}
                            ${OpenCV_INCLUDE_DIRS}
 )
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include ${catkin_INCLUDE_DIRS})
 
 add_subdirectory(src)
 add_subdirectory(web_ui)
