@@ -1,5 +1,5 @@
-Forthcoming
------------
+0.6.6 (2016-04-24)
+------------------
 * add missing dependencies
 * fix doc according to https://github.com/wg-perception/reconstruction/issues/6
 * simplify OpenCV3 compatibility
