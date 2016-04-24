@@ -1,3 +1,12 @@
+Forthcoming
+-----------
+* add missing dependencies
+* fix doc according to https://github.com/wg-perception/reconstruction/issues/6
+* simplify OpenCV3 compatibility
+* add citation info in the docs
+  fixes `#34 <https://github.com/wg-perception/object_recognition_core/issues/34>`_
+* Contributors: Vincent Rabaud
+
 0.6.5 (2015-02-12)
 ------------------
 * Properly install test macros
