@@ -26,27 +26,29 @@
     <script type="text/javascript" src="../_static/doctools.js"></script>
     <link rel="top" title="object_recognition_core" href="../index.html" /> 
   </head>
-  <body>
-    <div class="related">
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
           <a href="../genindex.html" title="General Index"
              accesskey="I">index</a></li>
-        <li><a href="../index.html">object_recognition_core</a> &raquo;</li> 
+        <li class="nav-item nav-item-0"><a href="../index.html">object_recognition_core</a> &raquo;</li> 
       </ul>
     </div>
-      <div class="sphinxsidebar">
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
             <p class="logo"><a href="../index.html">
               <img class="logo" src="../_static/or.svg" alt="Logo"/>
             </a></p>
-  <h3>This Page</h3>
-  <ul class="this-page-menu">
-    <li><a href="../_sources/api/cells.txt"
-           rel="nofollow">Show Source</a></li>
-  </ul>
-<div id="searchbox" style="display: none">
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/api/cells.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
     <form class="search" action="../search.html" method="get">
       <input type="text" name="q" />
@@ -65,7 +67,7 @@
     <div class="document">
       <div class="documentwrapper">
         <div class="bodywrapper">
-          <div class="body">
+          <div class="body" role="main">
             
   <div class="section" id="cells-api">
 <h1>Cells API<a class="headerlink" href="#cells-api" title="Permalink to this headline">¶</a></h1>
@@ -77,37 +79,37 @@
 <p class="topic-title first">Brief doc<p>Inserts observations into the database.</p>
 </p>
 <p class="topic-title first">Parameters<ul>
-<li><p class="first"><strong>db_params</strong><tt class="docutils literal">&nbsp;&nbsp; </tt><em>   type: </em><tt class="docutils literal"><span class="pre">object_recognition_core::db::ObjectDbParameters</span> </tt><tt class="docutils literal">&nbsp;&nbsp; </tt><em> not </em><em>required</em><tt class="docutils literal">&nbsp;&nbsp; </tt><em> default: </em><tt class="docutils literal"><span class="pre">[not</span> <span class="pre">visible</span> <span class="pre">from</span> <span class="pre">python]</span></tt></p>
+<li><p class="first"><strong>db_params</strong><code class="docutils literal">&nbsp;&nbsp; </code><em>   type: </em><code class="docutils literal"><span class="pre">object_recognition_core::db::ObjectDbParameters</span> </code><code class="docutils literal">&nbsp;&nbsp; </code><em> not </em><em>required</em><code class="docutils literal">&nbsp;&nbsp; </code><em> default: </em><code class="docutils literal"><span class="pre">[not</span> <span class="pre">visible</span> <span class="pre">from</span> <span class="pre">python]</span></code></p>
 <p>The database parameters</p>
 </li>
-<li><p class="first"><strong>object_id</strong><tt class="docutils literal">&nbsp;&nbsp; </tt><em>   type: </em><tt class="docutils literal"><span class="pre">std::string</span> </tt><tt class="docutils literal">&nbsp;&nbsp; </tt><em>required</em><tt class="docutils literal">&nbsp;&nbsp; </tt><em> no default value</em></p>
+<li><p class="first"><strong>object_id</strong><code class="docutils literal">&nbsp;&nbsp; </code><em>   type: </em><code class="docutils literal"><span class="pre">std::string</span> </code><code class="docutils literal">&nbsp;&nbsp; </code><em>required</em><code class="docutils literal">&nbsp;&nbsp; </code><em> no default value</em></p>
 <p>The object id, to associate this frame with.</p>
 </li>
-<li><p class="first"><strong>session_id</strong><tt class="docutils literal">&nbsp;&nbsp; </tt><em>   type: </em><tt class="docutils literal"><span class="pre">std::string</span> </tt><tt class="docutils literal">&nbsp;&nbsp; </tt><em>required</em><tt class="docutils literal">&nbsp;&nbsp; </tt><em> no default value</em></p>
+<li><p class="first"><strong>session_id</strong><code class="docutils literal">&nbsp;&nbsp; </code><em>   type: </em><code class="docutils literal"><span class="pre">std::string</span> </code><code class="docutils literal">&nbsp;&nbsp; </code><em>required</em><code class="docutils literal">&nbsp;&nbsp; </code><em> no default value</em></p>
 <p>The session id, to associate this frame with.</p>
 </li>
 </ul>
 </p>
 <p class="topic-title first">Inputs<ul>
-<li><p class="first"><strong>K</strong><tt class="docutils literal">&nbsp;&nbsp; </tt><em>   type: </em><tt class="docutils literal"><span class="pre">cv::Mat</span> </tt><tt class="docutils literal">&nbsp;&nbsp; </tt></p>
+<li><p class="first"><strong>K</strong><code class="docutils literal">&nbsp;&nbsp; </code><em>   type: </em><code class="docutils literal"><span class="pre">cv::Mat</span> </code><code class="docutils literal">&nbsp;&nbsp; </code></p>
 <p>The camera intrinsic matrix</p>
 </li>
-<li><p class="first"><strong>R</strong><tt class="docutils literal">&nbsp;&nbsp; </tt><em>   type: </em><tt class="docutils literal"><span class="pre">cv::Mat</span> </tt><tt class="docutils literal">&nbsp;&nbsp; </tt></p>
+<li><p class="first"><strong>R</strong><code class="docutils literal">&nbsp;&nbsp; </code><em>   type: </em><code class="docutils literal"><span class="pre">cv::Mat</span> </code><code class="docutils literal">&nbsp;&nbsp; </code></p>
 <p>The orientation.</p>
 </li>
-<li><p class="first"><strong>T</strong><tt class="docutils literal">&nbsp;&nbsp; </tt><em>   type: </em><tt class="docutils literal"><span class="pre">cv::Mat</span> </tt><tt class="docutils literal">&nbsp;&nbsp; </tt></p>
+<li><p class="first"><strong>T</strong><code class="docutils literal">&nbsp;&nbsp; </code><em>   type: </em><code class="docutils literal"><span class="pre">cv::Mat</span> </code><code class="docutils literal">&nbsp;&nbsp; </code></p>
 <p>The translation.</p>
 </li>
-<li><p class="first"><strong>depth</strong><tt class="docutils literal">&nbsp;&nbsp; </tt><em>   type: </em><tt class="docutils literal"><span class="pre">cv::Mat</span> </tt><tt class="docutils literal">&nbsp;&nbsp; </tt></p>
+<li><p class="first"><strong>depth</strong><code class="docutils literal">&nbsp;&nbsp; </code><em>   type: </em><code class="docutils literal"><span class="pre">cv::Mat</span> </code><code class="docutils literal">&nbsp;&nbsp; </code></p>
 <p>The 16bit depth image.</p>
 </li>
-<li><p class="first"><strong>frame_number</strong><tt class="docutils literal">&nbsp;&nbsp; </tt><em>   type: </em><tt class="docutils literal"><span class="pre">int</span> </tt><tt class="docutils literal">&nbsp;&nbsp; </tt></p>
+<li><p class="first"><strong>frame_number</strong><code class="docutils literal">&nbsp;&nbsp; </code><em>   type: </em><code class="docutils literal"><span class="pre">int</span> </code><code class="docutils literal">&nbsp;&nbsp; </code></p>
 <p>The frame number</p>
 </li>
-<li><p class="first"><strong>image</strong><tt class="docutils literal">&nbsp;&nbsp; </tt><em>   type: </em><tt class="docutils literal"><span class="pre">cv::Mat</span> </tt><tt class="docutils literal">&nbsp;&nbsp; </tt></p>
+<li><p class="first"><strong>image</strong><code class="docutils literal">&nbsp;&nbsp; </code><em>   type: </em><code class="docutils literal"><span class="pre">cv::Mat</span> </code><code class="docutils literal">&nbsp;&nbsp; </code></p>
 <p>An rgb full frame image.</p>
 </li>
-<li><p class="first"><strong>mask</strong><tt class="docutils literal">&nbsp;&nbsp; </tt><em>   type: </em><tt class="docutils literal"><span class="pre">cv::Mat</span> </tt><tt class="docutils literal">&nbsp;&nbsp; </tt></p>
+<li><p class="first"><strong>mask</strong><code class="docutils literal">&nbsp;&nbsp; </code><em>   type: </em><code class="docutils literal"><span class="pre">cv::Mat</span> </code><code class="docutils literal">&nbsp;&nbsp; </code></p>
 <p>The mask.</p>
 </li>
 </ul>
@@ -122,22 +124,22 @@
 <p class="topic-title first">Brief doc<p>Takes a document, that should be considered as a Model, and persists it. Also stores common meta data that is useful for searching.</p>
 </p>
 <p class="topic-title first">Parameters<ul>
-<li><p class="first"><strong>json_params</strong><tt class="docutils literal">&nbsp;&nbsp; </tt><em>   type: </em><tt class="docutils literal"><span class="pre">std::string</span> </tt><tt class="docutils literal">&nbsp;&nbsp; </tt><em>required</em><tt class="docutils literal">&nbsp;&nbsp; </tt><em> default: </em><tt class="docutils literal"></tt></p>
+<li><p class="first"><strong>json_params</strong><code class="docutils literal">&nbsp;&nbsp; </code><em>   type: </em><code class="docutils literal"><span class="pre">std::string</span> </code><code class="docutils literal">&nbsp;&nbsp; </code><em>required</em><code class="docutils literal">&nbsp;&nbsp; </code><em> default: </em><code class="docutils literal"></code></p>
 <p>The non-discriminative parameters used, as JSON.</p>
 </li>
-<li><p class="first"><strong>method</strong><tt class="docutils literal">&nbsp;&nbsp; </tt><em>   type: </em><tt class="docutils literal"><span class="pre">std::string</span> </tt><tt class="docutils literal">&nbsp;&nbsp; </tt><em>required</em><tt class="docutils literal">&nbsp;&nbsp; </tt><em> default: </em><tt class="docutils literal"></tt></p>
+<li><p class="first"><strong>method</strong><code class="docutils literal">&nbsp;&nbsp; </code><em>   type: </em><code class="docutils literal"><span class="pre">std::string</span> </code><code class="docutils literal">&nbsp;&nbsp; </code><em>required</em><code class="docutils literal">&nbsp;&nbsp; </code><em> default: </em><code class="docutils literal"></code></p>
 <p>The method used to compute the model (e.g. &#8216;TOD&#8217; ...).</p>
 </li>
 </ul>
 </p>
 <p class="topic-title first">Inputs<ul>
-<li><p class="first"><strong>db_document</strong><tt class="docutils literal">&nbsp;&nbsp; </tt><em>   type: </em><tt class="docutils literal"><span class="pre">object_recognition_core::db::Document</span> </tt><tt class="docutils literal">&nbsp;&nbsp; </tt></p>
+<li><p class="first"><strong>db_document</strong><code class="docutils literal">&nbsp;&nbsp; </code><em>   type: </em><code class="docutils literal"><span class="pre">object_recognition_core::db::Document</span> </code><code class="docutils literal">&nbsp;&nbsp; </code></p>
 <p></p>
 </li>
-<li><p class="first"><strong>json_db</strong><tt class="docutils literal">&nbsp;&nbsp; </tt><em>   type: </em><tt class="docutils literal"><span class="pre">std::string</span> </tt><tt class="docutils literal">&nbsp;&nbsp; </tt></p>
+<li><p class="first"><strong>json_db</strong><code class="docutils literal">&nbsp;&nbsp; </code><em>   type: </em><code class="docutils literal"><span class="pre">std::string</span> </code><code class="docutils literal">&nbsp;&nbsp; </code></p>
 <p>The DB parameters</p>
 </li>
-<li><p class="first"><strong>object_id</strong><tt class="docutils literal">&nbsp;&nbsp; </tt><em>   type: </em><tt class="docutils literal"><span class="pre">std::string</span> </tt><tt class="docutils literal">&nbsp;&nbsp; </tt></p>
+<li><p class="first"><strong>object_id</strong><code class="docutils literal">&nbsp;&nbsp; </code><em>   type: </em><code class="docutils literal"><span class="pre">std::string</span> </code><code class="docutils literal">&nbsp;&nbsp; </code></p>
 <p>The object id, to associate this model with.</p>
 </li>
 </ul>
@@ -153,31 +155,31 @@
 </p>
 <p></p>
 <p class="topic-title first">Inputs<ul>
-<li><p class="first"><strong>document</strong><tt class="docutils literal">&nbsp;&nbsp; </tt><em>   type: </em><tt class="docutils literal"><span class="pre">object_recognition_core::db::Document</span> </tt><tt class="docutils literal">&nbsp;&nbsp; </tt></p>
+<li><p class="first"><strong>document</strong><code class="docutils literal">&nbsp;&nbsp; </code><em>   type: </em><code class="docutils literal"><span class="pre">object_recognition_core::db::Document</span> </code><code class="docutils literal">&nbsp;&nbsp; </code></p>
 <p>The observation id to load.</p>
 </li>
 </ul>
 </p>
 <p class="topic-title first">Outputs<ul>
-<li><p class="first"><strong>K</strong><tt class="docutils literal">&nbsp;&nbsp; </tt><em>   type: </em><tt class="docutils literal"><span class="pre">cv::Mat</span> </tt><tt class="docutils literal">&nbsp;&nbsp; </tt></p>
+<li><p class="first"><strong>K</strong><code class="docutils literal">&nbsp;&nbsp; </code><em>   type: </em><code class="docutils literal"><span class="pre">cv::Mat</span> </code><code class="docutils literal">&nbsp;&nbsp; </code></p>
 <p>The camera intrinsic matrix</p>
 </li>
-<li><p class="first"><strong>R</strong><tt class="docutils literal">&nbsp;&nbsp; </tt><em>   type: </em><tt class="docutils literal"><span class="pre">cv::Mat</span> </tt><tt class="docutils literal">&nbsp;&nbsp; </tt></p>
+<li><p class="first"><strong>R</strong><code class="docutils literal">&nbsp;&nbsp; </code><em>   type: </em><code class="docutils literal"><span class="pre">cv::Mat</span> </code><code class="docutils literal">&nbsp;&nbsp; </code></p>
 <p>The orientation.</p>
 </li>
-<li><p class="first"><strong>T</strong><tt class="docutils literal">&nbsp;&nbsp; </tt><em>   type: </em><tt class="docutils literal"><span class="pre">cv::Mat</span> </tt><tt class="docutils literal">&nbsp;&nbsp; </tt></p>
+<li><p class="first"><strong>T</strong><code class="docutils literal">&nbsp;&nbsp; </code><em>   type: </em><code class="docutils literal"><span class="pre">cv::Mat</span> </code><code class="docutils literal">&nbsp;&nbsp; </code></p>
 <p>The translation.</p>
 </li>
-<li><p class="first"><strong>depth</strong><tt class="docutils literal">&nbsp;&nbsp; </tt><em>   type: </em><tt class="docutils literal"><span class="pre">cv::Mat</span> </tt><tt class="docutils literal">&nbsp;&nbsp; </tt></p>
+<li><p class="first"><strong>depth</strong><code class="docutils literal">&nbsp;&nbsp; </code><em>   type: </em><code class="docutils literal"><span class="pre">cv::Mat</span> </code><code class="docutils literal">&nbsp;&nbsp; </code></p>
 <p>The 16bit depth image.</p>
 </li>
-<li><p class="first"><strong>frame_number</strong><tt class="docutils literal">&nbsp;&nbsp; </tt><em>   type: </em><tt class="docutils literal"><span class="pre">int</span> </tt><tt class="docutils literal">&nbsp;&nbsp; </tt></p>
+<li><p class="first"><strong>frame_number</strong><code class="docutils literal">&nbsp;&nbsp; </code><em>   type: </em><code class="docutils literal"><span class="pre">int</span> </code><code class="docutils literal">&nbsp;&nbsp; </code></p>
 <p>The frame number</p>
 </li>
-<li><p class="first"><strong>image</strong><tt class="docutils literal">&nbsp;&nbsp; </tt><em>   type: </em><tt class="docutils literal"><span class="pre">cv::Mat</span> </tt><tt class="docutils literal">&nbsp;&nbsp; </tt></p>
+<li><p class="first"><strong>image</strong><code class="docutils literal">&nbsp;&nbsp; </code><em>   type: </em><code class="docutils literal"><span class="pre">cv::Mat</span> </code><code class="docutils literal">&nbsp;&nbsp; </code></p>
 <p>An rgb full frame image.</p>
 </li>
-<li><p class="first"><strong>mask</strong><tt class="docutils literal">&nbsp;&nbsp; </tt><em>   type: </em><tt class="docutils literal"><span class="pre">cv::Mat</span> </tt><tt class="docutils literal">&nbsp;&nbsp; </tt></p>
+<li><p class="first"><strong>mask</strong><code class="docutils literal">&nbsp;&nbsp; </code><em>   type: </em><code class="docutils literal"><span class="pre">cv::Mat</span> </code><code class="docutils literal">&nbsp;&nbsp; </code></p>
 <p>The mask.</p>
 </li>
 </ul>
@@ -192,16 +194,16 @@
 <p class="topic-title first">Brief doc<p>Given guesses, writes them to the terminal.</p>
 </p>
 <p class="topic-title first">Parameters<ul>
-<li><p class="first"><strong>base_directory</strong><tt class="docutils literal">&nbsp;&nbsp; </tt><em>   type: </em><tt class="docutils literal"><span class="pre">std::string</span> </tt><tt class="docutils literal">&nbsp;&nbsp; </tt><em> not </em><em>required</em><tt class="docutils literal">&nbsp;&nbsp; </tt><em> no default value</em></p>
+<li><p class="first"><strong>base_directory</strong><code class="docutils literal">&nbsp;&nbsp; </code><em>   type: </em><code class="docutils literal"><span class="pre">std::string</span> </code><code class="docutils literal">&nbsp;&nbsp; </code><em> not </em><em>required</em><code class="docutils literal">&nbsp;&nbsp; </code><em> no default value</em></p>
 <p>Base directory</p>
 </li>
-<li><p class="first"><strong>config_file</strong><tt class="docutils literal">&nbsp;&nbsp; </tt><em>   type: </em><tt class="docutils literal"><span class="pre">std::string</span> </tt><tt class="docutils literal">&nbsp;&nbsp; </tt><em> not </em><em>required</em><tt class="docutils literal">&nbsp;&nbsp; </tt><em> no default value</em></p>
+<li><p class="first"><strong>config_file</strong><code class="docutils literal">&nbsp;&nbsp; </code><em>   type: </em><code class="docutils literal"><span class="pre">std::string</span> </code><code class="docutils literal">&nbsp;&nbsp; </code><em> not </em><em>required</em><code class="docutils literal">&nbsp;&nbsp; </code><em> no default value</em></p>
 <p>Configuration file</p>
 </li>
 </ul>
 </p>
 <p class="topic-title first">Inputs<ul>
-<li><p class="first"><strong>pose_results</strong><tt class="docutils literal">&nbsp;&nbsp; </tt><em>   type: </em><tt class="docutils literal"><span class="pre">std::vector&lt;object_recognition_core::common::PoseResult,</span> <span class="pre">std::allocator&lt;object_recognition_core::common::PoseResult&gt;</span> <span class="pre">&gt;</span> </tt><tt class="docutils literal">&nbsp;&nbsp; </tt></p>
+<li><p class="first"><strong>pose_results</strong><code class="docutils literal">&nbsp;&nbsp; </code><em>   type: </em><code class="docutils literal"><span class="pre">std::vector&lt;object_recognition_core::common::PoseResult,</span> <span class="pre">std::allocator&lt;object_recognition_core::common::PoseResult&gt;</span> <span class="pre">&gt;</span> </code><code class="docutils literal">&nbsp;&nbsp; </code></p>
 <p>The results of object recognition</p>
 </li>
 </ul>
@@ -216,16 +218,16 @@
 <p class="topic-title first">Brief doc<p>Given guesses, writes them to a CSV in the NIST format.</p>
 </p>
 <p class="topic-title first">Parameters<ul>
-<li><p class="first"><strong>run_number</strong><tt class="docutils literal">&nbsp;&nbsp; </tt><em>   type: </em><tt class="docutils literal"><span class="pre">int</span> </tt><tt class="docutils literal">&nbsp;&nbsp; </tt><em> not </em><em>required</em><tt class="docutils literal">&nbsp;&nbsp; </tt><em> no default value</em></p>
+<li><p class="first"><strong>run_number</strong><code class="docutils literal">&nbsp;&nbsp; </code><em>   type: </em><code class="docutils literal"><span class="pre">int</span> </code><code class="docutils literal">&nbsp;&nbsp; </code><em> not </em><em>required</em><code class="docutils literal">&nbsp;&nbsp; </code><em> no default value</em></p>
 <p>The run number</p>
 </li>
-<li><p class="first"><strong>team_name</strong><tt class="docutils literal">&nbsp;&nbsp; </tt><em>   type: </em><tt class="docutils literal"><span class="pre">std::string</span> </tt><tt class="docutils literal">&nbsp;&nbsp; </tt><em> not </em><em>required</em><tt class="docutils literal">&nbsp;&nbsp; </tt><em> no default value</em></p>
+<li><p class="first"><strong>team_name</strong><code class="docutils literal">&nbsp;&nbsp; </code><em>   type: </em><code class="docutils literal"><span class="pre">std::string</span> </code><code class="docutils literal">&nbsp;&nbsp; </code><em> not </em><em>required</em><code class="docutils literal">&nbsp;&nbsp; </code><em> no default value</em></p>
 <p>The name of the team to consider</p>
 </li>
 </ul>
 </p>
 <p class="topic-title first">Inputs<ul>
-<li><p class="first"><strong>pose_results</strong><tt class="docutils literal">&nbsp;&nbsp; </tt><em>   type: </em><tt class="docutils literal"><span class="pre">std::vector&lt;object_recognition_core::common::PoseResult,</span> <span class="pre">std::allocator&lt;object_recognition_core::common::PoseResult&gt;</span> <span class="pre">&gt;</span> </tt><tt class="docutils literal">&nbsp;&nbsp; </tt></p>
+<li><p class="first"><strong>pose_results</strong><code class="docutils literal">&nbsp;&nbsp; </code><em>   type: </em><code class="docutils literal"><span class="pre">std::vector&lt;object_recognition_core::common::PoseResult,</span> <span class="pre">std::allocator&lt;object_recognition_core::common::PoseResult&gt;</span> <span class="pre">&gt;</span> </code><code class="docutils literal">&nbsp;&nbsp; </code></p>
 <p>The results of object recognition</p>
 </li>
 </ul>
@@ -240,17 +242,17 @@
 <p class="topic-title first">Brief doc<p>Spits out the parameters given as a JSON sting.</p>
 </p>
 <p class="topic-title first">Parameters<ul>
-<li><p class="first"><strong>parameters</strong><tt class="docutils literal">&nbsp;&nbsp; </tt><em>   type: </em><tt class="docutils literal"><span class="pre">std::string</span> </tt><tt class="docutils literal">&nbsp;&nbsp; </tt><em> not </em><em>required</em><tt class="docutils literal">&nbsp;&nbsp; </tt><em> default: </em><tt class="docutils literal"></tt></p>
+<li><p class="first"><strong>parameters</strong><code class="docutils literal">&nbsp;&nbsp; </code><em>   type: </em><code class="docutils literal"><span class="pre">std::string</span> </code><code class="docutils literal">&nbsp;&nbsp; </code><em> not </em><em>required</em><code class="docutils literal">&nbsp;&nbsp; </code><em> default: </em><code class="docutils literal"></code></p>
 <p>The JSON parameters of the pipeline.</p>
 </li>
 </ul>
 </p>
 <p></p>
 <p class="topic-title first">Outputs<ul>
-<li><p class="first"><strong>parameters</strong><tt class="docutils literal">&nbsp;&nbsp; </tt><em>   type: </em><tt class="docutils literal"><span class="pre">or_json::Value_impl&lt;or_json::Config_map&lt;std::string&gt;</span> <span class="pre">&gt;</span> </tt><tt class="docutils literal">&nbsp;&nbsp; </tt></p>
+<li><p class="first"><strong>parameters</strong><code class="docutils literal">&nbsp;&nbsp; </code><em>   type: </em><code class="docutils literal"><span class="pre">or_json::Value_impl&lt;or_json::Config_map&lt;std::__cxx11::basic_string&lt;char,</span> <span class="pre">std::char_traits&lt;char&gt;,</span> <span class="pre">std::allocator&lt;char&gt;</span> <span class="pre">&gt;</span> <span class="pre">&gt;</span> <span class="pre">&gt;</span> </code><code class="docutils literal">&nbsp;&nbsp; </code></p>
 <p>The parameters as a JSON dict.</p>
 </li>
-<li><p class="first"><strong>parameters_str</strong><tt class="docutils literal">&nbsp;&nbsp; </tt><em>   type: </em><tt class="docutils literal"><span class="pre">std::string</span> </tt><tt class="docutils literal">&nbsp;&nbsp; </tt></p>
+<li><p class="first"><strong>parameters_str</strong><code class="docutils literal">&nbsp;&nbsp; </code><em>   type: </em><code class="docutils literal"><span class="pre">std::string</span> </code><code class="docutils literal">&nbsp;&nbsp; </code></p>
 <p>The parameters as a JSON string.</p>
 </li>
 </ul>
@@ -265,25 +267,25 @@
 <p class="topic-title first">Brief doc<p>Given object ids and poses, fill the object recognition message.</p>
 </p>
 <p class="topic-title first">Parameters<ul>
-<li><p class="first"><strong>publish_clusters</strong><tt class="docutils literal">&nbsp;&nbsp; </tt><em>   type: </em><tt class="docutils literal"><span class="pre">bool</span> </tt><tt class="docutils literal">&nbsp;&nbsp; </tt><em> not </em><em>required</em><tt class="docutils literal">&nbsp;&nbsp; </tt><em> default: </em><tt class="docutils literal"><span class="pre">True</span></tt></p>
+<li><p class="first"><strong>publish_clusters</strong><code class="docutils literal">&nbsp;&nbsp; </code><em>   type: </em><code class="docutils literal"><span class="pre">bool</span> </code><code class="docutils literal">&nbsp;&nbsp; </code><em> not </em><em>required</em><code class="docutils literal">&nbsp;&nbsp; </code><em> default: </em><code class="docutils literal"><span class="pre">True</span></code></p>
 <p>Sets whether the point cloud clusters have to be published or not</p>
 </li>
 </ul>
 </p>
 <p class="topic-title first">Inputs<ul>
-<li><p class="first"><strong>frame_id</strong><tt class="docutils literal">&nbsp;&nbsp; </tt><em>   type: </em><tt class="docutils literal"><span class="pre">std::string</span> </tt><tt class="docutils literal">&nbsp;&nbsp; </tt></p>
+<li><p class="first"><strong>frame_id</strong><code class="docutils literal">&nbsp;&nbsp; </code><em>   type: </em><code class="docutils literal"><span class="pre">std::string</span> </code><code class="docutils literal">&nbsp;&nbsp; </code></p>
 <p>The frame_id where the objects are seen. It can be obtained from image_message too.</p>
 </li>
-<li><p class="first"><strong>image_message</strong><tt class="docutils literal">&nbsp;&nbsp; </tt><em>   type: </em><tt class="docutils literal"><span class="pre">boost::shared_ptr&lt;sensor_msgs::Image_&lt;std::allocator&lt;void&gt;</span> <span class="pre">&gt;</span> <span class="pre">const&gt;</span> </tt><tt class="docutils literal">&nbsp;&nbsp; </tt></p>
+<li><p class="first"><strong>image_message</strong><code class="docutils literal">&nbsp;&nbsp; </code><em>   type: </em><code class="docutils literal"><span class="pre">boost::shared_ptr&lt;sensor_msgs::Image_&lt;std::allocator&lt;void&gt;</span> <span class="pre">&gt;</span> <span class="pre">const&gt;</span> </code><code class="docutils literal">&nbsp;&nbsp; </code></p>
 <p>The image message to get the header</p>
 </li>
-<li><p class="first"><strong>pose_results</strong><tt class="docutils literal">&nbsp;&nbsp; </tt><em>   type: </em><tt class="docutils literal"><span class="pre">std::vector&lt;object_recognition_core::common::PoseResult,</span> <span class="pre">std::allocator&lt;object_recognition_core::common::PoseResult&gt;</span> <span class="pre">&gt;</span> </tt><tt class="docutils literal">&nbsp;&nbsp; </tt></p>
+<li><p class="first"><strong>pose_results</strong><code class="docutils literal">&nbsp;&nbsp; </code><em>   type: </em><code class="docutils literal"><span class="pre">std::vector&lt;object_recognition_core::common::PoseResult,</span> <span class="pre">std::allocator&lt;object_recognition_core::common::PoseResult&gt;</span> <span class="pre">&gt;</span> </code><code class="docutils literal">&nbsp;&nbsp; </code></p>
 <p>The results of object recognition</p>
 </li>
 </ul>
 </p>
 <p class="topic-title first">Outputs<ul>
-<li><p class="first"><strong>msg</strong><tt class="docutils literal">&nbsp;&nbsp; </tt><em>   type: </em><tt class="docutils literal"><span class="pre">boost::shared_ptr&lt;object_recognition_msgs::RecognizedObjectArray_&lt;std::allocator&lt;void&gt;</span> <span class="pre">&gt;</span> <span class="pre">const&gt;</span> </tt><tt class="docutils literal">&nbsp;&nbsp; </tt></p>
+<li><p class="first"><strong>msg</strong><code class="docutils literal">&nbsp;&nbsp; </code><em>   type: </em><code class="docutils literal"><span class="pre">boost::shared_ptr&lt;object_recognition_msgs::RecognizedObjectArray_&lt;std::allocator&lt;void&gt;</span> <span class="pre">&gt;</span> <span class="pre">const&gt;</span> </code><code class="docutils literal">&nbsp;&nbsp; </code></p>
 <p>The poses</p>
 </li>
 </ul>
@@ -297,25 +299,25 @@
 <p class="topic-title first">Brief doc<p>Publishes a visualization_msgs::MarkerArray.</p>
 </p>
 <p class="topic-title first">Parameters<ul>
-<li><p class="first"><strong>latched</strong><tt class="docutils literal">&nbsp;&nbsp; </tt><em>   type: </em><tt class="docutils literal"><span class="pre">bool</span> </tt><tt class="docutils literal">&nbsp;&nbsp; </tt><em> not </em><em>required</em><tt class="docutils literal">&nbsp;&nbsp; </tt><em> default: </em><tt class="docutils literal"><span class="pre">False</span></tt></p>
+<li><p class="first"><strong>latched</strong><code class="docutils literal">&nbsp;&nbsp; </code><em>   type: </em><code class="docutils literal"><span class="pre">bool</span> </code><code class="docutils literal">&nbsp;&nbsp; </code><em> not </em><em>required</em><code class="docutils literal">&nbsp;&nbsp; </code><em> default: </em><code class="docutils literal"><span class="pre">False</span></code></p>
 <p>Is this a latched topic?</p>
 </li>
-<li><p class="first"><strong>queue_size</strong><tt class="docutils literal">&nbsp;&nbsp; </tt><em>   type: </em><tt class="docutils literal"><span class="pre">int</span> </tt><tt class="docutils literal">&nbsp;&nbsp; </tt><em> not </em><em>required</em><tt class="docutils literal">&nbsp;&nbsp; </tt><em> default: </em><tt class="docutils literal"><span class="pre">2</span></tt></p>
+<li><p class="first"><strong>queue_size</strong><code class="docutils literal">&nbsp;&nbsp; </code><em>   type: </em><code class="docutils literal"><span class="pre">int</span> </code><code class="docutils literal">&nbsp;&nbsp; </code><em> not </em><em>required</em><code class="docutils literal">&nbsp;&nbsp; </code><em> default: </em><code class="docutils literal"><span class="pre">2</span></code></p>
 <p>The amount to buffer incoming messages.</p>
 </li>
-<li><p class="first"><strong>topic_name</strong><tt class="docutils literal">&nbsp;&nbsp; </tt><em>   type: </em><tt class="docutils literal"><span class="pre">std::string</span> </tt><tt class="docutils literal">&nbsp;&nbsp; </tt><em>required</em><tt class="docutils literal">&nbsp;&nbsp; </tt><em> default: </em><tt class="docutils literal"><span class="pre">/ros/topic/name</span></tt></p>
+<li><p class="first"><strong>topic_name</strong><code class="docutils literal">&nbsp;&nbsp; </code><em>   type: </em><code class="docutils literal"><span class="pre">std::string</span> </code><code class="docutils literal">&nbsp;&nbsp; </code><em>required</em><code class="docutils literal">&nbsp;&nbsp; </code><em> default: </em><code class="docutils literal"><span class="pre">/ros/topic/name</span></code></p>
 <p>The topic name to publish to. May be remapped.</p>
 </li>
 </ul>
 </p>
 <p class="topic-title first">Inputs<ul>
-<li><p class="first"><strong>input</strong><tt class="docutils literal">&nbsp;&nbsp; </tt><em>   type: </em><tt class="docutils literal"><span class="pre">boost::shared_ptr&lt;visualization_msgs::MarkerArray_&lt;std::allocator&lt;void&gt;</span> <span class="pre">&gt;</span> <span class="pre">const&gt;</span> </tt><tt class="docutils literal">&nbsp;&nbsp; </tt></p>
+<li><p class="first"><strong>input</strong><code class="docutils literal">&nbsp;&nbsp; </code><em>   type: </em><code class="docutils literal"><span class="pre">boost::shared_ptr&lt;visualization_msgs::MarkerArray_&lt;std::allocator&lt;void&gt;</span> <span class="pre">&gt;</span> <span class="pre">const&gt;</span> </code><code class="docutils literal">&nbsp;&nbsp; </code></p>
 <p>The message to publish.</p>
 </li>
 </ul>
 </p>
 <p class="topic-title first">Outputs<ul>
-<li><p class="first"><strong>has_subscribers</strong><tt class="docutils literal">&nbsp;&nbsp; </tt><em>   type: </em><tt class="docutils literal"><span class="pre">bool</span> </tt><tt class="docutils literal">&nbsp;&nbsp; </tt></p>
+<li><p class="first"><strong>has_subscribers</strong><code class="docutils literal">&nbsp;&nbsp; </code><em>   type: </em><code class="docutils literal"><span class="pre">bool</span> </code><code class="docutils literal">&nbsp;&nbsp; </code></p>
 <p>Has currently connected subscribers.</p>
 </li>
 </ul>
@@ -329,20 +331,20 @@
 <p class="topic-title first">Brief doc<p>Subscribes to a visualization_msgs::Marker.</p>
 </p>
 <p class="topic-title first">Parameters<ul>
-<li><p class="first"><strong>queue_size</strong><tt class="docutils literal">&nbsp;&nbsp; </tt><em>   type: </em><tt class="docutils literal"><span class="pre">int</span> </tt><tt class="docutils literal">&nbsp;&nbsp; </tt><em> not </em><em>required</em><tt class="docutils literal">&nbsp;&nbsp; </tt><em> default: </em><tt class="docutils literal"><span class="pre">2</span></tt></p>
+<li><p class="first"><strong>queue_size</strong><code class="docutils literal">&nbsp;&nbsp; </code><em>   type: </em><code class="docutils literal"><span class="pre">int</span> </code><code class="docutils literal">&nbsp;&nbsp; </code><em> not </em><em>required</em><code class="docutils literal">&nbsp;&nbsp; </code><em> default: </em><code class="docutils literal"><span class="pre">2</span></code></p>
 <p>The amount to buffer incoming messages.</p>
 </li>
-<li><p class="first"><strong>tcp_nodelay</strong><tt class="docutils literal">&nbsp;&nbsp; </tt><em>   type: </em><tt class="docutils literal"><span class="pre">bool</span> </tt><tt class="docutils literal">&nbsp;&nbsp; </tt><em> not </em><em>required</em><tt class="docutils literal">&nbsp;&nbsp; </tt><em> default: </em><tt class="docutils literal"><span class="pre">False</span></tt></p>
+<li><p class="first"><strong>tcp_nodelay</strong><code class="docutils literal">&nbsp;&nbsp; </code><em>   type: </em><code class="docutils literal"><span class="pre">bool</span> </code><code class="docutils literal">&nbsp;&nbsp; </code><em> not </em><em>required</em><code class="docutils literal">&nbsp;&nbsp; </code><em> default: </em><code class="docutils literal"><span class="pre">False</span></code></p>
 <p>Enable/disable nagle&#8217;s algorithm on bundling small packets together.</p>
 </li>
-<li><p class="first"><strong>topic_name</strong><tt class="docutils literal">&nbsp;&nbsp; </tt><em>   type: </em><tt class="docutils literal"><span class="pre">std::string</span> </tt><tt class="docutils literal">&nbsp;&nbsp; </tt><em>required</em><tt class="docutils literal">&nbsp;&nbsp; </tt><em> default: </em><tt class="docutils literal"><span class="pre">/ros/topic/name</span></tt></p>
+<li><p class="first"><strong>topic_name</strong><code class="docutils literal">&nbsp;&nbsp; </code><em>   type: </em><code class="docutils literal"><span class="pre">std::string</span> </code><code class="docutils literal">&nbsp;&nbsp; </code><em>required</em><code class="docutils literal">&nbsp;&nbsp; </code><em> default: </em><code class="docutils literal"><span class="pre">/ros/topic/name</span></code></p>
 <p>The topic name to subscribe to.</p>
 </li>
 </ul>
 </p>
 <p></p>
 <p class="topic-title first">Outputs<ul>
-<li><p class="first"><strong>output</strong><tt class="docutils literal">&nbsp;&nbsp; </tt><em>   type: </em><tt class="docutils literal"><span class="pre">boost::shared_ptr&lt;visualization_msgs::Marker_&lt;std::allocator&lt;void&gt;</span> <span class="pre">&gt;</span> <span class="pre">const&gt;</span> </tt><tt class="docutils literal">&nbsp;&nbsp; </tt></p>
+<li><p class="first"><strong>output</strong><code class="docutils literal">&nbsp;&nbsp; </code><em>   type: </em><code class="docutils literal"><span class="pre">boost::shared_ptr&lt;visualization_msgs::Marker_&lt;std::allocator&lt;void&gt;</span> <span class="pre">&gt;</span> <span class="pre">const&gt;</span> </code><code class="docutils literal">&nbsp;&nbsp; </code></p>
 <p>The received message.</p>
 </li>
 </ul>
@@ -356,20 +358,20 @@
 <p class="topic-title first">Brief doc<p>Subscribes to a visualization_msgs::MarkerArray.</p>
 </p>
 <p class="topic-title first">Parameters<ul>
-<li><p class="first"><strong>queue_size</strong><tt class="docutils literal">&nbsp;&nbsp; </tt><em>   type: </em><tt class="docutils literal"><span class="pre">int</span> </tt><tt class="docutils literal">&nbsp;&nbsp; </tt><em> not </em><em>required</em><tt class="docutils literal">&nbsp;&nbsp; </tt><em> default: </em><tt class="docutils literal"><span class="pre">2</span></tt></p>
+<li><p class="first"><strong>queue_size</strong><code class="docutils literal">&nbsp;&nbsp; </code><em>   type: </em><code class="docutils literal"><span class="pre">int</span> </code><code class="docutils literal">&nbsp;&nbsp; </code><em> not </em><em>required</em><code class="docutils literal">&nbsp;&nbsp; </code><em> default: </em><code class="docutils literal"><span class="pre">2</span></code></p>
 <p>The amount to buffer incoming messages.</p>
 </li>
-<li><p class="first"><strong>tcp_nodelay</strong><tt class="docutils literal">&nbsp;&nbsp; </tt><em>   type: </em><tt class="docutils literal"><span class="pre">bool</span> </tt><tt class="docutils literal">&nbsp;&nbsp; </tt><em> not </em><em>required</em><tt class="docutils literal">&nbsp;&nbsp; </tt><em> default: </em><tt class="docutils literal"><span class="pre">False</span></tt></p>
+<li><p class="first"><strong>tcp_nodelay</strong><code class="docutils literal">&nbsp;&nbsp; </code><em>   type: </em><code class="docutils literal"><span class="pre">bool</span> </code><code class="docutils literal">&nbsp;&nbsp; </code><em> not </em><em>required</em><code class="docutils literal">&nbsp;&nbsp; </code><em> default: </em><code class="docutils literal"><span class="pre">False</span></code></p>
 <p>Enable/disable nagle&#8217;s algorithm on bundling small packets together.</p>
 </li>
-<li><p class="first"><strong>topic_name</strong><tt class="docutils literal">&nbsp;&nbsp; </tt><em>   type: </em><tt class="docutils literal"><span class="pre">std::string</span> </tt><tt class="docutils literal">&nbsp;&nbsp; </tt><em>required</em><tt class="docutils literal">&nbsp;&nbsp; </tt><em> default: </em><tt class="docutils literal"><span class="pre">/ros/topic/name</span></tt></p>
+<li><p class="first"><strong>topic_name</strong><code class="docutils literal">&nbsp;&nbsp; </code><em>   type: </em><code class="docutils literal"><span class="pre">std::string</span> </code><code class="docutils literal">&nbsp;&nbsp; </code><em>required</em><code class="docutils literal">&nbsp;&nbsp; </code><em> default: </em><code class="docutils literal"><span class="pre">/ros/topic/name</span></code></p>
 <p>The topic name to subscribe to.</p>
 </li>
 </ul>
 </p>
 <p></p>
 <p class="topic-title first">Outputs<ul>
-<li><p class="first"><strong>output</strong><tt class="docutils literal">&nbsp;&nbsp; </tt><em>   type: </em><tt class="docutils literal"><span class="pre">boost::shared_ptr&lt;visualization_msgs::MarkerArray_&lt;std::allocator&lt;void&gt;</span> <span class="pre">&gt;</span> <span class="pre">const&gt;</span> </tt><tt class="docutils literal">&nbsp;&nbsp; </tt></p>
+<li><p class="first"><strong>output</strong><code class="docutils literal">&nbsp;&nbsp; </code><em>   type: </em><code class="docutils literal"><span class="pre">boost::shared_ptr&lt;visualization_msgs::MarkerArray_&lt;std::allocator&lt;void&gt;</span> <span class="pre">&gt;</span> <span class="pre">const&gt;</span> </code><code class="docutils literal">&nbsp;&nbsp; </code></p>
 <p>The received message.</p>
 </li>
 </ul>
@@ -383,10 +385,10 @@
 <p class="topic-title first">Brief doc<p>A bagger for messages of a given type. Can enable read/write to ros bags.</p>
 </p>
 <p class="topic-title first">Parameters<ul>
-<li><p class="first"><strong>bagger</strong><tt class="docutils literal">&nbsp;&nbsp; </tt><em>   type: </em><tt class="docutils literal"><span class="pre">boost::shared_ptr&lt;ecto_ros::Bagger_base</span> <span class="pre">const&gt;</span> </tt><tt class="docutils literal">&nbsp;&nbsp; </tt><em> not </em><em>required</em><tt class="docutils literal">&nbsp;&nbsp; </tt><em> default: </em><tt class="docutils literal"><span class="pre">[not</span> <span class="pre">visible</span> <span class="pre">from</span> <span class="pre">python]</span></tt></p>
+<li><p class="first"><strong>bagger</strong><code class="docutils literal">&nbsp;&nbsp; </code><em>   type: </em><code class="docutils literal"><span class="pre">boost::shared_ptr&lt;ecto_ros::Bagger_base</span> <span class="pre">const&gt;</span> </code><code class="docutils literal">&nbsp;&nbsp; </code><em> not </em><em>required</em><code class="docutils literal">&nbsp;&nbsp; </code><em> default: </em><code class="docutils literal"><span class="pre">[not</span> <span class="pre">visible</span> <span class="pre">from</span> <span class="pre">python]</span></code></p>
 <p>The bagger.</p>
 </li>
-<li><p class="first"><strong>topic_name</strong><tt class="docutils literal">&nbsp;&nbsp; </tt><em>   type: </em><tt class="docutils literal"><span class="pre">std::string</span> </tt><tt class="docutils literal">&nbsp;&nbsp; </tt><em>required</em><tt class="docutils literal">&nbsp;&nbsp; </tt><em> default: </em><tt class="docutils literal"><span class="pre">/ros/topic/name</span></tt></p>
+<li><p class="first"><strong>topic_name</strong><code class="docutils literal">&nbsp;&nbsp; </code><em>   type: </em><code class="docutils literal"><span class="pre">std::string</span> </code><code class="docutils literal">&nbsp;&nbsp; </code><em>required</em><code class="docutils literal">&nbsp;&nbsp; </code><em> default: </em><code class="docutils literal"><span class="pre">/ros/topic/name</span></code></p>
 <p>The topic name to subscribe to.</p>
 </li>
 </ul>
@@ -402,10 +404,10 @@
 <p class="topic-title first">Brief doc<p>A bagger for messages of a given type. Can enable read/write to ros bags.</p>
 </p>
 <p class="topic-title first">Parameters<ul>
-<li><p class="first"><strong>bagger</strong><tt class="docutils literal">&nbsp;&nbsp; </tt><em>   type: </em><tt class="docutils literal"><span class="pre">boost::shared_ptr&lt;ecto_ros::Bagger_base</span> <span class="pre">const&gt;</span> </tt><tt class="docutils literal">&nbsp;&nbsp; </tt><em> not </em><em>required</em><tt class="docutils literal">&nbsp;&nbsp; </tt><em> default: </em><tt class="docutils literal"><span class="pre">[not</span> <span class="pre">visible</span> <span class="pre">from</span> <span class="pre">python]</span></tt></p>
+<li><p class="first"><strong>bagger</strong><code class="docutils literal">&nbsp;&nbsp; </code><em>   type: </em><code class="docutils literal"><span class="pre">boost::shared_ptr&lt;ecto_ros::Bagger_base</span> <span class="pre">const&gt;</span> </code><code class="docutils literal">&nbsp;&nbsp; </code><em> not </em><em>required</em><code class="docutils literal">&nbsp;&nbsp; </code><em> default: </em><code class="docutils literal"><span class="pre">[not</span> <span class="pre">visible</span> <span class="pre">from</span> <span class="pre">python]</span></code></p>
 <p>The bagger.</p>
 </li>
-<li><p class="first"><strong>topic_name</strong><tt class="docutils literal">&nbsp;&nbsp; </tt><em>   type: </em><tt class="docutils literal"><span class="pre">std::string</span> </tt><tt class="docutils literal">&nbsp;&nbsp; </tt><em>required</em><tt class="docutils literal">&nbsp;&nbsp; </tt><em> default: </em><tt class="docutils literal"><span class="pre">/ros/topic/name</span></tt></p>
+<li><p class="first"><strong>topic_name</strong><code class="docutils literal">&nbsp;&nbsp; </code><em>   type: </em><code class="docutils literal"><span class="pre">std::string</span> </code><code class="docutils literal">&nbsp;&nbsp; </code><em>required</em><code class="docutils literal">&nbsp;&nbsp; </code><em> default: </em><code class="docutils literal"><span class="pre">/ros/topic/name</span></code></p>
 <p>The topic name to subscribe to.</p>
 </li>
 </ul>
@@ -421,25 +423,25 @@
 <p class="topic-title first">Brief doc<p>Publishes a visualization_msgs::Marker.</p>
 </p>
 <p class="topic-title first">Parameters<ul>
-<li><p class="first"><strong>latched</strong><tt class="docutils literal">&nbsp;&nbsp; </tt><em>   type: </em><tt class="docutils literal"><span class="pre">bool</span> </tt><tt class="docutils literal">&nbsp;&nbsp; </tt><em> not </em><em>required</em><tt class="docutils literal">&nbsp;&nbsp; </tt><em> default: </em><tt class="docutils literal"><span class="pre">False</span></tt></p>
+<li><p class="first"><strong>latched</strong><code class="docutils literal">&nbsp;&nbsp; </code><em>   type: </em><code class="docutils literal"><span class="pre">bool</span> </code><code class="docutils literal">&nbsp;&nbsp; </code><em> not </em><em>required</em><code class="docutils literal">&nbsp;&nbsp; </code><em> default: </em><code class="docutils literal"><span class="pre">False</span></code></p>
 <p>Is this a latched topic?</p>
 </li>
-<li><p class="first"><strong>queue_size</strong><tt class="docutils literal">&nbsp;&nbsp; </tt><em>   type: </em><tt class="docutils literal"><span class="pre">int</span> </tt><tt class="docutils literal">&nbsp;&nbsp; </tt><em> not </em><em>required</em><tt class="docutils literal">&nbsp;&nbsp; </tt><em> default: </em><tt class="docutils literal"><span class="pre">2</span></tt></p>
+<li><p class="first"><strong>queue_size</strong><code class="docutils literal">&nbsp;&nbsp; </code><em>   type: </em><code class="docutils literal"><span class="pre">int</span> </code><code class="docutils literal">&nbsp;&nbsp; </code><em> not </em><em>required</em><code class="docutils literal">&nbsp;&nbsp; </code><em> default: </em><code class="docutils literal"><span class="pre">2</span></code></p>
 <p>The amount to buffer incoming messages.</p>
 </li>
-<li><p class="first"><strong>topic_name</strong><tt class="docutils literal">&nbsp;&nbsp; </tt><em>   type: </em><tt class="docutils literal"><span class="pre">std::string</span> </tt><tt class="docutils literal">&nbsp;&nbsp; </tt><em>required</em><tt class="docutils literal">&nbsp;&nbsp; </tt><em> default: </em><tt class="docutils literal"><span class="pre">/ros/topic/name</span></tt></p>
+<li><p class="first"><strong>topic_name</strong><code class="docutils literal">&nbsp;&nbsp; </code><em>   type: </em><code class="docutils literal"><span class="pre">std::string</span> </code><code class="docutils literal">&nbsp;&nbsp; </code><em>required</em><code class="docutils literal">&nbsp;&nbsp; </code><em> default: </em><code class="docutils literal"><span class="pre">/ros/topic/name</span></code></p>
 <p>The topic name to publish to. May be remapped.</p>
 </li>
 </ul>
 </p>
 <p class="topic-title first">Inputs<ul>
-<li><p class="first"><strong>input</strong><tt class="docutils literal">&nbsp;&nbsp; </tt><em>   type: </em><tt class="docutils literal"><span class="pre">boost::shared_ptr&lt;visualization_msgs::Marker_&lt;std::allocator&lt;void&gt;</span> <span class="pre">&gt;</span> <span class="pre">const&gt;</span> </tt><tt class="docutils literal">&nbsp;&nbsp; </tt></p>
+<li><p class="first"><strong>input</strong><code class="docutils literal">&nbsp;&nbsp; </code><em>   type: </em><code class="docutils literal"><span class="pre">boost::shared_ptr&lt;visualization_msgs::Marker_&lt;std::allocator&lt;void&gt;</span> <span class="pre">&gt;</span> <span class="pre">const&gt;</span> </code><code class="docutils literal">&nbsp;&nbsp; </code></p>
 <p>The message to publish.</p>
 </li>
 </ul>
 </p>
 <p class="topic-title first">Outputs<ul>
-<li><p class="first"><strong>has_subscribers</strong><tt class="docutils literal">&nbsp;&nbsp; </tt><em>   type: </em><tt class="docutils literal"><span class="pre">bool</span> </tt><tt class="docutils literal">&nbsp;&nbsp; </tt></p>
+<li><p class="first"><strong>has_subscribers</strong><code class="docutils literal">&nbsp;&nbsp; </code><em>   type: </em><code class="docutils literal"><span class="pre">bool</span> </code><code class="docutils literal">&nbsp;&nbsp; </code></p>
 <p>Has currently connected subscribers.</p>
 </li>
 </ul>
@@ -454,22 +456,22 @@
 <p class="topic-title first">Brief doc<p>Given a depth image, return the mask of what is between two depths.</p>
 </p>
 <p class="topic-title first">Parameters<ul>
-<li><p class="first"><strong>d_max</strong><tt class="docutils literal">&nbsp;&nbsp; </tt><em>   type: </em><tt class="docutils literal"><span class="pre">float</span> </tt><tt class="docutils literal">&nbsp;&nbsp; </tt><em> not </em><em>required</em><tt class="docutils literal">&nbsp;&nbsp; </tt><em> default: </em><tt class="docutils literal"><span class="pre">3.40282346639e+38</span></tt></p>
+<li><p class="first"><strong>d_max</strong><code class="docutils literal">&nbsp;&nbsp; </code><em>   type: </em><code class="docutils literal"><span class="pre">float</span> </code><code class="docutils literal">&nbsp;&nbsp; </code><em> not </em><em>required</em><code class="docutils literal">&nbsp;&nbsp; </code><em> default: </em><code class="docutils literal"><span class="pre">3.40282346639e+38</span></code></p>
 <p>The maximal distance at which object become interesting (in meters)</p>
 </li>
-<li><p class="first"><strong>d_min</strong><tt class="docutils literal">&nbsp;&nbsp; </tt><em>   type: </em><tt class="docutils literal"><span class="pre">float</span> </tt><tt class="docutils literal">&nbsp;&nbsp; </tt><em> not </em><em>required</em><tt class="docutils literal">&nbsp;&nbsp; </tt><em> default: </em><tt class="docutils literal"><span class="pre">-3.40282346639e+38</span></tt></p>
+<li><p class="first"><strong>d_min</strong><code class="docutils literal">&nbsp;&nbsp; </code><em>   type: </em><code class="docutils literal"><span class="pre">float</span> </code><code class="docutils literal">&nbsp;&nbsp; </code><em> not </em><em>required</em><code class="docutils literal">&nbsp;&nbsp; </code><em> default: </em><code class="docutils literal"><span class="pre">-3.40282346639e+38</span></code></p>
 <p>The minimal distance at which object become interesting (in meters)</p>
 </li>
 </ul>
 </p>
 <p class="topic-title first">Inputs<ul>
-<li><p class="first"><strong>points3d</strong><tt class="docutils literal">&nbsp;&nbsp; </tt><em>   type: </em><tt class="docutils literal"><span class="pre">cv::Mat</span> </tt><tt class="docutils literal">&nbsp;&nbsp; </tt></p>
+<li><p class="first"><strong>points3d</strong><code class="docutils literal">&nbsp;&nbsp; </code><em>   type: </em><code class="docutils literal"><span class="pre">cv::Mat</span> </code><code class="docutils literal">&nbsp;&nbsp; </code></p>
 <p>The 3d points: width by height by 3 channels</p>
 </li>
 </ul>
 </p>
 <p class="topic-title first">Outputs<ul>
-<li><p class="first"><strong>mask</strong><tt class="docutils literal">&nbsp;&nbsp; </tt><em>   type: </em><tt class="docutils literal"><span class="pre">cv::Mat</span> </tt><tt class="docutils literal">&nbsp;&nbsp; </tt></p>
+<li><p class="first"><strong>mask</strong><code class="docutils literal">&nbsp;&nbsp; </code><em>   type: </em><code class="docutils literal"><span class="pre">cv::Mat</span> </code><code class="docutils literal">&nbsp;&nbsp; </code></p>
 <p>The mask of what is within the depth range in the image</p>
 </li>
 </ul>
@@ -484,14 +486,14 @@
 <p class="topic-title first">Brief doc<p>Simply aggregates the results from several pipelines</p>
 </p>
 <p class="topic-title first">Parameters<ul>
-<li><p class="first"><strong>n_inputs</strong><tt class="docutils literal">&nbsp;&nbsp; </tt><em>   type: </em><tt class="docutils literal"><span class="pre">unsigned</span> <span class="pre">int</span> </tt><tt class="docutils literal">&nbsp;&nbsp; </tt><em>required</em><tt class="docutils literal">&nbsp;&nbsp; </tt><em> no default value</em></p>
+<li><p class="first"><strong>n_inputs</strong><code class="docutils literal">&nbsp;&nbsp; </code><em>   type: </em><code class="docutils literal"><span class="pre">unsigned</span> <span class="pre">int</span> </code><code class="docutils literal">&nbsp;&nbsp; </code><em>required</em><code class="docutils literal">&nbsp;&nbsp; </code><em> no default value</em></p>
 <p>Number of inputs to AND together</p>
 </li>
 </ul>
 </p>
 <p></p>
 <p class="topic-title first">Outputs<ul>
-<li><p class="first"><strong>pose_results</strong><tt class="docutils literal">&nbsp;&nbsp; </tt><em>   type: </em><tt class="docutils literal"><span class="pre">std::vector&lt;object_recognition_core::common::PoseResult,</span> <span class="pre">std::allocator&lt;object_recognition_core::common::PoseResult&gt;</span> <span class="pre">&gt;</span> </tt><tt class="docutils literal">&nbsp;&nbsp; </tt></p>
+<li><p class="first"><strong>pose_results</strong><code class="docutils literal">&nbsp;&nbsp; </code><em>   type: </em><code class="docutils literal"><span class="pre">std::vector&lt;object_recognition_core::common::PoseResult,</span> <span class="pre">std::allocator&lt;object_recognition_core::common::PoseResult&gt;</span> <span class="pre">&gt;</span> </code><code class="docutils literal">&nbsp;&nbsp; </code></p>
 <p>The results of object recognition</p>
 </li>
 </ul>
@@ -506,18 +508,18 @@
       </div>
       <div class="clearer"></div>
     </div>
-    <div class="related">
+    <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
           <a href="../genindex.html" title="General Index"
              >index</a></li>
-        <li><a href="../index.html">object_recognition_core</a> &raquo;</li> 
+        <li class="nav-item nav-item-0"><a href="../index.html">object_recognition_core</a> &raquo;</li> 
       </ul>
     </div>
-    <div class="footer">
+    <div class="footer" role="contentinfo">
         &copy; Copyright 2013,  Willow Garage, Inc.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.6.
     </div>
   </body>
 </html>

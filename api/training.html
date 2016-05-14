@@ -26,17 +26,17 @@
     <script type="text/javascript" src="../_static/doctools.js"></script>
     <link rel="top" title="object_recognition_core" href="../index.html" /> 
   </head>
-  <body>
-    <div class="related">
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
           <a href="../genindex.html" title="General Index"
              accesskey="I">index</a></li>
-        <li><a href="../index.html">object_recognition_core</a> &raquo;</li> 
+        <li class="nav-item nav-item-0"><a href="../index.html">object_recognition_core</a> &raquo;</li> 
       </ul>
     </div>
-      <div class="sphinxsidebar">
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
             <p class="logo"><a href="../index.html">
               <img class="logo" src="../_static/or.svg" alt="Logo"/>
@@ -54,12 +54,14 @@
 </li>
 </ul>
 
-  <h3>This Page</h3>
-  <ul class="this-page-menu">
-    <li><a href="../_sources/api/training.txt"
-           rel="nofollow">Show Source</a></li>
-  </ul>
-<div id="searchbox" style="display: none">
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/api/training.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
     <form class="search" action="../search.html" method="get">
       <input type="text" name="q" />
@@ -78,7 +80,7 @@
     <div class="document">
       <div class="documentwrapper">
         <div class="bodywrapper">
-          <div class="body">
+          <div class="body" role="main">
             
   <div class="section" id="training">
 <h1>Training<a class="headerlink" href="#training" title="Permalink to this headline">¶</a></h1>
@@ -92,12 +94,12 @@ the model when persisted:</p>
 <ul class="simple">
 <li>the object id</li>
 <li>the model parameters</li>
-<li>the fact that the document is a model, of the type given by the member function <tt class="docutils literal"><span class="pre">model_type</span></tt></li>
+<li>the fact that the document is a model, of the type given by the member function <code class="docutils literal"><span class="pre">model_type</span></code></li>
 </ul>
 <div class="section" id="step-1">
 <h3>Step 1<a class="headerlink" href="#step-1" title="Permalink to this headline">¶</a></h3>
 <p>First, you will need to create a cell that implements what is added to the DB document. It has to inherit from
-<tt class="docutils literal"><span class="pre">db::bases::ModelWriterImpl</span></tt>. An example implementation is:</p>
+<code class="docutils literal"><span class="pre">db::bases::ModelWriterImpl</span></code>. An example implementation is:</p>
 <div class="highlight-cpp"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
  2
  3
@@ -159,8 +161,8 @@ the model when persisted:</p>
 <span class="p">};</span>
 </pre></div>
 </td></tr></table></div>
-<p>The <tt class="docutils literal"><span class="pre">process</span></tt> function fills your document with everything that makes your model specific. Use the <tt class="docutils literal"><span class="pre">set_value</span></tt> to add fields that can be searched (strings, numerals) and the <tt class="docutils literal"><span class="pre">set_attachment</span></tt>
-member function of the <tt class="docutils literal"><span class="pre">db::Document</span></tt> to fill the different binary blobs of the model. If your type is not supported, you
+<p>The <code class="docutils literal"><span class="pre">process</span></code> function fills your document with everything that makes your model specific. Use the <code class="docutils literal"><span class="pre">set_value</span></code> to add fields that can be searched (strings, numerals) and the <code class="docutils literal"><span class="pre">set_attachment</span></code>
+member function of the <code class="docutils literal"><span class="pre">db::Document</span></code> to fill the different binary blobs of the model. If your type is not supported, you
 will have to implement the following member functions (and please send us a patch containing them if it is a very common type):</p>
 <div class="highlight-cpp"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
  2
@@ -185,8 +187,8 @@ will have to implement the following member functions (and please send us a patc
 <span class="n">Document</span><span class="o">::</span><span class="n">set_attachment</span><span class="o">&lt;</span><span class="n">YourType</span><span class="o">&gt;</span><span class="p">(</span><span class="k">const</span> <span class="n">AttachmentName</span> <span class="o">&amp;</span><span class="n">attachment_name</span><span class="p">,</span> <span class="k">const</span> <span class="n">cv</span><span class="o">::</span><span class="n">Mat</span> <span class="o">&amp;</span> <span class="n">value</span><span class="p">);</span>
 </pre></div>
 </td></tr></table></div>
-<p>(we provide a default <tt class="docutils literal"><span class="pre">boost</span></tt> serialization but to make sure the binary blobs are readable on machines with a different
-<tt class="docutils literal"><span class="pre">boost</span> <span class="pre">serialization</span></tt> library, you should probably implement your own serialization)</p>
+<p>(we provide a default <code class="docutils literal"><span class="pre">boost</span></code> serialization but to make sure the binary blobs are readable on machines with a different
+<code class="docutils literal"><span class="pre">boost</span> <span class="pre">serialization</span></code> library, you should probably implement your own serialization)</p>
 </div>
 <div class="section" id="step-2">
 <h3>Step 2<a class="headerlink" href="#step-2" title="Permalink to this headline">¶</a></h3>
@@ -198,11 +200,11 @@ will have to implement the following member functions (and please send us a patc
 </div>
 <div class="section" id="python-plasm">
 <h2>Python Plasm<a class="headerlink" href="#python-plasm" title="Permalink to this headline">¶</a></h2>
-<p>Your pipeline also has to provide an implementation of the <tt class="xref py py-class docutils literal"><span class="pre">object_recognition_core.pipelines.training.TrainingPipeline</span></tt> class so that
-<tt class="docutils literal"><span class="pre">ORK</span></tt> can find it (as it will be on the <tt class="docutils literal"><span class="pre">PYTHONPATH</span></tt>), generate docs for it and do everything that is basically not the raw computation.</p>
+<p>Your pipeline also has to provide an implementation of the <code class="xref py py-class docutils literal"><span class="pre">object_recognition_core.pipelines.training.TrainingPipeline</span></code> class so that
+<code class="docutils literal"><span class="pre">ORK</span></code> can find it (as it will be on the <code class="docutils literal"><span class="pre">PYTHONPATH</span></code>), generate docs for it and do everything that is basically not the raw computation.</p>
 <dl class="class">
 <dt id="object_recognition_core.pipelines.training.TrainerBase">
-<em class="property">class </em><tt class="descclassname">object_recognition_core.pipelines.training.</tt><tt class="descname">TrainerBase</tt><a class="reference internal" href="../_modules/object_recognition_core/pipelines/training.html#TrainerBase"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#object_recognition_core.pipelines.training.TrainerBase" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">object_recognition_core.pipelines.training.</code><code class="descname">TrainerBase</code><a class="reference internal" href="../_modules/object_recognition_core/pipelines/training.html#TrainerBase"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#object_recognition_core.pipelines.training.TrainerBase" title="Permalink to this definition">¶</a></dt>
 <dd><p>This is a base class for a training pipeline: you don&#8217;t need to have your pipeline cell inherit from that class
 but if you do, it will be listed as an official training pipeline
 You need to call the BlackBox constructor in your __init__ first and then this function. Typically, your __init__ is</p>
@@ -223,18 +225,18 @@ You need to call the BlackBox constructor in your __init__ first and then this f
       </div>
       <div class="clearer"></div>
     </div>
-    <div class="related">
+    <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
           <a href="../genindex.html" title="General Index"
              >index</a></li>
-        <li><a href="../index.html">object_recognition_core</a> &raquo;</li> 
+        <li class="nav-item nav-item-0"><a href="../index.html">object_recognition_core</a> &raquo;</li> 
       </ul>
     </div>
-    <div class="footer">
+    <div class="footer" role="contentinfo">
         &copy; Copyright 2013,  Willow Garage, Inc.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.6.
     </div>
   </body>
 </html>

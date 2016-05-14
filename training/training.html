@@ -26,17 +26,17 @@
     <script type="text/javascript" src="../_static/doctools.js"></script>
     <link rel="top" title="object_recognition_core" href="../index.html" /> 
   </head>
-  <body>
-    <div class="related">
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
           <a href="../genindex.html" title="General Index"
              accesskey="I">index</a></li>
-        <li><a href="../index.html">object_recognition_core</a> &raquo;</li> 
+        <li class="nav-item nav-item-0"><a href="../index.html">object_recognition_core</a> &raquo;</li> 
       </ul>
     </div>
-      <div class="sphinxsidebar">
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
             <p class="logo"><a href="../index.html">
               <img class="logo" src="../_static/or.svg" alt="Logo"/>
@@ -51,12 +51,14 @@
 </li>
 </ul>
 
-  <h3>This Page</h3>
-  <ul class="this-page-menu">
-    <li><a href="../_sources/training/training.txt"
-           rel="nofollow">Show Source</a></li>
-  </ul>
-<div id="searchbox" style="display: none">
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/training/training.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
     <form class="search" action="../search.html" method="get">
       <input type="text" name="q" />
@@ -75,7 +77,7 @@
     <div class="document">
       <div class="documentwrapper">
         <div class="bodywrapper">
-          <div class="body">
+          <div class="body" role="main">
             
   <div class="section" id="training">
 <span id="id1"></span><h1><a class="toc-backref" href="#id2">Training</a><a class="headerlink" href="#training" title="Permalink to this headline">¶</a></h1>
@@ -154,12 +156,12 @@ $(document).ready(function() {
 </script>
 </div>
 <div class="container">
-<div class="toggleable_div label_Non-ROS"><p>Just run the training.py script in <tt class="docutils literal"><span class="pre">/apps</span></tt>. It requires a configuration file through the <tt class="docutils literal"><span class="pre">-c</span></tt> option. Some of the
+<div class="toggleable_div label_Non-ROS"><p>Just run the training.py script in <code class="docutils literal"><span class="pre">/apps</span></code>. It requires a configuration file through the <code class="docutils literal"><span class="pre">-c</span></code> option. Some of the
 options in there can be overriden through the command line for convenience. Change the following parameters to your needs:</p>
 <blockquote>
 <div><ul>
 <li><dl class="first docutils">
-<dt>the <tt class="docutils literal"><span class="pre">object_ids</span></tt> should be the list of object ids you want to train on. If you want, you can also use object_names,</dt>
+<dt>the <code class="docutils literal"><span class="pre">object_ids</span></code> should be the list of object ids you want to train on. If you want, you can also use object_names,</dt>
 <dd><p class="first last">that are more human readable. object_ids is of the form [&#8220;6b3de86feee4e840280b4caad90003fb&#8221;] but there are two special
 options: if it is &#8220;all&#8221;, then all models are recomputed; if it is &#8220;missing&#8221;, only the missing models are computed.</p>
 </dd>
@@ -177,7 +179,7 @@ options: if it is &#8220;all&#8221;, then all models are recomputed; if it is &#
 </pre></div>
 </div>
 </div></blockquote>
-<p>You can choose whatever configuration file; a few are provided in <tt class="docutils literal"><span class="pre">object_recognition_server/conf</span></tt>.</p>
+<p>You can choose whatever configuration file; a few are provided in <code class="docutils literal"><span class="pre">object_recognition_server/conf</span></code>.</p>
 </div></div>
 <p>A typical command line session might look like:</p>
 <div class="highlight-ectosh"><div class="highlight"><pre><span class="mf">%</span><span class="gd"> apps/training -c config_training.txt --commit</span>
@@ -190,7 +192,8 @@ Persisted
 </div>
 <div class="section" id="command-line-interface">
 <h2><a class="toc-backref" href="#id5">Command Line Interface</a><a class="headerlink" href="#command-line-interface" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-text"><div class="highlight"><pre>usage: training [-h] [-c CONFIG_FILE] [--visualize] [--commit]
+<div class="highlight-text"><div class="highlight"><pre>No module named PySide.QtCore
+usage: training [-h] [-c CONFIG_FILE] [--visualize] [--commit]
 
 optional arguments:
   -h, --help            show this help message and exit
@@ -210,18 +213,18 @@ optional arguments:
       </div>
       <div class="clearer"></div>
     </div>
-    <div class="related">
+    <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
           <a href="../genindex.html" title="General Index"
              >index</a></li>
-        <li><a href="../index.html">object_recognition_core</a> &raquo;</li> 
+        <li class="nav-item nav-item-0"><a href="../index.html">object_recognition_core</a> &raquo;</li> 
       </ul>
     </div>
-    <div class="footer">
+    <div class="footer" role="contentinfo">
         &copy; Copyright 2013,  Willow Garage, Inc.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.6.
     </div>
   </body>
 </html>

@@ -26,17 +26,17 @@
     <script type="text/javascript" src="../_static/doctools.js"></script>
     <link rel="top" title="object_recognition_core" href="../index.html" /> 
   </head>
-  <body>
-    <div class="related">
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
           <a href="../genindex.html" title="General Index"
              accesskey="I">index</a></li>
-        <li><a href="../index.html">object_recognition_core</a> &raquo;</li> 
+        <li class="nav-item nav-item-0"><a href="../index.html">object_recognition_core</a> &raquo;</li> 
       </ul>
     </div>
-      <div class="sphinxsidebar">
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
             <p class="logo"><a href="../index.html">
               <img class="logo" src="../_static/or.svg" alt="Logo"/>
@@ -55,12 +55,14 @@
 </li>
 </ul>
 
-  <h3>This Page</h3>
-  <ul class="this-page-menu">
-    <li><a href="../_sources/api/detection.txt"
-           rel="nofollow">Show Source</a></li>
-  </ul>
-<div id="searchbox" style="display: none">
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/api/detection.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
     <form class="search" action="../search.html" method="get">
       <input type="text" name="q" />
@@ -79,17 +81,17 @@
     <div class="document">
       <div class="documentwrapper">
         <div class="bodywrapper">
-          <div class="body">
+          <div class="body" role="main">
             
   <div class="section" id="detection">
 <h1>Detection<a class="headerlink" href="#detection" title="Permalink to this headline">¶</a></h1>
 <p>To implement a detection pipeline runnable with the object recognition infrastructure you will need a Python script that implements a plasm for your pipeline. To ease the implementation, we describe a simple way way to retrieve models from the database, as well as the output format of the pipeline.</p>
 <div class="section" id="python-plasm">
 <h2>Python Plasm<a class="headerlink" href="#python-plasm" title="Permalink to this headline">¶</a></h2>
-<p>Your pipeline has to provide an implementation of the <tt class="xref py py-class docutils literal"><span class="pre">object_recognition_core.pipelines.detection.DetectionPipeline</span></tt> class to be fully integrated with object recognition infrastructure:</p>
+<p>Your pipeline has to provide an implementation of the <code class="xref py py-class docutils literal"><span class="pre">object_recognition_core.pipelines.detection.DetectionPipeline</span></code> class to be fully integrated with object recognition infrastructure:</p>
 <dl class="class">
 <dt id="object_recognition_core.pipelines.detection.DetectorBase">
-<em class="property">class </em><tt class="descclassname">object_recognition_core.pipelines.detection.</tt><tt class="descname">DetectorBase</tt><big>(</big><em>do_check_object_ids=True</em>, <em>do_check_db=True</em><big>)</big><a class="reference internal" href="../_modules/object_recognition_core/pipelines/detection.html#DetectorBase"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#object_recognition_core.pipelines.detection.DetectorBase" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">object_recognition_core.pipelines.detection.</code><code class="descname">DetectorBase</code><span class="sig-paren">(</span><em>do_check_object_ids=True</em>, <em>do_check_db=True</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/object_recognition_core/pipelines/detection.html#DetectorBase"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#object_recognition_core.pipelines.detection.DetectorBase" title="Permalink to this definition">¶</a></dt>
 <dd><p>This is a base class for a detection pipeline: you don&#8217;t need to have your pipeline cell inherit from that class
 but if you do, it will make sure that its inputs/outputs fit the ORK standard (which is good if you want to
 interact with the official ORK pipelines).
@@ -110,7 +112,7 @@ You need to call the BlackBox constructor in your __init__ first and then this f
 <div class="section" id="step-1">
 <h3>Step 1<a class="headerlink" href="#step-1" title="Permalink to this headline">¶</a></h3>
 <p>The cell is bit different from the ModelWriter as it reads several models at once. It has to inherit from
-<tt class="docutils literal"><span class="pre">db::bases::ModelReaderImpl</span></tt>. An example implementation is:</p>
+<code class="docutils literal"><span class="pre">db::bases::ModelReaderImpl</span></code>. An example implementation is:</p>
 <div class="highlight-cpp"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
  2
  3
@@ -180,7 +182,7 @@ You need to call the BlackBox constructor in your __init__ first and then this f
 <span class="p">};</span>
 </pre></div>
 </td></tr></table></div>
-<p>The <tt class="docutils literal"><span class="pre">ParameterCallback</span></tt> function gets from the model everything that makes it specific. Please refer to ModelWriter
+<p>The <code class="docutils literal"><span class="pre">ParameterCallback</span></code> function gets from the model everything that makes it specific. Please refer to ModelWriter
 for how to get this data</p>
 </div>
 <div class="section" id="step-2">
@@ -266,18 +268,18 @@ ts: a vector of cv::Mat, each representing the pose translation of a matching ob
       </div>
       <div class="clearer"></div>
     </div>
-    <div class="related">
+    <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
           <a href="../genindex.html" title="General Index"
              >index</a></li>
-        <li><a href="../index.html">object_recognition_core</a> &raquo;</li> 
+        <li class="nav-item nav-item-0"><a href="../index.html">object_recognition_core</a> &raquo;</li> 
       </ul>
     </div>
-    <div class="footer">
+    <div class="footer" role="contentinfo">
         &copy; Copyright 2013,  Willow Garage, Inc.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.6.
     </div>
   </body>
 </html>

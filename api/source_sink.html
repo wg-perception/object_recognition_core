@@ -26,27 +26,29 @@
     <script type="text/javascript" src="../_static/doctools.js"></script>
     <link rel="top" title="object_recognition_core" href="../index.html" /> 
   </head>
-  <body>
-    <div class="related">
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
           <a href="../genindex.html" title="General Index"
              accesskey="I">index</a></li>
-        <li><a href="../index.html">object_recognition_core</a> &raquo;</li> 
+        <li class="nav-item nav-item-0"><a href="../index.html">object_recognition_core</a> &raquo;</li> 
       </ul>
     </div>
-      <div class="sphinxsidebar">
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
             <p class="logo"><a href="../index.html">
               <img class="logo" src="../_static/or.svg" alt="Logo"/>
             </a></p>
-  <h3>This Page</h3>
-  <ul class="this-page-menu">
-    <li><a href="../_sources/api/source_sink.txt"
-           rel="nofollow">Show Source</a></li>
-  </ul>
-<div id="searchbox" style="display: none">
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/api/source_sink.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
     <form class="search" action="../search.html" method="get">
       <input type="text" name="q" />
@@ -65,24 +67,24 @@
     <div class="document">
       <div class="documentwrapper">
         <div class="bodywrapper">
-          <div class="body">
+          <div class="body" role="main">
             
   <div class="section" id="source-sink">
 <h1>Source/Sink<a class="headerlink" href="#source-sink" title="Permalink to this headline">¶</a></h1>
-<p><tt class="docutils literal"><span class="pre">Sources</span></tt> and <tt class="docutils literal"><span class="pre">Sinks</span></tt> are the inputs/outputs of any pipelines. <tt class="docutils literal"><span class="pre">ORK</span></tt> provides a few for you but you can extend them by providing your own.
-For both, you now know the drill: you need a Python wrapper that wraps your <tt class="docutils literal"><span class="pre">Sourc/Sink</span></tt> cell. you just need to implement a Python object inheriting
+<p><code class="docutils literal"><span class="pre">Sources</span></code> and <code class="docutils literal"><span class="pre">Sinks</span></code> are the inputs/outputs of any pipelines. <code class="docutils literal"><span class="pre">ORK</span></code> provides a few for you but you can extend them by providing your own.
+For both, you now know the drill: you need a Python wrapper that wraps your <code class="docutils literal"><span class="pre">Sourc/Sink</span></code> cell. you just need to implement a Python object inheriting
 from some base classes.</p>
-<p>For a <tt class="docutils literal"><span class="pre">Source</span></tt>:  <tt class="xref py py-class docutils literal"><span class="pre">object_recognition_core.io.source.SourceBase</span></tt>:</p>
+<p>For a <code class="docutils literal"><span class="pre">Source</span></code>:  <code class="xref py py-class docutils literal"><span class="pre">object_recognition_core.io.source.SourceBase</span></code>:</p>
 <dl class="class">
 <dt id="object_recognition_core.io.source.OpenNI">
-<em class="property">class </em><tt class="descclassname">object_recognition_core.io.source.</tt><tt class="descname">OpenNI</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../_modules/object_recognition_core/io/source.html#OpenNI"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#object_recognition_core.io.source.OpenNI" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">object_recognition_core.io.source.</code><code class="descname">OpenNI</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/object_recognition_core/io/source.html#OpenNI"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#object_recognition_core.io.source.OpenNI" title="Permalink to this definition">¶</a></dt>
 <dd><p>A source for any ORK pipeline, interface with a Kinect/ASUS Xtion pro using the openni driver</p>
 </dd></dl>
 
-<p>And for a <tt class="docutils literal"><span class="pre">Sink</span></tt>: py:class:<cite>object_recognition_core.io.source.SinkBase</cite>:</p>
+<p>And for a <code class="docutils literal"><span class="pre">Sink</span></code>: py:class:<cite>object_recognition_core.io.source.SinkBase</cite>:</p>
 <dl class="class">
 <dt id="object_recognition_core.io.sink.SinkBase">
-<em class="property">class </em><tt class="descclassname">object_recognition_core.io.sink.</tt><tt class="descname">SinkBase</tt><a class="reference internal" href="../_modules/object_recognition_core/io/sink.html#SinkBase"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#object_recognition_core.io.sink.SinkBase" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">object_recognition_core.io.sink.</code><code class="descname">SinkBase</code><a class="reference internal" href="../_modules/object_recognition_core/io/sink.html#SinkBase"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#object_recognition_core.io.sink.SinkBase" title="Permalink to this definition">¶</a></dt>
 <dd><p>This is a base class for a sink: you don&#8217;t need to have your sink cell inherit from that class but if you do,
 it will make sure that its inputs/outputs fit the ORK standard (which is good if you want to interact with
 the official ORK pipelines).
@@ -103,18 +105,18 @@ You need to call the BlackBox constructor in your __init__ first and then this f
       </div>
       <div class="clearer"></div>
     </div>
-    <div class="related">
+    <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
           <a href="../genindex.html" title="General Index"
              >index</a></li>
-        <li><a href="../index.html">object_recognition_core</a> &raquo;</li> 
+        <li class="nav-item nav-item-0"><a href="../index.html">object_recognition_core</a> &raquo;</li> 
       </ul>
     </div>
-    <div class="footer">
+    <div class="footer" role="contentinfo">
         &copy; Copyright 2013,  Willow Garage, Inc.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.6.
     </div>
   </body>
 </html>

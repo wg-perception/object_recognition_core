@@ -134,18 +134,15 @@ To maintain your code, each folder is each own ``git`` repository and you can pu
 rosinstall file
 ***************
 
-Under ROS, you can alternatively use that `rosinstall <http://www.ros.org/wiki/rosinstall>`_ file :download:`ork.rosinstall`:
+Under ROS, you can alternatively use that `rosinstall <http://www.ros.org/wiki/rosinstall>`_ file :download:`ork.rosinstall.indigo.jade`
+on Indigo/Jade or :download:`ork.rosinstall.kinetic.plus` on Kinetic and above.
 
-
-.. literalinclude:: ork.rosinstall
-   :language: json
-
-To install it, just follow those commands:
+To use on Kinetic, do the following:
 
 .. code-block:: bash
 
    mkdir ws && cd ws
-   wstool init src https://raw.github.com/wg-perception/object_recognition_core/master/doc/source/ork.rosinstall
+   wstool init src https://raw.github.com/wg-perception/object_recognition_core/master/doc/source/ork.rosinstall.kinetic.plus
    cd src && wstool update -j8
    cd .. && rosdep install --from-paths src -i -y
    catkin_make
