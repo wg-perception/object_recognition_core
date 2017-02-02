@@ -1,5 +1,5 @@
-Forthcoming
------------
+0.6.7 (2017-02-02)
+------------------
 * Merge pull request `#46 <https://github.com/wg-perception/object_recognition_core/issues/46>`_ from hris2003/master
   (fix `#45 <https://github.com/wg-perception/object_recognition_core/issues/45>`_)(ModelDocument)Get _id field directly from ViewIterator
 * (fix)(ModelDocument)Get _id field directly from ViewIterator
