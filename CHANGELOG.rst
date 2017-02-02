@@ -1,3 +1,11 @@
+Forthcoming
+-----------
+* Merge pull request `#46 <https://github.com/wg-perception/object_recognition_core/issues/46>`_ from hris2003/master
+  (fix `#45 <https://github.com/wg-perception/object_recognition_core/issues/45>`_)(ModelDocument)Get _id field directly from ViewIterator
+* (fix)(ModelDocument)Get _id field directly from ViewIterator
+* fix the rosinstall files
+* Contributors: Ha Dang, Vincent Rabaud
+
 0.6.6 (2016-04-24)
 ------------------
 * add missing dependencies
