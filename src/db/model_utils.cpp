@@ -113,11 +113,10 @@ namespace object_recognition_core
 
         while (view_iterator != ViewIterator::end())
         {
-          const or_json::mObject & obj = (*view_iterator).fields();
           // Compare the parameters to the input ones
           Document doc;
           doc.set_db(db);
-          doc.set_document_id(obj.find("_id")->second.get_str());
+          doc.set_document_id((*view_iterator).get_field<std::string>("_id"));
           doc.load_fields();
           model_documents.push_back(doc);
 
@@ -144,11 +143,10 @@ namespace object_recognition_core
 
       while (view_iterator != ViewIterator::end())
       {
-        const or_json::mObject & obj = (*view_iterator).fields();
         // Compare the parameters to the input ones
         Document doc;
         doc.set_db(db);
-        doc.set_document_id(obj.find("_id")->second.get_str());
+        doc.set_document_id((*view_iterator).get_field<std::string>("_id"));
         doc.load_fields();
         model_documents.push_back(doc);
 
